@@ -1,4 +1,4 @@
-import type { ColorId, ColorData, ColorRecipe } from './types';
+import type { Challenge, ColorId, ColorData, ColorRecipe } from './types';
 
 export const COLORS: Record<ColorId, ColorData> = {
   red: {
@@ -117,5 +117,16 @@ export const DISCOVERY_HINTS: Partial<Record<ColorId, string>> = {
   pink: 'Add white to a warm color',
   lightBlue: 'Add white to a cool color',
 };
+
+export const CHALLENGES: Challenge[] = [
+  // Easy — basic secondary colors
+  { id: 'c1', targetColor: 'orange', hint: 'Mix a hot color with a sunny color', difficulty: 'easy' },
+  { id: 'c2', targetColor: 'green', hint: 'Mix the sky with sunshine', difficulty: 'easy' },
+  { id: 'c3', targetColor: 'purple', hint: 'Mix fire with water', difficulty: 'easy' },
+  // Medium — requires white or all primaries
+  { id: 'c4', targetColor: 'pink', hint: 'Make red lighter', difficulty: 'medium' },
+  { id: 'c5', targetColor: 'lightBlue', hint: 'Make blue lighter', difficulty: 'medium' },
+  { id: 'c6', targetColor: 'brown', hint: 'Mix ALL the primary colors', difficulty: 'hard' },
+];
 
 export const GAME_BG = '#F5F5F5';

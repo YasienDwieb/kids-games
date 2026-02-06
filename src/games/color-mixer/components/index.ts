@@ -6,3 +6,6 @@ export { ColorPalette } from './ColorPalette';
 export { ColorCollection } from './ColorCollection';
 export { DiscoveryCelebration } from './DiscoveryCelebration';
 export { Sparkles } from './Sparkles';
+export { ChallengeCard } from './ChallengeCard';
+export { ChallengeMode } from './ChallengeMode';
+export { ChallengePicker } from './ChallengePicker';
