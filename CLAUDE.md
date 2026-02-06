@@ -16,14 +16,15 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 
 ## Architecture
 
-**Entry flow:** `index.ts` → `App.tsx` → `NavigationContainer` → `RootNavigator`
+**Entry flow:** `index.ts` → `App.tsx` (imports `src/games/` to trigger registrations) → `NavigationContainer` → `RootNavigator`
 
 **`src/` structure follows a modular game pattern:**
 
 - `app/navigation/` — React Navigation setup; `RootNavigator` uses native-stack with hidden headers, screens: `Home`, `GamePlayer`
 - `games/` — each game is a self-contained folder with its own `index.tsx` (entry), `config.ts` (metadata: name, icon, age range), `components/`, `hooks/`, and `assets/`
 - `games/_template/` — copy this folder to scaffold a new game
-- `screens/` — `HomeScreen` (game list landing), `GamePlayerScreen` (loads game by `gameId` from registry)
+- `games/example/` — minimal working example game demonstrating the registration + rendering flow
+- `screens/` — `HomeScreen` (2-column game grid with empty state), `GamePlayerScreen` (loads game by `gameId` from registry)
 - `components/common/` — reusable child-friendly UI: `BigButton` (animated press, 80px), `GameCard` (120x120, emoji+name), `BackButton` (absolute top-left, semi-transparent), `SafeContainer` (SafeAreaView wrapper)
 - `components/layout/` — layout wrappers (placeholder)
 - `constants/` — `COLORS`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES` (child-friendly design tokens)
@@ -44,7 +45,9 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 - `getGame(id)` / `getAllGames()` / `getGamesForAge(age)` — query helpers
 - Games self-register: each game's `config.ts` calls `registerGame()`, then is imported in `src/games/index.ts`
 
-**Adding a new game:** copy `src/games/_template/` to `src/games/<game-name>/`, update `config.ts` with unique id/metadata and call `registerGame()`, then import the config in `src/games/index.ts`. See `src/games/_template/README.md` for full checklist. Navigation routes to games via `GamePlayer` screen with a `gameId` param.
+**Adding a new game:** copy `src/games/_template/` to `src/games/<game-name>/`, update `config.ts` with unique id/metadata and call `registerGame()`, then import the config in `src/games/index.ts`. See `src/games/HOW_TO_ADD_GAME.md` for full guide and checklist. Navigation routes to games via `GamePlayer` screen with a `gameId` param.
+
+**Registration flow:** `App.tsx` imports `src/games/index.ts` → that file has side-effect imports for each game's `config.ts` → each config calls `registerGame()` → `HomeScreen` calls `getAllGames()` to render the grid.
 
 **Template (`src/games/_template/`)** includes: root component (`index.tsx`), `GameArea` container component, `useGameState` hook (isPlaying/score/start/pause/reset), and example config.
 
@@ -55,8 +58,17 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 - `expo-screen-orientation` — orientation control per game
 - `expo-av` — sound effects and audio
 
+## HomeScreen
+
+- Uses `SafeContainer` for safe area insets
+- 2-column `FlatList` grid of `GameCard` components
+- Empty state: "No games yet! 🎮" when registry is empty
+- Cards navigate to `GamePlayer` with `gameId` param
+- Navigation props typed via `NativeStackScreenProps<RootStackParamList, 'Home'>`
+
 ## Configuration
 
 - TypeScript strict mode enabled, extends `expo/tsconfig.base`
 - New Architecture enabled (`newArchEnabled: true` in app.json)
 - Android edge-to-edge rendering enabled
+- Web not configured (no `react-dom` / `react-native-web`)
