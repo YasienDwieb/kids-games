@@ -12,8 +12,12 @@ import {
 } from './components';
 import { useColorMixer, useChallengeMode } from './hooks';
 import { DIMENSIONS, GAME_BG } from './constants';
-import type { ColorId } from './types';
-import type { GameMode } from './types';
+import type { ColorId, GameMode } from './types';
+
+const MIX_FAIL_MESSAGES = {
+  same_colors: 'Try mixing different colors!',
+  no_recipe: "Hmm, that didn't work. Try another combination!",
+} as const;
 
 export default function ColorMixerGame() {
   const mixer = useColorMixer();
@@ -23,7 +27,6 @@ export default function ColorMixerGame() {
   const [showCollection, setShowCollection] = useState(false);
   const [showChallengePicker, setShowChallengePicker] = useState(false);
 
-  // Track mixing zone bounds for hit testing
   const zoneRect = useRef({ x: 0, y: 0, width: 0, height: 0 });
 
   const handleZoneLayout = useCallback(
@@ -43,7 +46,6 @@ export default function ColorMixerGame() {
     return dx * dx + dy * dy <= radius * radius;
   }, []);
 
-  // Drag tracking — we only care about which color was dragged
   const dragColorRef = useRef<ColorId | null>(null);
 
   const handleDragStart = useCallback((colorId: ColorId, _instanceId: string) => {
@@ -51,7 +53,6 @@ export default function ColorMixerGame() {
   }, []);
 
   const handleDragMove = useCallback((_instanceId: string, _pos: { x: number; y: number }) => {
-    // Could add visual feedback on zone hover here
   }, []);
 
   const handleDragEnd = useCallback(
@@ -98,7 +99,6 @@ export default function ColorMixerGame() {
     (mixer.mixingZone.colorsInZone.length > 0 || mixer.mixingZone.resultColor) &&
     !mixer.mixingZone.isMixing;
 
-  // Challenge picker as full-screen view
   if (mode === 'challenge' && showChallengePicker) {
     return (
       <GestureHandlerRootView style={styles.root}>
@@ -171,6 +171,13 @@ export default function ColorMixerGame() {
           />
         </View>
 
+        {/* Mix failure feedback */}
+        {mixer.mixFailed && (
+          <View style={styles.failFeedback}>
+            <Text style={styles.failText}>{MIX_FAIL_MESSAGES[mixer.mixFailed]}</Text>
+          </View>
+        )}
+
         {/* Action buttons */}
         <View style={styles.actions}>
           {showMixButton && (
@@ -184,12 +191,14 @@ export default function ColorMixerGame() {
         </View>
 
         {/* Palette */}
-        <ColorPalette
-          availableColors={mixer.unlockedColors}
-          onColorDragStart={handleDragStart}
-          onColorDragMove={handleDragMove}
-          onColorDragEnd={handleDragEnd}
-        />
+        <View style={styles.paletteContainer}>
+          <ColorPalette
+            availableColors={mixer.unlockedColors}
+            onColorDragStart={handleDragStart}
+            onColorDragMove={handleDragMove}
+            onColorDragEnd={handleDragEnd}
+          />
+        </View>
       </View>
 
       {/* Modals */}
@@ -277,6 +286,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  failFeedback: {
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  failText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#E65100',
+    textAlign: 'center',
+  },
   actions: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -296,5 +319,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#757575',
+  },
+  paletteContainer: {
+    zIndex: 10,
+    overflow: 'visible',
   },
 });

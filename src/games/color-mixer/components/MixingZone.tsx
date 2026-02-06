@@ -67,9 +67,7 @@ export function MixingZone({
   const hasColors = colorsInZone.length > 0;
   const showResult = resultColor && !isMixing;
 
-  const handleLayout = (e: { nativeEvent: { layout: { x: number; y: number; width: number; height: number } } }) => {
-    e.nativeEvent.layout; // ensure we read it
-    // Use measure for absolute position
+  const handleLayout = () => {
     viewRef.current?.measure((_x, _y, width, height, pageX, pageY) => {
       if (pageX !== undefined) {
         onLayout({ x: pageX, y: pageY, width, height });

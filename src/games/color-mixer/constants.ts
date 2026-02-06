@@ -91,7 +91,7 @@ export const COLOR_RECIPES: ColorRecipe[] = [
 
 export const DIMENSIONS = {
   COLOR_BLOB_SIZE: 70,
-  MIXING_ZONE_SIZE: 150,
+  MIXING_ZONE_SIZE: 180,
   PALETTE_ITEM_SIZE: 60,
 };
 

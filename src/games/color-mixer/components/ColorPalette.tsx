@@ -182,6 +182,7 @@ function DraggableSlotBlob({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
+    overflow: 'visible',
   },
   paletteEdge: {
     height: 4,
@@ -202,6 +203,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 8,
+    overflow: 'visible',
   },
   title: {
     fontSize: 14,
@@ -217,15 +219,18 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 12,
+    overflow: 'visible',
   },
   slot: {
     alignItems: 'center',
     width: DIMENSIONS.PALETTE_ITEM_SIZE + 16,
+    overflow: 'visible',
   },
   slotDraggableArea: {
     width: DIMENSIONS.PALETTE_ITEM_SIZE,
     height: DIMENSIONS.PALETTE_ITEM_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
   },
 });

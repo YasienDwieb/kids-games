@@ -35,14 +35,22 @@ function findRecipe(colors: ColorId[]): ColorRecipe | null {
   );
 }
 
+function allSameColor(colors: ColorId[]): boolean {
+  return colors.every((c) => c === colors[0]);
+}
+
+export type MixFailReason = 'same_colors' | 'no_recipe' | null;
+
 export function useColorMixer() {
   const [unlockedColors, setUnlockedColors] = useState<ColorId[]>(PRIMARY_COLORS);
   const [discoveredRecipes, setDiscoveredRecipes] = useState<Set<string>>(new Set());
   const [mixingZone, setMixingZone] = useState<MixingZoneState>(EMPTY_ZONE);
   const [newDiscovery, setNewDiscovery] = useState<ColorId | null>(null);
+  const [mixFailed, setMixFailed] = useState<MixFailReason>(null);
   const mixTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const addColorToZone = useCallback((colorId: ColorId) => {
+    setMixFailed(null);
     setMixingZone((prev) => {
       if (prev.isMixing) return prev;
       if (prev.resultColor) return prev;
@@ -57,6 +65,7 @@ export function useColorMixer() {
       clearTimeout(mixTimeoutRef.current);
     }
     setMixingZone(EMPTY_ZONE);
+    setMixFailed(null);
   }, []);
 
   const mixColors = useCallback(() => {
@@ -64,8 +73,6 @@ export function useColorMixer() {
       if (prev.isMixing || prev.colorsInZone.length < 2) return prev;
 
       const recipe = findRecipe(prev.colorsInZone);
-
-      // Start mixing animation
       const updated: MixingZoneState = { ...prev, isMixing: true };
 
       mixTimeoutRef.current = setTimeout(() => {
@@ -80,18 +87,18 @@ export function useColorMixer() {
           }
 
           setDiscoveredRecipes((curr) => new Set(curr).add(recipeKey));
+          setMixFailed(null);
           setMixingZone({
             colorsInZone: [],
             isMixing: false,
             resultColor: resultId,
           });
         } else {
-          // No recipe found — show brown-ish "muddy" result or just clear
-          setMixingZone({
-            colorsInZone: [],
-            isMixing: false,
-            resultColor: null,
-          });
+          const reason: MixFailReason = allSameColor(prev.colorsInZone)
+            ? 'same_colors'
+            : 'no_recipe';
+          setMixFailed(reason);
+          setMixingZone(EMPTY_ZONE);
         }
       }, TIMING.MIX_ANIMATION_DURATION);
 
@@ -114,19 +121,17 @@ export function useColorMixer() {
   );
 
   return {
-    // State
     unlockedColors,
     mixingZone,
     newDiscovery,
     discoveredRecipes,
+    mixFailed,
 
-    // Actions
     addColorToZone,
     clearZone,
     mixColors,
     acknowledgeDiscovery,
 
-    // Helpers
     isColorUnlocked,
     getDiscoveredColors,
   };
