@@ -31,12 +31,20 @@ src/
 │   ├── registry.ts         # registerGame / getAllGames / getGame
 │   ├── index.ts            # Side-effect imports that register each game
 │   ├── _template/          # Copy this to start a new game
-│   └── example/            # Minimal working example game
+│   ├── simple-pairs/       # Memory matching card game
+│   └── color-mixer/        # Color theory mixing game
 ├── hooks/                  # Shared hooks
 └── utils/                  # Shared helpers
 ```
 
 **Flow:** `App.tsx` imports `src/games/index.ts` (triggers all game registrations) → `HomeScreen` calls `getAllGames()` to render the grid → tapping a card navigates to `GamePlayerScreen` which loads the game component by id.
+
+## Games
+
+| Game | Ages | Theme | Description |
+|------|------|-------|-------------|
+| **Simple Pairs** | 2-5 | Memory | Find matching pairs of cards with difficulty levels |
+| **Color Mixer** | 4-8 | Color theory | Drag and mix paint colors to discover new ones |
 
 ## Adding a New Game
 
