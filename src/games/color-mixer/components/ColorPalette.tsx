@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Animated, PanResponder, StyleSheet, Text, View } from 'react-native';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
@@ -97,9 +97,6 @@ function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd }: PaletteSlo
     </View>
   );
 }
-
-// Inline draggable that lives within the palette slot (no absolute positioning needed)
-import { Animated, PanResponder } from 'react-native';
 
 type DraggableSlotBlobProps = {
   colorId: ColorId;
