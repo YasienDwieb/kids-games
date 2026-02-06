@@ -16,15 +16,16 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 
 ## Architecture
 
-**Entry flow:** `index.ts` → `App.tsx` (registers root component via Expo)
+**Entry flow:** `index.ts` → `App.tsx` → `NavigationContainer` → `RootNavigator`
 
 **`src/` structure follows a modular game pattern:**
 
-- `app/navigation/` — React Navigation setup (native-stack navigator)
+- `app/navigation/` — React Navigation setup; `RootNavigator` uses native-stack with hidden headers, screens: `Home`, `GamePlayer`
 - `games/` — each game is a self-contained folder with its own `index.tsx` (entry), `config.ts` (metadata: name, icon, age range), `components/`, `hooks/`, and `assets/`
 - `games/_template/` — copy this folder to scaffold a new game
-- `screens/` — app-level screens (home, settings — not game screens)
-- `components/common/` and `components/layout/` — shared UI (buttons, cards, headers, containers)
+- `screens/` — `HomeScreen` (game list landing), `GamePlayerScreen` (loads game by `gameId` from registry)
+- `components/common/` — reusable child-friendly UI: `BigButton` (animated press, 80px), `GameCard` (120x120, emoji+name), `BackButton` (absolute top-left, semi-transparent), `SafeContainer` (SafeAreaView wrapper)
+- `components/layout/` — layout wrappers (placeholder)
 - `constants/` — `COLORS`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES` (child-friendly design tokens)
 - `types/` — shared TypeScript definitions (see below)
 - `hooks/` — shared hooks
