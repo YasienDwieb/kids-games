@@ -1,1 +1,1 @@
-// Color Mixer hooks
+export { useColorMixer } from './useColorMixer';
