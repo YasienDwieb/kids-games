@@ -1,1 +1,2 @@
-// Color Mixer components
+export { ColorBlob } from './ColorBlob';
+export { ColorLabel } from './ColorLabel';
