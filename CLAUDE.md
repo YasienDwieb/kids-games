@@ -26,11 +26,18 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 - `screens/` — app-level screens (home, settings — not game screens)
 - `components/common/` and `components/layout/` — shared UI (buttons, cards, headers, containers)
 - `constants/` — colors, dimensions, app config
-- `types/` — shared TypeScript definitions
+- `types/` — shared TypeScript definitions (see below)
 - `hooks/` — shared hooks
 - `utils/` — shared helpers
 
-**Adding a new game:** copy `src/games/_template/` to `src/games/<game-name>/`, implement the game entry in `index.tsx`, and fill in `config.ts` with game metadata.
+**Core types (`src/types/index.ts`):**
+
+- `GameConfig` — metadata + component for a game module (id, name, description, icon, ageRange, component, backgroundColor)
+- `GameRegistry` — `Record<string, GameConfig>`, the central registry all games register into
+- `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`
+- `ChildProfile` — player profile (for future use)
+
+**Adding a new game:** copy `src/games/_template/` to `src/games/<game-name>/`, implement the game component, and register it as a `GameConfig` in the game registry. Navigation routes to games via `GamePlayer` screen with a `gameId` param.
 
 ## Key Dependencies
 
