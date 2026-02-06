@@ -1,1 +1,1 @@
-export {};
+export { useGameState } from './useGameState';

@@ -1,1 +1,1 @@
-export {};
+export { GameArea } from './GameArea';
