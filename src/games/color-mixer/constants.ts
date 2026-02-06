@@ -101,4 +101,21 @@ export const TIMING = {
   COLOR_SPAWN_DELAY: 200,
 };
 
+export const ALL_COLOR_IDS: ColorId[] = Object.keys(COLORS) as ColorId[];
+
+export const COLOR_GROUPS: { title: string; colors: ColorId[] }[] = [
+  { title: 'Primary Colors', colors: ['red', 'yellow', 'blue', 'white', 'black'] },
+  { title: 'Secondary Colors', colors: ['orange', 'green', 'purple'] },
+  { title: 'Special Colors', colors: ['pink', 'lightBlue', 'brown'] },
+];
+
+export const DISCOVERY_HINTS: Partial<Record<ColorId, string>> = {
+  orange: 'Mix two warm colors',
+  green: 'Mix a warm and a cool color',
+  purple: 'Mix two bold colors',
+  brown: 'Mix all three primary colors',
+  pink: 'Add white to a warm color',
+  lightBlue: 'Add white to a cool color',
+};
+
 export const GAME_BG = '#F5F5F5';
