@@ -25,7 +25,7 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 - `games/_template/` — copy this folder to scaffold a new game
 - `screens/` — app-level screens (home, settings — not game screens)
 - `components/common/` and `components/layout/` — shared UI (buttons, cards, headers, containers)
-- `constants/` — colors, dimensions, app config
+- `constants/` — `COLORS`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES` (child-friendly design tokens)
 - `types/` — shared TypeScript definitions (see below)
 - `hooks/` — shared hooks
 - `utils/` — shared helpers
@@ -37,7 +37,15 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 - `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`
 - `ChildProfile` — player profile (for future use)
 
-**Adding a new game:** copy `src/games/_template/` to `src/games/<game-name>/`, implement the game component, and register it as a `GameConfig` in the game registry. Navigation routes to games via `GamePlayer` screen with a `gameId` param.
+**Game registry (`src/games/registry.ts`):**
+
+- `registerGame(config)` — adds a `GameConfig` to the central registry
+- `getGame(id)` / `getAllGames()` / `getGamesForAge(age)` — query helpers
+- Games self-register: each game's `config.ts` calls `registerGame()`, then is imported in `src/games/index.ts`
+
+**Adding a new game:** copy `src/games/_template/` to `src/games/<game-name>/`, update `config.ts` with unique id/metadata and call `registerGame()`, then import the config in `src/games/index.ts`. See `src/games/_template/README.md` for full checklist. Navigation routes to games via `GamePlayer` screen with a `gameId` param.
+
+**Template (`src/games/_template/`)** includes: root component (`index.tsx`), `GameArea` container component, `useGameState` hook (isPlaying/score/start/pause/reset), and example config.
 
 ## Key Dependencies
 
