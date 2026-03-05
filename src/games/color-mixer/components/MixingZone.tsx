@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { ColorBlob } from './ColorBlob';
-import { COLORS, TIMING } from '../constants';
+import { DraggableResult } from './DraggableResult';
+import { COLORS, DIMENSIONS, TIMING } from '../constants';
 import type { ColorId } from '../types';
 
 type MixingZoneProps = {
@@ -10,6 +11,9 @@ type MixingZoneProps = {
   resultColor: ColorId | null;
   isMixing: boolean;
   onLayout: (position: { x: number; y: number; width: number; height: number }) => void;
+  currentMixHex?: string | null;
+  onResultDragEnd?: (position: { x: number; y: number }) => void;
+  showDraggableResult?: boolean;
 };
 
 export function MixingZone({
@@ -18,6 +22,9 @@ export function MixingZone({
   resultColor,
   isMixing,
   onLayout,
+  currentMixHex,
+  onResultDragEnd,
+  showDraggableResult = true,
 }: MixingZoneProps) {
   const spinAnim = useRef(new Animated.Value(0)).current;
   const resultScaleAnim = useRef(new Animated.Value(0)).current;
@@ -36,7 +43,7 @@ export function MixingZone({
   }, [isMixing, spinAnim]);
 
   useEffect(() => {
-    if (resultColor) {
+    if (resultColor || currentMixHex) {
       resultScaleAnim.setValue(0);
       resultOpacity.setValue(0);
       Animated.parallel([
@@ -56,7 +63,7 @@ export function MixingZone({
       resultScaleAnim.setValue(0);
       resultOpacity.setValue(0);
     }
-  }, [resultColor, resultScaleAnim, resultOpacity]);
+  }, [resultColor, currentMixHex, resultScaleAnim, resultOpacity]);
 
   const spin = spinAnim.interpolate({
     inputRange: [0, 1],
@@ -65,7 +72,8 @@ export function MixingZone({
 
   const blobSize = size * 0.35;
   const hasColors = colorsInZone.length > 0;
-  const showResult = resultColor && !isMixing;
+  const showResult = (resultColor || currentMixHex) && !isMixing;
+  const displayHex = currentMixHex || (resultColor ? COLORS[resultColor].hex : null);
 
   const handleLayout = () => {
     viewRef.current?.measure((_x, _y, width, height, pageX, pageY) => {
@@ -112,6 +120,7 @@ export function MixingZone({
               key={`${colorId}-${i}`}
               style={[
                 styles.ingredientBlob,
+                { backgroundColor: 'transparent' },
                 getIngredientPosition(i, colorsInZone.length, size),
                 isMixing && { opacity: spinAnim.interpolate({
                   inputRange: [0, 0.7, 1],
@@ -129,7 +138,7 @@ export function MixingZone({
       )}
 
       {/* Result display */}
-      {showResult && (
+      {showResult && displayHex && (
         <Animated.View
           style={[
             styles.resultContainer,
@@ -139,14 +148,18 @@ export function MixingZone({
             },
           ]}
         >
-          <ColorBlob
-            color={COLORS[resultColor].hex}
-            size={size * 0.55}
-            showShine
-          />
-          <Text style={styles.resultText}>
-            {COLORS[resultColor].name}!
-          </Text>
+          {showDraggableResult ? (
+            <DraggableResult
+              hex={displayHex}
+              size={DIMENSIONS.RESULT_BLOB_SIZE}
+              onDragEnd={onResultDragEnd}
+            />
+          ) : (
+            <ColorBlob color={displayHex} size={DIMENSIONS.RESULT_BLOB_SIZE} showShine />
+          )}
+          {resultColor && !currentMixHex && (
+            <Text style={styles.resultText}>{COLORS[resultColor].name}!</Text>
+          )}
         </Animated.View>
       )}
     </View>
@@ -190,7 +203,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   zoneActive: {
     borderColor: 'rgba(0, 0, 0, 0.3)',
@@ -216,6 +229,7 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   ingredientBlob: {
     position: 'absolute',
@@ -230,6 +244,7 @@ const styles = StyleSheet.create({
   resultContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'transparent',
   },
   resultText: {
     marginTop: 8,

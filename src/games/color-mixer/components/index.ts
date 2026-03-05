@@ -9,3 +9,5 @@ export { Sparkles } from './Sparkles';
 export { ChallengeCard } from './ChallengeCard';
 export { ChallengeMode } from './ChallengeMode';
 export { ChallengePicker } from './ChallengePicker';
+export { DraggableResult } from './DraggableResult';
+export { ColorNamingDialog } from './ColorNamingDialog';

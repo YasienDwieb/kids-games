@@ -1,15 +1,18 @@
-import { useCallback, useRef } from 'react';
-import { Animated, PanResponder, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useRef } from 'react';
+import { Animated, PanResponder, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
-import type { ColorId } from '../types';
+import type { ColorId, SavedColor } from '../types';
 
 type ColorPaletteProps = {
   availableColors: ColorId[];
   onColorDragStart: (colorId: ColorId, instanceId: string) => void;
   onColorDragMove: (instanceId: string, position: { x: number; y: number }) => void;
   onColorDragEnd: (instanceId: string, position: { x: number; y: number }) => void;
+  savedColors?: SavedColor[];
+  onSavedColorDragEnd?: (savedColor: SavedColor, position: { x: number; y: number }) => void;
+  paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
 };
 
 export function ColorPalette({
@@ -17,6 +20,9 @@ export function ColorPalette({
   onColorDragStart,
   onColorDragMove,
   onColorDragEnd,
+  savedColors = [],
+  onSavedColorDragEnd,
+  paletteItemPositions,
 }: ColorPaletteProps) {
   return (
     <View style={styles.container}>
@@ -31,9 +37,30 @@ export function ColorPalette({
               onDragStart={onColorDragStart}
               onDragMove={onColorDragMove}
               onDragEnd={onColorDragEnd}
+              paletteItemPositions={paletteItemPositions}
             />
           ))}
         </View>
+
+        {savedColors.length > 0 && (
+          <>
+            <Text style={[styles.title, styles.savedTitle]}>My Colors</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.savedRow}
+            >
+              {savedColors.map((saved) => (
+                <SavedPaletteSlot
+                  key={saved.id}
+                  saved={saved}
+                  onDragEnd={(pos) => onSavedColorDragEnd?.(saved, pos)}
+                  paletteItemPositions={paletteItemPositions}
+                />
+              ))}
+            </ScrollView>
+          </>
+        )}
       </View>
     </View>
   );
@@ -44,20 +71,22 @@ type PaletteSlotProps = {
   onDragStart: (colorId: ColorId, instanceId: string) => void;
   onDragMove: (instanceId: string, position: { x: number; y: number }) => void;
   onDragEnd: (instanceId: string, position: { x: number; y: number }) => void;
+  paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
 };
 
-function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd }: PaletteSlotProps) {
+function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemPositions }: PaletteSlotProps) {
   const slotRef = useRef<View>(null);
   const slotPosition = useRef({ x: 0, y: 0 });
   const instanceCounter = useRef(0);
 
   const measureSlot = useCallback(() => {
-    slotRef.current?.measure((_x, _y, _w, _h, pageX, pageY) => {
+    slotRef.current?.measure((_x, _y, w, h, pageX, pageY) => {
       if (pageX !== undefined) {
         slotPosition.current = { x: pageX, y: pageY };
+        paletteItemPositions?.current.set(colorId, { x: pageX, y: pageY, width: w, height: h });
       }
     });
-  }, []);
+  }, [colorId, paletteItemPositions]);
 
   const handleDragStart = useCallback((instanceId: string) => {
     onDragStart(colorId, instanceId);
@@ -99,7 +128,8 @@ function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd }: PaletteSlo
 }
 
 type DraggableSlotBlobProps = {
-  colorId: ColorId;
+  colorId?: ColorId;
+  colorHex?: string;
   instanceId: string;
   size: number;
   onDragStart: (instanceId: string) => void;
@@ -109,6 +139,7 @@ type DraggableSlotBlobProps = {
 
 function DraggableSlotBlob({
   colorId,
+  colorHex,
   instanceId,
   size,
   onDragStart,
@@ -158,7 +189,7 @@ function DraggableSlotBlob({
     }),
   ).current;
 
-  const colorData = COLORS[colorId];
+  const hex = colorHex ?? (colorId ? COLORS[colorId].hex : '#000000');
 
   return (
     <Animated.View
@@ -171,8 +202,53 @@ function DraggableSlotBlob({
         ],
       }}
     >
-      <ColorBlob color={colorData.hex} size={size} showShine />
+      <ColorBlob color={hex} size={size} showShine />
     </Animated.View>
+  );
+}
+
+type SavedPaletteSlotProps = {
+  saved: SavedColor;
+  onDragEnd: (position: { x: number; y: number }) => void;
+  paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
+};
+
+function SavedPaletteSlot({ saved, onDragEnd, paletteItemPositions }: SavedPaletteSlotProps) {
+  const slotRef = useRef<View>(null);
+  const slotPosition = useRef({ x: 0, y: 0 });
+
+  const measureSlot = useCallback(() => {
+    slotRef.current?.measure((_x, _y, w, h, pageX, pageY) => {
+      if (pageX !== undefined) {
+        slotPosition.current = { x: pageX, y: pageY };
+        paletteItemPositions?.current.set(saved.id, { x: pageX, y: pageY, width: w, height: h });
+      }
+    });
+  }, [saved.id, paletteItemPositions]);
+
+  const handleDragEnd = useCallback((_instanceId: string, localPos: { x: number; y: number }) => {
+    onDragEnd({
+      x: slotPosition.current.x + localPos.x,
+      y: slotPosition.current.y + localPos.y,
+    });
+  }, [onDragEnd]);
+
+  const size = DIMENSIONS.PALETTE_ITEM_SIZE;
+
+  return (
+    <View ref={slotRef} onLayout={measureSlot} style={styles.slot}>
+      <View style={styles.slotDraggableArea}>
+        <DraggableSlotBlob
+          colorHex={saved.hex}
+          instanceId={saved.id}
+          size={size}
+          onDragStart={() => {}}
+          onDragMove={() => {}}
+          onDragEnd={handleDragEnd}
+        />
+      </View>
+      <ColorLabel name={saved.name} />
+    </View>
   );
 }
 
@@ -216,6 +292,15 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: 12,
+    overflow: 'visible',
+  },
+  savedTitle: {
+    marginTop: 10,
+  },
+  savedRow: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 4,
     overflow: 'visible',
   },
   slot: {

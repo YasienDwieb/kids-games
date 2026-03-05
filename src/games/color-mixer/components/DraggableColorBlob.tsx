@@ -5,7 +5,8 @@ import { COLORS, DIMENSIONS } from '../constants';
 import type { ColorId } from '../types';
 
 type DraggableColorBlobProps = {
-  colorId: ColorId;
+  colorId?: ColorId;
+  colorHex?: string;
   instanceId: string;
   initialPosition: { x: number; y: number };
   onDragStart: (instanceId: string) => void;
@@ -16,6 +17,7 @@ type DraggableColorBlobProps = {
 
 export function DraggableColorBlob({
   colorId,
+  colorHex,
   instanceId,
   initialPosition,
   onDragStart,
@@ -79,14 +81,14 @@ export function DraggableColorBlob({
     }),
   ).current;
 
-  const colorData = COLORS[colorId];
+  const hex = colorHex ?? (colorId ? COLORS[colorId].hex : '#000000');
   const size = DIMENSIONS.COLOR_BLOB_SIZE;
 
   return (
     <View style={[styles.container, { left: initialPosition.x, top: initialPosition.y }]}>
       {/* Ghost blob at original position */}
       <View style={styles.ghost}>
-        <ColorBlob color={colorData.hex} size={size} showShine={false} />
+        <ColorBlob color={hex} size={size} showShine={false} />
       </View>
 
       {/* Draggable blob */}
@@ -102,7 +104,7 @@ export function DraggableColorBlob({
           },
         ]}
       >
-        <ColorBlob color={colorData.hex} size={size} showShine />
+        <ColorBlob color={hex} size={size} showShine />
       </Animated.View>
     </View>
   );

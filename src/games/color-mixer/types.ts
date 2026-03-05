@@ -49,6 +49,31 @@ export type Challenge = {
 
 export type GameMode = 'freeplay' | 'challenge';
 
+export interface DynamicColor {
+  hex: string;
+  name?: string;
+  rgb: { r: number; g: number; b: number };
+}
+
+export interface SavedColor extends DynamicColor {
+  id: string;
+  name: string;
+  createdAt: number;
+  recipe?: string[];
+}
+
+export interface ExtendedMixingZone {
+  currentColor: DynamicColor | null;
+  mixHistory: string[];
+  colorsInZone: ColorId[];
+  isMixing: boolean;
+}
+
+export interface ExtendedGameState extends GameState {
+  savedColors: SavedColor[];
+  extendedMixingZone: ExtendedMixingZone;
+}
+
 export type GameState = {
   mode: GameMode;
   unlockedColors: ColorId[];

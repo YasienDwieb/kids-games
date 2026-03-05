@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BigButton } from '../../components/common';
 import {
   ColorPalette,
   MixingZone,
@@ -11,13 +10,8 @@ import {
   ChallengePicker,
 } from './components';
 import { useColorMixer, useChallengeMode } from './hooks';
-import { DIMENSIONS, GAME_BG } from './constants';
-import type { ColorId, GameMode } from './types';
-
-const MIX_FAIL_MESSAGES = {
-  same_colors: 'Try mixing different colors!',
-  no_recipe: "Hmm, that didn't work. Try another combination!",
-} as const;
+import { COLORS, DIMENSIONS, GAME_BG } from './constants';
+import type { ColorId, GameMode, SavedColor } from './types';
 
 export default function ColorMixerGame() {
   const mixer = useColorMixer();
@@ -28,6 +22,7 @@ export default function ColorMixerGame() {
   const [showChallengePicker, setShowChallengePicker] = useState(false);
 
   const zoneRect = useRef({ x: 0, y: 0, width: 0, height: 0 });
+  const palettePositions = useRef<Map<string, { x: number; y: number; width: number; height: number }>>(new Map());
 
   const handleZoneLayout = useCallback(
     (pos: { x: number; y: number; width: number; height: number }) => {
@@ -58,20 +53,53 @@ export default function ColorMixerGame() {
   const handleDragEnd = useCallback(
     (_instanceId: string, pos: { x: number; y: number }) => {
       if (dragColorRef.current && isInsideZone(pos)) {
+        if (mixer.mixingZone.resultColor) {
+          mixer.clearZone();
+        }
         mixer.addColorToZone(dragColorRef.current);
+        mixer.addColorToContinuousMix(COLORS[dragColorRef.current].hex);
       }
       dragColorRef.current = null;
     },
-    [isInsideZone, mixer.addColorToZone],
+    [isInsideZone, mixer.mixingZone.resultColor, mixer.clearZone, mixer.addColorToZone, mixer.addColorToContinuousMix],
   );
 
-  const handleMix = useCallback(() => {
-    mixer.mixColors();
-  }, [mixer.mixColors]);
+  const handleSavedColorDragEnd = useCallback(
+    (saved: SavedColor, pos: { x: number; y: number }) => {
+      if (isInsideZone(pos)) {
+        mixer.addColorToContinuousMix(saved.hex);
+      }
+    },
+    [isInsideZone, mixer.addColorToContinuousMix],
+  );
 
-  const handleClearZone = useCallback(() => {
-    mixer.clearZone();
-  }, [mixer.clearZone]);
+  const isPositionInBounds = useCallback(
+    (
+      pos: { x: number; y: number },
+      bounds: { x: number; y: number; width: number; height: number },
+    ) =>
+      pos.x >= bounds.x &&
+      pos.x <= bounds.x + bounds.width &&
+      pos.y >= bounds.y &&
+      pos.y <= bounds.y + bounds.height,
+    [],
+  );
+
+  const handleResultDragEnd = useCallback(
+    (pos: { x: number; y: number }) => {
+      for (const [id, bounds] of palettePositions.current.entries()) {
+        if (isPositionInBounds(pos, bounds)) {
+          const targetHex =
+            COLORS[id as ColorId]?.hex ?? mixer.savedColors.find((s) => s.id === id)?.hex;
+          if (targetHex) {
+            mixer.addColorToContinuousMix(targetHex);
+          }
+          return;
+        }
+      }
+    },
+    [isPositionInBounds, mixer.savedColors, mixer.addColorToContinuousMix],
+  );
 
   const handleChallengeComplete = useCallback(() => {
     challenge.markChallengeComplete();
@@ -82,6 +110,7 @@ export default function ColorMixerGame() {
     (newMode: GameMode) => {
       setMode(newMode);
       mixer.clearZone();
+      mixer.clearContinuousMix();
       if (newMode === 'challenge') {
         setShowChallengePicker(true);
         challenge.clearChallenge();
@@ -90,14 +119,8 @@ export default function ColorMixerGame() {
         challenge.clearChallenge();
       }
     },
-    [mixer.clearZone, challenge.clearChallenge],
+    [mixer.clearZone, mixer.clearContinuousMix, challenge.clearChallenge],
   );
-
-  const showMixButton =
-    mixer.mixingZone.colorsInZone.length >= 2 && !mixer.mixingZone.isMixing;
-  const showClearButton =
-    (mixer.mixingZone.colorsInZone.length > 0 || mixer.mixingZone.resultColor) &&
-    !mixer.mixingZone.isMixing;
 
   if (mode === 'challenge' && showChallengePicker) {
     return (
@@ -108,6 +131,7 @@ export default function ColorMixerGame() {
           onSelectChallenge={(c) => {
             challenge.selectChallenge(c);
             mixer.clearZone();
+            mixer.clearContinuousMix();
             setShowChallengePicker(false);
           }}
           onBack={() => handleSwitchMode('freeplay')}
@@ -168,25 +192,28 @@ export default function ColorMixerGame() {
             resultColor={mixer.mixingZone.resultColor}
             isMixing={mixer.mixingZone.isMixing}
             onLayout={handleZoneLayout}
+            currentMixHex={mixer.currentMixHex}
+            onResultDragEnd={handleResultDragEnd}
+            showDraggableResult={true}
           />
         </View>
 
-        {/* Mix failure feedback */}
-        {mixer.mixFailed && (
-          <View style={styles.failFeedback}>
-            <Text style={styles.failText}>{MIX_FAIL_MESSAGES[mixer.mixFailed]}</Text>
-          </View>
-        )}
-
-        {/* Action buttons */}
+        {/* Continuous mix action buttons */}
         <View style={styles.actions}>
-          {showMixButton && (
-            <BigButton title="Mix!" onPress={handleMix} color="#4CAF50" />
+          {mixer.canUndo && (
+            <TouchableOpacity style={styles.actionButton} onPress={mixer.undoLastMix}>
+              <Text style={styles.actionIcon}>↩️</Text>
+              <Text style={styles.actionLabel}>Undo</Text>
+            </TouchableOpacity>
           )}
-          {showClearButton && (
-            <Pressable onPress={handleClearZone} style={styles.clearButton}>
-              <Text style={styles.clearText}>Clear</Text>
-            </Pressable>
+          {mixer.currentMixHex && (
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => { mixer.clearZone(); mixer.clearContinuousMix(); }}
+            >
+              <Text style={styles.actionIcon}>🗑️</Text>
+              <Text style={styles.actionLabel}>Clear</Text>
+            </TouchableOpacity>
           )}
         </View>
 
@@ -197,6 +224,9 @@ export default function ColorMixerGame() {
             onColorDragStart={handleDragStart}
             onColorDragMove={handleDragMove}
             onColorDragEnd={handleDragEnd}
+            savedColors={mixer.savedColors}
+            onSavedColorDragEnd={handleSavedColorDragEnd}
+            paletteItemPositions={palettePositions}
           />
         </View>
       </View>
@@ -286,39 +316,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  failFeedback: {
-    alignSelf: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    backgroundColor: '#FFF3E0',
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  failText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#E65100',
-    textAlign: 'center',
-  },
   actions: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
     paddingHorizontal: 20,
     paddingBottom: 12,
     minHeight: 56,
   },
-  clearButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+  actionButton: {
+    alignItems: 'center',
+    padding: 8,
   },
-  clearText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#757575',
+  actionIcon: {
+    fontSize: 24,
+  },
+  actionLabel: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
   },
   paletteContainer: {
     zIndex: 10,

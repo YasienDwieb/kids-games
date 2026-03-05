@@ -93,6 +93,7 @@ export const DIMENSIONS = {
   COLOR_BLOB_SIZE: 70,
   MIXING_ZONE_SIZE: 180,
   PALETTE_ITEM_SIZE: 60,
+  RESULT_BLOB_SIZE: 100,
 };
 
 export const TIMING = {

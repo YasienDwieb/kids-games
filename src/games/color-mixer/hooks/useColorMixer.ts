@@ -1,6 +1,10 @@
-import { useCallback, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { COLORS, COLOR_RECIPES, TIMING } from '../constants';
-import type { ColorId, ColorData, ColorRecipe } from '../types';
+import type { ColorId, ColorData, ColorRecipe, SavedColor } from '../types';
+import { addColorToMix, hexToRgb } from '../utils';
+
+const SAVED_COLORS_KEY = 'colorMixer_savedColors';
 
 const PRIMARY_COLORS: ColorId[] = (Object.keys(COLORS) as ColorId[]).filter(
   (id) => COLORS[id].isPrimary,
@@ -48,6 +52,19 @@ export function useColorMixer() {
   const [newDiscovery, setNewDiscovery] = useState<ColorId | null>(null);
   const [mixFailed, setMixFailed] = useState<MixFailReason>(null);
   const mixTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const [currentMixHex, setCurrentMixHex] = useState<string | null>(null);
+  const [mixHistory, setMixHistory] = useState<string[]>([]);
+  const currentMixHexRef = useRef<string | null>(null);
+  const [savedColors, setSavedColors] = useState<SavedColor[]>([]);
+
+  useEffect(() => {
+    AsyncStorage.getItem(SAVED_COLORS_KEY)
+      .then((stored) => {
+        if (stored) setSavedColors(JSON.parse(stored));
+      })
+      .catch((error) => console.error('Failed to load saved colors:', error));
+  }, []);
 
   const addColorToZone = useCallback((colorId: ColorId) => {
     setMixFailed(null);
@@ -106,6 +123,70 @@ export function useColorMixer() {
     });
   }, [unlockedColors]);
 
+  const addColorToContinuousMix = useCallback((colorHex: string) => {
+    const current = currentMixHexRef.current;
+    if (!current) {
+      currentMixHexRef.current = colorHex;
+      setCurrentMixHex(colorHex);
+      setMixHistory([]);
+    } else {
+      const blended = addColorToMix(current, colorHex, 0.5);
+      currentMixHexRef.current = blended;
+      setMixHistory((prev) => [...prev, current]);
+      setCurrentMixHex(blended);
+    }
+  }, []);
+
+  const undoLastMix = useCallback(() => {
+    setMixHistory((prev) => {
+      const previous = prev.length > 0 ? prev[prev.length - 1] : null;
+      currentMixHexRef.current = previous;
+      setCurrentMixHex(previous);
+      return prev.slice(0, -1);
+    });
+  }, []);
+
+  const clearContinuousMix = useCallback(() => {
+    currentMixHexRef.current = null;
+    setCurrentMixHex(null);
+    setMixHistory([]);
+  }, []);
+
+  const saveCurrentMix = useCallback(
+    async (name: string) => {
+      const hex = currentMixHexRef.current;
+      if (!hex) return;
+      const newSavedColor: SavedColor = {
+        id: `saved_${Date.now()}`,
+        hex,
+        name,
+        rgb: hexToRgb(hex),
+        createdAt: Date.now(),
+      };
+      setSavedColors((prev) => {
+        const updated = [...prev, newSavedColor];
+        AsyncStorage.setItem(SAVED_COLORS_KEY, JSON.stringify(updated)).catch((error) =>
+          console.error('Failed to save colors:', error),
+        );
+        return updated;
+      });
+    },
+    [],
+  );
+
+  const deleteSavedColor = useCallback(
+    async (id: string) => {
+      const updated = savedColors.filter((c) => c.id !== id);
+      setSavedColors(updated);
+      try {
+        await AsyncStorage.setItem(SAVED_COLORS_KEY, JSON.stringify(updated));
+      } catch (error) {
+        console.error('Failed to delete color:', error);
+      }
+    },
+    [savedColors],
+  );
+
   const acknowledgeDiscovery = useCallback(() => {
     setNewDiscovery(null);
   }, []);
@@ -134,5 +215,16 @@ export function useColorMixer() {
 
     isColorUnlocked,
     getDiscoveredColors,
+
+    currentMixHex,
+    mixHistory,
+    canUndo: mixHistory.length > 0,
+    addColorToContinuousMix,
+    undoLastMix,
+    clearContinuousMix,
+
+    savedColors,
+    saveCurrentMix,
+    deleteSavedColor,
   };
 }
