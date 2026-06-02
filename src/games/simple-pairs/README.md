@@ -31,8 +31,7 @@ simple-pairs/
 │   ├── MatchCelebration.tsx  # Brief sparkle overlay on match
 │   └── WinScreen.tsx         # Full overlay with stars + play again
 ├── hooks/
-│   ├── useSimplePairs.ts     # Core game state machine
-│   └── useGameSounds.ts      # expo-av sound playback
+│   └── useSimplePairs.ts     # Core game state machine
 ├── utils/
 │   └── shuffle.ts            # Fisher-Yates shuffle
 ├── types.ts                  # Card, GameState, Difficulty
@@ -55,7 +54,7 @@ simple-pairs/
 
 ## Sound Effects
 
-Uses `expo-av` with shared asset files in `src/games/assets/`. Sounds are loaded lazily on first play and reused via `replayAsync()`. Missing files gracefully no-op.
+Uses `useSound` from `@/sdk`. Sounds are played by intent string — `play('pop')` on card flip, `play('success')` on match, `play('wrong')` on mismatch, `play('win')` on game complete. The SDK maps intents to shared audio assets in `src/sdk/assets/`, respects the user's sound/haptics settings, and degrades gracefully if audio is unavailable.
 
 ## TODOs
 

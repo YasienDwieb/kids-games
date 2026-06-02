@@ -1,34 +1,35 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { DifficultySelect, GameBoard, GameHeader, MatchCelebration, WinScreen } from './components';
-import { useGameSounds, useSimplePairs } from './hooks';
+import { useSimplePairs } from './hooks';
+import { useSound } from '@/sdk';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from './constants';
 import type { Difficulty } from './types';
 
 function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: () => void }) {
   const { gameState, flipCard, resetGame } = useSimplePairs(difficulty);
-  const { playFlip, playMatch, playMismatch, playWin } = useGameSounds();
+  const { play } = useSound();
   const [showCelebration, setShowCelebration] = useState(false);
   const prevMatchedPairs = useRef(0);
   const prevMoves = useRef(0);
 
   useEffect(() => {
     if (gameState.matchedPairs > prevMatchedPairs.current) {
-      playMatch();
+      play('success');
       if (gameState.isComplete) {
-        playWin();
+        play('win');
       } else {
         setShowCelebration(true);
       }
     } else if (gameState.moves > prevMoves.current && gameState.matchedPairs === prevMatchedPairs.current) {
-      playMismatch();
+      play('wrong');
     }
     prevMatchedPairs.current = gameState.matchedPairs;
     prevMoves.current = gameState.moves;
-  }, [gameState.matchedPairs, gameState.moves, gameState.isComplete, playMatch, playMismatch, playWin]);
+  }, [gameState.matchedPairs, gameState.moves, gameState.isComplete, play]);
 
   const handleCardPress = (cardId: string) => {
-    playFlip();
+    play('pop');
     flipCard(cardId);
   };
 

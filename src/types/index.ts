@@ -1,18 +1,5 @@
-import type { ComponentType } from "react";
-
-/** Metadata and entry point for a single game module */
-export type GameConfig = {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  ageRange: { min: number; max: number };
-  component: ComponentType;
-  backgroundColor: string;
-};
-
-/** Map of game IDs to their configs — the central game registry */
-export type GameRegistry = Record<string, GameConfig>;
+// GameConfig and GameRegistry are defined in the SDK; re-export them here for backward compat.
+export type { GameConfig, GameRegistry } from '@/sdk/config/types';
 
 /** React Navigation root stack param list */
 export type RootStackParamList = {

@@ -1,4 +1,4 @@
-import { registerGame } from '../registry';
+import { registerGame } from '@/sdk';
 import ColorMixerGame from './index';
 
 registerGame({
@@ -9,4 +9,5 @@ registerGame({
   ageRange: { min: 4, max: 8 },
   component: ColorMixerGame,
   backgroundColor: '#F5F5F5',
+  layout: { mode: 'bare' },
 });

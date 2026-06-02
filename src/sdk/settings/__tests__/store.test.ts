@@ -1,0 +1,20 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { settingsStore, DEFAULT_SETTINGS } from '../store';
+
+describe('settingsStore', () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it('defaults to sound and haptics on, no band filter', async () => {
+    expect(await settingsStore.get()).toEqual(DEFAULT_SETTINGS);
+    expect(DEFAULT_SETTINGS.soundEnabled).toBe(true);
+    expect(DEFAULT_SETTINGS.hapticsEnabled).toBe(true);
+    expect(DEFAULT_SETTINGS.ageBand).toBeNull();
+  });
+
+  it('persists changes', async () => {
+    await settingsStore.set({ ...DEFAULT_SETTINGS, soundEnabled: false });
+    expect((await settingsStore.get()).soundEnabled).toBe(false);
+  });
+});
