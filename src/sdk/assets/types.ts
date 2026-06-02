@@ -5,5 +5,3 @@ export type AssetEntry = {
   type: AssetType;
   tags: string[];
 };
-
-export type AssetId = string;

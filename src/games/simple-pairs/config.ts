@@ -1,4 +1,4 @@
-import { registerGame } from '../registry';
+import { registerGame } from '@/sdk';
 import SimplePairsGame from './index';
 
 registerGame({

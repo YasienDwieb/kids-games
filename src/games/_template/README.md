@@ -1,5 +1,8 @@
 # Creating a New Game
 
+This template is the canonical starting point. Everything a game needs comes from
+the SDK barrel `@/sdk` — never import another game or reach into deep `src/` paths.
+
 ## Steps
 
 1. **Copy** the `_template/` folder to `src/games/<your-game-name>/`
@@ -7,21 +10,34 @@
    - Set a unique `id` (kebab-case, e.g. `color-match`)
    - Set `name`, `description`, `icon`, `ageRange`, `backgroundColor`
    - Point `component` to your game's root component
-   - Call `registerGame(yourConfig)` to register it
-3. **Build your game** in `index.tsx` using `GameArea` as the play surface
-4. **Add game-specific components** in `components/`
-5. **Add game-specific hooks** in `hooks/` (extend `useGameState` as needed)
+   - `registerGame()` (imported from `@/sdk`) validates the config on registration
+3. **Build your game** in `index.tsx`:
+   - Sounds: `const { play } = useSound();` then `play('pop' | 'success' | 'wrong' | 'win')`
+   - Overlays/score: `const shell = useGameShell();` then `shell.showOverlay('win', node)` / `shell.setScore(n)`
+   - Persistence: `const store = createStore('<your-game-name>', defaultValue);`
+   - Styling: `COLORS`, `SPACING`, `FONT_SIZES`, etc. — all from `@/sdk`
+4. **Choose a layout mode** in `config.ts`:
+   - Default (omit `layout`) — wrapped in `GameShell` (title bar, back button, overlay slots)
+   - `layout: { mode: 'bare' }` — full custom canvas; only an absolute back button is provided
+5. **Pick assets by intent**, not filename: `pickAsset('success')` / `findAssets({ type, tags })`.
+   To add an asset, drop the file in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts`.
 6. **Register** by importing your config in `src/games/index.ts`:
    ```ts
    import './<your-game-name>/config';
    ```
 
+See `src/games/HOW_TO_ADD_GAME.md` for the full guide, and the `kids-games-dev`
+skill for AI-assisted contribution.
+
 ## Checklist
 
 - [ ] Folder copied and renamed
-- [ ] `config.ts` updated with unique id and metadata
-- [ ] `registerGame()` called in `config.ts`
+- [ ] `config.ts` updated with unique kebab-case id and metadata
+- [ ] `registerGame()` (from `@/sdk`) called in `config.ts`
+- [ ] Game built using `@/sdk` (no deep imports, no cross-game imports)
+- [ ] Assets picked by intent via `pickAsset` / `findAssets`
+- [ ] Layout mode chosen (default shell or `bare`)
 - [ ] Game imported in `src/games/index.ts`
-- [ ] Game component renders without errors
-- [ ] Touch targets are at least 64px (use `TOUCH_TARGET.recommended`)
+- [ ] Touch targets at least 64px (`TOUCH_TARGET.recommended`)
 - [ ] Font sizes use `FONT_SIZES` constants (large enough for kids)
+- [ ] `npx tsc --noEmit` clean and `npm test` passing
