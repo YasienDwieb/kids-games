@@ -9,4 +9,5 @@ registerGame({
   ageRange: { min: 2, max: 5 },
   component: SimplePairsGame,
   backgroundColor: '#E8F5E9',
+  layout: { mode: 'bare' },
 });
