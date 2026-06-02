@@ -1,61 +1,28 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { GameArea } from './components/GameArea';
-import { useGameState } from './hooks/useGameState';
-import { COLORS, FONT_SIZES, SPACING } from '../../constants';
+import { StyleSheet, Text, View } from 'react-native';
+import { useSound, useGameShell, COLORS, FONT_SIZES } from '@/sdk';
 
 export default function TemplateGame() {
-  const { isPlaying, score, start, reset } = useGameState();
+  const { play } = useSound();
+  const shell = useGameShell();
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.backText}>← Back</Text>
-        <Text style={styles.scoreText}>Score: {score}</Text>
-      </View>
-
-      <GameArea>
-        <Text style={styles.title}>Template Game</Text>
-        <Text style={styles.subtitle}>
-          {isPlaying ? 'Game is running!' : 'Tap to start'}
-        </Text>
-      </GameArea>
+      <Text style={styles.text} onPress={() => play('pop')}>
+        Tap me — replace this with your game.
+      </Text>
+      <Text
+        style={styles.hint}
+        onPress={() => shell.showOverlay('win', <Text style={styles.win}>You win! 🎉</Text>)}
+      >
+        Show win overlay
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background.light,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.xxl,
-    paddingBottom: SPACING.md,
-  },
-  backText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text.secondary,
-  },
-  scoreText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text.primary,
-    fontWeight: 'bold',
-  },
-  title: {
-    fontSize: FONT_SIZES.title,
-    fontWeight: 'bold',
-    color: COLORS.text.primary,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-    marginTop: SPACING.md,
-  },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  text: { fontSize: FONT_SIZES.lg, color: COLORS.text.primary },
+  hint: { fontSize: FONT_SIZES.md, color: COLORS.text.secondary, marginTop: 16 },
+  win: { fontSize: FONT_SIZES.xl, color: COLORS.text.inverse },
 });

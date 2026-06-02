@@ -1,14 +1,14 @@
-import type { GameConfig } from '../../types';
+import { registerGame } from '@/sdk';
 import TemplateGame from './index';
 
-// Template config — copy this file and update all fields for your game.
-// Do NOT register this template; it's only a reference.
-export const templateConfig: GameConfig = {
-  id: 'template',                    // unique kebab-case identifier
-  name: 'Template Game',             // display name shown on home screen
-  description: 'A starting point for new games', // short description
-  icon: '🎮',                        // emoji shown on the game card
-  ageRange: { min: 2, max: 6 },      // target age range (inclusive)
-  component: TemplateGame,           // the root component for this game
-  backgroundColor: '#FFF9F0',        // card/background tint color
-};
+registerGame({
+  id: 'template-game',
+  name: 'Template Game',
+  description: 'Copy this folder to start a new game.',
+  icon: '🧩',
+  ageRange: { min: 3, max: 6 },
+  component: TemplateGame,
+  backgroundColor: '#FFF9F0',
+  tags: ['example'],
+  version: '1.0.0',
+});
