@@ -21,35 +21,63 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 **`src/` structure follows a modular game pattern:**
 
 - `app/navigation/` — React Navigation setup; `RootNavigator` uses native-stack with hidden headers, screens: `Home`, `GamePlayer`
-- `games/` — each game is a self-contained folder with its own `index.tsx` (entry), `config.ts` (metadata: name, icon, age range), `components/`, `hooks/`, and `assets/`
-- `games/_template/` — copy this folder to scaffold a new game
-- `games/example/` — minimal working example game demonstrating the registration + rendering flow
-- `screens/` — `HomeScreen` (2-column game grid with empty state), `GamePlayerScreen` (loads game by `gameId` from registry)
+- `games/` — each game is a self-contained folder with its own `index.tsx` (entry) and `config.ts` (metadata + `registerGame()` call); may also have `components/`, `hooks/`, `utils/`
+- `games/_template/` — copy this folder to scaffold a new game (not imported in `src/games/index.ts`; scaffold only)
+- `screens/` — `HomeScreen` (2-column game grid with empty state), `GamePlayerScreen` (loads game by `gameId` from registry; wraps in `GameShell` unless `layout.mode === 'bare'`)
 - `components/common/` — reusable child-friendly UI: `BigButton` (animated press, 80px), `GameCard` (120x120, emoji+name), `BackButton` (absolute top-left, semi-transparent), `SafeContainer` (SafeAreaView wrapper)
 - `components/layout/` — layout wrappers (placeholder)
-- `constants/` — `COLORS`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES` (child-friendly design tokens)
-- `types/` — shared TypeScript definitions (see below)
+- `constants/` — `COLORS`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES` (child-friendly design tokens; also re-exported from `@/sdk`)
+- `sdk/` — SDK platform core (see below)
+- `types/` — shared TypeScript definitions
 - `hooks/` — shared hooks
 - `utils/` — shared helpers
 
+**SDK platform core (`src/sdk/`) — the single import surface for games:**
+
+All games import exclusively from `@/sdk`. The SDK exports:
+- **Config & registry**: `registerGame`, `getGame`, `getAllGames`, `getGamesForAge`, `validateGameConfig`, `GameConfig` type, `GameRegistry` type
+- **Layout**: `GameShell` (title bar + back button + overlay slots), `GameOverlay`, `useGameShell()` hook → `{ setScore, showOverlay, hideOverlay }`, `GameShellApi`/`GameShellProps`/`OverlaySlot` types
+- **Audio**: `useSound()` → `{ play(intent, options?) }` — plays assets by intent string, respects settings/haptics; `PlayOptions` type
+- **Storage**: `createStore<T>(namespace, defaultValue)` → `Store<T>` with `get`/`set`/`subscribe`
+- **Settings**: `useSettings()` hook, `settingsStore`, `DEFAULT_SETTINGS`, `Settings` type (`soundEnabled`, `hapticsEnabled`, `ageBand`)
+- **Age**: `AGE_BANDS` (toddler 2–3, preschool 3–5, early 5–7, kids 7–10), `bandsForGame(config)`, `gamesForBand(bandId)`, `AgeBand` type
+- **Assets**: `ASSETS` manifest, `getAsset(id)`, `findAssets({ type?, tags? })`, `pickAsset(intent)`, `AssetId`/`AssetEntry`/`AssetType` types
+- **Design tokens**: `COLORS`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES`
+
+**Asset manifest + tag vocabulary (`src/sdk/assets/manifest.ts`):**
+
+Shared audio assets, referenced by intent string via `useSound().play(intent)`. Controlled tags:
+- `sfx.pop` — tags: `pop`, `flip`, `tap`, `ui`
+- `sfx.success` — tags: `success`, `match`, `reward`
+- `sfx.win` — tags: `win`, `celebration`, `complete`
+- `sfx.wrong` — tags: `wrong`, `mismatch`, `error`
+
+To add an asset: drop the file in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts`.
+
 **Core types (`src/types/index.ts`):**
 
-- `GameConfig` — metadata + component for a game module (id, name, description, icon, ageRange, component, backgroundColor)
-- `GameRegistry` — `Record<string, GameConfig>`, the central registry all games register into
 - `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`
 - `ChildProfile` — player profile (for future use)
 
-**Game registry (`src/games/registry.ts`):**
+`GameConfig` and `GameRegistry` are defined in `src/sdk/config/types.ts` and re-exported from `@/sdk`.
 
-- `registerGame(config)` — adds a `GameConfig` to the central registry
+**Game registry (`src/sdk/config/registry.ts`):**
+
+- `registerGame(config)` — validates then adds a `GameConfig` to the central registry
 - `getGame(id)` / `getAllGames()` / `getGamesForAge(age)` — query helpers
-- Games self-register: each game's `config.ts` calls `registerGame()`, then is imported in `src/games/index.ts`
+- Games self-register: each game's `config.ts` calls `registerGame()` (from `@/sdk`), then is imported in `src/games/index.ts`
 
-**Adding a new game:** copy `src/games/_template/` to `src/games/<game-name>/`, update `config.ts` with unique id/metadata and call `registerGame()`, then import the config in `src/games/index.ts`. See `src/games/HOW_TO_ADD_GAME.md` for full guide and checklist. Navigation routes to games via `GamePlayer` screen with a `gameId` param.
+**Adding a new game:** copy `src/games/_template/` to `src/games/<game-name>/`, update `config.ts` (import `registerGame` from `@/sdk`), then import the config in `src/games/index.ts`. See `src/games/HOW_TO_ADD_GAME.md` for the full guide and checklist.
 
 **Registration flow:** `App.tsx` imports `src/games/index.ts` → that file has side-effect imports for each game's `config.ts` → each config calls `registerGame()` → `HomeScreen` calls `getAllGames()` to render the grid.
 
-**Template (`src/games/_template/`)** includes: root component (`index.tsx`), `GameArea` container component, `useGameState` hook (isPlaying/score/start/pause/reset), and example config.
+**Template (`src/games/_template/`)** includes: root component (`index.tsx`) using `useSound` and `useGameShell` from `@/sdk`, and `config.ts` calling `registerGame` from `@/sdk`. The template is NOT imported in `src/games/index.ts`.
+
+**Layout modes (controlled by `GameConfig.layout.mode`):**
+- `shell` (default) — `GamePlayerScreen` wraps the game in `GameShell`; use `useGameShell()` for overlays/score
+- `bare` — `GamePlayerScreen` renders only an absolute `BackButton`; game manages its own layout. Examples: `simple-pairs`, `color-mixer`
+
+**AI skill:** `.claude/skills/kids-games-dev/SKILL.md` — covers scaffolding, SDK usage, asset selection, layout modes, age bands, and config schema. Triggers automatically in Claude Code for game-related tasks.
 
 ## Key Dependencies
 
