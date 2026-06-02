@@ -34,3 +34,10 @@ export { GameOverlay } from './layout/GameOverlay';
 export { useGameShell } from './layout/GameShellContext';
 export type { GameShellApi } from './layout/GameShellContext';
 export type { GameShellProps, OverlaySlot } from './layout/types';
+
+// Age
+export { AGE_BANDS, bandsForGame, gamesForBand } from './age/bands';
+export type { AgeBand } from './age/bands';
+
+// Settings hook
+export { useSettings } from './settings/useSettings';
