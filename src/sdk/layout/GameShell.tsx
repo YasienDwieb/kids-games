@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, type ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeContainer } from '@/components/common/SafeContainer';
 import { BackButton } from '@/components/common/BackButton';
 import { COLORS, FONT_SIZES, SPACING } from '@/constants';
@@ -25,6 +25,7 @@ export function GameShell({
   showBack = true,
   header,
   onBack,
+  onPause,
   children,
 }: GameShellProps) {
   const [score, setScore] = useState<number | string | null>(null);
@@ -65,6 +66,11 @@ export function GameShell({
           <View style={styles.headerSlot}>
             {header}
             {score != null ? <Text style={styles.score}>{score}</Text> : null}
+            {onPause ? (
+              <TouchableOpacity onPress={onPause} accessibilityLabel="Pause" hitSlop={8}>
+                <Text style={styles.pause}>⏸️</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
 
@@ -99,5 +105,6 @@ const styles = StyleSheet.create({
   hidden: { opacity: 0 },
   headerSlot: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   score: { fontSize: FONT_SIZES.lg, fontWeight: 'bold', color: COLORS.text.primary },
+  pause: { fontSize: FONT_SIZES.lg },
   content: { flex: 1 },
 });
