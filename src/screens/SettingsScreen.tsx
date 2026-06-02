@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import { BackButton } from '../components/common';
@@ -28,20 +28,22 @@ export function SettingsScreen({ navigation }: Props) {
 
         <Text style={styles.subheading}>Show games for</Text>
         <View style={styles.bands}>
-          <Text
+          <TouchableOpacity
             style={[styles.band, settings.ageBand === null && styles.bandActive]}
             onPress={() => update({ ageBand: null })}
           >
-            All
-          </Text>
+            <Text style={[styles.bandText, settings.ageBand === null && styles.bandTextActive]}>All</Text>
+          </TouchableOpacity>
           {AGE_BANDS.map((band) => (
-            <Text
+            <TouchableOpacity
               key={band.id}
               style={[styles.band, settings.ageBand === band.id && styles.bandActive]}
               onPress={() => update({ ageBand: band.id })}
             >
-              {band.label}
-            </Text>
+              <Text style={[styles.bandText, settings.ageBand === band.id && styles.bandTextActive]}>
+                {band.label}
+              </Text>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
@@ -58,9 +60,10 @@ const styles = StyleSheet.create({
   label: { fontSize: FONT_SIZES.lg, color: COLORS.text.primary },
   bands: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
   band: {
-    fontSize: FONT_SIZES.md, color: COLORS.text.primary,
     paddingVertical: SPACING.sm, paddingHorizontal: SPACING.md,
-    backgroundColor: COLORS.background.white, borderRadius: 999, overflow: 'hidden',
+    backgroundColor: COLORS.background.white, borderRadius: 999,
   },
-  bandActive: { backgroundColor: COLORS.primary.blue, color: COLORS.text.inverse },
+  bandActive: { backgroundColor: COLORS.primary.blue },
+  bandText: { fontSize: FONT_SIZES.md, color: COLORS.text.primary },
+  bandTextActive: { color: COLORS.text.inverse },
 });
