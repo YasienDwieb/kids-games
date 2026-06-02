@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef } from 'react';
 import { Audio } from 'expo-av';
 
 const SOUNDS: Record<string, number> = {
-  flip: require('../../assets/Blip1.wav'),
-  match: require('../../assets/Powerup3.wav'),
-  mismatch: require('../../assets/sfx-jump.wav'),
-  win: require('../../assets/Laser-weapon1.wav'),
+  flip: require('@/sdk/assets/audio/Blip1.wav'),
+  match: require('@/sdk/assets/audio/Powerup3.wav'),
+  mismatch: require('@/sdk/assets/audio/sfx-jump.wav'),
+  win: require('@/sdk/assets/audio/Laser-weapon1.wav'),
 };
 
 export function useGameSounds() {
