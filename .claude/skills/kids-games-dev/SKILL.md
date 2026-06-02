@@ -52,7 +52,7 @@ This skill covers how to build, scaffold, and extend games in the Kids Games Exp
 
 **Assets**
 - `ASSETS` — the typed asset manifest (keyed by `AssetId`)
-- `AssetId` (type) — union of all manifest keys (`'sfx.pop' | 'sfx.success' | 'sfx.win' | 'sfx.wrong'`)
+- `AssetId` (type) — union of all manifest keys (`'sfx.pop' | 'sfx.success' | 'sfx.win' | 'sfx.wrong' | 'sfx.powerup' | 'sfx.jump' | 'sfx.transition'`)
 - `getAsset(id)` — look up a manifest entry by id
 - `findAssets({ type?, tags? })` — filter manifest by type and/or tag array
 - `pickAsset(intent)` — return the first AssetId whose tags include the given intent string (used by useSound internally)
@@ -129,20 +129,30 @@ play('pop');       // card flip, tap, UI feedback
 play('success');   // match found, correct answer
 play('win');       // game won, level complete
 play('wrong');     // mismatch, wrong answer
+play('powerup');   // power-up / boost collected
+play('jump');      // jump / hop / bounce
+play('transition');// scene change / next round whoosh
 ```
 
 `useSound` calls `pickAsset(intent)` internally, so you never need to reference asset ids directly for audio.
 
 ### The controlled tag vocabulary (from manifest.ts)
 
-| Asset id     | Tags                                    | Meaning |
-|--------------|-----------------------------------------|---------|
-| `sfx.pop`    | `pop`, `flip`, `tap`, `ui`              | Card flip, tapping, generic UI |
-| `sfx.success`| `success`, `match`, `reward`            | Match found, correct answer |
-| `sfx.win`    | `win`, `celebration`, `complete`        | Game won, round complete |
-| `sfx.wrong`  | `wrong`, `mismatch`, `error`            | Mismatch, wrong choice |
+All audio is from the 8-bit "Sound Effects Mini Pack 1.5" — kid-friendly chiptune SFX.
 
-**Intent lookup:** pass any tag as the intent string to `play()` or `pickAsset()`. For example, `play('match')` resolves to `sfx.success` because `match` is in its tags.
+| Asset id        | Tags                                            | Meaning |
+|-----------------|-------------------------------------------------|---------|
+| `sfx.pop`       | `pop`, `flip`, `tap`, `ui`, `select`            | Card flip, tapping, generic UI |
+| `sfx.success`   | `success`, `match`, `reward`, `correct`, `collect` | Match found, correct answer, coin/item collected |
+| `sfx.win`       | `win`, `celebration`, `complete`, `levelup`     | Game won, round complete (1-up jingle) |
+| `sfx.wrong`     | `wrong`, `mismatch`, `error`, `incorrect`, `lose` | Mismatch, wrong choice |
+| `sfx.powerup`   | `powerup`, `boost`, `upgrade`                   | Power-up / boost collected |
+| `sfx.jump`      | `jump`, `hop`, `bounce`                         | Jumping / hopping action |
+| `sfx.transition`| `transition`, `teleport`, `whoosh`, `appear`, `next` | Scene change, next round, teleport |
+
+**Intent lookup:** pass any tag as the intent string to `play()` or `pickAsset()`. For example, `play('match')` resolves to `sfx.success` because `match` is in its tags. An unknown intent plays nothing (silent, no error).
+
+**Picking the right sound:** prefer the four core intents (`pop`/`success`/`win`/`wrong`) for standard match/quiz feedback. Reach for `powerup`, `jump`, or `transition` only when the game genuinely has that mechanic. Always reuse an existing tagged asset before adding a new file.
 
 ### Finding assets programmatically
 

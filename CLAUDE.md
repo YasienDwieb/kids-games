@@ -46,11 +46,14 @@ All games import exclusively from `@/sdk`. The SDK exports:
 
 **Asset manifest + tag vocabulary (`src/sdk/assets/manifest.ts`):**
 
-Shared audio assets, referenced by intent string via `useSound().play(intent)`. Controlled tags:
-- `sfx.pop` — tags: `pop`, `flip`, `tap`, `ui`
-- `sfx.success` — tags: `success`, `match`, `reward`
-- `sfx.win` — tags: `win`, `celebration`, `complete`
-- `sfx.wrong` — tags: `wrong`, `mismatch`, `error`
+Shared audio assets (8-bit SFX from "Sound Effects Mini Pack 1.5"), referenced by intent string via `useSound().play(intent)`. Controlled tags:
+- `sfx.pop` — tags: `pop`, `flip`, `tap`, `ui`, `select`
+- `sfx.success` — tags: `success`, `match`, `reward`, `correct`, `collect`
+- `sfx.win` — tags: `win`, `celebration`, `complete`, `levelup`
+- `sfx.wrong` — tags: `wrong`, `mismatch`, `error`, `incorrect`, `lose`
+- `sfx.powerup` — tags: `powerup`, `boost`, `upgrade`
+- `sfx.jump` — tags: `jump`, `hop`, `bounce`
+- `sfx.transition` — tags: `transition`, `teleport`, `whoosh`, `appear`, `next`
 
 To add an asset: drop the file in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts`.
 
