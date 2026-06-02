@@ -9,12 +9,12 @@ export function findAssets(filter: { type?: AssetType; tags?: string[] }): Asset
   return (Object.keys(ASSETS) as AssetId[]).filter((id) => {
     const entry = ASSETS[id];
     if (filter.type && entry.type !== filter.type) return false;
-    if (filter.tags && !filter.tags.every((t) => entry.tags.includes(t))) return false;
+    if (filter.tags && !filter.tags.every((t) => (entry.tags as readonly string[]).includes(t))) return false;
     return true;
   });
 }
 
 /** Best single asset for an intent: the first asset whose tags include the intent. */
 export function pickAsset(intent: string): AssetId | undefined {
-  return (Object.keys(ASSETS) as AssetId[]).find((id) => ASSETS[id].tags.includes(intent));
+  return (Object.keys(ASSETS) as AssetId[]).find((id) => (ASSETS[id].tags as readonly string[]).includes(intent));
 }
