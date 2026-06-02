@@ -27,3 +27,10 @@ export type { Settings } from './settings/store';
 // Audio
 export { useSound } from './audio/useSound';
 export type { PlayOptions } from './audio/useSound';
+
+// Layout
+export { GameShell } from './layout/GameShell';
+export { GameOverlay } from './layout/GameOverlay';
+export { useGameShell } from './layout/GameShellContext';
+export type { GameShellApi } from './layout/GameShellContext';
+export type { GameShellProps, OverlaySlot } from './layout/types';
