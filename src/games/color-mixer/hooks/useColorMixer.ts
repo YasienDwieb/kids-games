@@ -1,10 +1,10 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createStore } from '@/sdk';
 import { COLORS, COLOR_RECIPES, TIMING } from '../constants';
 import type { ColorId, ColorData, ColorRecipe, SavedColor } from '../types';
 import { addColorToMix, hexToRgb } from '../utils';
 
-const SAVED_COLORS_KEY = 'colorMixer_savedColors';
+const savedColorsStore = createStore('color-mixer', { savedColors: [] as SavedColor[] });
 
 const PRIMARY_COLORS: ColorId[] = (Object.keys(COLORS) as ColorId[]).filter(
   (id) => COLORS[id].isPrimary,
@@ -59,9 +59,9 @@ export function useColorMixer() {
   const [savedColors, setSavedColors] = useState<SavedColor[]>([]);
 
   useEffect(() => {
-    AsyncStorage.getItem(SAVED_COLORS_KEY)
+    savedColorsStore.get()
       .then((stored) => {
-        if (stored) setSavedColors(JSON.parse(stored));
+        setSavedColors(stored.savedColors);
       })
       .catch((error) => console.error('Failed to load saved colors:', error));
   }, []);
@@ -165,7 +165,7 @@ export function useColorMixer() {
       };
       setSavedColors((prev) => {
         const updated = [...prev, newSavedColor];
-        AsyncStorage.setItem(SAVED_COLORS_KEY, JSON.stringify(updated)).catch((error) =>
+        savedColorsStore.set({ savedColors: updated }).catch((error) =>
           console.error('Failed to save colors:', error),
         );
         return updated;
@@ -179,7 +179,7 @@ export function useColorMixer() {
       const updated = savedColors.filter((c) => c.id !== id);
       setSavedColors(updated);
       try {
-        await AsyncStorage.setItem(SAVED_COLORS_KEY, JSON.stringify(updated));
+        await savedColorsStore.set({ savedColors: updated });
       } catch (error) {
         console.error('Failed to delete color:', error);
       }
