@@ -78,11 +78,22 @@ export function ColorBlob({
             { scale: Animated.multiply(scaleAnim, pulseAnim) },
           ],
         },
-        isLightColor && styles.lightBorder,
         styles.shadow,
         style,
       ]}
     >
+      {/* Light colors get a subtle ring. Rendered as an overlay (not as a
+          border on the shadow-bearing view) so the Android elevation shadow
+          keeps following the borderRadius instead of turning square. */}
+      {isLightColor && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { borderRadius: size / 2 },
+            styles.lightBorder,
+          ]}
+        />
+      )}
       {showShine && (
         <View
           style={[
