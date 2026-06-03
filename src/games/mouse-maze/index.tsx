@@ -8,19 +8,24 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useSound } from '@/sdk';
+import { useSound, useLevels, levelsFromGenerator, ResumePrompt } from '@/sdk';
 import { Hud } from './components/Hud';
 import { MazeBoard } from './components/MazeBoard';
 import { WinOverlay } from './components/WinOverlay';
 import { EMOJI, HINT_MS, MAZE_COLORS, STEP_MS } from './constants';
-import { useMaze } from './hooks/useMaze';
+import { useMaze, buildLevel } from './hooks/useMaze';
 import type { Pos } from './types';
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
 
 export default function MouseMazeGame() {
   const { play } = useSound();
-  const { state, tryStep, nextLevel, hintPath } = useMaze();
+  const source = useMemo(() => levelsFromGenerator(buildLevel), []);
+  const { status, data, level, start, startOver, advance } = useLevels({
+    gameId: 'mouse-maze',
+    source,
+  });
+  const { state, tryStep, hintPath } = useMaze(data);
 
   const [area, setArea] = useState({ width: 0, height: 0 });
   const [showWin, setShowWin] = useState(false);
@@ -105,8 +110,8 @@ export default function MouseMazeGame() {
     play('transition');
     setHintCells(new Set());
     setShowWin(false);
-    nextLevel();
-  }, [nextLevel, play]);
+    advance(state.collected);
+  }, [advance, play, state.collected]);
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -114,6 +119,15 @@ export default function MouseMazeGame() {
   }, []);
 
   const boardSize = cellSize * state.cols;
+
+  if (status === 'loading') return <View style={styles.root} />;
+  if (status === 'resumable') {
+    return (
+      <View style={styles.root}>
+        <ResumePrompt level={level} onContinue={start} onStartOver={startOver} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.root} onLayout={onLayout}>

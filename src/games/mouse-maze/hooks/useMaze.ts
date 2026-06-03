@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { sizeForLevel, STAR_COUNT } from '../constants';
 import { canMove, generateMaze, solvePath } from '../utils/maze';
 import type { Direction, Grid, Pos } from '../types';
@@ -48,7 +48,7 @@ function placeStars(grid: Grid, start: Pos, goal: Pos): Set<string> {
   return stars;
 }
 
-function buildLevel(level: number): MazeState {
+export function buildLevel(level: number): MazeState {
   const size = sizeForLevel(level);
   const grid = generateMaze(size, size);
   const player: Pos = { row: 0, col: 0 };
@@ -69,23 +69,22 @@ function buildLevel(level: number): MazeState {
   };
 }
 
-export function useMaze() {
-  const [state, setState] = useState<MazeState>(() => buildLevel(1));
+export function useMaze(initial: MazeState) {
+  const [state, setState] = useState<MazeState>(initial);
   // Authoritative copy, mutated synchronously so rapid drag events that fire
   // before a re-render still read the up-to-date position (avoids dropped steps).
-  const live = useRef(state);
+  const live = useRef(initial);
 
   const commit = useCallback((next: MazeState) => {
     live.current = next;
     setState(next);
   }, []);
 
-  /**
-   * Move the mouse into `target` ONLY when it is a directly adjacent, open cell
-   * (the cell the finger is currently over while dragging). No path-finding: a
-   * tap on a far/off-path cell does nothing, and the mouse can never outrun the
-   * finger. To go back, the child simply drags back over the previous cell.
-   */
+  // Rebuild whenever a new level's initial state arrives (identity changes per level).
+  useEffect(() => {
+    commit(initial);
+  }, [initial, commit]);
+
   const tryStep = useCallback(
     (target: Pos): StepResult => {
       const s = live.current;
@@ -115,14 +114,10 @@ export function useMaze() {
     [commit],
   );
 
-  const nextLevel = useCallback(() => {
-    commit(buildLevel(live.current.level + 1));
-  }, [commit]);
-
   const hintPath = useCallback(
     (): Pos[] => solvePath(live.current.grid, live.current.player, live.current.goal),
     [],
   );
 
-  return { state, tryStep, nextLevel, hintPath };
+  return { state, tryStep, hintPath };
 }
