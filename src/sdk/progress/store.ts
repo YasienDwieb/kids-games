@@ -6,6 +6,7 @@ export type Progress = {
   updatedAt: number; // epoch ms ("last played")
 };
 
+// updatedAt: 0 is the sentinel for "never played".
 export const DEFAULT_PROGRESS: Progress = { level: 1, score: 0, updatedAt: 0 };
 
 /** Per-game progress checkpoint. Key becomes kg:progress:<gameId>. */

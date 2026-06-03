@@ -7,6 +7,7 @@ export interface LevelSource<T> {
 
 /** Authored / hand-made levels. Out-of-range access throws RangeError. */
 export function levelsFromList<T>(items: readonly T[]): LevelSource<T> {
+  if (items.length === 0) throw new RangeError('levelsFromList requires at least one level');
   return {
     count: items.length,
     get(level) {
@@ -18,7 +19,11 @@ export function levelsFromList<T>(items: readonly T[]): LevelSource<T> {
   };
 }
 
-/** Runtime-generated levels, optionally bounded by a count (undefined = endless). */
+/**
+ * Runtime-generated levels, optionally bounded by a count (undefined = endless).
+ * Note: unlike levelsFromList, a bounded generator does not range-check get() —
+ * useLevels guards the upper bound via `count` (see isLast / advance clamping).
+ */
 export function levelsFromGenerator<T>(
   generate: (level: number) => T,
   options: { count?: number } = {},
