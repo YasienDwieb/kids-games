@@ -41,3 +41,15 @@ export type { AgeBand } from './age/bands';
 
 // Settings hook
 export { useSettings } from './settings/useSettings';
+
+// Progress & levels
+export { levelsFromList, levelsFromGenerator } from './progress/source';
+export type { LevelSource } from './progress/source';
+export { createProgressStore, DEFAULT_PROGRESS } from './progress/store';
+export type { Progress } from './progress/store';
+export { resumeStatusFor } from './progress/status';
+export type { ResumeStatus } from './progress/status';
+export { useLevels } from './progress/useLevels';
+export type { UseLevelsResult } from './progress/useLevels';
+export { ResumePrompt } from './progress/ResumePrompt';
+export type { ResumePromptProps } from './progress/ResumePrompt';
