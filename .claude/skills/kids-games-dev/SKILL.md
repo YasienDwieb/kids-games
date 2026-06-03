@@ -222,6 +222,46 @@ registerGame({
 
 ---
 
+## 4b. Levels & progress (opt-in)
+
+For games with levels that should resume where the child left off, use the progress SDK. It is fully opt-in — sandbox games (e.g. color-mixer) don't need it.
+
+**Define a level source** (authored or generated — both satisfy `LevelSource<T>`):
+
+```ts
+import { levelsFromList, levelsFromGenerator } from '@/sdk';
+
+// authored, fixed levels
+const source = levelsFromList([{ words: ['cat'] }, { words: ['dog', 'sun'] }]);
+
+// runtime-generated, endless, following a difficulty curve
+const source = useMemo(() => levelsFromGenerator((level) => buildLevel(level)), []);
+```
+
+> Always `useMemo` the source so its identity is stable (the hook memoizes level data on it).
+
+**Drive the game with `useLevels`:**
+
+```ts
+import { useLevels, ResumePrompt } from '@/sdk';
+
+const { status, data, level, score, isLast, start, startOver, advance } =
+  useLevels({ gameId: 'my-game', source });
+
+if (status === 'resumable')
+  return <ResumePrompt level={level} onContinue={start} onStartOver={startOver} />;
+
+// data === source.get(level); when the level is cleared:
+advance(starsEarned); // → next level, score persisted under kg:progress:my-game
+```
+
+- `status`: `'loading' | 'resumable' | 'playing'`. Render `<ResumePrompt>` on `'resumable'`.
+- Persistence is a coarse checkpoint (`{ level, score }`) — the level restarts from its beginning, not a mid-level snapshot.
+- `isLast` is `true` on the final level of a finite source (always `false` for endless generators).
+- Reference integration: `src/games/mouse-maze`.
+
+---
+
 ## 5. Age bands
 
 Always set `ageRange: { min, max }` in the config — this is required. Age bands are derived automatically from it.
