@@ -1,5 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import { Animated, PanResponder, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { COLORS as TOKENS, FONTS } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
@@ -259,19 +260,19 @@ const styles = StyleSheet.create({
   },
   paletteEdge: {
     height: 4,
-    backgroundColor: '#D7CCC8',
+    backgroundColor: TOKENS.line2,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     marginHorizontal: 8,
   },
   palette: {
-    backgroundColor: '#EFEBE9',
+    backgroundColor: TOKENS.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 12,
     paddingBottom: 20,
     paddingHorizontal: 8,
-    shadowColor: '#000',
+    shadowColor: '#4A341C',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -279,9 +280,9 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   title: {
+    fontFamily: FONTS.body,
     fontSize: 14,
-    fontWeight: '700',
-    color: '#8D6E63',
+    color: TOKENS.inkSoft,
     textAlign: 'center',
     marginBottom: 10,
     letterSpacing: 1,

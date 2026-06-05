@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useState } from 'react';
+import { Modal, StyleSheet, Text, TextInput, View } from 'react-native';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 
 interface ColorNamingDialogProps {
@@ -9,16 +10,17 @@ interface ColorNamingDialogProps {
   onCancel: () => void;
 }
 
-const SUGGESTIONS = ['Sunset', 'Ocean', 'Forest', 'Berry', 'Sky', 'Coral', 'Mint', 'Lavender'];
-
 export function ColorNamingDialog({ visible, colorHex, onSave, onCancel }: ColorNamingDialogProps) {
   const [name, setName] = useState('');
 
   const handleSave = () => {
-    if (name.trim()) {
-      onSave(name.trim());
-      setName('');
-    }
+    onSave(name.trim() || 'My Color');
+    setName('');
+  };
+
+  const handleCancel = () => {
+    setName('');
+    onCancel();
   };
 
   if (!colorHex) return null;
@@ -27,7 +29,7 @@ export function ColorNamingDialog({ visible, colorHex, onSave, onCancel }: Color
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.dialog}>
-          <Text style={styles.title}>Save Your Color! 🎨</Text>
+          <Text style={styles.title}>Save your color! 🎨</Text>
 
           <View style={styles.preview}>
             <ColorBlob color={colorHex} size={80} showShine />
@@ -38,36 +40,25 @@ export function ColorNamingDialog({ visible, colorHex, onSave, onCancel }: Color
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g., Sunset Orange"
-            placeholderTextColor="#999"
+            placeholder="e.g. Sunset"
+            placeholderTextColor={TOKENS.inkFaint}
             autoFocus
             maxLength={20}
           />
 
-          <Text style={styles.label}>Ideas:</Text>
-          <View style={styles.suggestions}>
-            {SUGGESTIONS.map((suggestion) => (
-              <TouchableOpacity
-                key={suggestion}
-                style={styles.suggestionChip}
-                onPress={() => setName(suggestion)}
-              >
-                <Text style={styles.suggestionText}>{suggestion}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
           <View style={styles.buttons}>
-            <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.saveButton, !name.trim() && styles.saveButtonDisabled]}
+            <PressableButton
+              label="Cancel"
+              variant="ghost"
+              onPress={handleCancel}
+              style={styles.button}
+            />
+            <PressableButton
+              label="Save"
+              accent="blue"
               onPress={handleSave}
-              disabled={!name.trim()}
-            >
-              <Text style={styles.saveText}>Save 💾</Text>
-            </TouchableOpacity>
+              style={styles.button}
+            />
           </View>
         </View>
       </View>
@@ -78,20 +69,22 @@ export function ColorNamingDialog({ visible, colorHex, onSave, onCancel }: Color
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: TOKENS.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   dialog: {
-    backgroundColor: 'white',
-    borderRadius: 20,
+    backgroundColor: TOKENS.surface,
+    borderRadius: BORDER_RADIUS.tile,
     padding: 24,
     width: '85%',
     maxWidth: 340,
+    ...SHADOWS.lg,
   },
   title: {
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    fontWeight: 'bold',
+    color: TOKENS.ink,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -100,62 +93,26 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 15,
+    color: TOKENS.inkSoft,
     marginBottom: 8,
-    color: '#333',
   },
   input: {
     borderWidth: 2,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
+    borderColor: TOKENS.line2,
+    borderRadius: BORDER_RADIUS.soft,
     padding: 12,
+    fontFamily: FONTS.body,
     fontSize: 18,
-    marginBottom: 16,
-  },
-  suggestions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    color: TOKENS.ink,
     marginBottom: 20,
-  },
-  suggestionChip: {
-    backgroundColor: '#F0F0F0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  suggestionText: {
-    fontSize: 14,
-    color: '#666',
   },
   buttons: {
     flexDirection: 'row',
     gap: 12,
   },
-  cancelButton: {
+  button: {
     flex: 1,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: '#F0F0F0',
-    alignItems: 'center',
-  },
-  cancelText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  saveButton: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: '#4CAF50',
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    backgroundColor: '#A5D6A7',
-  },
-  saveText: {
-    fontSize: 16,
-    color: 'white',
-    fontWeight: 'bold',
   },
 });

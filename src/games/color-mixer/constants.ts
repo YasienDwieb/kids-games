@@ -1,4 +1,4 @@
-import type { Challenge, ColorId, ColorData, ColorRecipe } from './types';
+import type { Challenge, ColorId, ColorData } from './types';
 
 export const COLORS: Record<ColorId, ColorData> = {
   red: {
@@ -80,15 +80,6 @@ export const COLORS: Record<ColorId, ColorData> = {
   },
 };
 
-export const COLOR_RECIPES: ColorRecipe[] = [
-  { ingredients: ['red', 'yellow'], result: 'orange' },
-  { ingredients: ['yellow', 'blue'], result: 'green' },
-  { ingredients: ['red', 'blue'], result: 'purple' },
-  { ingredients: ['red', 'yellow', 'blue'], result: 'brown' },
-  { ingredients: ['red', 'white'], result: 'pink' },
-  { ingredients: ['blue', 'white'], result: 'lightBlue' },
-];
-
 export const DIMENSIONS = {
   COLOR_BLOB_SIZE: 70,
   MIXING_ZONE_SIZE: 180,
@@ -103,12 +94,6 @@ export const TIMING = {
 };
 
 export const ALL_COLOR_IDS: ColorId[] = Object.keys(COLORS) as ColorId[];
-
-export const COLOR_GROUPS: { title: string; colors: ColorId[] }[] = [
-  { title: 'Primary Colors', colors: ['red', 'yellow', 'blue', 'white', 'black'] },
-  { title: 'Secondary Colors', colors: ['orange', 'green', 'purple'] },
-  { title: 'Special Colors', colors: ['pink', 'lightBlue', 'brown'] },
-];
 
 export const DISCOVERY_HINTS: Partial<Record<ColorId, string>> = {
   orange: 'Mix two warm colors',
@@ -130,7 +115,7 @@ export const CHALLENGES: Challenge[] = [
   { id: 'c6', targetColor: 'brown', hint: 'Mix ALL the primary colors', difficulty: 'hard' },
 ];
 
-export const GAME_BG = '#F5F5F5';
+export const GAME_BG = '#FBF3E6'; // canvas
 
 /** Generous RGB (Euclidean) distance under which a blend "matches" a target. */
 export const MATCH_THRESHOLD = 60;

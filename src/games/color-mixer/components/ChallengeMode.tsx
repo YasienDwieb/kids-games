@@ -1,20 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, IconButton } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { Sparkles } from './Sparkles';
 import { COLORS } from '../constants';
-import type { Challenge, ColorId } from '../types';
+import { closeness, isChallengeMet } from '../utils';
+import type { Challenge } from '../types';
 
 type ChallengeModeProps = {
   currentChallenge: Challenge;
-  resultColor: ColorId | null;
+  currentMixHex: string | null;
   onChallengeComplete: () => void;
   onBack: () => void;
 };
 
+function meterLabel(meter: number): string {
+  if (meter >= 1) return 'Perfect!';
+  if (meter >= 0.85) return 'So close!';
+  if (meter >= 0.6) return 'Getting warmer…';
+  return 'Keep mixing!';
+}
+
 export function ChallengeMode({
   currentChallenge,
-  resultColor,
+  currentMixHex,
   onChallengeComplete,
   onBack,
 }: ChallengeModeProps) {
@@ -22,7 +31,9 @@ export function ChallengeMode({
   const [showSuccess, setShowSuccess] = useState(false);
   const successScale = useRef(new Animated.Value(0)).current;
   const targetData = COLORS[currentChallenge.targetColor];
-  const isCorrect = resultColor === currentChallenge.targetColor;
+  const targetHex = targetData.hex;
+  const isCorrect = isChallengeMet(currentMixHex, targetHex);
+  const meter = currentMixHex ? closeness(currentMixHex, targetHex) : 0;
 
   useEffect(() => {
     if (isCorrect && !showSuccess) {
@@ -43,9 +54,7 @@ export function ChallengeMode({
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>← Challenges</Text>
-        </Pressable>
+        <IconButton glyph="←" onPress={onBack} accessibilityLabel="Back to challenges" size={44} />
       </View>
 
       {/* Target display */}
@@ -53,25 +62,20 @@ export function ChallengeMode({
         <Text style={styles.prompt}>Make this color:</Text>
         <View style={styles.targetBlob}>
           <ColorBlob
-            color={targetData.hex}
+            color={targetHex}
             size={80}
             showShine
             pulsing={!showSuccess}
           />
         </View>
-        <Text style={[styles.targetName, { color: targetData.hex }]}>
-          {targetData.name}
-        </Text>
+        <Text style={styles.targetName}>{targetData.name}</Text>
       </View>
 
       {/* Hint */}
       {currentChallenge.hint && !showHint && (
-        <Pressable
-          onPress={() => setShowHint(true)}
-          style={styles.hintButton}
-        >
-          <Text style={styles.hintButtonText}>💡 Need a hint?</Text>
-        </Pressable>
+        <Text onPress={() => setShowHint(true)} style={styles.hintButton}>
+          💡 Need a hint?
+        </Text>
       )}
       {showHint && currentChallenge.hint && (
         <View style={styles.hintBox}>
@@ -79,12 +83,13 @@ export function ChallengeMode({
         </View>
       )}
 
-      {/* Wrong result feedback */}
-      {resultColor && !isCorrect && (
-        <View style={styles.wrongResult}>
-          <Text style={styles.wrongText}>
-            Not quite! You made {COLORS[resultColor].name}. Try again!
-          </Text>
+      {/* Closeness meter */}
+      {currentMixHex && !isCorrect && (
+        <View style={styles.meterArea}>
+          <View style={styles.meterTrack}>
+            <View style={[styles.meterFill, { width: `${Math.round(meter * 100)}%` }]} />
+          </View>
+          <Text style={styles.meterLabel}>{meterLabel(meter)}</Text>
         </View>
       )}
 
@@ -92,13 +97,11 @@ export function ChallengeMode({
       {showSuccess && (
         <View style={styles.successOverlay}>
           <Animated.View style={[styles.successContent, { transform: [{ scale: successScale }] }]}>
-            <Sparkles color={targetData.hex} radius={100} />
+            <Sparkles color={targetHex} radius={100} />
             <Text style={styles.successEmoji}>🎉</Text>
             <Text style={styles.successText}>You did it!</Text>
-            <ColorBlob color={targetData.hex} size={70} showShine />
-            <Text style={[styles.successColor, { color: targetData.hex }]}>
-              {targetData.name}
-            </Text>
+            <ColorBlob color={targetHex} size={70} showShine />
+            <Text style={styles.successColor}>{targetData.name}</Text>
           </Animated.View>
         </View>
       )}
@@ -115,75 +118,71 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 16,
     marginBottom: 8,
-  },
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.06)',
-    borderRadius: 12,
-  },
-  backText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#757575',
+    alignItems: 'flex-start',
   },
   targetArea: {
     alignItems: 'center',
     marginBottom: 16,
   },
   prompt: {
+    fontFamily: FONTS.display,
     fontSize: 18,
-    fontWeight: '600',
-    color: '#616161',
+    color: TOKENS.inkSoft,
     marginBottom: 12,
   },
   targetBlob: {
     marginBottom: 8,
   },
   targetName: {
+    fontFamily: FONTS.displayBold,
     fontSize: 24,
-    fontWeight: '800',
+    color: TOKENS.ink,
   },
   hintButton: {
+    fontFamily: FONTS.body,
+    fontSize: 14,
+    color: TOKENS.inkSoft,
     paddingVertical: 8,
     paddingHorizontal: 20,
-    backgroundColor: '#FFF9C4',
-    borderRadius: 20,
     marginBottom: 12,
-  },
-  hintButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#F9A825',
   },
   hintBox: {
     paddingVertical: 8,
     paddingHorizontal: 20,
-    backgroundColor: '#FFF9C4',
-    borderRadius: 12,
+    backgroundColor: TOKENS.surface2,
+    borderRadius: BORDER_RADIUS.soft,
     marginBottom: 12,
   },
   hintText: {
+    fontFamily: FONTS.bodySemi,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#F57F17',
+    color: TOKENS.inkSoft,
   },
-  wrongResult: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    backgroundColor: '#FFF3E0',
-    borderRadius: 12,
+  meterArea: {
+    width: '70%',
+    alignItems: 'center',
   },
-  wrongText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#E65100',
-    textAlign: 'center',
+  meterTrack: {
+    width: '100%',
+    height: 12,
+    backgroundColor: TOKENS.line2,
+    borderRadius: BORDER_RADIUS.pill,
+    overflow: 'hidden',
+  },
+  meterFill: {
+    height: '100%',
+    backgroundColor: TOKENS.brand,
+    borderRadius: BORDER_RADIUS.pill,
+  },
+  meterLabel: {
+    marginTop: 8,
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    color: TOKENS.inkSoft,
   },
   successOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    backgroundColor: TOKENS.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 50,
@@ -196,14 +195,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   successText: {
+    fontFamily: FONTS.displayBold,
     fontSize: 28,
-    fontWeight: '800',
-    color: '#424242',
+    color: TOKENS.surface,
     marginBottom: 16,
   },
   successColor: {
     marginTop: 8,
+    fontFamily: FONTS.displayBold,
     fontSize: 22,
-    fontWeight: '700',
+    color: TOKENS.surface,
   },
 });
