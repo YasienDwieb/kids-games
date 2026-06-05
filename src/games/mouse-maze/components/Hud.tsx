@@ -1,7 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BORDER_RADIUS, FONT_SIZES, SPACING } from '@/sdk';
-import { EMOJI, MAZE_COLORS } from '../constants';
+import { HudPill, hudTextStyle, IconButton, SPACING } from '@/sdk';
+import { EMOJI } from '../constants';
 
 interface HudProps {
   level: number;
@@ -14,23 +14,18 @@ interface HudProps {
 export function Hud({ level, collected, total, onHint }: HudProps) {
   return (
     <SafeAreaView style={styles.bar} edges={['top']} pointerEvents="box-none">
-      <View style={styles.pill}>
-        <Text style={styles.levelText}>Level {level}</Text>
-      </View>
+      <HudPill>
+        <Text style={hudTextStyle}>Level {level}</Text>
+      </HudPill>
 
       <View style={styles.right}>
-        <View style={styles.pill}>
-          <Text style={styles.starText}>
-            {EMOJI.star} {collected}/{total}
+        <HudPill>
+          <Text style={styles.icon}>{EMOJI.star}</Text>
+          <Text style={hudTextStyle}>
+            {collected}/{total}
           </Text>
-        </View>
-        <Pressable
-          onPress={onHint}
-          style={({ pressed }) => [styles.hintBtn, pressed && styles.pressed]}
-          hitSlop={8}
-        >
-          <Text style={styles.hintText}>💡</Text>
-        </Pressable>
+        </HudPill>
+        <IconButton glyph="💡" onPress={onHint} accessibilityLabel="Show hint" />
       </View>
     </SafeAreaView>
   );
@@ -55,22 +50,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.sm,
   },
-  pill: {
-    backgroundColor: MAZE_COLORS.hud,
-    borderRadius: BORDER_RADIUS.full,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-  },
-  levelText: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: MAZE_COLORS.text },
-  starText: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: MAZE_COLORS.text },
-  hintBtn: {
-    backgroundColor: MAZE_COLORS.hud,
-    borderRadius: BORDER_RADIUS.full,
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  hintText: { fontSize: 22 },
-  pressed: { opacity: 0.6 },
+  icon: { fontSize: 17 },
 });

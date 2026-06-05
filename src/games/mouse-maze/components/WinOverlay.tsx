@@ -1,6 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import { BORDER_RADIUS, COLORS, FONT_SIZES, SPACING } from '@/sdk';
+import { Animated, StyleSheet, Text, View } from 'react-native';
+import {
+  PressableButton,
+  Star,
+  COLORS,
+  FONTS,
+  SHADOWS,
+  BORDER_RADIUS,
+  SPACING,
+} from '@/sdk';
 import { EMOJI } from '../constants';
 
 interface WinOverlayProps {
@@ -22,15 +30,19 @@ export function WinOverlay({ collected, total, onNext }: WinOverlayProps) {
       <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
         <Text style={styles.burst}>🎉 {EMOJI.goal} 🎉</Text>
         <Text style={styles.title}>You made it!</Text>
-        <Text style={styles.stars}>
-          {EMOJI.star} {collected}/{total} stars
-        </Text>
-        <Pressable
+
+        <View style={styles.starsRow}>
+          {Array.from({ length: total }).map((_, i) => (
+            <Star key={i} size={i === 1 ? 44 : 38} filled={i < collected} />
+          ))}
+        </View>
+
+        <PressableButton
+          label="Next maze →"
+          accent="orange"
           onPress={onNext}
-          style={({ pressed }) => [styles.button, pressed && styles.pressed]}
-        >
-          <Text style={styles.buttonText}>Next maze →</Text>
-        </Pressable>
+          style={styles.button}
+        />
       </Animated.View>
     </View>
   );
@@ -42,25 +54,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: 26,
   },
   card: {
-    backgroundColor: COLORS.background.white,
-    borderRadius: BORDER_RADIUS.lg,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.tile,
     paddingVertical: SPACING.xl,
-    paddingHorizontal: SPACING.xxl,
+    paddingHorizontal: SPACING.xl,
     alignItems: 'center',
     gap: SPACING.md,
+    width: '100%',
+    maxWidth: 320,
+    ...SHADOWS.lg,
   },
-  burst: { fontSize: FONT_SIZES.xl },
-  title: { fontSize: FONT_SIZES.lg, fontWeight: '800', color: COLORS.text.primary },
-  stars: { fontSize: FONT_SIZES.md, color: COLORS.text.secondary },
-  button: {
-    marginTop: SPACING.sm,
-    backgroundColor: COLORS.primary.green,
-    borderRadius: BORDER_RADIUS.full,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.xl,
-  },
-  buttonText: { fontSize: FONT_SIZES.md, fontWeight: '800', color: COLORS.text.inverse },
-  pressed: { opacity: 0.7 },
+  burst: { fontSize: 44 },
+  title: { fontFamily: FONTS.displayBold, fontSize: 28, color: COLORS.ink },
+  starsRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: SPACING.xs },
+  button: { alignSelf: 'stretch', marginTop: SPACING.xs },
 });

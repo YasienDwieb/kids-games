@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { BigButton } from '@/components/common/BigButton';
-import { COLORS, FONT_SIZES, SPACING } from '@/constants';
+import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING } from '@/constants';
 
 export type ResumePromptProps = {
   level: number;
@@ -26,9 +26,9 @@ export function ResumePrompt({
         <BigButton
           title={continueLabel ?? `Continue · Level ${level}`}
           onPress={onContinue}
-          color={COLORS.primary.green}
+          accent="green"
         />
-        <BigButton title={startOverLabel} onPress={onStartOver} color={COLORS.primary.blue} />
+        <BigButton title={startOverLabel} onPress={onStartOver} variant="ghost" />
       </View>
     </View>
   );
@@ -42,13 +42,14 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     gap: SPACING.md,
     padding: SPACING.lg,
-    borderRadius: 24,
-    backgroundColor: COLORS.background.white,
+    borderRadius: BORDER_RADIUS.tile,
+    backgroundColor: COLORS.surface,
+    ...SHADOWS.lg,
   },
   title: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: 'bold',
-    color: COLORS.text.primary,
+    fontFamily: FONTS.displayBold,
+    fontSize: 26,
+    color: COLORS.ink,
     textAlign: 'center',
     marginBottom: SPACING.sm,
   },

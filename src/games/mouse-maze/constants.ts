@@ -9,13 +9,14 @@ export function sizeForLevel(level: number): number {
 
 export const STAR_COUNT = 3;
 
+// Aligned to the warm design system (orange accent for this game).
 export const MAZE_COLORS = {
-  background: COLORS.background.warm,
-  wall: '#6D4C41',
-  trail: 'rgba(167, 139, 250, 0.35)',
-  hint: 'rgba(123, 198, 126, 0.6)',
-  hud: 'rgba(255, 255, 255, 0.9)',
-  text: COLORS.text.primary,
+  background: COLORS.canvas,
+  wall: COLORS.ink,
+  trail: 'rgba(244, 166, 90, 0.35)', // orange accent breadcrumbs
+  hint: 'rgba(111, 194, 123, 0.6)', // green path hint
+  hud: COLORS.surface,
+  text: COLORS.ink,
 };
 
 /** Per-cell movement animation (ms) — just smooths the hop between adjacent cells. */
