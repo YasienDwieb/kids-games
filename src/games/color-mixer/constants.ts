@@ -25,28 +25,28 @@ export const COLORS: Record<ColorId, ColorData> = {
   orange: {
     id: 'orange',
     name: 'Orange',
-    hex: '#FF9800',
+    hex: '#F18835',
     isPrimary: false,
     isUnlocked: false,
   },
   green: {
     id: 'green',
     name: 'Green',
-    hex: '#43A047',
+    hex: '#8EB08D',
     isPrimary: false,
     isUnlocked: false,
   },
   purple: {
     id: 'purple',
     name: 'Purple',
-    hex: '#8E24AA',
+    hex: '#82618D',
     isPrimary: false,
     isUnlocked: false,
   },
   brown: {
     id: 'brown',
     name: 'Brown',
-    hex: '#6D4C41',
+    hex: '#AB8870',
     isPrimary: false,
     isUnlocked: false,
   },
@@ -67,14 +67,14 @@ export const COLORS: Record<ColorId, ColorData> = {
   pink: {
     id: 'pink',
     name: 'Pink',
-    hex: '#EC407A',
+    hex: '#F09A98',
     isPrimary: false,
     isUnlocked: false,
   },
   lightBlue: {
     id: 'lightBlue',
     name: 'Light Blue',
-    hex: '#29B6F6',
+    hex: '#8CC1F0',
     isPrimary: false,
     isUnlocked: false,
   },
@@ -131,3 +131,6 @@ export const CHALLENGES: Challenge[] = [
 ];
 
 export const GAME_BG = '#F5F5F5';
+
+/** Generous RGB (Euclidean) distance under which a blend "matches" a target. */
+export const MATCH_THRESHOLD = 60;
