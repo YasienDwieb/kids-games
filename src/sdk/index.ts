@@ -11,6 +11,22 @@ export { COLORS, ACCENTS, type AccentName } from '@/constants/colors';
 export { SPACING, BORDER_RADIUS, TOUCH_TARGET, FONT_SIZES, SHADOWS } from '@/constants/dimensions';
 export { FONTS } from '@/constants/typography';
 
+// Design-system UI primitives — always prefer these over hand-rolled controls.
+export {
+  PressableButton,
+  BigButton,
+  IconButton,
+  AppBar,
+  Chip,
+  HudPill,
+  hudTextStyle,
+  EmojiFrame,
+  Star,
+  GameCard,
+  BackButton,
+  SafeContainer,
+} from '@/components/common';
+
 // Assets
 export { ASSETS } from './assets/manifest';
 export type { AssetId } from './assets/manifest';

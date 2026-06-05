@@ -59,12 +59,25 @@ This skill covers how to build, scaffold, and extend games in the Kids Games Exp
 - `AssetEntry` (type) — `{ module: any, type: AssetType, tags: readonly string[] }`
 - `AssetType` (type) — `'audio'` (currently; images will be added here)
 
-**Design tokens**
-- `COLORS` — color palette (primary, background, text, etc.)
+**Design tokens** (warm cream design system, ported from `design/tokens.css`)
+- `COLORS` — palette: `canvas`/`surface`, `ink`/`inkSoft`/`inkFaint`, `brand`/`brandDeep`/`brandTint`, `gold`, plus backward-compatible `primary`/`background`/`text` groups
+- `ACCENTS` — per-game accent families (`green`/`orange`/`coral`/`purple`/`blue`/`pink`), each `{ base, deep, tint }`; `AccentName` (type)
 - `SPACING` — spacing scale (`xs`, `sm`, `md`, `lg`, `xl`, `xxl`)
-- `BORDER_RADIUS` — border radius values
+- `BORDER_RADIUS` — radii incl. `tile`/`card`/`btn`/`pill`
 - `TOUCH_TARGET` — touch target sizes (`recommended` = 64)
 - `FONT_SIZES` — font size scale (`sm`, `md`, `lg`, `xl`, `xxl`)
+- `SHADOWS` — soft warm RN shadow fragments (`sm`/`md`/`lg`) — spread into a style, don't hand-roll shadows
+- `FONTS` — font families: `display` (Fredoka, for headings/buttons), `body`/`bodySemi`/`bodyExtra` (Nunito, for body text); loaded in `App.tsx`
+
+**UI primitives** — build UI from these; never hardcode hex/system-fonts/ad-hoc buttons
+- `PressableButton` — the chunky tactile CTA (solid bottom edge that compresses). Props: `label`/`children`, `accent?`, `color?`, `variant?: 'solid'|'ghost'`, `align?`. The default button.
+- `BigButton` — thin `title`/`onPress` wrapper over `PressableButton` (accepts `accent` or `color`)
+- `IconButton` — circular surface control (`glyph`, `glyphSize?`); `AppBar` — header (back · centered title · `right` slot)
+- `Chip` — pill filter (`label`, `active`); `HudPill` + `hudTextStyle` — in-game counters
+- `EmojiFrame` — tinted rounded emoji frame; `Star` — gold star (`filled`, `size`)
+- `GameCard` — home tile (`accent`, `ageLabel`, `tag?`); `BackButton`, `SafeContainer`
+
+**Design-system rule:** set `accent: AccentName` in the game config; theme buttons/cards/cards from it. Use `FONTS.display` on headings/buttons, `FONTS.body*` on copy. Reach for `SHADOWS.*` and `ACCENTS`/`COLORS` — not inline shadows or raw hex.
 
 ---
 
@@ -90,6 +103,7 @@ This skill covers how to build, scaffold, and extend games in the Kids Games Exp
      component: MyGame,
      backgroundColor: '#E8F4FD',
      // optional enrichment:
+     accent: 'blue', // design-system accent (AccentName) for the home tile
      tags: ['letters', 'spelling'],
      version: '1.0.0',
      author: 'Your Name',
@@ -296,6 +310,7 @@ A game whose `ageRange` overlaps a band appears in that band's filter. To overri
 
 | Field | Type | Purpose |
 |-------|------|---------|
+| `accent` | `AccentName` | Design-system accent for the home tile + themable controls (falls back to a derived accent) |
 | `tags` | `string[]` | Searchable tags |
 | `layout` | `GameLayoutOptions` | `mode: 'shell'|'bare'`, `title`, `showBack` |
 | `bands` | `string[]` | Override auto-derived age bands |

@@ -43,7 +43,10 @@ All games import exclusively from `@/sdk`. The SDK exports:
 - **Settings**: `useSettings()` hook, `settingsStore`, `DEFAULT_SETTINGS`, `Settings` type (`soundEnabled`, `hapticsEnabled`, `ageBand`)
 - **Age**: `AGE_BANDS` (toddler 2–3, preschool 3–5, early 5–7, kids 7–10), `bandsForGame(config)`, `gamesForBand(bandId)`, `AgeBand` type
 - **Assets**: `ASSETS` manifest, `getAsset(id)`, `findAssets({ type?, tags? })`, `pickAsset(intent)`, `AssetId`/`AssetEntry`/`AssetType` types
-- **Design tokens**: `COLORS`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES`
+- **Design tokens**: `COLORS` (warm cream/ink/violet system), `ACCENTS` (per-game accent families: `green`/`orange`/`coral`/`purple`/`blue`/`pink`, each `{ base, deep, tint }`) + `AccentName`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES`, `SHADOWS` (RN shadow fragments `sm`/`md`/`lg`), `FONTS` (`display`=Fredoka, `body`/`bodySemi`/`bodyExtra`=Nunito; loaded in `App.tsx` via `useFonts`)
+- **UI primitives**: `PressableButton` (chunky tactile CTA — the standard button) / `BigButton` (title wrapper over it), `IconButton` (circular surface control), `AppBar` (back · centered title · action slot), `Chip` (pill filter), `HudPill` + `hudTextStyle` (in-game counters), `EmojiFrame` (tinted rounded emoji), `Star`, `GameCard` (home tile), `BackButton`, `SafeContainer`
+
+**Design-system adherence (applies to all games & screens):** Build UI from the tokens and primitives above — do **not** hardcode hex colors, use system fonts, or hand-roll buttons/headers/shadows. Apply `FONTS.display` to headings/buttons and `FONTS.body*` to body text; use `SHADOWS.*` not inline shadow objects; use `ACCENTS`/`COLORS` not raw hex. Each game sets an `accent: AccentName` in its config (drives its home tile + themable controls). The chunky `PressableButton` is the default CTA; `AppBar` is the canonical header.
 
 **Asset manifest + tag vocabulary (`src/sdk/assets/manifest.ts`):**
 
