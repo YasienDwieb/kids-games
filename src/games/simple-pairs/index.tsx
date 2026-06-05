@@ -6,6 +6,13 @@ import { useSound } from '@/sdk';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from './constants';
 import type { Difficulty } from './types';
 
+// Fewer moves earn more stars (mirrors design starsFor).
+function starsFor(moves: number, pairs: number): number {
+  if (moves <= Math.ceil(pairs * 1.5)) return 3;
+  if (moves <= pairs * 2 + 1) return 2;
+  return 1;
+}
+
 function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: () => void }) {
   const { gameState, flipCard, resetGame } = useSimplePairs(difficulty);
   const { play } = useSound();
@@ -39,9 +46,16 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
     resetGame();
   };
 
+  const stars = starsFor(gameState.moves, gameState.totalPairs);
+
   return (
     <View style={styles.container}>
-      <GameHeader onReset={resetGame} />
+      <GameHeader
+        found={gameState.matchedPairs}
+        total={gameState.totalPairs}
+        moves={gameState.moves}
+        onReset={resetGame}
+      />
 
       <GameBoard
         cards={gameState.cards}
@@ -58,7 +72,9 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
       <WinScreen
         visible={gameState.isComplete}
         moves={gameState.moves}
+        stars={stars}
         onPlayAgain={handlePlayAgain}
+        onPickLevel={onBack}
       />
     </View>
   );

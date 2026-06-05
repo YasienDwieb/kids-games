@@ -8,6 +8,7 @@ registerGame({
   icon: '🃏',
   ageRange: { min: 2, max: 5 },
   component: SimplePairsGame,
-  backgroundColor: '#E8F5E9',
+  backgroundColor: '#FBF3E6',
+  accent: 'green',
   layout: { mode: 'bare' },
 });

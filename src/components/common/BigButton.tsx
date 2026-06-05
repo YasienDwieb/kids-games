@@ -1,75 +1,37 @@
-import { useRef } from 'react';
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  Text,
-  type ViewStyle,
-} from 'react-native';
-import { COLORS, SPACING, FONT_SIZES, BORDER_RADIUS, TOUCH_TARGET } from '../../constants';
+import { type ViewStyle } from 'react-native';
+import { PressableButton } from './PressableButton';
+import type { AccentName } from '../../constants';
 
 type BigButtonProps = {
   title: string;
   onPress: () => void;
+  accent?: AccentName;
   color?: string;
+  variant?: 'solid' | 'ghost';
   disabled?: boolean;
   style?: ViewStyle;
 };
 
+// Thin wrapper over the chunky PressableButton, preserving the original
+// title/onPress/color API used across games.
 export function BigButton({
   title,
   onPress,
-  color = COLORS.primary.blue,
-  disabled = false,
+  accent,
+  color,
+  variant,
+  disabled,
   style,
 }: BigButtonProps) {
-  const scale = useRef(new Animated.Value(1)).current;
-
-  const animateIn = () => {
-    Animated.spring(scale, {
-      toValue: 0.93,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const animateOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      friction: 3,
-      useNativeDriver: true,
-    }).start();
-  };
-
   return (
-    <Animated.View style={[{ transform: [{ scale }] }, style]}>
-      <Pressable
-        onPress={onPress}
-        onPressIn={animateIn}
-        onPressOut={animateOut}
-        disabled={disabled}
-        style={[
-          styles.button,
-          { backgroundColor: disabled ? COLORS.disabled : color },
-        ]}
-      >
-        <Text style={styles.text}>{title}</Text>
-      </Pressable>
-    </Animated.View>
+    <PressableButton
+      label={title}
+      onPress={onPress}
+      accent={accent}
+      color={color}
+      variant={variant}
+      disabled={disabled}
+      style={style}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    minHeight: TOUCH_TARGET.large,
-    paddingHorizontal: SPACING.xl,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: 'bold',
-    color: COLORS.text.inverse,
-  },
-});

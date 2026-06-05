@@ -9,6 +9,7 @@ registerGame({
   ageRange: { min: 3, max: 8 },
   component: MouseMazeGame,
   backgroundColor: '#FFF3E0',
+  accent: 'orange',
   tags: ['maze', 'puzzle', 'logic'],
   version: '1.0.0',
   layout: { mode: 'bare' },

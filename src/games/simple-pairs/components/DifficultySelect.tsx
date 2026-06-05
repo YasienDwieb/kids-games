@@ -1,60 +1,59 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { Difficulty } from '../types';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from '../constants';
-import { BigButton } from '../../../components/common';
-import { COLORS, FONT_SIZES, SPACING } from '../../../constants';
+import { PressableButton, EmojiFrame } from '../../../components/common';
+import { COLORS, FONTS, SPACING } from '../../../constants';
+import type { AccentName } from '../../../constants';
 
 type DifficultySelectProps = {
   onSelect: (difficulty: Difficulty) => void;
 };
 
-const OPTIONS: { difficulty: Difficulty; label: string; color: string; preview: string }[] = [
-  {
-    difficulty: 'easy',
-    label: '🐣  Easy',
-    color: COLORS.primary.green,
-    preview: `${DIFFICULTY_CONFIG.easy.pairs * 2} cards`,
-  },
-  {
-    difficulty: 'medium',
-    label: '🐥  Medium',
-    color: COLORS.primary.orange,
-    preview: `${DIFFICULTY_CONFIG.medium.pairs * 2} cards`,
-  },
-  {
-    difficulty: 'hard',
-    label: '🦁  Hard',
-    color: COLORS.primary.red,
-    preview: `${DIFFICULTY_CONFIG.hard.pairs * 2} cards`,
-  },
-  {
-    difficulty: 'expert',
-    label: '🏆  Expert',
-    color: COLORS.primary.purple,
-    preview: `${DIFFICULTY_CONFIG.expert.pairs * 2} cards`,
-  },
+const LEVELS: { difficulty: Difficulty; name: string; emoji: string; accent: AccentName }[] = [
+  { difficulty: 'easy', name: 'Easy', emoji: '🐣', accent: 'green' },
+  { difficulty: 'medium', name: 'Medium', emoji: '🐥', accent: 'orange' },
+  { difficulty: 'hard', name: 'Hard', emoji: '🦁', accent: 'coral' },
+  { difficulty: 'expert', name: 'Expert', emoji: '🏆', accent: 'purple' },
 ];
 
 export function DifficultySelect({ onSelect }: DifficultySelectProps) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🃏 Simple Pairs</Text>
-      <Text style={styles.subtitle}>How many cards?</Text>
+      <Text style={styles.title}>Simple Pairs</Text>
+      <Text style={styles.subtitle}>How many pairs can you match?</Text>
 
-      <View style={styles.options}>
-        {OPTIONS.map(({ difficulty, label, color, preview }) => (
-          <View key={difficulty} style={styles.option}>
-            <Text style={styles.cardPreview}>{preview}</Text>
-            <BigButton
-              title={label}
+      <ScrollView
+        contentContainerStyle={styles.options}
+        showsVerticalScrollIndicator={false}
+      >
+        {LEVELS.map(({ difficulty, name, emoji, accent }) => {
+          const pairs = DIFFICULTY_CONFIG[difficulty].pairs;
+          return (
+            <PressableButton
+              key={difficulty}
+              accent={accent}
+              align="flex-start"
               onPress={() => onSelect(difficulty)}
-              color={color}
               style={styles.button}
-            />
-          </View>
-        ))}
-      </View>
+            >
+              <EmojiFrame
+                emoji={emoji}
+                size={52}
+                fontSize={30}
+                radius={14}
+                tint="rgba(255,255,255,0.25)"
+              />
+              <View style={styles.labelCol}>
+                <Text style={styles.levelName}>{name}</Text>
+                <Text style={styles.levelMeta}>
+                  {pairs} pairs · {pairs * 2} cards
+                </Text>
+              </View>
+            </PressableButton>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
@@ -63,37 +62,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: GAME_COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.lg,
+    paddingHorizontal: 22,
+    paddingTop: SPACING.xxl + SPACING.lg,
   },
   title: {
-    fontSize: FONT_SIZES.title,
-    fontWeight: 'bold',
-    color: '#2E7D32',
+    fontFamily: FONTS.displayBold,
+    fontSize: 30,
+    color: COLORS.ink,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: FONT_SIZES.lg,
-    color: '#558B2F',
+    fontFamily: FONTS.body,
+    fontSize: 16,
+    color: COLORS.inkSoft,
     textAlign: 'center',
-    marginTop: SPACING.sm,
-    marginBottom: SPACING.xxl,
+    marginTop: 6,
+    marginBottom: 22,
   },
   options: {
-    width: '100%',
-    maxWidth: 280,
-    gap: SPACING.lg,
+    gap: 14,
+    paddingBottom: SPACING.xl,
   },
-  option: {
-    alignItems: 'center',
-    gap: SPACING.sm,
+  button: { width: '100%' },
+  labelCol: { gap: 2 },
+  levelName: {
+    fontFamily: FONTS.display,
+    fontSize: 20,
+    color: COLORS.surface,
   },
-  cardPreview: {
-    fontSize: FONT_SIZES.md,
-    letterSpacing: 4,
-  },
-  button: {
-    width: '100%',
+  levelMeta: {
+    fontFamily: FONTS.body,
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.92)',
   },
 });
