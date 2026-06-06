@@ -18,6 +18,14 @@ A multi-game Expo React Native app for young children (ages 2–10). Each game i
   <img src="docs/screenshots/balloon-archer.jpeg" alt="Balloon Archer gameplay" width="500" />
 </p>
 
+## Try it (Android APK)
+
+Want to play without building anything? Grab the latest signed APK from the
+**[Releases page](https://github.com/YasienDwieb/kids-games/releases/latest)**, copy it to an
+Android device, and install it (you may need to allow "install from unknown sources").
+
+> This is a pre-store build for early experimentation — a Play Store listing will follow.
+
 ## Getting Started
 
 ```bash
