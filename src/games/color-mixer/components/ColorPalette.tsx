@@ -45,7 +45,7 @@ export function ColorPalette({
 
         {savedColors.length > 0 && (
           <>
-            <Text style={[styles.title, styles.savedTitle]}>My Colors</Text>
+            <Text style={[styles.title, styles.savedTitle]}>Saved</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}

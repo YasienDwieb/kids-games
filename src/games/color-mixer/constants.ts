@@ -93,8 +93,6 @@ export const TIMING = {
   COLOR_SPAWN_DELAY: 200,
 };
 
-export const ALL_COLOR_IDS: ColorId[] = Object.keys(COLORS) as ColorId[];
-
 export const DISCOVERY_HINTS: Partial<Record<ColorId, string>> = {
   orange: 'Mix two warm colors',
   green: 'Mix a warm and a cool color',
@@ -114,8 +112,6 @@ export const CHALLENGES: Challenge[] = [
   { id: 'c5', targetColor: 'lightBlue', hint: 'Make blue lighter', difficulty: 'medium' },
   { id: 'c6', targetColor: 'brown', hint: 'Mix ALL the primary colors', difficulty: 'hard' },
 ];
-
-export const GAME_BG = '#FBF3E6'; // canvas
 
 /** Generous RGB (Euclidean) distance under which a blend "matches" a target. */
 export const MATCH_THRESHOLD = 60;
