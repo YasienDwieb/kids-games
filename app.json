@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "kids-games",
-    "slug": "kids-games",
+    "name": "Kids Zone",
+    "slug": "kids-zone",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.waybeyond.kidszone"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,10 +22,17 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "dev.waybeyond.kidszone"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f880aac1-cbdf-4069-9de0-983ed699a279"
+      }
+    },
+    "owner": "waybeyond"
   }
 }
