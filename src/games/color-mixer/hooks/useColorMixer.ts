@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createStore } from '@/sdk';
 import { COLORS } from '../constants';
-import type { ColorId, ColorData, SavedColor } from '../types';
+import type { ColorId, SavedColor } from '../types';
 import { addColorToMix, hexToRgb, nearestFamous } from '../utils';
+
+type StorePatch = Partial<{ savedColors: SavedColor[]; discoveries: ColorId[] }>;
 
 const store = createStore('color-mixer', {
   savedColors: [] as SavedColor[],
@@ -12,6 +14,19 @@ const store = createStore('color-mixer', {
 const PRIMARY_COLORS: ColorId[] = (Object.keys(COLORS) as ColorId[]).filter(
   (id) => COLORS[id].isPrimary,
 );
+
+// Serialize store writes: createStore has no atomic update, so concurrent
+// read-modify-write patches (e.g. a discovery landing as the user taps Save)
+// could otherwise read the same blob and clobber each other on disk.
+let writeQueue: Promise<unknown> = Promise.resolve();
+function enqueuePersist(patch: StorePatch): void {
+  writeQueue = writeQueue
+    .then(async () => {
+      const s = await store.get();
+      await store.set({ ...s, ...patch });
+    })
+    .catch((e) => console.error('Failed to persist color-mixer store:', e));
+}
 
 export function useColorMixer() {
   const [newDiscovery, setNewDiscovery] = useState<ColorId | null>(null);
@@ -37,11 +52,7 @@ export function useColorMixer() {
       .catch((e) => console.error('Failed to load color-mixer store:', e));
   }, []);
 
-  const persist = useCallback((patch: Partial<{ savedColors: SavedColor[]; discoveries: ColorId[] }>) => {
-    store.get()
-      .then((s) => store.set({ ...s, ...patch }))
-      .catch((e) => console.error('Failed to persist color-mixer store:', e));
-  }, []);
+  const persist = useCallback((patch: StorePatch) => enqueuePersist(patch), []);
 
   /** Detect a first-time famous discovery from the running blend. */
   const detectDiscovery = useCallback((hex: string) => {
@@ -107,18 +118,11 @@ export function useColorMixer() {
 
   const acknowledgeDiscovery = useCallback(() => setNewDiscovery(null), []);
 
-  const discoveredColors = useCallback(
-    (): ColorData[] => discoveries.map((id) => COLORS[id]),
-    [discoveries],
-  );
-
   return {
-    primaryColors: PRIMARY_COLORS,
     unlockedColors: PRIMARY_COLORS, // palette = primaries (continuous engine)
     newDiscovery,
     discoveries,
     acknowledgeDiscovery,
-    discoveredColors,
 
     currentMixHex,
     canUndo: mixHistory.length > 0,

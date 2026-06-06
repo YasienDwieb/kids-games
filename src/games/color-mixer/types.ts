@@ -39,5 +39,4 @@ export interface SavedColor extends DynamicColor {
   id: string;
   name: string;
   createdAt: number;
-  recipe?: string[];
 }

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createStore } from '@/sdk';
-import { CHALLENGES, COLORS } from '../constants';
-import { isChallengeMet } from '../utils';
+import { CHALLENGES } from '../constants';
 import type { Challenge } from '../types';
 
 const challengeStore = createStore('color-mixer-challenges', {
@@ -26,14 +25,6 @@ export function useChallengeMode() {
 
   const clearChallenge = useCallback(() => setCurrentChallenge(null), []);
 
-  const checkChallengeComplete = useCallback(
-    (mixHex: string | null): boolean => {
-      if (!currentChallenge) return false;
-      return isChallengeMet(mixHex, COLORS[currentChallenge.targetColor].hex);
-    },
-    [currentChallenge],
-  );
-
   const markChallengeComplete = useCallback(() => {
     if (!currentChallenge) return;
     setCompletedChallenges((prev) => {
@@ -53,7 +44,6 @@ export function useChallengeMode() {
     completedChallenges,
     selectChallenge,
     clearChallenge,
-    checkChallengeComplete,
     markChallengeComplete,
   };
 }
