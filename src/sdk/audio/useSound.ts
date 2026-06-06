@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Audio } from 'expo-av';
 import * as Haptics from 'expo-haptics';
-import { pickAsset, getAsset } from '@/sdk/assets/query';
+import { pickModule } from '@/sdk/assets/query';
 import { settingsStore } from '@/sdk/settings/store';
 
 export type PlayOptions = { haptic?: boolean };
@@ -27,16 +27,17 @@ export function useSound() {
 
     if (!settings.soundEnabled) return;
 
-    const id = pickAsset(intent);
-    if (!id) return; // graceful: unknown intent → silent
+    const module = pickModule(intent); // random variant for the intent
+    if (module === undefined) return; // graceful: unknown intent → silent
 
+    const key = String(module);
     try {
-      if (loaded.current[id]) {
-        await loaded.current[id].replayAsync();
+      if (loaded.current[key]) {
+        await loaded.current[key].replayAsync();
         return;
       }
-      const { sound } = await Audio.Sound.createAsync(getAsset(id).module, { shouldPlay: true });
-      loaded.current[id] = sound;
+      const { sound } = await Audio.Sound.createAsync(module, { shouldPlay: true });
+      loaded.current[key] = sound;
     } catch {
       // graceful degradation — game works without sound
     }

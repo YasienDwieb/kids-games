@@ -99,7 +99,7 @@ export default function MouseMazeGame() {
 
   const handleHint = useCallback(() => {
     if (state.won) return;
-    play('pop');
+    play('powerup');
     const cells = new Set(hintPath().map((p) => `${p.row},${p.col}`));
     setHintCells(cells);
     if (hintTimer.current) clearTimeout(hintTimer.current);
