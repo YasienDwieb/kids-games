@@ -18,3 +18,11 @@ export function findAssets(filter: { type?: AssetType; tags?: string[] }): Asset
 export function pickAsset(intent: string): AssetId | undefined {
   return (Object.keys(ASSETS) as AssetId[]).find((id) => (ASSETS[id].tags as readonly string[]).includes(intent));
 }
+
+/** A random variant module for an intent, or undefined if the intent matches nothing. */
+export function pickModule(intent: string): number | undefined {
+  const id = pickAsset(intent);
+  if (!id) return undefined;
+  const mods = getAsset(id).modules as readonly number[];
+  return mods[Math.floor(Math.random() * mods.length)];
+}

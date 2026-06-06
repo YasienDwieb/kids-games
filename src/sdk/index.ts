@@ -30,7 +30,7 @@ export {
 // Assets
 export { ASSETS } from './assets/manifest';
 export type { AssetId } from './assets/manifest';
-export { getAsset, findAssets, pickAsset } from './assets/query';
+export { getAsset, findAssets, pickAsset, pickModule } from './assets/query';
 export type { AssetEntry, AssetType } from './assets/types';
 
 // Storage
