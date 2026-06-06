@@ -46,7 +46,7 @@ type Params = {
   area: { width: number; height: number };
   data: LevelData;
   enabled: boolean;
-  onShoot: () => void;
+  onShoot?: () => void;
   onPop: () => void;
   onCleared: (stars: number) => void;
   onFailed: () => void;
@@ -215,7 +215,7 @@ export function useArcheryGame({
             w.arrow = { x: archerX() + 28, y: w.laneY, vx: PHYSICS.arrowSpeed, vy: 0 };
             w.arrowsLeft -= 1;
             w.phase = 'flying';
-            ref.current.onShoot();
+            ref.current.onShoot?.();
           }
           w.drawing = false;
           tick();

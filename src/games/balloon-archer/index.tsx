@@ -33,7 +33,6 @@ export default function BalloonArcherGame() {
     };
   }, []);
 
-  const onShoot = useCallback(() => play('whoosh'), [play]);
   const onPop = useCallback(() => play('explosion'), [play]);
   const onCleared = useCallback(
     (stars: number) => {
@@ -51,7 +50,6 @@ export default function BalloonArcherGame() {
     area,
     data,
     enabled: status === 'playing' && overlay === null,
-    onShoot,
     onPop,
     onCleared,
     onFailed,
