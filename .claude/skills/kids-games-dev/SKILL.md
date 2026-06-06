@@ -52,11 +52,12 @@ This skill covers how to build, scaffold, and extend games in the Kids Games Exp
 
 **Assets**
 - `ASSETS` — the typed asset manifest (keyed by `AssetId`)
-- `AssetId` (type) — union of all manifest keys (`'sfx.pop' | 'sfx.success' | 'sfx.win' | 'sfx.wrong' | 'sfx.powerup' | 'sfx.jump' | 'sfx.transition'`)
+- `AssetId` (type) — union of all manifest keys (`'sfx.pop' | 'sfx.success' | 'sfx.win' | 'sfx.wrong' | 'sfx.powerup' | 'sfx.jump' | 'sfx.transition' | 'sfx.explosion' | 'sfx.hit' | 'sfx.laser' | 'sfx.random'`)
 - `getAsset(id)` — look up a manifest entry by id
 - `findAssets({ type?, tags? })` — filter manifest by type and/or tag array
-- `pickAsset(intent)` — return the first AssetId whose tags include the given intent string (used by useSound internally)
-- `AssetEntry` (type) — `{ module: any, type: AssetType, tags: readonly string[] }`
+- `pickAsset(intent)` — return the first AssetId whose tags include the given intent string
+- `pickModule(intent)` — resolve an intent to a **random variant module** from the matching asset (used by useSound internally); `undefined` for an unknown intent
+- `AssetEntry` (type) — `{ modules: number[], type: AssetType, tags: readonly string[] }` — `modules` is a list of interchangeable variants played at random
 - `AssetType` (type) — `'audio'` (currently; images will be added here)
 
 **Design tokens** (warm cream design system, ported from `design/tokens.css`)
@@ -146,13 +147,17 @@ play('wrong');     // mismatch, wrong answer
 play('powerup');   // power-up / boost collected
 play('jump');      // jump / hop / bounce
 play('transition');// scene change / next round whoosh
+play('explosion'); // pop a balloon, blast a target, destroy
+play('hit');       // bump / collision / take damage
+play('laser');     // shoot / zap / fire a projectile
+play('random');    // misc / surprise blip
 ```
 
-`useSound` calls `pickAsset(intent)` internally, so you never need to reference asset ids directly for audio.
+`useSound` calls `pickModule(intent)` internally: it resolves the intent to an asset, then plays a **random variant** from that asset's `modules` list, so repeated taps/matches don't sound identical. You never reference asset ids or files directly for audio.
 
 ### The controlled tag vocabulary (from manifest.ts)
 
-All audio is from the 8-bit "Sound Effects Mini Pack 1.5" — kid-friendly chiptune SFX.
+All audio is from the 8-bit "Sound Effects Mini Pack 1.5" — kid-friendly chiptune SFX. Each intent below carries **5 interchangeable variants** that are picked at random on play.
 
 | Asset id        | Tags                                            | Meaning |
 |-----------------|-------------------------------------------------|---------|
@@ -163,10 +168,14 @@ All audio is from the 8-bit "Sound Effects Mini Pack 1.5" — kid-friendly chipt
 | `sfx.powerup`   | `powerup`, `boost`, `upgrade`                   | Power-up / boost collected |
 | `sfx.jump`      | `jump`, `hop`, `bounce`                         | Jumping / hopping action |
 | `sfx.transition`| `transition`, `teleport`, `whoosh`, `appear`, `next` | Scene change, next round, teleport |
+| `sfx.explosion` | `explosion`, `blast`, `boom`, `destroy`, `pop-big` | Pop a balloon, blast/destroy a target |
+| `sfx.hit`       | `hit`, `bump`, `thud`, `hurt`, `damage`         | Collision, bump, taking damage |
+| `sfx.laser`     | `laser`, `shoot`, `zap`, `fire`, `beam`         | Shooting / firing a projectile |
+| `sfx.random`    | `random`, `misc`, `surprise`, `blip-alt`        | Miscellaneous / surprise blip |
 
 **Intent lookup:** pass any tag as the intent string to `play()` or `pickAsset()`. For example, `play('match')` resolves to `sfx.success` because `match` is in its tags. An unknown intent plays nothing (silent, no error).
 
-**Picking the right sound:** prefer the four core intents (`pop`/`success`/`win`/`wrong`) for standard match/quiz feedback. Reach for `powerup`, `jump`, or `transition` only when the game genuinely has that mechanic. Always reuse an existing tagged asset before adding a new file.
+**Picking the right sound:** prefer the four core intents (`pop`/`success`/`win`/`wrong`) for standard match/quiz feedback. Reach for `powerup`, `jump`, `transition`, `explosion`, `hit`, `laser`, or `random` only when the game genuinely has that mechanic. Always reuse an existing tagged asset before adding a new file.
 
 ### Finding assets programmatically
 
@@ -180,11 +189,14 @@ const entry = getAsset('sfx.pop');
 
 ### Adding a new asset
 
-1. Drop the file into `src/sdk/assets/<type>/` (e.g. `src/sdk/assets/audio/MySfx.wav`).
-2. Add a tagged entry to `src/sdk/assets/manifest.ts`:
+1. Drop the file(s) into `src/sdk/assets/<type>/` (e.g. `src/sdk/assets/audio/MySfx.wav`).
+2. Add a tagged entry to `src/sdk/assets/manifest.ts`. `modules` is a list of interchangeable variants — list every variant file you want randomized (one entry is fine too):
    ```ts
    'sfx.bounce': {
-     module: require('./audio/MySfx.wav'),
+     modules: [
+       require('./audio/MySfx.wav'),
+       require('./audio/MySfx1.wav'),
+     ],
      type: 'audio',
      tags: ['bounce', 'jump'],
    },

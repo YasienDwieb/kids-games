@@ -42,7 +42,7 @@ All games import exclusively from `@/sdk`. The SDK exports:
 - **Progress & levels**: `levelsFromList`/`levelsFromGenerator` → `LevelSource<T>`; `useLevels({ gameId, source })` → `{ status, level, data, score, isLast, start, startOver, advance, addScore, goTo }`; `createProgressStore`, `DEFAULT_PROGRESS`, `Progress`; `resumeStatusFor`, `ResumeStatus`; `ResumePrompt` (Continue/Start-over UI). Opt-in; coarse `{ level, score }` checkpoint persisted under `kg:progress:<gameId>`.
 - **Settings**: `useSettings()` hook, `settingsStore`, `DEFAULT_SETTINGS`, `Settings` type (`soundEnabled`, `hapticsEnabled`, `ageBand`)
 - **Age**: `AGE_BANDS` (toddler 2–3, preschool 3–5, early 5–7, kids 7–10), `bandsForGame(config)`, `gamesForBand(bandId)`, `AgeBand` type
-- **Assets**: `ASSETS` manifest, `getAsset(id)`, `findAssets({ type?, tags? })`, `pickAsset(intent)`, `AssetId`/`AssetEntry`/`AssetType` types
+- **Assets**: `ASSETS` manifest, `getAsset(id)`, `findAssets({ type?, tags? })`, `pickAsset(intent)`, `pickModule(intent)` (random variant), `AssetId`/`AssetEntry`/`AssetType` types
 - **Design tokens**: `COLORS` (warm cream/ink/violet system), `ACCENTS` (per-game accent families: `green`/`orange`/`coral`/`purple`/`blue`/`pink`, each `{ base, deep, tint }`) + `AccentName`, `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES`, `SHADOWS` (RN shadow fragments `sm`/`md`/`lg`), `FONTS` (`display`=Fredoka, `body`/`bodySemi`/`bodyExtra`=Nunito; loaded in `App.tsx` via `useFonts`)
 - **UI primitives**: `PressableButton` (chunky tactile CTA — the standard button) / `BigButton` (title wrapper over it), `IconButton` (circular surface control), `AppBar` (back · centered title · action slot), `Chip` (pill filter), `HudPill` + `hudTextStyle` (in-game counters), `EmojiFrame` (tinted rounded emoji), `Star`, `GameCard` (home tile), `BackButton`, `SafeContainer`
 
@@ -50,7 +50,7 @@ All games import exclusively from `@/sdk`. The SDK exports:
 
 **Asset manifest + tag vocabulary (`src/sdk/assets/manifest.ts`):**
 
-Shared audio assets (8-bit SFX from "Sound Effects Mini Pack 1.5"), referenced by intent string via `useSound().play(intent)`. Controlled tags:
+Shared audio assets (8-bit SFX from "Sound Effects Mini Pack 1.5"), referenced by intent string via `useSound().play(intent)`. Each intent carries **5 interchangeable variants** in its `modules` list; `play()` picks one at random (via `pickModule`) so repeated sounds don't feel monotonous. Controlled tags:
 - `sfx.pop` — tags: `pop`, `flip`, `tap`, `ui`, `select`
 - `sfx.success` — tags: `success`, `match`, `reward`, `correct`, `collect`
 - `sfx.win` — tags: `win`, `celebration`, `complete`, `levelup`
@@ -58,8 +58,12 @@ Shared audio assets (8-bit SFX from "Sound Effects Mini Pack 1.5"), referenced b
 - `sfx.powerup` — tags: `powerup`, `boost`, `upgrade`
 - `sfx.jump` — tags: `jump`, `hop`, `bounce`
 - `sfx.transition` — tags: `transition`, `teleport`, `whoosh`, `appear`, `next`
+- `sfx.explosion` — tags: `explosion`, `blast`, `boom`, `destroy`, `pop-big`
+- `sfx.hit` — tags: `hit`, `bump`, `thud`, `hurt`, `damage`
+- `sfx.laser` — tags: `laser`, `shoot`, `zap`, `fire`, `beam`
+- `sfx.random` — tags: `random`, `misc`, `surprise`, `blip-alt`
 
-To add an asset: drop the file in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts`.
+To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts` with a `modules: [...]` list (one or more variants).
 
 **Core types (`src/types/index.ts`):**
 
