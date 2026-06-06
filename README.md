@@ -1,6 +1,22 @@
+<p align="center">
+  <img src="docs/logo.png" alt="Kids Games logo" width="160" />
+</p>
+
 # Kids Games
 
 A multi-game Expo React Native app for young children (ages 2–10). Each game is a self-contained module that plugs into a shared **SDK** providing navigation, a kid-friendly design system, sound, storage, levels/progress, settings, and age bands.
+
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/home.jpeg" alt="Home — Let's Play! game grid" width="200" />
+  <img src="docs/screenshots/simple-pairs.jpeg" alt="Simple Pairs gameplay" width="200" />
+  <img src="docs/screenshots/color-mixer.jpeg" alt="Color Mixer" width="200" />
+  <img src="docs/screenshots/mouse-maze.jpeg" alt="Mouse Maze" width="200" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/balloon-archer.jpeg" alt="Balloon Archer gameplay" width="500" />
+</p>
 
 ## Getting Started
 
@@ -44,7 +60,8 @@ src/
 │   ├── _template/          # Copy this to start a new game
 │   ├── simple-pairs/       # Memory matching card game
 │   ├── color-mixer/        # Color mixing & discovery game
-│   └── mouse-maze/         # Swipe-to-solve maze with levels
+│   ├── mouse-maze/         # Swipe-to-solve maze with levels
+│   └── balloon-archer/     # Aim-and-pop balloon arcade game
 ├── types/                  # RootStackParamList, shared types
 ├── hooks/                  # Shared hooks
 └── utils/                  # Shared helpers
@@ -80,6 +97,7 @@ See `CLAUDE.md` (Design-system adherence) and the `kids-games-dev` skill for the
 | **Simple Pairs** | 2–5 | Memory | Match pairs of cards across Easy→Expert levels |
 | **Color Mixer** | 4–8 | Color theory | Blend RGB colors to discover famous colors, solve closeness challenges, and save your own |
 | **Mouse Maze** | 3–8 | Logic | Swipe to guide the mouse to the cheese, collecting stars; levels resume on return |
+| **Balloon Archer** | 5–8 | Aim & arcade | Aim your bow and pop the balloons across levels, with limited arrows |
 
 ## Adding a New Game
 
