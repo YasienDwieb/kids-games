@@ -4,3 +4,4 @@ export { registerGame, getGame, getAllGames, getGamesForAge } from './registry';
 import './simple-pairs/config';
 import './color-mixer/config';
 import './mouse-maze/config';
+import './balloon-archer/config';
