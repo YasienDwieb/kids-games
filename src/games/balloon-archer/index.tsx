@@ -34,7 +34,7 @@ export default function BalloonArcherGame() {
   }, []);
 
   const onShoot = useCallback(() => play('whoosh'), [play]);
-  const onPop = useCallback(() => play('pop'), [play]);
+  const onPop = useCallback(() => play('explosion'), [play]);
   const onCleared = useCallback(
     (stars: number) => {
       play('win');
