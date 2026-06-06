@@ -1,9 +1,10 @@
 import React, { useCallback, useRef } from 'react';
-import { Animated, PanResponder, StyleSheet, Text, View } from 'react-native';
+import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { COLORS as TOKENS, FONTS, SHADOWS } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
+import { isVerticalDrag, sortSavedNewestFirst } from '../utils';
 import type { ColorId, SavedColor } from '../types';
 
 type ColorPaletteProps = {
@@ -12,7 +13,10 @@ type ColorPaletteProps = {
   onColorDragMove: (instanceId: string, position: { x: number; y: number }) => void;
   onColorDragEnd: (instanceId: string, position: { x: number; y: number }) => void;
   savedColors?: SavedColor[];
-  onSavedColorDragEnd?: (savedColor: SavedColor, position: { x: number; y: number }) => void;
+  onSavedTap?: (hex: string) => void;
+  onSavedLiftStart?: (hex: string, x: number, y: number) => void;
+  onSavedLiftMove?: (x: number, y: number) => void;
+  onSavedLiftEnd?: (x: number, y: number) => void;
   paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
 };
 
@@ -22,7 +26,10 @@ export function ColorPalette({
   onColorDragMove,
   onColorDragEnd,
   savedColors = [],
-  onSavedColorDragEnd,
+  onSavedTap,
+  onSavedLiftStart,
+  onSavedLiftMove,
+  onSavedLiftEnd,
   paletteItemPositions,
 }: ColorPaletteProps) {
   return (
@@ -45,19 +52,27 @@ export function ColorPalette({
 
         {savedColors.length > 0 && (
           <>
-            <Text style={[styles.title, styles.savedTitle]}>Saved</Text>
-            {/* A wrap View (not a ScrollView) so a dragged saved color can
-                overflow upward into the mix area instead of being clipped. */}
-            <View style={styles.savedRow}>
-              {savedColors.map((saved) => (
-                <SavedPaletteSlot
+            <Text style={[styles.title, styles.savedTitle]}>Saved · tap or drag up</Text>
+            {/* A horizontal scroller keeps the saved area one row tall no matter how many
+                colors exist, so it can never squeeze the mixing zone. The actual lift-drag
+                is rendered by the parent in a full-screen overlay (this ScrollView clips). */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.savedStrip}
+              contentContainerStyle={styles.savedStripContent}
+            >
+              {sortSavedNewestFirst(savedColors).map((saved) => (
+                <SavedSwatch
                   key={saved.id}
                   saved={saved}
-                  onDragEnd={(pos) => onSavedColorDragEnd?.(saved, pos)}
-                  paletteItemPositions={paletteItemPositions}
+                  onTap={onSavedTap}
+                  onLiftStart={onSavedLiftStart}
+                  onLiftMove={onSavedLiftMove}
+                  onLiftEnd={onSavedLiftEnd}
                 />
               ))}
-            </View>
+            </ScrollView>
           </>
         )}
       </View>
@@ -206,48 +221,53 @@ function DraggableSlotBlob({
   );
 }
 
-type SavedPaletteSlotProps = {
+type SavedSwatchProps = {
   saved: SavedColor;
-  onDragEnd: (position: { x: number; y: number }) => void;
-  paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
+  onTap?: (hex: string) => void;
+  onLiftStart?: (hex: string, x: number, y: number) => void;
+  onLiftMove?: (x: number, y: number) => void;
+  onLiftEnd?: (x: number, y: number) => void;
 };
 
-function SavedPaletteSlot({ saved, onDragEnd, paletteItemPositions }: SavedPaletteSlotProps) {
-  const slotRef = useRef<View>(null);
-  const slotPosition = useRef({ x: 0, y: 0 });
+// Tap → add to mix. Vertical drag → hand absolute finger coords to the parent, which
+// renders the lifted ghost above everything (this swatch lives inside a clipping
+// ScrollView, so it cannot itself be dragged up into the zone). Horizontal motion is
+// ignored here so the ScrollView keeps it for scrolling.
+function SavedSwatch({ saved, onTap, onLiftStart, onLiftMove, onLiftEnd }: SavedSwatchProps) {
+  const dimAnim = useRef(new Animated.Value(1)).current;
 
-  const measureSlot = useCallback(() => {
-    slotRef.current?.measure((_x, _y, w, h, pageX, pageY) => {
-      if (pageX !== undefined) {
-        slotPosition.current = { x: pageX, y: pageY };
-        paletteItemPositions?.current.set(saved.id, { x: pageX, y: pageY, width: w, height: h });
-      }
-    });
-  }, [saved.id, paletteItemPositions]);
+  const endLift = useCallback(
+    (x: number, y: number) => {
+      dimAnim.setValue(1);
+      onLiftEnd?.(x, y);
+    },
+    [dimAnim, onLiftEnd],
+  );
 
-  const handleDragEnd = useCallback((_instanceId: string, localPos: { x: number; y: number }) => {
-    onDragEnd({
-      x: slotPosition.current.x + localPos.x,
-      y: slotPosition.current.y + localPos.y,
-    });
-  }, [onDragEnd]);
-
-  const size = DIMENSIONS.PALETTE_ITEM_SIZE;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_evt, gs) => isVerticalDrag(gs.dx, gs.dy),
+      onPanResponderGrant: (evt) => {
+        dimAnim.setValue(0.3); // dim the in-strip swatch while its ghost is lifted
+        onLiftStart?.(saved.hex, evt.nativeEvent.pageX, evt.nativeEvent.pageY);
+      },
+      onPanResponderMove: (_evt, gs) => onLiftMove?.(gs.moveX, gs.moveY),
+      onPanResponderRelease: (_evt, gs) => endLift(gs.moveX, gs.moveY),
+      // ScrollView stole the gesture (horizontal scroll) — dismiss the ghost off-screen.
+      onPanResponderTerminate: () => endLift(-1, -1),
+    }),
+  ).current;
 
   return (
-    <View ref={slotRef} onLayout={measureSlot} style={styles.slot}>
-      <View style={styles.slotDraggableArea}>
-        <DraggableSlotBlob
-          colorHex={saved.hex}
-          instanceId={saved.id}
-          size={size}
-          onDragStart={() => {}}
-          onDragMove={() => {}}
-          onDragEnd={handleDragEnd}
-        />
-      </View>
-      <ColorLabel name={saved.name} />
-    </View>
+    <Animated.View {...panResponder.panHandlers} style={{ opacity: dimAnim }}>
+      <Pressable style={styles.slot} onPress={() => onTap?.(saved.hex)}>
+        <View style={styles.slotDraggableArea}>
+          <ColorBlob color={saved.hex} size={DIMENSIONS.PALETTE_ITEM_SIZE} showShine />
+        </View>
+        <ColorLabel name={saved.name} />
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -292,14 +312,15 @@ const styles = StyleSheet.create({
   savedTitle: {
     marginTop: 10,
   },
-  savedRow: {
+  savedStrip: {
+    alignSelf: 'stretch',
+  },
+  savedStripContent: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    rowGap: 8,
     gap: 12,
-    paddingHorizontal: 4,
-    overflow: 'visible',
+    paddingHorizontal: 8,
+    paddingBottom: 4,
+    alignItems: 'flex-start',
   },
   slot: {
     alignItems: 'center',

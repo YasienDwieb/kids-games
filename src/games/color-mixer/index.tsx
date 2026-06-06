@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -11,8 +11,10 @@ import {
   IconButton,
   PressableButton,
   useScreenBack,
+  useSound,
 } from '@/sdk';
 import {
+  ColorBlob,
   ColorPalette,
   MixingZone,
   DiscoveryCelebration,
@@ -23,12 +25,18 @@ import {
 } from './components';
 import { useColorMixer, useChallengeMode } from './hooks';
 import { COLORS, DIMENSIONS } from './constants';
-import type { ColorId, GameMode, SavedColor } from './types';
+import type { ColorId, GameMode } from './types';
 
 export default function ColorMixerGame() {
   const mixer = useColorMixer();
   const challenge = useChallengeMode();
   const insets = useSafeAreaInsets();
+  const { play } = useSound();
+
+  // Lifted-ghost overlay for dragging a saved color up into the mixing zone.
+  // Rendered at the root (outside the palette's clipping ScrollView) so it isn't cut off.
+  const [liftedHex, setLiftedHex] = useState<string | null>(null);
+  const ghostPos = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
 
   const [mode, setMode] = useState<GameMode>('freeplay');
   const [showCollection, setShowCollection] = useState(false);
@@ -74,13 +82,44 @@ export default function ColorMixerGame() {
     [isInsideZone, mixer.addColorToContinuousMix],
   );
 
-  const handleSavedColorDragEnd = useCallback(
-    (saved: SavedColor, pos: { x: number; y: number }) => {
-      if (isInsideZone(pos)) {
-        mixer.addColorToContinuousMix(saved.hex);
-      }
+  const GHOST_SIZE = DIMENSIONS.PALETTE_ITEM_SIZE;
+
+  const addSavedToMix = useCallback(
+    (hex: string) => {
+      mixer.addColorToContinuousMix(hex);
+      play('pop');
     },
-    [isInsideZone, mixer.addColorToContinuousMix],
+    [mixer.addColorToContinuousMix, play],
+  );
+
+  const handleSavedTap = useCallback(
+    (hex: string) => addSavedToMix(hex),
+    [addSavedToMix],
+  );
+
+  const handleSavedLiftStart = useCallback(
+    (hex: string, x: number, y: number) => {
+      ghostPos.setValue({ x: x - GHOST_SIZE / 2, y: y - GHOST_SIZE / 2 });
+      setLiftedHex(hex);
+    },
+    [GHOST_SIZE, ghostPos],
+  );
+
+  const handleSavedLiftMove = useCallback(
+    (x: number, y: number) => {
+      ghostPos.setValue({ x: x - GHOST_SIZE / 2, y: y - GHOST_SIZE / 2 });
+    },
+    [GHOST_SIZE, ghostPos],
+  );
+
+  const handleSavedLiftEnd = useCallback(
+    (x: number, y: number) => {
+      setLiftedHex((hex) => {
+        if (hex && isInsideZone({ x, y })) addSavedToMix(hex);
+        return null;
+      });
+    },
+    [isInsideZone, addSavedToMix],
   );
 
   const isPositionInBounds = useCallback(
@@ -245,11 +284,26 @@ export default function ColorMixerGame() {
             onColorDragMove={handleDragMove}
             onColorDragEnd={handleDragEnd}
             savedColors={mixer.savedColors}
-            onSavedColorDragEnd={handleSavedColorDragEnd}
+            onSavedTap={handleSavedTap}
+            onSavedLiftStart={handleSavedLiftStart}
+            onSavedLiftMove={handleSavedLiftMove}
+            onSavedLiftEnd={handleSavedLiftEnd}
             paletteItemPositions={palettePositions}
           />
         </View>
       </View>
+
+      {liftedHex && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.ghost,
+            { width: GHOST_SIZE, height: GHOST_SIZE, transform: ghostPos.getTranslateTransform() },
+          ]}
+        >
+          <ColorBlob color={liftedHex} size={GHOST_SIZE} showShine />
+        </Animated.View>
+      )}
 
       {/* Modals */}
       <DiscoveryCelebration
@@ -326,5 +380,11 @@ const styles = StyleSheet.create({
   paletteContainer: {
     zIndex: 10,
     overflow: 'visible',
+  },
+  ghost: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    zIndex: 1000,
   },
 });
