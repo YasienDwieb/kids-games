@@ -7,8 +7,25 @@ export { registerGame, getGame, getAllGames, getGamesForAge } from './config/reg
 export { validateGameConfig } from './config/validate';
 
 // Design tokens (re-exported so games have one surface)
-export { COLORS } from '@/constants/colors';
-export { SPACING, BORDER_RADIUS, TOUCH_TARGET, FONT_SIZES } from '@/constants/dimensions';
+export { COLORS, ACCENTS, type AccentName } from '@/constants/colors';
+export { SPACING, BORDER_RADIUS, TOUCH_TARGET, FONT_SIZES, SHADOWS } from '@/constants/dimensions';
+export { FONTS } from '@/constants/typography';
+
+// Design-system UI primitives — always prefer these over hand-rolled controls.
+export {
+  PressableButton,
+  BigButton,
+  IconButton,
+  AppBar,
+  Chip,
+  HudPill,
+  hudTextStyle,
+  EmojiFrame,
+  Star,
+  GameCard,
+  BackButton,
+  SafeContainer,
+} from '@/components/common';
 
 // Assets
 export { ASSETS } from './assets/manifest';
@@ -32,6 +49,8 @@ export type { PlayOptions } from './audio/useSound';
 export { GameShell } from './layout/GameShell';
 export { GameOverlay } from './layout/GameOverlay';
 export { useGameShell } from './layout/GameShellContext';
+export { ScreenBackContext, useScreenBack } from './layout/ScreenBackContext';
+export type { BackInterceptor } from './layout/ScreenBackContext';
 export type { GameShellApi } from './layout/GameShellContext';
 export type { GameShellProps, OverlaySlot } from './layout/types';
 

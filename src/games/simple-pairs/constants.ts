@@ -10,8 +10,8 @@ export const TIMING = {
 
 export const LAYOUT = {
   CARD_SIZE: 100,
-  CARD_GAP: 16,
-  CARD_BORDER_RADIUS: 16,
+  CARD_GAP: 12,
+  CARD_BORDER_RADIUS: 14,
 };
 
 export const DIFFICULTY_CONFIG: Record<Difficulty, { pairs: number; columns: number }> = {
@@ -21,9 +21,12 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, { pairs: number; columns: num
   expert: { pairs: 9, columns: 3 },
 };
 
+// Aligned to the design system green accent.
 export const GAME_COLORS = {
-  background: '#E8F5E9',
-  cardFace: '#FFFFFF',
-  cardBack: '#81C784',
-  matched: '#C8E6C9',
+  background: '#FBF3E6', // canvas
+  cardFace: '#FFFFFF', // surface
+  cardBack: '#6FC27B', // green base
+  cardBackDeep: '#54A862', // green deep (bottom edge)
+  matched: '#E4F4E6', // green tint
+  matchedBorder: '#6FC27B',
 };

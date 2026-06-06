@@ -1,4 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { COLORS, FONTS, SHADOWS, BORDER_RADIUS } from '@/sdk';
 import { ChallengeCard } from './ChallengeCard';
 import type { Challenge } from '../types';
 
@@ -32,11 +34,14 @@ export function ChallengePicker({
   const totalCount = challenges.length;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>← Back</Text>
+        <Pressable
+          onPress={onBack}
+          style={({ pressed }) => [styles.backPill, pressed && styles.pressed]}
+        >
+          <Text style={styles.backText}>‹ Mix</Text>
         </Pressable>
         <Text style={styles.title}>Challenges</Text>
         <Text style={styles.progress}>
@@ -69,45 +74,46 @@ export function ChallengePicker({
           </View>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: COLORS.canvas,
   },
   header: {
     alignItems: 'center',
-    paddingTop: 12,
-    paddingBottom: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#7E57C2',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
   },
-  backButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    marginBottom: 4,
+  backPill: {
+    alignSelf: 'flex-end',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: BORDER_RADIUS.pill,
+    backgroundColor: COLORS.surface,
+    ...SHADOWS.sm,
   },
+  pressed: { opacity: 0.7 },
   backText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 15,
+    fontFamily: FONTS.display,
+    color: COLORS.ink,
   },
   title: {
     fontSize: 26,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 4,
+    fontFamily: FONTS.displayBold,
+    color: COLORS.ink,
+    marginTop: 4,
   },
   progress: {
     fontSize: 14,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.inkSoft,
+    marginTop: 2,
   },
   scroll: {
     flex: 1,
@@ -121,8 +127,8 @@ const styles = StyleSheet.create({
   },
   groupTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#7E57C2',
+    fontFamily: FONTS.display,
+    color: COLORS.inkSoft,
     marginBottom: 10,
     paddingLeft: 4,
   },
@@ -140,7 +146,7 @@ const styles = StyleSheet.create({
   },
   allDoneText: {
     fontSize: 20,
-    fontWeight: '800',
-    color: '#7E57C2',
+    fontFamily: FONTS.displayBold,
+    color: COLORS.brand,
   },
 });

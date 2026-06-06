@@ -1,76 +1,89 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
-import { ALL_COLOR_IDS, COLOR_GROUPS, COLORS, DISCOVERY_HINTS } from '../constants';
-import type { ColorId } from '../types';
+import { COLORS, DISCOVERY_HINTS } from '../constants';
+import { FAMOUS_IDS } from '../utils';
+import type { ColorId, SavedColor } from '../types';
 
-type ColorCollectionProps = {
-  unlockedColors: ColorId[];
+type MyColorsProps = {
   visible: boolean;
+  discoveries: ColorId[];
+  savedColors: SavedColor[];
+  onDeleteSaved: (id: string) => void;
   onClose: () => void;
 };
 
-export function ColorCollection({ unlockedColors, visible, onClose }: ColorCollectionProps) {
-  const total = ALL_COLOR_IDS.length;
-  const discovered = unlockedColors.length;
-
+export function ColorCollection({
+  visible,
+  discoveries,
+  savedColors,
+  onDeleteSaved,
+  onClose,
+}: MyColorsProps) {
   return (
     <Modal visible={visible} animationType="slide" statusBarTranslucent>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>My Colors</Text>
-          <Pressable
-            onPress={onClose}
-            style={({ pressed }) => [styles.closeButton, pressed && styles.closePressed]}
-          >
-            <Text style={styles.closeText}>Done</Text>
-          </Pressable>
+          <PressableButton label="Done" accent="blue" onPress={onClose} />
         </View>
 
-        {/* Progress */}
-        <View style={styles.progressArea}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${(discovered / total) * 100}%` }]} />
-          </View>
-          <Text style={styles.progressText}>
-            {discovered} of {total} colors discovered
-          </Text>
-        </View>
-
-        {/* Color groups */}
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-          {COLOR_GROUPS.map((group) => (
-            <View key={group.title} style={styles.group}>
-              <Text style={styles.groupTitle}>{group.title}</Text>
+          {/* Shelf 1 — Famous colors */}
+          <View style={styles.shelf}>
+            <View style={styles.shelfHeader}>
+              <Text style={styles.shelfTitle}>Famous colors</Text>
+              <Text style={styles.shelfMeta}>
+                {discoveries.length}/{FAMOUS_IDS.length} found
+              </Text>
+            </View>
+            <View style={styles.grid}>
+              {FAMOUS_IDS.map((id) => (
+                <FamousSlot key={id} colorId={id} discovered={discoveries.includes(id)} />
+              ))}
+            </View>
+          </View>
+
+          {/* Shelf 2 — My creations */}
+          <View style={styles.shelf}>
+            <View style={styles.shelfHeader}>
+              <Text style={styles.shelfTitle}>My creations</Text>
+            </View>
+            {savedColors.length === 0 ? (
+              <Text style={styles.emptyText}>Mix a color and tap Save!</Text>
+            ) : (
               <View style={styles.grid}>
-                {group.colors.map((colorId) => (
-                  <ColorSlot
-                    key={colorId}
-                    colorId={colorId}
-                    unlocked={unlockedColors.includes(colorId)}
-                  />
+                {savedColors.map((c) => (
+                  <View key={c.id} style={styles.slot}>
+                    <Pressable
+                      onPress={() => onDeleteSaved(c.id)}
+                      hitSlop={8}
+                      style={styles.deleteButton}
+                      accessibilityLabel={`Delete ${c.name}`}
+                    >
+                      <Text style={styles.deleteIcon}>×</Text>
+                    </Pressable>
+                    <ColorBlob color={c.hex} size={56} showShine />
+                    <Text style={styles.colorName} numberOfLines={1}>
+                      {c.name}
+                    </Text>
+                  </View>
                 ))}
               </View>
-            </View>
-          ))}
-
-          {discovered === total && (
-            <View style={styles.completeArea}>
-              <Text style={styles.completeEmoji}>🏆</Text>
-              <Text style={styles.completeText}>You found them all!</Text>
-            </View>
-          )}
+            )}
+          </View>
         </ScrollView>
       </View>
     </Modal>
   );
 }
 
-function ColorSlot({ colorId, unlocked }: { colorId: ColorId; unlocked: boolean }) {
+function FamousSlot({ colorId, discovered }: { colorId: ColorId; discovered: boolean }) {
   const colorData = COLORS[colorId];
   const hint = DISCOVERY_HINTS[colorId];
 
-  if (unlocked) {
+  if (discovered) {
     return (
       <View style={styles.slot}>
         <ColorBlob color={colorData.hex} size={56} showShine />
@@ -84,8 +97,11 @@ function ColorSlot({ colorId, unlocked }: { colorId: ColorId; unlocked: boolean 
       <View style={styles.lockedBlob}>
         <Text style={styles.lockedIcon}>?</Text>
       </View>
-      {hint && <Text style={styles.hintText}>{hint}</Text>}
-      {!hint && <Text style={styles.lockedName}>???</Text>}
+      {hint ? (
+        <Text style={styles.hintText}>{hint}</Text>
+      ) : (
+        <Text style={styles.lockedName}>???</Text>
+      )}
     </View>
   );
 }
@@ -93,7 +109,7 @@ function ColorSlot({ colorId, unlocked }: { colorId: ColorId; unlocked: boolean 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
+    backgroundColor: TOKENS.canvas,
   },
   header: {
     flexDirection: 'row',
@@ -101,53 +117,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 56,
     paddingHorizontal: 20,
-    paddingBottom: 12,
-    backgroundColor: '#FFE082',
+    paddingBottom: 16,
   },
   title: {
+    fontFamily: FONTS.displayBold,
     fontSize: 28,
-    fontWeight: '800',
-    color: '#5D4037',
-  },
-  closeButton: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-  },
-  closePressed: {
-    opacity: 0.7,
-  },
-  closeText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#5D4037',
-  },
-  progressArea: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: '#FFE082',
-    paddingBottom: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  progressBar: {
-    height: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 5,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#FF8F00',
-    borderRadius: 5,
-  },
-  progressText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#795548',
-    textAlign: 'center',
+    color: TOKENS.ink,
   },
   scroll: {
     flex: 1,
@@ -156,15 +131,25 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
-  group: {
-    marginBottom: 24,
+  shelf: {
+    marginBottom: 28,
   },
-  groupTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#6D4C41',
+  shelfHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
     marginBottom: 12,
     paddingLeft: 4,
+  },
+  shelfTitle: {
+    fontFamily: FONTS.display,
+    fontSize: 18,
+    color: TOKENS.ink,
+  },
+  shelfMeta: {
+    fontFamily: FONTS.body,
+    fontSize: 14,
+    color: TOKENS.inkSoft,
   },
   grid: {
     flexDirection: 'row',
@@ -172,68 +157,73 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   slot: {
-    width: 90,
+    width: 96,
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: TOKENS.surface,
+    borderRadius: BORDER_RADIUS.card,
     paddingVertical: 12,
     paddingHorizontal: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
+    ...SHADOWS.sm,
   },
   colorName: {
     marginTop: 8,
+    fontFamily: FONTS.bodySemi,
     fontSize: 12,
-    fontWeight: '700',
-    color: '#424242',
+    color: TOKENS.ink,
     textAlign: 'center',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 4,
+    right: 6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: TOKENS.line2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
+  },
+  deleteIcon: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 16,
+    lineHeight: 18,
+    color: TOKENS.ink,
   },
   lockedBlob: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: TOKENS.canvas2,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#BDBDBD',
+    borderColor: TOKENS.line2,
     borderStyle: 'dashed',
   },
   lockedIcon: {
+    fontFamily: FONTS.displayBold,
     fontSize: 24,
-    fontWeight: '800',
-    color: '#9E9E9E',
+    color: TOKENS.inkFaint,
   },
   lockedName: {
     marginTop: 8,
+    fontFamily: FONTS.bodySemi,
     fontSize: 12,
-    fontWeight: '600',
-    color: '#BDBDBD',
+    color: TOKENS.inkFaint,
     textAlign: 'center',
   },
   hintText: {
     marginTop: 6,
+    fontFamily: FONTS.bodySemi,
     fontSize: 10,
-    fontWeight: '500',
-    color: '#9E9E9E',
+    color: TOKENS.inkSoft,
     textAlign: 'center',
-    fontStyle: 'italic',
   },
-  completeArea: {
-    alignItems: 'center',
-    marginTop: 16,
-    paddingVertical: 20,
-  },
-  completeEmoji: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  completeText: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#FF8F00',
+  emptyText: {
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    color: TOKENS.inkSoft,
+    paddingLeft: 4,
   },
 });

@@ -1,4 +1,4 @@
-import type { Challenge, ColorId, ColorData, ColorRecipe } from './types';
+import type { Challenge, ColorId, ColorData } from './types';
 
 export const COLORS: Record<ColorId, ColorData> = {
   red: {
@@ -25,28 +25,28 @@ export const COLORS: Record<ColorId, ColorData> = {
   orange: {
     id: 'orange',
     name: 'Orange',
-    hex: '#FF9800',
+    hex: '#F18835',
     isPrimary: false,
     isUnlocked: false,
   },
   green: {
     id: 'green',
     name: 'Green',
-    hex: '#43A047',
+    hex: '#8EB08D',
     isPrimary: false,
     isUnlocked: false,
   },
   purple: {
     id: 'purple',
     name: 'Purple',
-    hex: '#8E24AA',
+    hex: '#82618D',
     isPrimary: false,
     isUnlocked: false,
   },
   brown: {
     id: 'brown',
     name: 'Brown',
-    hex: '#6D4C41',
+    hex: '#AB8870',
     isPrimary: false,
     isUnlocked: false,
   },
@@ -67,27 +67,18 @@ export const COLORS: Record<ColorId, ColorData> = {
   pink: {
     id: 'pink',
     name: 'Pink',
-    hex: '#EC407A',
+    hex: '#F09A98',
     isPrimary: false,
     isUnlocked: false,
   },
   lightBlue: {
     id: 'lightBlue',
     name: 'Light Blue',
-    hex: '#29B6F6',
+    hex: '#8CC1F0',
     isPrimary: false,
     isUnlocked: false,
   },
 };
-
-export const COLOR_RECIPES: ColorRecipe[] = [
-  { ingredients: ['red', 'yellow'], result: 'orange' },
-  { ingredients: ['yellow', 'blue'], result: 'green' },
-  { ingredients: ['red', 'blue'], result: 'purple' },
-  { ingredients: ['red', 'yellow', 'blue'], result: 'brown' },
-  { ingredients: ['red', 'white'], result: 'pink' },
-  { ingredients: ['blue', 'white'], result: 'lightBlue' },
-];
 
 export const DIMENSIONS = {
   COLOR_BLOB_SIZE: 70,
@@ -101,14 +92,6 @@ export const TIMING = {
   DISCOVERY_CELEBRATION_DURATION: 2500,
   COLOR_SPAWN_DELAY: 200,
 };
-
-export const ALL_COLOR_IDS: ColorId[] = Object.keys(COLORS) as ColorId[];
-
-export const COLOR_GROUPS: { title: string; colors: ColorId[] }[] = [
-  { title: 'Primary Colors', colors: ['red', 'yellow', 'blue', 'white', 'black'] },
-  { title: 'Secondary Colors', colors: ['orange', 'green', 'purple'] },
-  { title: 'Special Colors', colors: ['pink', 'lightBlue', 'brown'] },
-];
 
 export const DISCOVERY_HINTS: Partial<Record<ColorId, string>> = {
   orange: 'Mix two warm colors',
@@ -130,4 +113,5 @@ export const CHALLENGES: Challenge[] = [
   { id: 'c6', targetColor: 'brown', hint: 'Mix ALL the primary colors', difficulty: 'hard' },
 ];
 
-export const GAME_BG = '#F5F5F5';
+/** Generous RGB (Euclidean) distance under which a blend "matches" a target. */
+export const MATCH_THRESHOLD = 60;

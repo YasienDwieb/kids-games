@@ -1,5 +1,6 @@
 import React, { useCallback, useRef } from 'react';
-import { Animated, PanResponder, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, PanResponder, StyleSheet, Text, View } from 'react-native';
+import { COLORS as TOKENS, FONTS, SHADOWS } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
@@ -44,12 +45,10 @@ export function ColorPalette({
 
         {savedColors.length > 0 && (
           <>
-            <Text style={[styles.title, styles.savedTitle]}>My Colors</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.savedRow}
-            >
+            <Text style={[styles.title, styles.savedTitle]}>Saved</Text>
+            {/* A wrap View (not a ScrollView) so a dragged saved color can
+                overflow upward into the mix area instead of being clipped. */}
+            <View style={styles.savedRow}>
               {savedColors.map((saved) => (
                 <SavedPaletteSlot
                   key={saved.id}
@@ -58,7 +57,7 @@ export function ColorPalette({
                   paletteItemPositions={paletteItemPositions}
                 />
               ))}
-            </ScrollView>
+            </View>
           </>
         )}
       </View>
@@ -259,29 +258,25 @@ const styles = StyleSheet.create({
   },
   paletteEdge: {
     height: 4,
-    backgroundColor: '#D7CCC8',
+    backgroundColor: TOKENS.line2,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     marginHorizontal: 8,
   },
   palette: {
-    backgroundColor: '#EFEBE9',
+    backgroundColor: TOKENS.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 12,
     paddingBottom: 20,
     paddingHorizontal: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 8,
+    ...SHADOWS.sm,
     overflow: 'visible',
   },
   title: {
+    fontFamily: FONTS.body,
     fontSize: 14,
-    fontWeight: '700',
-    color: '#8D6E63',
+    color: TOKENS.inkSoft,
     textAlign: 'center',
     marginBottom: 10,
     letterSpacing: 1,
@@ -299,6 +294,9 @@ const styles = StyleSheet.create({
   },
   savedRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    rowGap: 8,
     gap: 12,
     paddingHorizontal: 4,
     overflow: 'visible',

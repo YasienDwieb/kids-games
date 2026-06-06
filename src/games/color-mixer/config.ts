@@ -8,6 +8,7 @@ registerGame({
   icon: '🎨',
   ageRange: { min: 4, max: 8 },
   component: ColorMixerGame,
-  backgroundColor: '#F5F5F5',
+  backgroundColor: '#FBF3E6',
+  accent: 'blue',
   layout: { mode: 'bare' },
 });

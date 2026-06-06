@@ -1,150 +1,129 @@
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../types';
-import type { GameConfig } from '../types';
-import { GameCard } from '../components/common';
-import { SafeContainer } from '../components/common';
-import { COLORS, SPACING, FONT_SIZES } from '../constants';
-import { useSettings, gamesForBand, getAllGames, AGE_BANDS } from '@/sdk';
+import type { RootStackParamList, GameConfig } from '../types';
+import { GameCard, Chip, IconButton } from '../components/common';
+import { COLORS, FONTS, SPACING } from '../constants';
+import type { AccentName } from '../constants';
+import { useSettings, gamesForBand, getAllGames, AGE_BANDS, bandsForGame } from '@/sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+
+const ACCENT_CYCLE: AccentName[] = ['green', 'blue', 'orange', 'coral', 'purple', 'pink'];
+
+// Stable fallback accent when a game config doesn't declare one.
+function accentForGame(game: GameConfig, index: number): AccentName {
+  return game.accent ?? ACCENT_CYCLE[index % ACCENT_CYCLE.length];
+}
+
+function ageLabelForGame(game: GameConfig): string | undefined {
+  const ids = bandsForGame(game);
+  const band = AGE_BANDS.find((b) => ids.includes(b.id));
+  return band?.label;
+}
 
 export function HomeScreen({ navigation }: Props) {
   const { settings, update } = useSettings();
   const games = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
 
   return (
-    <SafeContainer>
-      <View style={styles.header}>
-        <Text style={styles.title}>Let's Play! 👋</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Settings')}
-          style={styles.gearButton}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Text style={styles.gearIcon}>⚙️</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.filterRow}>
-        <TouchableOpacity
-          style={[styles.chip, settings.ageBand === null && styles.chipActive]}
-          onPress={() => update({ ageBand: null })}
-        >
-          <Text style={[styles.chipText, settings.ageBand === null && styles.chipTextActive]}>
-            All
-          </Text>
-        </TouchableOpacity>
-        {AGE_BANDS.map((band) => (
-          <TouchableOpacity
-            key={band.id}
-            style={[styles.chip, settings.ageBand === band.id && styles.chipActive]}
-            onPress={() => update({ ageBand: band.id })}
-          >
-            <Text style={[styles.chipText, settings.ageBand === band.id && styles.chipTextActive]}>
-              {band.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {games.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyIcon}>🎮</Text>
-          <Text style={styles.emptyText}>No games yet!</Text>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        {/* greeting header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.hello}>Hello there 👋</Text>
+            <Text style={styles.title}>Let's Play!</Text>
+          </View>
+          <IconButton
+            glyph="⚙️"
+            onPress={() => navigation.navigate('Settings')}
+            accessibilityLabel="Settings"
+          />
         </View>
-      ) : (
-        <FlatList
-          data={games}
-          numColumns={2}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.grid}
-          columnWrapperStyle={styles.row}
-          renderItem={({ item }: { item: GameConfig }) => (
-            <GameCard
-              icon={item.icon}
-              name={item.name}
-              color={item.backgroundColor}
-              onPress={() => navigation.navigate('GamePlayer', { gameId: item.id })}
-              style={styles.card}
+
+        {/* category chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chips}
+        >
+          <Chip label="All" active={settings.ageBand === null} onPress={() => update({ ageBand: null })} />
+          {AGE_BANDS.map((band) => (
+            <Chip
+              key={band.id}
+              label={band.label}
+              active={settings.ageBand === band.id}
+              onPress={() => update({ ageBand: band.id })}
             />
-          )}
-        />
-      )}
-    </SafeContainer>
+          ))}
+        </ScrollView>
+
+        {/* grid */}
+        {games.length === 0 ? (
+          <Text style={styles.empty}>More games coming soon! 🎈</Text>
+        ) : (
+          <View style={styles.grid}>
+            {games.map((game, i) => (
+              <View key={game.id} style={styles.cell}>
+                <GameCard
+                  icon={game.icon}
+                  name={game.name}
+                  accent={accentForGame(game, i)}
+                  ageLabel={ageLabelForGame(game)}
+                  onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
+                />
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: COLORS.canvas },
+  scroll: { paddingBottom: SPACING.xl },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: SPACING.lg,
-    marginTop: SPACING.md,
-    paddingHorizontal: SPACING.md,
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingHorizontal: 22,
+    paddingTop: 14,
+  },
+  hello: {
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    color: COLORS.inkSoft,
   },
   title: {
-    flex: 1,
-    fontSize: FONT_SIZES.title,
-    fontWeight: 'bold',
-    color: COLORS.primary.purple,
-    textAlign: 'center',
+    fontFamily: FONTS.displayBold,
+    fontSize: 34,
+    color: COLORS.ink,
+    marginTop: 2,
   },
-  gearButton: {
-    position: 'absolute',
-    right: SPACING.md,
-  },
-  gearIcon: {
-    fontSize: FONT_SIZES.md,
-  },
-  filterRow: {
+  chips: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    marginBottom: SPACING.md,
-  },
-  chip: {
-    paddingVertical: SPACING.xs,
-    paddingHorizontal: SPACING.md,
-    backgroundColor: COLORS.background.white,
-    borderRadius: 999,
-  },
-  chipActive: {
-    backgroundColor: COLORS.primary.blue,
-  },
-  chipText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.text.primary,
-    fontWeight: '600',
-  },
-  chipTextActive: {
-    color: COLORS.text.inverse,
+    gap: 9,
+    paddingHorizontal: 22,
+    paddingTop: 16,
+    paddingBottom: 18,
   },
   grid: {
-    paddingBottom: SPACING.lg,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 18,
   },
-  row: {
-    justifyContent: 'space-evenly',
-    marginBottom: SPACING.md,
-  },
-  card: {
-    width: '44%',
-    aspectRatio: 1,
+  cell: {
+    width: '50%',
+    padding: 7,
   },
   empty: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyIcon: {
-    fontSize: FONT_SIZES.xxl,
-    marginBottom: SPACING.md,
-  },
-  emptyText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text.secondary,
-    fontWeight: 'bold',
+    fontFamily: FONTS.display,
+    fontSize: 16,
+    color: COLORS.inkSoft,
+    textAlign: 'center',
+    paddingVertical: 40,
   },
 });

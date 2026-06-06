@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 import type { Card as CardType } from '../types';
 import { LAYOUT, TIMING, GAME_COLORS } from '../constants';
-import { COLORS } from '../../../constants';
+import { COLORS, SHADOWS } from '../../../constants';
 
 type CardProps = {
   card: CardType;
@@ -83,7 +83,7 @@ export function Card({ card, onPress, disabled, size }: CardProps) {
             { transform: [{ rotateY: backRotation }], opacity: backOpacity },
           ]}
         >
-          <Text style={[styles.questionMark, { fontSize: cardSize * 0.4 }]}>?</Text>
+          <Text style={[styles.questionMark, { fontSize: cardSize * 0.34 }]}>?</Text>
         </Animated.View>
 
         {/* Front face */}
@@ -111,26 +111,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backfaceVisibility: 'hidden',
-    shadowColor: COLORS.shadow,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 1,
-    shadowRadius: 6,
-    elevation: 4,
   },
   cardBack: {
     backgroundColor: GAME_COLORS.cardBack,
+    borderBottomWidth: 5,
+    borderBottomColor: GAME_COLORS.cardBackDeep,
+    ...SHADOWS.sm,
   },
   cardFront: {
     backgroundColor: GAME_COLORS.cardFace,
+    ...SHADOWS.md,
   },
   cardMatched: {
     backgroundColor: GAME_COLORS.matched,
-    borderWidth: 3,
-    borderColor: '#66BB6A',
+    borderWidth: 2.5,
+    borderColor: GAME_COLORS.matchedBorder,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   questionMark: {
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.7)',
   },
   emoji: {},
 });

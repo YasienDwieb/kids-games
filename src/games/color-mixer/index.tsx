@@ -1,25 +1,39 @@
 import { useCallback, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  COLORS as TOKENS,
+  FONTS,
+  SPACING,
+  TOUCH_TARGET,
+  Chip,
+  IconButton,
+  PressableButton,
+  useScreenBack,
+} from '@/sdk';
 import {
   ColorPalette,
   MixingZone,
   DiscoveryCelebration,
   ColorCollection,
+  ColorNamingDialog,
   ChallengeMode,
   ChallengePicker,
 } from './components';
 import { useColorMixer, useChallengeMode } from './hooks';
-import { COLORS, DIMENSIONS, GAME_BG } from './constants';
+import { COLORS, DIMENSIONS } from './constants';
 import type { ColorId, GameMode, SavedColor } from './types';
 
 export default function ColorMixerGame() {
   const mixer = useColorMixer();
   const challenge = useChallengeMode();
+  const insets = useSafeAreaInsets();
 
   const [mode, setMode] = useState<GameMode>('freeplay');
   const [showCollection, setShowCollection] = useState(false);
   const [showChallengePicker, setShowChallengePicker] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
   const zoneRect = useRef({ x: 0, y: 0, width: 0, height: 0 });
   const palettePositions = useRef<Map<string, { x: number; y: number; width: number; height: number }>>(new Map());
@@ -53,15 +67,11 @@ export default function ColorMixerGame() {
   const handleDragEnd = useCallback(
     (_instanceId: string, pos: { x: number; y: number }) => {
       if (dragColorRef.current && isInsideZone(pos)) {
-        if (mixer.mixingZone.resultColor) {
-          mixer.clearZone();
-        }
-        mixer.addColorToZone(dragColorRef.current);
         mixer.addColorToContinuousMix(COLORS[dragColorRef.current].hex);
       }
       dragColorRef.current = null;
     },
-    [isInsideZone, mixer.mixingZone.resultColor, mixer.clearZone, mixer.addColorToZone, mixer.addColorToContinuousMix],
+    [isInsideZone, mixer.addColorToContinuousMix],
   );
 
   const handleSavedColorDragEnd = useCallback(
@@ -101,6 +111,15 @@ export default function ColorMixerGame() {
     [isPositionInBounds, mixer.savedColors, mixer.addColorToContinuousMix],
   );
 
+  const handleSaveColor = useCallback(
+    (name: string) => {
+      // Keep the current mix so the child can keep building on top of it.
+      mixer.saveCurrentMix(name);
+      setSaveDialogOpen(false);
+    },
+    [mixer.saveCurrentMix],
+  );
+
   const handleChallengeComplete = useCallback(() => {
     challenge.markChallengeComplete();
     setShowChallengePicker(true);
@@ -109,18 +128,25 @@ export default function ColorMixerGame() {
   const handleSwitchMode = useCallback(
     (newMode: GameMode) => {
       setMode(newMode);
-      mixer.clearZone();
       mixer.clearContinuousMix();
-      if (newMode === 'challenge') {
-        setShowChallengePicker(true);
-        challenge.clearChallenge();
-      } else {
-        setShowChallengePicker(false);
-        challenge.clearChallenge();
-      }
+      challenge.clearChallenge();
+      setShowChallengePicker(newMode === 'challenge');
     },
-    [mixer.clearZone, mixer.clearContinuousMix, challenge.clearChallenge],
+    [mixer.clearContinuousMix, challenge.clearChallenge],
   );
+
+  // Back steps up one internal level (challenge → picker → free play) before home.
+  useScreenBack(() => {
+    if (showChallengePicker) {
+      handleSwitchMode('freeplay');
+      return true;
+    }
+    if (mode === 'challenge' && challenge.currentChallenge) {
+      setShowChallengePicker(true);
+      return true;
+    }
+    return false;
+  });
 
   if (mode === 'challenge' && showChallengePicker) {
     return (
@@ -130,7 +156,6 @@ export default function ColorMixerGame() {
           completedChallenges={challenge.completedChallenges}
           onSelectChallenge={(c) => {
             challenge.selectChallenge(c);
-            mixer.clearZone();
             mixer.clearContinuousMix();
             setShowChallengePicker(false);
           }}
@@ -144,41 +169,38 @@ export default function ColorMixerGame() {
     <GestureHandlerRootView style={styles.root}>
       <View style={styles.container}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + SPACING.xs }]}>
+          {/* reserves room for the floating BackButton */}
+          <View style={styles.headerSide} />
           <Text style={styles.title}>Color Mixer</Text>
-          <Pressable
-            onPress={() => setShowCollection(true)}
-            style={styles.collectionButton}
-          >
-            <Text style={styles.collectionIcon}>📚</Text>
-          </Pressable>
+          <View style={styles.headerSide}>
+            <IconButton
+              glyph="📚"
+              onPress={() => setShowCollection(true)}
+              accessibilityLabel="My Colors"
+            />
+          </View>
         </View>
 
         {/* Mode toggle */}
         <View style={styles.modeToggle}>
-          <Pressable
+          <Chip
+            label="Free Play"
+            active={mode === 'freeplay'}
             onPress={() => handleSwitchMode('freeplay')}
-            style={[styles.modeButton, mode === 'freeplay' && styles.modeButtonActive]}
-          >
-            <Text style={[styles.modeText, mode === 'freeplay' && styles.modeTextActive]}>
-              Free Play
-            </Text>
-          </Pressable>
-          <Pressable
+          />
+          <Chip
+            label="Challenges"
+            active={mode === 'challenge'}
             onPress={() => handleSwitchMode('challenge')}
-            style={[styles.modeButton, mode === 'challenge' && styles.modeButtonActive]}
-          >
-            <Text style={[styles.modeText, mode === 'challenge' && styles.modeTextActive]}>
-              Challenges
-            </Text>
-          </Pressable>
+          />
         </View>
 
         {/* Challenge target */}
         {mode === 'challenge' && challenge.currentChallenge && (
           <ChallengeMode
             currentChallenge={challenge.currentChallenge}
-            resultColor={mixer.mixingZone.resultColor}
+            currentMixHex={mixer.currentMixHex}
             onChallengeComplete={handleChallengeComplete}
             onBack={() => setShowChallengePicker(true)}
           />
@@ -188,32 +210,30 @@ export default function ColorMixerGame() {
         <View style={styles.playArea}>
           <MixingZone
             size={DIMENSIONS.MIXING_ZONE_SIZE}
-            colorsInZone={mixer.mixingZone.colorsInZone}
-            resultColor={mixer.mixingZone.resultColor}
-            isMixing={mixer.mixingZone.isMixing}
-            onLayout={handleZoneLayout}
             currentMixHex={mixer.currentMixHex}
+            onLayout={handleZoneLayout}
             onResultDragEnd={handleResultDragEnd}
-            showDraggableResult={true}
           />
         </View>
 
-        {/* Continuous mix action buttons */}
+        {/* Action buttons */}
         <View style={styles.actions}>
           {mixer.canUndo && (
-            <TouchableOpacity style={styles.actionButton} onPress={mixer.undoLastMix}>
-              <Text style={styles.actionIcon}>↩️</Text>
-              <Text style={styles.actionLabel}>Undo</Text>
-            </TouchableOpacity>
+            <PressableButton label="↩️ Undo" variant="ghost" onPress={mixer.undoLastMix} />
           )}
           {mixer.currentMixHex && (
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => { mixer.clearZone(); mixer.clearContinuousMix(); }}
-            >
-              <Text style={styles.actionIcon}>🗑️</Text>
-              <Text style={styles.actionLabel}>Clear</Text>
-            </TouchableOpacity>
+            <PressableButton
+              label="🗑️ Clear"
+              variant="ghost"
+              onPress={mixer.clearContinuousMix}
+            />
+          )}
+          {mixer.currentMixHex && (
+            <PressableButton
+              label="💾 Save"
+              accent="blue"
+              onPress={() => setSaveDialogOpen(true)}
+            />
           )}
         </View>
 
@@ -238,9 +258,18 @@ export default function ColorMixerGame() {
         onComplete={mixer.acknowledgeDiscovery}
       />
 
+      <ColorNamingDialog
+        visible={saveDialogOpen}
+        colorHex={mixer.currentMixHex}
+        onSave={handleSaveColor}
+        onCancel={() => setSaveDialogOpen(false)}
+      />
+
       <ColorCollection
         visible={showCollection}
-        unlockedColors={mixer.unlockedColors}
+        discoveries={mixer.discoveries}
+        savedColors={mixer.savedColors}
+        onDeleteSaved={mixer.deleteSavedColor}
         onClose={() => setShowCollection(false)}
       />
     </GestureHandlerRootView>
@@ -253,63 +282,32 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: GAME_BG,
+    backgroundColor: TOKENS.canvas,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 52,
+    minHeight: TOUCH_TARGET.recommended,
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#424242',
-  },
-  collectionButton: {
-    position: 'absolute',
-    right: 16,
-    top: 52,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.06)',
-    alignItems: 'center',
+  headerSide: {
+    width: TOUCH_TARGET.recommended,
+    alignItems: 'flex-end',
     justifyContent: 'center',
   },
-  collectionIcon: {
-    fontSize: 22,
+  title: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: FONTS.displayBold,
+    fontSize: 24,
+    color: TOKENS.ink,
   },
   modeToggle: {
     flexDirection: 'row',
     alignSelf: 'center',
-    backgroundColor: '#E0E0E0',
-    borderRadius: 20,
-    padding: 3,
+    gap: SPACING.sm,
     marginBottom: 8,
-  },
-  modeButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 17,
-  },
-  modeButtonActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  modeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#9E9E9E',
-  },
-  modeTextActive: {
-    color: '#424242',
   },
   playArea: {
     flex: 1,
@@ -320,22 +318,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
+    gap: SPACING.md,
     paddingHorizontal: 20,
     paddingBottom: 12,
     minHeight: 56,
-  },
-  actionButton: {
-    alignItems: 'center',
-    padding: 8,
-  },
-  actionIcon: {
-    fontSize: 24,
-  },
-  actionLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 4,
   },
   paletteContainer: {
     zIndex: 10,

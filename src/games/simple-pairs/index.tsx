@@ -2,9 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { DifficultySelect, GameBoard, GameHeader, MatchCelebration, WinScreen } from './components';
 import { useSimplePairs } from './hooks';
-import { useSound } from '@/sdk';
+import { useSound, useScreenBack } from '@/sdk';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from './constants';
 import type { Difficulty } from './types';
+
+// Fewer moves earn more stars (mirrors design starsFor).
+function starsFor(moves: number, pairs: number): number {
+  if (moves <= Math.ceil(pairs * 1.5)) return 3;
+  if (moves <= pairs * 2 + 1) return 2;
+  return 1;
+}
 
 function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: () => void }) {
   const { gameState, flipCard, resetGame } = useSimplePairs(difficulty);
@@ -39,9 +46,16 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
     resetGame();
   };
 
+  const stars = starsFor(gameState.moves, gameState.totalPairs);
+
   return (
     <View style={styles.container}>
-      <GameHeader onReset={resetGame} />
+      <GameHeader
+        found={gameState.matchedPairs}
+        total={gameState.totalPairs}
+        moves={gameState.moves}
+        onReset={resetGame}
+      />
 
       <GameBoard
         cards={gameState.cards}
@@ -58,7 +72,9 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
       <WinScreen
         visible={gameState.isComplete}
         moves={gameState.moves}
+        stars={stars}
         onPlayAgain={handlePlayAgain}
+        onPickLevel={onBack}
       />
     </View>
   );
@@ -66,6 +82,15 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
 
 export default function SimplePairsGame() {
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+
+  // Back from the board returns to the difficulty picker before exiting home.
+  useScreenBack(() => {
+    if (difficulty) {
+      setDifficulty(null);
+      return true;
+    }
+    return false;
+  });
 
   if (!difficulty) {
     return <DifficultySelect onSelect={setDifficulty} />;

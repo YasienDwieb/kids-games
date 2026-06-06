@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { Sparkles } from './Sparkles';
 import { COLORS, TIMING } from '../constants';
@@ -17,45 +18,32 @@ export function DiscoveryCelebration({
   onComplete,
 }: DiscoveryCelebrationProps) {
   const overlayOpacity = useRef(new Animated.Value(0)).current;
-  const titleSlide = useRef(new Animated.Value(-30)).current;
-  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const cardScale = useRef(new Animated.Value(0.8)).current;
   const blobScale = useRef(new Animated.Value(0)).current;
-  const nameScale = useRef(new Animated.Value(0)).current;
   const sparklesOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!visible || !colorId) return;
 
-    // Reset
     overlayOpacity.setValue(0);
-    titleSlide.setValue(-30);
-    titleOpacity.setValue(0);
+    cardScale.setValue(0.8);
     blobScale.setValue(0);
-    nameScale.setValue(0);
     sparklesOpacity.setValue(0);
 
-    // Sequenced entrance
     Animated.sequence([
-      // 1. Overlay fades in
-      Animated.timing(overlayOpacity, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      // 2. "You discovered" slides down
       Animated.parallel([
-        Animated.timing(titleSlide, {
-          toValue: 0,
-          duration: 300,
+        Animated.timing(overlayOpacity, {
+          toValue: 1,
+          duration: 250,
           useNativeDriver: true,
         }),
-        Animated.timing(titleOpacity, {
+        Animated.spring(cardScale, {
           toValue: 1,
-          duration: 300,
+          friction: 6,
+          tension: 80,
           useNativeDriver: true,
         }),
       ]),
-      // 3. Blob bounces in + sparkles
       Animated.parallel([
         Animated.spring(blobScale, {
           toValue: 1,
@@ -69,19 +57,11 @@ export function DiscoveryCelebration({
           useNativeDriver: true,
         }),
       ]),
-      // 4. Color name pops in
-      Animated.spring(nameScale, {
-        toValue: 1,
-        friction: 5,
-        tension: 80,
-        useNativeDriver: true,
-      }),
     ]).start();
 
-    // Auto-dismiss
     const timer = setTimeout(onComplete, TIMING.DISCOVERY_CELEBRATION_DURATION);
     return () => clearTimeout(timer);
-  }, [visible, colorId, overlayOpacity, titleSlide, titleOpacity, blobScale, nameScale, sparklesOpacity, onComplete]);
+  }, [visible, colorId, overlayOpacity, cardScale, blobScale, sparklesOpacity, onComplete]);
 
   if (!visible || !colorId) return null;
 
@@ -91,45 +71,22 @@ export function DiscoveryCelebration({
     <Modal visible transparent animationType="none" statusBarTranslucent>
       <Pressable style={styles.touchArea} onPress={onComplete}>
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
-          <View style={styles.content}>
-            {/* Title */}
-            <Animated.Text
-              style={[
-                styles.title,
-                {
-                  opacity: titleOpacity,
-                  transform: [{ translateY: titleSlide }],
-                },
-              ]}
-            >
-              You discovered
-            </Animated.Text>
+          <Animated.View style={[styles.card, { transform: [{ scale: cardScale }] }]}>
+            <Text style={styles.title}>New color!</Text>
 
-            {/* Blob + Sparkles */}
             <View style={styles.blobArea}>
-              <Animated.View style={{ opacity: sparklesOpacity }}>
-                <Sparkles color={colorData.hex} radius={120} />
+              <Animated.View style={[styles.sparkleLayer, { opacity: sparklesOpacity }]}>
+                <Sparkles color={colorData.hex} radius={110} />
               </Animated.View>
               <Animated.View style={{ transform: [{ scale: blobScale }] }}>
-                <ColorBlob color={colorData.hex} size={120} showShine />
+                <ColorBlob color={colorData.hex} size={110} showShine />
               </Animated.View>
             </View>
 
-            {/* Color name */}
-            <Animated.Text
-              style={[
-                styles.colorName,
-                { color: colorData.hex },
-                { transform: [{ scale: nameScale }] },
-              ]}
-            >
-              {colorData.name}!
-            </Animated.Text>
+            <Text style={styles.colorName}>{colorData.name}</Text>
 
-            <Animated.Text style={[styles.tapHint, { opacity: nameScale }]}>
-              Tap anywhere to continue
-            </Animated.Text>
-          </View>
+            <PressableButton label="Yay!" accent="blue" onPress={onComplete} style={styles.cta} />
+          </Animated.View>
         </Animated.View>
       </Pressable>
     </Modal>
@@ -142,39 +99,45 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: TOKENS.overlay,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  content: {
+  card: {
     alignItems: 'center',
-    paddingHorizontal: 40,
+    backgroundColor: TOKENS.surface,
+    borderRadius: BORDER_RADIUS.tile,
+    paddingHorizontal: 32,
+    paddingVertical: 28,
+    ...SHADOWS.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 24,
+    fontFamily: FONTS.displayBold,
+    fontSize: 26,
+    color: TOKENS.ink,
+    marginBottom: 16,
     textAlign: 'center',
   },
   blobArea: {
-    width: 240,
-    height: 240,
+    width: 200,
+    height: 200,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 8,
+  },
+  sparkleLayer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   colorName: {
-    fontSize: 44,
-    fontWeight: '900',
+    fontFamily: FONTS.displayBold,
+    fontSize: 32,
+    color: TOKENS.ink,
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    marginBottom: 16,
   },
-  tapHint: {
-    marginTop: 32,
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
+  cta: {
+    minWidth: 140,
   },
 });

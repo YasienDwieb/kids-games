@@ -1,57 +1,37 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createStore } from '@/sdk';
-import { COLORS, COLOR_RECIPES, TIMING } from '../constants';
-import type { ColorId, ColorData, ColorRecipe, SavedColor } from '../types';
-import { addColorToMix, hexToRgb } from '../utils';
+import { COLORS } from '../constants';
+import type { ColorId, SavedColor } from '../types';
+import { addColorToMix, hexToRgb, nearestFamous } from '../utils';
 
-const savedColorsStore = createStore('color-mixer', { savedColors: [] as SavedColor[] });
+type StorePatch = Partial<{ savedColors: SavedColor[]; discoveries: ColorId[] }>;
+
+const store = createStore('color-mixer', {
+  savedColors: [] as SavedColor[],
+  discoveries: [] as ColorId[],
+});
 
 const PRIMARY_COLORS: ColorId[] = (Object.keys(COLORS) as ColorId[]).filter(
   (id) => COLORS[id].isPrimary,
 );
 
-const MAX_COLORS_IN_ZONE = 3;
-
-type MixingZoneState = {
-  colorsInZone: ColorId[];
-  isMixing: boolean;
-  resultColor: ColorId | null;
-};
-
-const EMPTY_ZONE: MixingZoneState = {
-  colorsInZone: [],
-  isMixing: false,
-  resultColor: null,
-};
-
-function makeRecipeKey(colors: ColorId[]): string {
-  return [...colors].sort().join('+');
+// Serialize store writes: createStore has no atomic update, so concurrent
+// read-modify-write patches (e.g. a discovery landing as the user taps Save)
+// could otherwise read the same blob and clobber each other on disk.
+let writeQueue: Promise<unknown> = Promise.resolve();
+function enqueuePersist(patch: StorePatch): void {
+  writeQueue = writeQueue
+    .then(async () => {
+      const s = await store.get();
+      await store.set({ ...s, ...patch });
+    })
+    .catch((e) => console.error('Failed to persist color-mixer store:', e));
 }
-
-function findRecipe(colors: ColorId[]): ColorRecipe | null {
-  const sorted = [...colors].sort();
-  return (
-    COLOR_RECIPES.find((recipe) => {
-      const recipeSorted = [...recipe.ingredients].sort();
-      if (recipeSorted.length !== sorted.length) return false;
-      return recipeSorted.every((c, i) => c === sorted[i]);
-    }) ?? null
-  );
-}
-
-function allSameColor(colors: ColorId[]): boolean {
-  return colors.every((c) => c === colors[0]);
-}
-
-export type MixFailReason = 'same_colors' | 'no_recipe' | null;
 
 export function useColorMixer() {
-  const [unlockedColors, setUnlockedColors] = useState<ColorId[]>(PRIMARY_COLORS);
-  const [discoveredRecipes, setDiscoveredRecipes] = useState<Set<string>>(new Set());
-  const [mixingZone, setMixingZone] = useState<MixingZoneState>(EMPTY_ZONE);
   const [newDiscovery, setNewDiscovery] = useState<ColorId | null>(null);
-  const [mixFailed, setMixFailed] = useState<MixFailReason>(null);
-  const mixTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [discoveries, setDiscoveries] = useState<ColorId[]>([]);
+  const discoveriesRef = useRef<ColorId[]>([]);
 
   const [currentMixHex, setCurrentMixHex] = useState<string | null>(null);
   const [mixHistory, setMixHistory] = useState<string[]>([]);
@@ -59,83 +39,42 @@ export function useColorMixer() {
   const [savedColors, setSavedColors] = useState<SavedColor[]>([]);
 
   useEffect(() => {
-    savedColorsStore.get()
-      .then((stored) => {
-        setSavedColors(stored.savedColors);
+    store.get()
+      .then((s) => {
+        // createStore.get() does NOT backfill new default keys for previously
+        // persisted data, so guard each with `?? []` (old installs lack `discoveries`).
+        const saved = s.savedColors ?? [];
+        const found = s.discoveries ?? [];
+        setSavedColors(saved);
+        setDiscoveries(found);
+        discoveriesRef.current = found;
       })
-      .catch((error) => console.error('Failed to load saved colors:', error));
+      .catch((e) => console.error('Failed to load color-mixer store:', e));
   }, []);
 
-  const addColorToZone = useCallback((colorId: ColorId) => {
-    setMixFailed(null);
-    setMixingZone((prev) => {
-      if (prev.isMixing) return prev;
-      if (prev.resultColor) return prev;
-      if (prev.colorsInZone.length >= MAX_COLORS_IN_ZONE) return prev;
+  const persist = useCallback((patch: StorePatch) => enqueuePersist(patch), []);
 
-      return { ...prev, colorsInZone: [...prev.colorsInZone, colorId] };
-    });
-  }, []);
-
-  const clearZone = useCallback(() => {
-    if (mixTimeoutRef.current) {
-      clearTimeout(mixTimeoutRef.current);
+  /** Detect a first-time famous discovery from the running blend. */
+  const detectDiscovery = useCallback((hex: string) => {
+    const found = nearestFamous(hex);
+    if (found && !discoveriesRef.current.includes(found)) {
+      const updated = [...discoveriesRef.current, found];
+      discoveriesRef.current = updated;
+      setDiscoveries(updated);
+      setNewDiscovery(found);
+      persist({ discoveries: updated });
     }
-    setMixingZone(EMPTY_ZONE);
-    setMixFailed(null);
-  }, []);
-
-  const mixColors = useCallback(() => {
-    setMixingZone((prev) => {
-      if (prev.isMixing || prev.colorsInZone.length < 2) return prev;
-
-      const recipe = findRecipe(prev.colorsInZone);
-      const updated: MixingZoneState = { ...prev, isMixing: true };
-
-      mixTimeoutRef.current = setTimeout(() => {
-        if (recipe) {
-          const resultId = recipe.result;
-          const recipeKey = makeRecipeKey(prev.colorsInZone);
-          const isNew = !unlockedColors.includes(resultId);
-
-          if (isNew) {
-            setUnlockedColors((curr) => [...curr, resultId]);
-            setNewDiscovery(resultId);
-          }
-
-          setDiscoveredRecipes((curr) => new Set(curr).add(recipeKey));
-          setMixFailed(null);
-          setMixingZone({
-            colorsInZone: [],
-            isMixing: false,
-            resultColor: resultId,
-          });
-        } else {
-          const reason: MixFailReason = allSameColor(prev.colorsInZone)
-            ? 'same_colors'
-            : 'no_recipe';
-          setMixFailed(reason);
-          setMixingZone(EMPTY_ZONE);
-        }
-      }, TIMING.MIX_ANIMATION_DURATION);
-
-      return updated;
-    });
-  }, [unlockedColors]);
+  }, [persist]);
 
   const addColorToContinuousMix = useCallback((colorHex: string) => {
     const current = currentMixHexRef.current;
-    if (!current) {
-      currentMixHexRef.current = colorHex;
-      setCurrentMixHex(colorHex);
-      setMixHistory([]);
-    } else {
-      const blended = addColorToMix(current, colorHex, 0.5);
-      currentMixHexRef.current = blended;
-      setMixHistory((prev) => [...prev, current]);
-      setCurrentMixHex(blended);
-    }
-  }, []);
+    const blended = current ? addColorToMix(current, colorHex, 0.5) : colorHex;
+    if (current) setMixHistory((prev) => [...prev, current]);
+    else setMixHistory([]);
+    currentMixHexRef.current = blended;
+    setCurrentMixHex(blended);
+    detectDiscovery(blended);
+  }, [detectDiscovery]);
 
   const undoLastMix = useCallback(() => {
     setMixHistory((prev) => {
@@ -152,72 +91,40 @@ export function useColorMixer() {
     setMixHistory([]);
   }, []);
 
-  const saveCurrentMix = useCallback(
-    async (name: string) => {
-      const hex = currentMixHexRef.current;
-      if (!hex) return;
-      const newSavedColor: SavedColor = {
-        id: `saved_${Date.now()}`,
-        hex,
-        name,
-        rgb: hexToRgb(hex),
-        createdAt: Date.now(),
-      };
-      setSavedColors((prev) => {
-        const updated = [...prev, newSavedColor];
-        savedColorsStore.set({ savedColors: updated }).catch((error) =>
-          console.error('Failed to save colors:', error),
-        );
-        return updated;
-      });
-    },
-    [],
-  );
+  const saveCurrentMix = useCallback((name: string) => {
+    const hex = currentMixHexRef.current;
+    if (!hex) return;
+    const saved: SavedColor = {
+      id: `saved_${Date.now()}`,
+      hex,
+      name,
+      rgb: hexToRgb(hex),
+      createdAt: Date.now(),
+    };
+    setSavedColors((prev) => {
+      const updated = [...prev, saved];
+      persist({ savedColors: updated });
+      return updated;
+    });
+  }, [persist]);
 
-  const deleteSavedColor = useCallback(
-    async (id: string) => {
-      const updated = savedColors.filter((c) => c.id !== id);
-      setSavedColors(updated);
-      try {
-        await savedColorsStore.set({ savedColors: updated });
-      } catch (error) {
-        console.error('Failed to delete color:', error);
-      }
-    },
-    [savedColors],
-  );
+  const deleteSavedColor = useCallback((id: string) => {
+    setSavedColors((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      persist({ savedColors: updated });
+      return updated;
+    });
+  }, [persist]);
 
-  const acknowledgeDiscovery = useCallback(() => {
-    setNewDiscovery(null);
-  }, []);
-
-  const isColorUnlocked = useCallback(
-    (colorId: ColorId): boolean => unlockedColors.includes(colorId),
-    [unlockedColors],
-  );
-
-  const getDiscoveredColors = useCallback(
-    (): ColorData[] => unlockedColors.filter((id) => !COLORS[id].isPrimary).map((id) => COLORS[id]),
-    [unlockedColors],
-  );
+  const acknowledgeDiscovery = useCallback(() => setNewDiscovery(null), []);
 
   return {
-    unlockedColors,
-    mixingZone,
+    unlockedColors: PRIMARY_COLORS, // palette = primaries (continuous engine)
     newDiscovery,
-    discoveredRecipes,
-    mixFailed,
-
-    addColorToZone,
-    clearZone,
-    mixColors,
+    discoveries,
     acknowledgeDiscovery,
 
-    isColorUnlocked,
-    getDiscoveredColors,
-
     currentMixHex,
-    mixHistory,
     canUndo: mixHistory.length > 0,
     addColorToContinuousMix,
     undoLastMix,

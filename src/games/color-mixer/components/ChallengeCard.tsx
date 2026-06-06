@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ColorBlob } from './ColorBlob';
-import { COLORS } from '../constants';
+import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS } from '@/sdk';
+import { COLORS as PALETTE } from '../constants';
 import type { Challenge } from '../types';
 
 type ChallengeCardProps = {
@@ -16,7 +17,7 @@ const DIFFICULTY_STARS: Record<Challenge['difficulty'], number> = {
 };
 
 export function ChallengeCard({ challenge, isComplete, onSelect }: ChallengeCardProps) {
-  const colorData = COLORS[challenge.targetColor];
+  const colorData = PALETTE[challenge.targetColor];
   const stars = DIFFICULTY_STARS[challenge.difficulty];
 
   return (
@@ -70,20 +71,15 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.card,
     padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    ...SHADOWS.sm,
   },
   cardComplete: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: ACCENTS.green.tint,
   },
   cardPressed: {
-    opacity: 0.8,
     transform: [{ scale: 0.98 }],
   },
   blobArea: {
@@ -97,17 +93,17 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: COLORS.canvas2,
     borderWidth: 2,
-    borderColor: '#BDBDBD',
+    borderColor: COLORS.line2,
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
   },
   mysteryIcon: {
     fontSize: 22,
-    fontWeight: '800',
-    color: '#9E9E9E',
+    fontFamily: FONTS.displayBold,
+    color: COLORS.inkFaint,
   },
   checkBadge: {
     position: 'absolute',
@@ -116,32 +112,32 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#43A047',
+    backgroundColor: ACCENTS.green.base,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkMark: {
     fontSize: 13,
-    fontWeight: '800',
-    color: '#FFFFFF',
+    fontFamily: FONTS.displayBold,
+    color: COLORS.surface,
   },
   info: {
     flex: 1,
   },
   targetName: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#424242',
+    fontFamily: FONTS.display,
+    color: COLORS.ink,
     marginBottom: 2,
   },
   stars: {
     fontSize: 14,
-    color: '#FFB300',
+    color: COLORS.gold,
     marginBottom: 4,
   },
   hint: {
     fontSize: 12,
-    color: '#9E9E9E',
-    fontStyle: 'italic',
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.inkSoft,
   },
 });
