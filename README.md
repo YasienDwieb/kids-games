@@ -11,6 +11,8 @@ npx expo start
 
 Then open in Expo Go on your device, or press `a` for Android emulator / `i` for iOS simulator.
 
+For full setup, testing on a phone via Expo Go, and local/EAS cloud builds across platforms, see **[docs/SETUP.md](docs/SETUP.md)**.
+
 ## Tech Stack
 
 - Expo SDK 54, React 19, React Native 0.81
