@@ -1,6 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import { Animated, PanResponder, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS } from '@/sdk';
+import { COLORS as TOKENS, FONTS, SHADOWS } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
@@ -272,11 +272,7 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 20,
     paddingHorizontal: 8,
-    shadowColor: '#4A341C',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 8,
+    ...SHADOWS.sm,
     overflow: 'visible',
   },
   title: {
