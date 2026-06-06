@@ -49,6 +49,8 @@ export type { PlayOptions } from './audio/useSound';
 export { GameShell } from './layout/GameShell';
 export { GameOverlay } from './layout/GameOverlay';
 export { useGameShell } from './layout/GameShellContext';
+export { ScreenBackContext, useScreenBack } from './layout/ScreenBackContext';
+export type { BackInterceptor } from './layout/ScreenBackContext';
 export type { GameShellApi } from './layout/GameShellContext';
 export type { GameShellProps, OverlaySlot } from './layout/types';
 

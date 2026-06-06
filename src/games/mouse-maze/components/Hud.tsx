@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { HudPill, hudTextStyle, IconButton, SPACING } from '@/sdk';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { HudPill, hudTextStyle, IconButton, SPACING, TOUCH_TARGET } from '@/sdk';
 import { EMOJI } from '../constants';
 
 interface HudProps {
@@ -10,13 +10,22 @@ interface HudProps {
   onHint: () => void;
 }
 
-/** Top overlay: level label (centred), star tally + hint button (right). */
+/** Top bar: back-space · level (centred) · star tally + hint, on one row. */
 export function Hud({ level, collected, total, onHint }: HudProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <SafeAreaView style={styles.bar} edges={['top']} pointerEvents="box-none">
-      <HudPill>
-        <Text style={hudTextStyle}>Level {level}</Text>
-      </HudPill>
+    <View
+      style={[styles.bar, { paddingTop: insets.top + SPACING.xs }]}
+      pointerEvents="box-none"
+    >
+      {/* reserves room for the floating BackButton so nothing overlaps it */}
+      <View style={styles.backSpace} />
+
+      <View style={styles.center}>
+        <HudPill>
+          <Text style={hudTextStyle}>Level {level}</Text>
+        </HudPill>
+      </View>
 
       <View style={styles.right}>
         <HudPill>
@@ -27,7 +36,7 @@ export function Hud({ level, collected, total, onHint }: HudProps) {
         </HudPill>
         <IconButton glyph="💡" onPress={onHint} accessibilityLabel="Show hint" />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -39,16 +48,12 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    minHeight: TOUCH_TARGET.recommended,
     paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.sm,
-  },
-  right: {
-    position: 'absolute',
-    right: SPACING.md,
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: SPACING.sm,
   },
+  backSpace: { width: TOUCH_TARGET.recommended },
+  center: { flex: 1, alignItems: 'center' },
+  right: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   icon: { fontSize: 17 },
 });

@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING, SHADOWS, TOUCH_TARGET } from '../../constants';
 
 type BackButtonProps = {
@@ -6,8 +7,10 @@ type BackButtonProps = {
 };
 
 // Floating circular back control (top-left), used by bare-mode games and the
-// game player. Surface circle with a chevron — matches the design iconbtn.
+// game player. Sits just below the status bar (safe-area inset) so it lines up
+// with the games' top bars. Surface circle with a chevron — design iconbtn.
 export function BackButton({ onPress }: BackButtonProps) {
+  const insets = useSafeAreaInsets();
   return (
     <Pressable
       onPress={onPress}
@@ -16,6 +19,7 @@ export function BackButton({ onPress }: BackButtonProps) {
       hitSlop={8}
       style={({ pressed }) => [
         styles.button,
+        { top: insets.top + SPACING.xs },
         SHADOWS.sm,
         pressed && styles.pressed,
       ]}
@@ -28,7 +32,6 @@ export function BackButton({ onPress }: BackButtonProps) {
 const styles = StyleSheet.create({
   button: {
     position: 'absolute',
-    top: SPACING.xxl,
     left: SPACING.md,
     zIndex: 10,
     width: TOUCH_TARGET.recommended,

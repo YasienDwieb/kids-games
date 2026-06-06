@@ -1,13 +1,16 @@
 import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   COLORS as TOKENS,
   FONTS,
   SPACING,
+  TOUCH_TARGET,
   Chip,
   IconButton,
   PressableButton,
+  useScreenBack,
 } from '@/sdk';
 import {
   ColorPalette,
@@ -25,6 +28,7 @@ import type { ColorId, GameMode, SavedColor } from './types';
 export default function ColorMixerGame() {
   const mixer = useColorMixer();
   const challenge = useChallengeMode();
+  const insets = useSafeAreaInsets();
 
   const [mode, setMode] = useState<GameMode>('freeplay');
   const [showCollection, setShowCollection] = useState(false);
@@ -109,11 +113,11 @@ export default function ColorMixerGame() {
 
   const handleSaveColor = useCallback(
     (name: string) => {
+      // Keep the current mix so the child can keep building on top of it.
       mixer.saveCurrentMix(name);
       setSaveDialogOpen(false);
-      mixer.clearContinuousMix();
     },
-    [mixer.saveCurrentMix, mixer.clearContinuousMix],
+    [mixer.saveCurrentMix],
   );
 
   const handleChallengeComplete = useCallback(() => {
@@ -130,6 +134,19 @@ export default function ColorMixerGame() {
     },
     [mixer.clearContinuousMix, challenge.clearChallenge],
   );
+
+  // Back steps up one internal level (challenge → picker → free play) before home.
+  useScreenBack(() => {
+    if (showChallengePicker) {
+      handleSwitchMode('freeplay');
+      return true;
+    }
+    if (mode === 'challenge' && challenge.currentChallenge) {
+      setShowChallengePicker(true);
+      return true;
+    }
+    return false;
+  });
 
   if (mode === 'challenge' && showChallengePicker) {
     return (
@@ -152,14 +169,17 @@ export default function ColorMixerGame() {
     <GestureHandlerRootView style={styles.root}>
       <View style={styles.container}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + SPACING.xs }]}>
+          {/* reserves room for the floating BackButton */}
+          <View style={styles.headerSide} />
           <Text style={styles.title}>Color Mixer</Text>
-          <IconButton
-            glyph="📚"
-            onPress={() => setShowCollection(true)}
-            accessibilityLabel="My Colors"
-            style={styles.collectionButton}
-          />
+          <View style={styles.headerSide}>
+            <IconButton
+              glyph="📚"
+              onPress={() => setShowCollection(true)}
+              accessibilityLabel="My Colors"
+            />
+          </View>
         </View>
 
         {/* Mode toggle */}
@@ -267,20 +287,21 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 52,
+    minHeight: TOUCH_TARGET.recommended,
     paddingHorizontal: 16,
     paddingBottom: 8,
   },
+  headerSide: {
+    width: TOUCH_TARGET.recommended,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
   title: {
+    flex: 1,
+    textAlign: 'center',
     fontFamily: FONTS.displayBold,
     fontSize: 24,
     color: TOKENS.ink,
-  },
-  collectionButton: {
-    position: 'absolute',
-    right: 16,
-    top: 52,
   },
   modeToggle: {
     flexDirection: 'row',

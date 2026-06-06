@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HudPill, hudTextStyle, IconButton } from '../../../components/common';
-import { SPACING } from '../../../constants';
+import { SPACING, TOUCH_TARGET } from '../../../constants';
 
 type GameHeaderProps = {
   found: number;
@@ -11,8 +12,9 @@ type GameHeaderProps = {
 };
 
 export function GameHeader({ found, total, moves, onReset }: GameHeaderProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { paddingTop: insets.top + SPACING.xs }]}>
       <View style={styles.topRow}>
         <IconButton glyph="↻" onPress={onReset} accessibilityLabel="Restart" />
       </View>
@@ -37,12 +39,13 @@ export function GameHeader({ found, total, moves, onReset }: GameHeaderProps) {
 
 const styles = StyleSheet.create({
   wrap: {
-    paddingTop: SPACING.xxl,
     paddingHorizontal: SPACING.md,
   },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    alignItems: 'center',
+    minHeight: TOUCH_TARGET.recommended,
   },
   hudRow: {
     flexDirection: 'row',

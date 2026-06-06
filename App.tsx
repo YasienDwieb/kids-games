@@ -1,4 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import {
   useFonts,
@@ -27,9 +28,11 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
-    <NavigationContainer>
-      <RootNavigator />
-      <StatusBar style="dark" />
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <RootNavigator />
+        <StatusBar style="dark" />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { DifficultySelect, GameBoard, GameHeader, MatchCelebration, WinScreen } from './components';
 import { useSimplePairs } from './hooks';
-import { useSound } from '@/sdk';
+import { useSound, useScreenBack } from '@/sdk';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from './constants';
 import type { Difficulty } from './types';
 
@@ -82,6 +82,15 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
 
 export default function SimplePairsGame() {
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+
+  // Back from the board returns to the difficulty picker before exiting home.
+  useScreenBack(() => {
+    if (difficulty) {
+      setDifficulty(null);
+      return true;
+    }
+    return false;
+  });
 
   if (!difficulty) {
     return <DifficultySelect onSelect={setDifficulty} />;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Difficulty } from '../types';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from '../constants';
 import { PressableButton, EmojiFrame } from '../../../components/common';
@@ -18,8 +19,9 @@ const LEVELS: { difficulty: Difficulty; name: string; emoji: string; accent: Acc
 ];
 
 export function DifficultySelect({ onSelect }: DifficultySelectProps) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + SPACING.xxl }]}>
       <Text style={styles.title}>Simple Pairs</Text>
       <Text style={styles.subtitle}>How many pairs can you match?</Text>
 
@@ -63,7 +65,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: GAME_COLORS.background,
     paddingHorizontal: 22,
-    paddingTop: SPACING.xxl + SPACING.lg,
   },
   title: {
     fontFamily: FONTS.displayBold,

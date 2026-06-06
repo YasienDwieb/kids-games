@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { Animated, PanResponder, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, PanResponder, StyleSheet, Text, View } from 'react-native';
 import { COLORS as TOKENS, FONTS, SHADOWS } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
@@ -46,11 +46,9 @@ export function ColorPalette({
         {savedColors.length > 0 && (
           <>
             <Text style={[styles.title, styles.savedTitle]}>Saved</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.savedRow}
-            >
+            {/* A wrap View (not a ScrollView) so a dragged saved color can
+                overflow upward into the mix area instead of being clipped. */}
+            <View style={styles.savedRow}>
               {savedColors.map((saved) => (
                 <SavedPaletteSlot
                   key={saved.id}
@@ -59,7 +57,7 @@ export function ColorPalette({
                   paletteItemPositions={paletteItemPositions}
                 />
               ))}
-            </ScrollView>
+            </View>
           </>
         )}
       </View>
@@ -296,6 +294,9 @@ const styles = StyleSheet.create({
   },
   savedRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    rowGap: 8,
     gap: 12,
     paddingHorizontal: 4,
     overflow: 'visible',
