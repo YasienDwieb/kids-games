@@ -32,6 +32,9 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+          # Token of an actor on the protect-master ruleset bypass list, so the
+          # version-bump commit can push directly to master.
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -88,13 +91,15 @@ jobs:
           curl -fSL "$URL" -o ./app-release.apk
           ls -lh ./app-release.apk
 
-      # master requires PRs, so we don't commit the bump back; the tag (on the
-      # current commit) is the source of truth for the next version.
-      - name: Tag release
+      - name: Commit version bump
         run: |
           set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app.json
+          git commit -m "chore(release): ${{ steps.ver.outputs.tag }}"
           git tag "${{ steps.ver.outputs.tag }}"
-          git push origin "${{ steps.ver.outputs.tag }}"
+          git push origin HEAD --follow-tags
 
       - name: Create release & attach APK
         env:
