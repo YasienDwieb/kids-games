@@ -35,7 +35,7 @@ jobs:
 
       - uses: expo/expo-github-action@v8
         with:
-          eas-version: 16.3.0 # pin to your installed version
+          eas-version: 20.1.0 # must satisfy eas.json cli.version (>= 20.1.0)
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Resolve next version
