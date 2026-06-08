@@ -1,0 +1,56 @@
+name: Build & attach APK on release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write # needed to upload the APK asset to the release
+
+jobs:
+  build-apk:
+    name: EAS build APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build APK (EAS, preview profile)
+        run: |
+          set -euo pipefail
+          # Cloud build, wait for completion, and emit machine-readable result.
+          eas build \
+            --platform android \
+            --profile preview \
+            --non-interactive \
+            --wait \
+            --json > build.json
+          # eas build --json returns an array; grab the APK artifact URL.
+          URL=$(node -e "const b=require('./build.json'); const a=Array.isArray(b)?b[0]:b; process.stdout.write(a.artifacts.applicationArchiveUrl)")
+          echo "Downloading APK from: $URL"
+          curl -fSL "$URL" -o ./app-release.apk
+          ls -lh ./app-release.apk
+
+      - name: Upload APK to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            ./app-release.apk \
+            --clobber \
+            --repo "${{ github.repository }}"
