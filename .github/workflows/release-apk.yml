@@ -1,56 +1,101 @@
-name: Build & attach APK on release
+name: Release — build APK & publish
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump (ignored if 'version' is set)"
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      version:
+        description: "Explicit version override, e.g. 1.4.0 (optional)"
+        required: false
+      prerelease:
+        description: "Mark as pre-release"
+        type: boolean
+        default: false
 
 permissions:
-  contents: write # needed to upload the APK asset to the release
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  build-apk:
-    name: EAS build APK
+  release:
+    name: Build APK & publish release
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
         with:
-          node-version: 20
-          cache: npm
+          fetch-depth: 0
+          fetch-tags: true
 
-      - name: Setup EAS
-        uses: expo/expo-github-action@v8
+      - uses: expo/expo-github-action@v8
         with:
-          eas-version: latest
+          eas-version: 16.3.0 # pin to your installed version
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Resolve next version
+        id: ver
+        run: |
+          set -euo pipefail
+          override="${{ inputs.version }}"
+          if [ -n "$override" ]; then
+            next="${override#v}"
+            [[ "$next" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::bad version '$override'"; exit 1; }
+          else
+            latest=$(git tag -l 'v*' --sort=-v:refname | head -n1)
+            latest="${latest#v}"; latest="${latest:-0.0.0}"
+            IFS=. read -r MA MI PA <<< "$latest"
+            case "${{ inputs.bump }}" in
+              major) MA=$((MA+1)); MI=0; PA=0;;
+              minor) MI=$((MI+1)); PA=0;;
+              patch) PA=$((PA+1));;
+            esac
+            next="$MA.$MI.$PA"
+          fi
+          git rev-parse "v$next" >/dev/null 2>&1 && { echo "::error::tag v$next already exists"; exit 1; }
+          echo "tag=v$next"    >> "$GITHUB_OUTPUT"
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+          echo "Next version: v$next"
+
+      - name: Bump app.json version
+        run: |
+          set -euo pipefail
+          tmp=$(mktemp)
+          jq --arg v "${{ steps.ver.outputs.version }}" '.expo.version = $v' app.json > "$tmp"
+          mv "$tmp" app.json
 
       - name: Build APK (EAS, preview profile)
         run: |
           set -euo pipefail
-          # Cloud build, wait for completion, and emit machine-readable result.
-          eas build \
-            --platform android \
-            --profile preview \
-            --non-interactive \
-            --wait \
-            --json > build.json
-          # eas build --json returns an array; grab the APK artifact URL.
-          URL=$(node -e "const b=require('./build.json'); const a=Array.isArray(b)?b[0]:b; process.stdout.write(a.artifacts.applicationArchiveUrl)")
+          eas build --platform android --profile preview \
+            --non-interactive --wait --json > build.json
+          URL=$(jq -r '(if type=="array" then .[0] else . end).artifacts.applicationArchiveUrl' build.json)
           echo "Downloading APK from: $URL"
           curl -fSL "$URL" -o ./app-release.apk
           ls -lh ./app-release.apk
 
-      - name: Upload APK to the release
+      - name: Commit version bump
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app.json
+          git commit -m "chore(release): ${{ steps.ver.outputs.tag }}"
+          git tag "${{ steps.ver.outputs.tag }}"
+          git push origin HEAD --follow-tags
+
+      - name: Create release & attach APK
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" \
+          gh release create "${{ steps.ver.outputs.tag }}" \
             ./app-release.apk \
-            --clobber \
+            --title "${{ steps.ver.outputs.tag }}" \
+            --generate-notes \
+            ${{ inputs.prerelease == 'true' && '--prerelease' || '' }} \
             --repo "${{ github.repository }}"
