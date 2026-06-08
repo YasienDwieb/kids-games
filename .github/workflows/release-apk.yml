@@ -33,10 +33,19 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
       - uses: expo/expo-github-action@v8
         with:
           eas-version: 20.1.0 # must satisfy eas.json cli.version (>= 20.1.0)
           token: ${{ secrets.EXPO_TOKEN }}
+
+      # EAS resolves config plugins locally, so node_modules must be present.
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
 
       - name: Resolve next version
         id: ver
