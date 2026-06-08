@@ -1,21 +1,26 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { I18nManager, Pressable, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { COLORS, SPACING, SHADOWS, TOUCH_TARGET } from '../../constants';
 
 type BackButtonProps = {
   onPress: () => void;
 };
 
+// Back chevron points toward the reading origin — left in LTR, right in RTL.
+const BACK_GLYPH = I18nManager.isRTL ? '›' : '‹';
+
 // Floating circular back control (top-left), used by bare-mode games and the
 // game player. Sits just below the status bar (safe-area inset) so it lines up
 // with the games' top bars. Surface circle with a chevron — design iconbtn.
 export function BackButton({ onPress }: BackButtonProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel="Back"
+      accessibilityLabel={t('common.back')}
       hitSlop={8}
       style={({ pressed }) => [
         styles.button,
@@ -24,7 +29,7 @@ export function BackButton({ onPress }: BackButtonProps) {
         pressed && styles.pressed,
       ]}
     >
-      <Text style={styles.text}>‹</Text>
+      <Text style={styles.text}>{BACK_GLYPH}</Text>
     </Pressable>
   );
 }
@@ -32,7 +37,8 @@ export function BackButton({ onPress }: BackButtonProps) {
 const styles = StyleSheet.create({
   button: {
     position: 'absolute',
-    left: SPACING.md,
+    // `start` mirrors to the right edge under RTL (absolute `left` would not).
+    start: SPACING.md,
     zIndex: 10,
     width: TOUCH_TARGET.recommended,
     height: TOUCH_TARGET.recommended,

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
 import {
   PressableButton,
   Star,
@@ -8,6 +8,7 @@ import {
   SHADOWS,
   BORDER_RADIUS,
   SPACING,
+  useTranslation,
 } from '@/sdk';
 import { EMOJI } from '../constants';
 
@@ -20,16 +21,22 @@ interface WinOverlayProps {
 /** Full-screen celebration shown when the mouse reaches its cheese. */
 export function WinOverlay({ collected, total, onNext }: WinOverlayProps) {
   const scale = useRef(new Animated.Value(0.6)).current;
+  const { t } = useTranslation();
 
   useEffect(() => {
     Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }).start();
   }, [scale]);
 
+  // Arrow points in the reading-forward direction: ← in RTL, → in LTR.
+  const nextLabel = I18nManager.isRTL
+    ? `${t('mouse-maze:win.nextMaze')} ←`
+    : `${t('mouse-maze:win.nextMaze')} →`;
+
   return (
     <View style={styles.backdrop}>
       <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
         <Text style={styles.burst}>🎉 {EMOJI.goal} 🎉</Text>
-        <Text style={styles.title}>You made it!</Text>
+        <Text style={styles.title}>{t('mouse-maze:win.title')}</Text>
 
         <View style={styles.starsRow}>
           {Array.from({ length: total }).map((_, i) => (
@@ -38,7 +45,7 @@ export function WinOverlay({ collected, total, onNext }: WinOverlayProps) {
         </View>
 
         <PressableButton
-          label="Next maze →"
+          label={nextLabel}
           accent="orange"
           onPress={onNext}
           style={styles.button}

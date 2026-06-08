@@ -1,3 +1,4 @@
+import './i18n';
 import { registerGame } from '@/sdk';
 import ColorMixerGame from './index';
 

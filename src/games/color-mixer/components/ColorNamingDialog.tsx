@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton } from '@/sdk';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 
 interface ColorNamingDialogProps {
@@ -11,10 +11,11 @@ interface ColorNamingDialogProps {
 }
 
 export function ColorNamingDialog({ visible, colorHex, onSave, onCancel }: ColorNamingDialogProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
 
   const handleSave = () => {
-    onSave(name.trim() || 'My Color');
+    onSave(name.trim() || t('color-mixer:namingDialog.defaultName'));
     setName('');
   };
 
@@ -29,18 +30,18 @@ export function ColorNamingDialog({ visible, colorHex, onSave, onCancel }: Color
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.dialog}>
-          <Text style={styles.title}>Save your color! 🎨</Text>
+          <Text style={styles.title}>{t('color-mixer:namingDialog.title')}</Text>
 
           <View style={styles.preview}>
             <ColorBlob color={colorHex} size={80} showShine />
           </View>
 
-          <Text style={styles.label}>Name your color:</Text>
+          <Text style={styles.label}>{t('color-mixer:namingDialog.label')}</Text>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Sunset"
+            placeholder={t('color-mixer:namingDialog.placeholder')}
             placeholderTextColor={TOKENS.inkFaint}
             autoFocus
             maxLength={20}
@@ -48,13 +49,13 @@ export function ColorNamingDialog({ visible, colorHex, onSave, onCancel }: Color
 
           <View style={styles.buttons}>
             <PressableButton
-              label="Cancel"
+              label={t('color-mixer:namingDialog.cancel')}
               variant="ghost"
               onPress={handleCancel}
               style={styles.button}
             />
             <PressableButton
-              label="Save"
+              label={t('color-mixer:namingDialog.save')}
               accent="blue"
               onPress={handleSave}
               style={styles.button}

@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { ColorBlob } from './ColorBlob';
-import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS } from '@/sdk';
+import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
 import { COLORS as PALETTE } from '../constants';
 import type { Challenge } from '../types';
 
@@ -17,6 +17,7 @@ const DIFFICULTY_STARS: Record<Challenge['difficulty'], number> = {
 };
 
 export function ChallengeCard({ challenge, isComplete, onSelect }: ChallengeCardProps) {
+  const { t } = useTranslation();
   const colorData = PALETTE[challenge.targetColor];
   const stars = DIFFICULTY_STARS[challenge.difficulty];
 
@@ -48,7 +49,9 @@ export function ChallengeCard({ challenge, isComplete, onSelect }: ChallengeCard
       {/* Info */}
       <View style={styles.info}>
         <Text style={styles.targetName}>
-          {isComplete ? colorData.name : 'Mystery Color'}
+          {isComplete
+            ? t(`color-mixer:colors.${challenge.targetColor}`)
+            : t('color-mixer:card.mysteryColor')}
         </Text>
 
         {/* Difficulty stars */}
@@ -59,7 +62,7 @@ export function ChallengeCard({ challenge, isComplete, onSelect }: ChallengeCard
 
         {challenge.hint && (
           <Text style={styles.hint} numberOfLines={2}>
-            {challenge.hint}
+            {t(`color-mixer:challengeHints.${challenge.id}`)}
           </Text>
         )}
       </View>
@@ -87,7 +90,7 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
+    marginEnd: 14,
   },
   mysteryBlob: {
     width: 48,
@@ -108,7 +111,7 @@ const styles = StyleSheet.create({
   checkBadge: {
     position: 'absolute',
     top: -2,
-    right: -2,
+    end: -2,
     width: 22,
     height: 22,
     borderRadius: 11,

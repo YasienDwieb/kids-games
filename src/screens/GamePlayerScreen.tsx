@@ -2,7 +2,14 @@ import { useCallback, useEffect, useRef } from 'react';
 import { BackHandler, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
-import { getGame, GameShell, ScreenBackContext, type BackInterceptor } from '@/sdk';
+import {
+  getGame,
+  GameShell,
+  ScreenBackContext,
+  useTranslation,
+  gameName,
+  type BackInterceptor,
+} from '@/sdk';
 import { BackButton } from '../components/common';
 import { COLORS, FONT_SIZES } from '../constants';
 
@@ -10,6 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'GamePlayer'>;
 
 export function GamePlayerScreen({ route, navigation }: Props) {
   const { gameId } = route.params;
+  const { t } = useTranslation();
   const game = getGame(gameId);
 
   // Games register a back interceptor; if it consumes the press (e.g. pops an
@@ -35,7 +43,7 @@ export function GamePlayerScreen({ route, navigation }: Props) {
       <View style={styles.container}>
         <BackButton onPress={() => navigation.goBack()} />
         <View style={styles.notFound}>
-          <Text style={styles.notFoundText}>Game not found</Text>
+          <Text style={styles.notFoundText}>{t('player.notFound')}</Text>
         </View>
       </View>
     );
@@ -54,7 +62,7 @@ export function GamePlayerScreen({ route, navigation }: Props) {
         </View>
       ) : (
         <GameShell
-          title={layout.title ?? game.name}
+          title={layout.title ?? gameName(game)}
           background={game.backgroundColor}
           showBack={layout.showBack ?? true}
           onBack={handleBack}

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-import { PressableButton, Star, COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING } from '@/sdk';
+import { PressableButton, Star, COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING, useTranslation } from '@/sdk';
 
 type Props = {
   variant: 'cleared' | 'failed';
@@ -14,6 +14,7 @@ type Props = {
 
 export function LevelOverlay({ variant, stars, isLast, popped, quota, onNext, onRetry }: Props) {
   const scale = useRef(new Animated.Value(0.6)).current;
+  const { t } = useTranslation();
   useEffect(() => {
     Animated.spring(scale, { toValue: 1, friction: 5, useNativeDriver: true }).start();
   }, [scale]);
@@ -26,14 +27,16 @@ export function LevelOverlay({ variant, stars, isLast, popped, quota, onNext, on
         {cleared ? (
           <>
             <Text style={styles.burst}>{isLast ? '🏆' : '🎯'}</Text>
-            <Text style={styles.title}>{isLast ? 'You won them all!' : 'Nice shooting!'}</Text>
+            <Text style={styles.title}>
+              {isLast ? t('balloon-archer:overlay.wonAll') : t('balloon-archer:overlay.niceShooting')}
+            </Text>
             <View style={styles.starsRow}>
               {[0, 1, 2].map((i) => (
                 <Star key={i} size={i === 1 ? 46 : 38} filled={i < stars} />
               ))}
             </View>
             <PressableButton
-              label={isLast ? 'Play again' : 'Next level →'}
+              label={isLast ? t('balloon-archer:overlay.playAgain') : t('balloon-archer:overlay.nextLevel')}
               accent="green"
               onPress={onNext}
               style={styles.button}
@@ -42,12 +45,12 @@ export function LevelOverlay({ variant, stars, isLast, popped, quota, onNext, on
         ) : (
           <>
             <Text style={styles.burst}>🎈</Text>
-            <Text style={styles.title}>Out of arrows!</Text>
+            <Text style={styles.title}>{t('balloon-archer:overlay.outOfArrows')}</Text>
             <Text style={styles.subtitle}>
-              {popped}/{quota} popped
+              {t('balloon-archer:overlay.poppedCount', { popped, quota })}
             </Text>
             <PressableButton
-              label="Try again"
+              label={t('balloon-archer:overlay.tryAgain')}
               accent="orange"
               onPress={onRetry}
               style={styles.button}

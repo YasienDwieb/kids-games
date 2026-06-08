@@ -12,6 +12,7 @@ import {
   PressableButton,
   useScreenBack,
   useSound,
+  useTranslation,
 } from '@/sdk';
 import {
   ColorBlob,
@@ -32,6 +33,7 @@ export default function ColorMixerGame() {
   const challenge = useChallengeMode();
   const insets = useSafeAreaInsets();
   const { play } = useSound();
+  const { t } = useTranslation();
 
   // Lifted-ghost overlay for dragging a saved color up into the mixing zone.
   // Rendered at the root (outside the palette's clipping ScrollView) so it isn't cut off.
@@ -211,12 +213,12 @@ export default function ColorMixerGame() {
         <View style={[styles.header, { paddingTop: insets.top + SPACING.xs }]}>
           {/* reserves room for the floating BackButton */}
           <View style={styles.headerSide} />
-          <Text style={styles.title}>Color Mixer</Text>
+          <Text style={styles.title}>{t('color-mixer:title')}</Text>
           <View style={styles.headerSide}>
             <IconButton
               glyph="📚"
               onPress={() => setShowCollection(true)}
-              accessibilityLabel="My Colors"
+              accessibilityLabel={t('color-mixer:header.myColors')}
             />
           </View>
         </View>
@@ -224,12 +226,12 @@ export default function ColorMixerGame() {
         {/* Mode toggle */}
         <View style={styles.modeToggle}>
           <Chip
-            label="Free Play"
+            label={t('color-mixer:mode.freeplay')}
             active={mode === 'freeplay'}
             onPress={() => handleSwitchMode('freeplay')}
           />
           <Chip
-            label="Challenges"
+            label={t('color-mixer:mode.challenges')}
             active={mode === 'challenge'}
             onPress={() => handleSwitchMode('challenge')}
           />
@@ -258,18 +260,18 @@ export default function ColorMixerGame() {
         {/* Action buttons */}
         <View style={styles.actions}>
           {mixer.canUndo && (
-            <PressableButton label="↩️ Undo" variant="ghost" onPress={mixer.undoLastMix} />
+            <PressableButton label={t('color-mixer:actions.undo')} variant="ghost" onPress={mixer.undoLastMix} />
           )}
           {mixer.currentMixHex && (
             <PressableButton
-              label="🗑️ Clear"
+              label={t('color-mixer:actions.clear')}
               variant="ghost"
               onPress={mixer.clearContinuousMix}
             />
           )}
           {mixer.currentMixHex && (
             <PressableButton
-              label="💾 Save"
+              label={t('color-mixer:actions.save')}
               accent="blue"
               onPress={() => setSaveDialogOpen(true)}
             />

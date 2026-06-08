@@ -6,31 +6,34 @@ import { DIFFICULTY_CONFIG, GAME_COLORS } from '../constants';
 import { PressableButton, EmojiFrame } from '../../../components/common';
 import { COLORS, FONTS, SPACING } from '../../../constants';
 import type { AccentName } from '../../../constants';
+import { useTranslation } from '@/sdk';
 
 type DifficultySelectProps = {
   onSelect: (difficulty: Difficulty) => void;
 };
 
-const LEVELS: { difficulty: Difficulty; name: string; emoji: string; accent: AccentName }[] = [
-  { difficulty: 'easy', name: 'Easy', emoji: '🐣', accent: 'green' },
-  { difficulty: 'medium', name: 'Medium', emoji: '🐥', accent: 'orange' },
-  { difficulty: 'hard', name: 'Hard', emoji: '🦁', accent: 'coral' },
-  { difficulty: 'expert', name: 'Expert', emoji: '🏆', accent: 'purple' },
+const LEVELS: { difficulty: Difficulty; emoji: string; accent: AccentName }[] = [
+  { difficulty: 'easy', emoji: '🐣', accent: 'green' },
+  { difficulty: 'medium', emoji: '🐥', accent: 'orange' },
+  { difficulty: 'hard', emoji: '🦁', accent: 'coral' },
+  { difficulty: 'expert', emoji: '🏆', accent: 'purple' },
 ];
 
 export function DifficultySelect({ onSelect }: DifficultySelectProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   return (
     <View style={[styles.container, { paddingTop: insets.top + SPACING.xxl }]}>
-      <Text style={styles.title}>Simple Pairs</Text>
-      <Text style={styles.subtitle}>How many pairs can you match?</Text>
+      <Text style={styles.title}>{t('simple-pairs:difficulty.select.title')}</Text>
+      <Text style={styles.subtitle}>{t('simple-pairs:difficulty.select.subtitle')}</Text>
 
       <ScrollView
         contentContainerStyle={styles.options}
         showsVerticalScrollIndicator={false}
       >
-        {LEVELS.map(({ difficulty, name, emoji, accent }) => {
+        {LEVELS.map(({ difficulty, emoji, accent }) => {
           const pairs = DIFFICULTY_CONFIG[difficulty].pairs;
+          const cards = pairs * 2;
           return (
             <PressableButton
               key={difficulty}
@@ -47,9 +50,11 @@ export function DifficultySelect({ onSelect }: DifficultySelectProps) {
                 tint="rgba(255,255,255,0.25)"
               />
               <View style={styles.labelCol}>
-                <Text style={styles.levelName}>{name}</Text>
+                <Text style={styles.levelName}>
+                  {t(`simple-pairs:difficulty.${difficulty}`)}
+                </Text>
                 <Text style={styles.levelMeta}>
-                  {pairs} pairs · {pairs * 2} cards
+                  {t('simple-pairs:difficulty.meta', { pairs, cards })}
                 </Text>
               </View>
             </PressableButton>

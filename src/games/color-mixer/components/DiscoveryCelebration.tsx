@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton } from '@/sdk';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { Sparkles } from './Sparkles';
 import { COLORS, TIMING } from '../constants';
@@ -17,6 +17,7 @@ export function DiscoveryCelebration({
   visible,
   onComplete,
 }: DiscoveryCelebrationProps) {
+  const { t } = useTranslation();
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const cardScale = useRef(new Animated.Value(0.8)).current;
   const blobScale = useRef(new Animated.Value(0)).current;
@@ -72,7 +73,7 @@ export function DiscoveryCelebration({
       <Pressable style={styles.touchArea} onPress={onComplete}>
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
           <Animated.View style={[styles.card, { transform: [{ scale: cardScale }] }]}>
-            <Text style={styles.title}>New color!</Text>
+            <Text style={styles.title}>{t('color-mixer:discovery.title')}</Text>
 
             <View style={styles.blobArea}>
               <Animated.View style={[styles.sparkleLayer, { opacity: sparklesOpacity }]}>
@@ -83,9 +84,9 @@ export function DiscoveryCelebration({
               </Animated.View>
             </View>
 
-            <Text style={styles.colorName}>{colorData.name}</Text>
+            <Text style={styles.colorName}>{t(`color-mixer:colors.${colorId}`)}</Text>
 
-            <PressableButton label="Yay!" accent="blue" onPress={onComplete} style={styles.cta} />
+            <PressableButton label={t('color-mixer:discovery.yay')} accent="blue" onPress={onComplete} style={styles.cta} />
           </Animated.View>
         </Animated.View>
       </Pressable>

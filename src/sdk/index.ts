@@ -72,3 +72,22 @@ export { useLevels } from './progress/useLevels';
 export type { UseLevelsResult } from './progress/useLevels';
 export { ResumePrompt } from './progress/ResumePrompt';
 export type { ResumePromptProps } from './progress/ResumePrompt';
+
+// i18n — single translation surface for games & screens.
+// Games import { useTranslation } and call t('namespace:key'); they register
+// their own bundles via registerTranslations() from a side-effect module.
+export { useTranslation, Trans } from 'react-i18next';
+export { i18n, registerTranslations, currentLanguage } from './i18n';
+export {
+  LANGUAGES,
+  DEFAULT_LANGUAGE,
+  languageMeta,
+  isRTL,
+} from './i18n/types';
+export type { LanguageCode, LanguageMeta } from './i18n/types';
+export {
+  useLanguage,
+  applyLanguage,
+  bootstrapLanguage,
+} from './i18n/useLanguage';
+export { gameName, gameDescription } from './i18n/gameMeta';

@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, FONTS, SHADOWS, BORDER_RADIUS } from '@/sdk';
+import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
 import { ChallengeCard } from './ChallengeCard';
 import type { Challenge } from '../types';
 
@@ -12,11 +12,6 @@ type ChallengePickerProps = {
 };
 
 const DIFFICULTY_ORDER: Challenge['difficulty'][] = ['easy', 'medium', 'hard'];
-const DIFFICULTY_LABELS: Record<Challenge['difficulty'], string> = {
-  easy: 'Beginner',
-  medium: 'Intermediate',
-  hard: 'Advanced',
-};
 
 export function ChallengePicker({
   challenges,
@@ -24,9 +19,14 @@ export function ChallengePicker({
   onSelectChallenge,
   onBack,
 }: ChallengePickerProps) {
+  const { t } = useTranslation();
+
+  const difficultyLabel = (diff: Challenge['difficulty']): string =>
+    t(`color-mixer:picker.difficulty.${diff}`);
+
   const grouped = DIFFICULTY_ORDER.map((diff) => ({
     difficulty: diff,
-    label: DIFFICULTY_LABELS[diff],
+    label: difficultyLabel(diff),
     items: challenges.filter((c) => c.difficulty === diff),
   })).filter((g) => g.items.length > 0);
 
@@ -41,11 +41,11 @@ export function ChallengePicker({
           onPress={onBack}
           style={({ pressed }) => [styles.backPill, pressed && styles.pressed]}
         >
-          <Text style={styles.backText}>‹ Mix</Text>
+          <Text style={styles.backText}>{t('color-mixer:picker.backButton')}</Text>
         </Pressable>
-        <Text style={styles.title}>Challenges</Text>
+        <Text style={styles.title}>{t('color-mixer:picker.title')}</Text>
         <Text style={styles.progress}>
-          {completedCount}/{totalCount} complete
+          {completedCount}/{totalCount} {t('color-mixer:picker.complete')}
         </Text>
       </View>
 
@@ -70,7 +70,7 @@ export function ChallengePicker({
         {completedCount === totalCount && (
           <View style={styles.allDone}>
             <Text style={styles.allDoneEmoji}>🏆</Text>
-            <Text style={styles.allDoneText}>All challenges complete!</Text>
+            <Text style={styles.allDoneText}>{t('color-mixer:picker.allDone')}</Text>
           </View>
         )}
       </ScrollView>
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.display,
     color: COLORS.inkSoft,
     marginBottom: 10,
-    paddingLeft: 4,
+    paddingStart: 4,
   },
   cardList: {
     gap: 10,
