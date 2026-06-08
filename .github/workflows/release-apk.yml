@@ -15,6 +15,10 @@ on:
         description: "Mark as pre-release"
         type: boolean
         default: false
+      dry_run:
+        description: "Skip the EAS build (stub APK) to test the pipeline cheaply"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -99,6 +103,7 @@ jobs:
           mv "$tmp" app.json
 
       - name: Build APK (EAS, preview profile)
+        if: ${{ !inputs.dry_run }}
         run: |
           set -euo pipefail
           eas build --platform android --profile preview \
@@ -106,6 +111,13 @@ jobs:
           URL=$(jq -r '(if type=="array" then .[0] else . end).artifacts.applicationArchiveUrl' build.json)
           echo "Downloading APK from: $URL"
           curl -fSL "$URL" -o ./app-release.apk
+          ls -lh ./app-release.apk
+
+      - name: Stub APK (dry run — skips EAS build)
+        if: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          printf 'dry-run placeholder for %s\n' "${{ steps.ver.outputs.tag }}" > ./app-release.apk
           ls -lh ./app-release.apk
 
       - name: Commit version bump
