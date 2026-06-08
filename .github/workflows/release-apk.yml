@@ -28,13 +28,30 @@ jobs:
     name: Build APK & publish release
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Resolve bot identity
+        id: bot
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          slug="${{ steps.app-token.outputs.app-slug }}"
+          uid=$(gh api "/users/${slug}[bot]" --jq .id)
+          echo "name=${slug}[bot]" >> "$GITHUB_OUTPUT"
+          echo "email=${uid}+${slug}[bot]@users.noreply.github.com" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           fetch-tags: true
-          # Token of an actor on the protect-master ruleset bypass list, so the
-          # version-bump commit can push directly to master.
-          token: ${{ secrets.RELEASE_TOKEN }}
+          # App-installation token; the App is on the protect-master bypass list,
+          # so the version-bump commit can push directly to master.
+          token: ${{ steps.app-token.outputs.token }}
 
       - uses: actions/setup-node@v4
         with:
@@ -94,8 +111,8 @@ jobs:
       - name: Commit version bump
         run: |
           set -euo pipefail
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "${{ steps.bot.outputs.name }}"
+          git config user.email "${{ steps.bot.outputs.email }}"
           git add app.json
           git commit -m "chore(release): ${{ steps.ver.outputs.tag }}"
           git tag "${{ steps.ver.outputs.tag }}"
@@ -103,7 +120,7 @@ jobs:
 
       - name: Create release & attach APK
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           gh release create "${{ steps.ver.outputs.tag }}" \
             ./app-release.apk \
