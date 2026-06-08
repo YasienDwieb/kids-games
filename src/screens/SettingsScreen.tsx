@@ -1,9 +1,18 @@
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import { AppBar, Chip } from '../components/common';
-import { AGE_BANDS, useSettings } from '@/sdk';
+import {
+  AGE_BANDS,
+  useSettings,
+  useTranslation,
+  useLanguage,
+  LANGUAGES,
+  type LanguageCode,
+} from '@/sdk';
+import { reloadApp } from '@/sdk/i18n/reload';
 import { COLORS, FONTS, SPACING } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
@@ -36,41 +45,80 @@ function ToggleRow({
 
 export function SettingsScreen({ navigation }: Props) {
   const { settings, update } = useSettings();
+  const { t } = useTranslation();
+  const { language, changeLanguage } = useLanguage();
+  const [switching, setSwitching] = useState(false);
+
+  const onPickLanguage = async (code: LanguageCode) => {
+    if (code === language) return;
+    const { needsReload } = await changeLanguage(code);
+    if (needsReload) {
+      // Show the "Switching…" notice, then auto-reload to flip RTL direction.
+      setSwitching(true);
+      setTimeout(() => reloadApp(), 600);
+    }
+  };
+
+  if (switching) {
+    return (
+      <SafeAreaView style={[styles.safe, styles.switchScreen]} edges={['top', 'bottom']}>
+        <Text style={styles.switchEmoji}>🌍</Text>
+        <ActivityIndicator size="large" color={COLORS.brand} />
+        <Text style={styles.switchText}>{t('settings.switching')}</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
-      <AppBar title="Settings" onBack={() => navigation.goBack()} />
+      <AppBar title={t('settings.title')} onBack={() => navigation.goBack()} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.card}>
           <ToggleRow
             icon="🔊"
-            label="Sound effects"
+            label={t('settings.sound')}
             value={settings.soundEnabled}
             onChange={(v) => update({ soundEnabled: v })}
           />
           <View style={styles.divider} />
           <ToggleRow
             icon="📳"
-            label="Haptics"
+            label={t('settings.haptics')}
             value={settings.hapticsEnabled}
             onChange={(v) => update({ hapticsEnabled: v })}
           />
         </View>
 
-        <Text style={styles.section}>Show games for</Text>
+        <Text style={styles.section}>{t('settings.language')}</Text>
         <View style={styles.bands}>
-          <Chip label="All" active={settings.ageBand === null} onPress={() => update({ ageBand: null })} />
+          {LANGUAGES.map((lang) => (
+            <Chip
+              key={lang.code}
+              label={lang.label}
+              active={language === lang.code}
+              onPress={() => onPickLanguage(lang.code)}
+            />
+          ))}
+        </View>
+
+        <Text style={styles.section}>{t('settings.showGamesFor')}</Text>
+        <View style={styles.bands}>
+          <Chip
+            label={t('settings.all')}
+            active={settings.ageBand === null}
+            onPress={() => update({ ageBand: null })}
+          />
           {AGE_BANDS.map((band) => (
             <Chip
               key={band.id}
-              label={band.label}
+              label={t(`ageBands.${band.id}`)}
               active={settings.ageBand === band.id}
               onPress={() => update({ ageBand: band.id })}
             />
           ))}
         </View>
 
-        <Text style={styles.version}>Kids Games · v1.0</Text>
+        <Text style={styles.version}>{t('settings.version')}</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -78,6 +126,13 @@ export function SettingsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.canvas },
+  switchScreen: { alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
+  switchEmoji: { fontSize: 56 },
+  switchText: {
+    fontFamily: FONTS.display,
+    fontSize: 18,
+    color: COLORS.ink,
+  },
   content: { padding: 22, gap: SPACING.lg },
   card: {
     backgroundColor: COLORS.surface,

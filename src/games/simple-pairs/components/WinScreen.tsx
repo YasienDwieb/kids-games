@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Dimensions, StyleSheet, Text, View } from 'react-native';
 import { PressableButton, Star } from '../../../components/common';
 import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING } from '../../../constants';
+import { useTranslation } from '@/sdk';
 
 type WinScreenProps = {
   visible: boolean;
@@ -16,7 +17,8 @@ const SCREEN_H = Dimensions.get('window').height;
 
 function ConfettiPiece({ index }: { index: number }) {
   const fall = useRef(new Animated.Value(0)).current;
-  const left = useMemo(() => Math.random() * 100, []);
+  // Random horizontal offset (0–100%); stored as startOffset for RTL-safe rendering.
+  const startOffset = useMemo(() => Math.random() * 100, []);
   const emoji = CONFETTI[index % CONFETTI.length];
   const size = useMemo(() => 16 + Math.random() * 16, []);
   const delay = useMemo(() => Math.random() * 500, []);
@@ -42,7 +44,8 @@ function ConfettiPiece({ index }: { index: number }) {
     <Animated.Text
       style={[
         styles.confetti,
-        { left: `${left}%`, fontSize: size, transform: [{ translateY }, { rotate }] },
+        // Use 'start' instead of 'left' so the random scatter mirrors correctly in RTL.
+        { start: `${startOffset}%`, fontSize: size, transform: [{ translateY }, { rotate }] },
       ]}
     >
       {emoji}
@@ -55,6 +58,7 @@ export function WinScreen({ visible, moves, stars, onPlayAgain, onPickLevel }: W
   const pop = useRef(new Animated.Value(0)).current;
   const starAnims = useRef([0, 1, 2].map(() => new Animated.Value(0))).current;
   const pulse = useRef(new Animated.Value(1)).current;
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!visible) {
@@ -86,6 +90,8 @@ export function WinScreen({ visible, moves, stars, onPlayAgain, onPickLevel }: W
 
   if (!visible) return null;
 
+  const movesKey = moves === 1 ? 'win.movesOne' : 'win.movesOther';
+
   return (
     <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
       <View style={styles.confettiLayer} pointerEvents="none">
@@ -96,9 +102,9 @@ export function WinScreen({ visible, moves, stars, onPlayAgain, onPickLevel }: W
 
       <Animated.View style={[styles.card, { transform: [{ scale: pop }] }]}>
         <Animated.Text style={[styles.hero, { transform: [{ scale: pulse }] }]}>🎉</Animated.Text>
-        <Text style={styles.title}>You did it!</Text>
+        <Text style={styles.title}>{t('simple-pairs:win.title')}</Text>
         <Text style={styles.subtitle}>
-          All pairs matched in {moves} {moves === 1 ? 'move' : 'moves'}
+          {t(`simple-pairs:${movesKey}`, { count: moves })}
         </Text>
 
         <View style={styles.starsRow}>
@@ -110,8 +116,18 @@ export function WinScreen({ visible, moves, stars, onPlayAgain, onPickLevel }: W
         </View>
 
         <View style={styles.actions}>
-          <PressableButton label="Play again" accent="green" onPress={onPlayAgain} style={styles.action} />
-          <PressableButton label="Pick a level" variant="ghost" onPress={onPickLevel} style={styles.action} />
+          <PressableButton
+            label={t('simple-pairs:win.playAgain')}
+            accent="green"
+            onPress={onPlayAgain}
+            style={styles.action}
+          />
+          <PressableButton
+            label={t('simple-pairs:win.pickLevel')}
+            variant="ghost"
+            onPress={onPickLevel}
+            style={styles.action}
+          />
         </View>
       </Animated.View>
     </Animated.View>

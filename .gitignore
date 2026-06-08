@@ -41,3 +41,5 @@ yarn-error.*
 /android
 
 docs/superpowers
+# Claude Code transient runtime artifacts
+.claude/scheduled_tasks.lock

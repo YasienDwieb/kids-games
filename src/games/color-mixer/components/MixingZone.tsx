@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS } from '@/sdk';
+import { COLORS as TOKENS, FONTS, useTranslation } from '@/sdk';
 import { DraggableResult } from './DraggableResult';
 import { DIMENSIONS } from '../constants';
 
@@ -17,6 +17,7 @@ export function MixingZone({
   onLayout,
   onResultDragEnd,
 }: MixingZoneProps) {
+  const { t } = useTranslation();
   const resultScaleAnim = useRef(new Animated.Value(0)).current;
   const resultOpacity = useRef(new Animated.Value(0)).current;
   const viewRef = useRef<View>(null);
@@ -69,7 +70,7 @@ export function MixingZone({
       {!currentMixHex && (
         <View style={styles.emptyState}>
           <Text style={styles.emptyIcon}>🎨</Text>
-          <Text style={styles.emptyText}>Drop colors here!</Text>
+          <Text style={styles.emptyText}>{t('color-mixer:mixingZone.dropHere')}</Text>
         </View>
       )}
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, BORDER_RADIUS, IconButton } from '@/sdk';
+import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, IconButton, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { Sparkles } from './Sparkles';
 import { COLORS } from '../constants';
@@ -14,19 +14,13 @@ type ChallengeModeProps = {
   onBack: () => void;
 };
 
-function meterLabel(meter: number): string {
-  if (meter >= 1) return 'Perfect!';
-  if (meter >= 0.85) return 'So close!';
-  if (meter >= 0.6) return 'Getting warmer…';
-  return 'Keep mixing!';
-}
-
 export function ChallengeMode({
   currentChallenge,
   currentMixHex,
   onChallengeComplete,
   onBack,
 }: ChallengeModeProps) {
+  const { t } = useTranslation();
   const [showHint, setShowHint] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const successScale = useRef(new Animated.Value(0)).current;
@@ -34,6 +28,13 @@ export function ChallengeMode({
   const targetHex = targetData.hex;
   const isCorrect = isChallengeMet(currentMixHex, targetHex);
   const meter = currentMixHex ? closeness(currentMixHex, targetHex) : 0;
+
+  const meterLabel = (m: number): string => {
+    if (m >= 1) return t('color-mixer:challenge.meter.perfect');
+    if (m >= 0.85) return t('color-mixer:challenge.meter.soClose');
+    if (m >= 0.6) return t('color-mixer:challenge.meter.gettingWarmer');
+    return t('color-mixer:challenge.meter.keepMixing');
+  };
 
   useEffect(() => {
     if (isCorrect && !showSuccess) {
@@ -54,12 +55,17 @@ export function ChallengeMode({
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <IconButton glyph="←" onPress={onBack} accessibilityLabel="Back to challenges" size={44} />
+        <IconButton
+          glyph={I18nManager.isRTL ? '→' : '←'}
+          onPress={onBack}
+          accessibilityLabel={t('color-mixer:challenge.backLabel')}
+          size={44}
+        />
       </View>
 
       {/* Target display */}
       <View style={styles.targetArea}>
-        <Text style={styles.prompt}>Make this color:</Text>
+        <Text style={styles.prompt}>{t('color-mixer:challenge.makeThisColor')}</Text>
         <View style={styles.targetBlob}>
           <ColorBlob
             color={targetHex}
@@ -68,18 +74,18 @@ export function ChallengeMode({
             pulsing={!showSuccess}
           />
         </View>
-        <Text style={styles.targetName}>{targetData.name}</Text>
+        <Text style={styles.targetName}>{t(`color-mixer:colors.${currentChallenge.targetColor}`)}</Text>
       </View>
 
       {/* Hint */}
       {currentChallenge.hint && !showHint && (
         <Text onPress={() => setShowHint(true)} style={styles.hintButton}>
-          💡 Need a hint?
+          {t('color-mixer:challenge.needHint')}
         </Text>
       )}
       {showHint && currentChallenge.hint && (
         <View style={styles.hintBox}>
-          <Text style={styles.hintText}>💡 {currentChallenge.hint}</Text>
+          <Text style={styles.hintText}>💡 {t(`color-mixer:challengeHints.${currentChallenge.id}`)}</Text>
         </View>
       )}
 
@@ -99,9 +105,9 @@ export function ChallengeMode({
           <Animated.View style={[styles.successContent, { transform: [{ scale: successScale }] }]}>
             <Sparkles color={targetHex} radius={100} />
             <Text style={styles.successEmoji}>🎉</Text>
-            <Text style={styles.successText}>You did it!</Text>
+            <Text style={styles.successText}>{t('color-mixer:challenge.success')}</Text>
             <ColorBlob color={targetHex} size={70} showShine />
-            <Text style={styles.successColor}>{targetData.name}</Text>
+            <Text style={styles.successColor}>{t(`color-mixer:colors.${currentChallenge.targetColor}`)}</Text>
           </Animated.View>
         </View>
       )}

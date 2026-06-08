@@ -33,6 +33,9 @@
         "projectId": "f880aac1-cbdf-4069-9de0-983ed699a279"
       }
     },
-    "owner": "waybeyond"
+    "owner": "waybeyond",
+    "plugins": [
+      "expo-localization"
+    ]
   }
 }

@@ -1,19 +1,20 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HudPill, hudTextStyle, SPACING, TOUCH_TARGET } from '@/sdk';
+import { HudPill, hudTextStyle, SPACING, TOUCH_TARGET, useTranslation } from '@/sdk';
 
 type Props = { level: number; popped: number; quota: number; arrowsLeft: number };
 
 // Top bar: back-space · level (centered) · balloons popped + arrows left.
 export function Hud({ level, popped, quota, arrowsLeft }: Props) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   return (
     <View style={[styles.bar, { paddingTop: insets.top + SPACING.xs }]} pointerEvents="box-none">
       <View style={styles.backSpace} />
 
       <View style={styles.center}>
         <HudPill>
-          <Text style={hudTextStyle}>Level {level}</Text>
+          <Text style={hudTextStyle}>{t('balloon-archer:hud.level', { n: level })}</Text>
         </HudPill>
       </View>
 

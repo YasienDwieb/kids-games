@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HudPill, hudTextStyle, IconButton, SPACING, TOUCH_TARGET } from '@/sdk';
+import { HudPill, hudTextStyle, IconButton, SPACING, TOUCH_TARGET, useTranslation } from '@/sdk';
 import { EMOJI } from '../constants';
 
 interface HudProps {
@@ -13,6 +13,7 @@ interface HudProps {
 /** Top bar: back-space · level (centred) · star tally + hint, on one row. */
 export function Hud({ level, collected, total, onHint }: HudProps) {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   return (
     <View
       style={[styles.bar, { paddingTop: insets.top + SPACING.xs }]}
@@ -23,18 +24,23 @@ export function Hud({ level, collected, total, onHint }: HudProps) {
 
       <View style={styles.center}>
         <HudPill>
-          <Text style={hudTextStyle}>Level {level}</Text>
+          <Text style={hudTextStyle}>{t('mouse-maze:hud.level', { level })}</Text>
         </HudPill>
       </View>
 
       <View style={styles.right}>
         <HudPill>
           <Text style={styles.icon}>{EMOJI.star}</Text>
-          <Text style={hudTextStyle}>
+          {/* Pin tally to LTR so digits never bidi-reorder in Arabic */}
+          <Text style={[hudTextStyle, styles.tally]}>
             {collected}/{total}
           </Text>
         </HudPill>
-        <IconButton glyph="💡" onPress={onHint} accessibilityLabel="Show hint" />
+        <IconButton
+          glyph="💡"
+          onPress={onHint}
+          accessibilityLabel={t('mouse-maze:hud.hintLabel')}
+        />
       </View>
     </View>
   );
@@ -56,4 +62,6 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center' },
   right: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   icon: { fontSize: 17 },
+  // Pin the collected/total digits to LTR so they never reorder under Arabic bidi.
+  tally: { direction: 'ltr' as const },
 });

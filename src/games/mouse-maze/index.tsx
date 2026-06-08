@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   GestureResponderEvent,
+  I18nManager,
   LayoutChangeEvent,
   PanResponder,
   StyleSheet,
@@ -133,7 +134,13 @@ export default function MouseMazeGame() {
     <View style={styles.root} onLayout={onLayout}>
       {cellSize > 0 && (
         <View style={styles.center} pointerEvents="box-none">
-          <View style={{ width: boardSize, height: boardSize }} {...responder.panHandlers}>
+          {/* direction:'ltr' pins the play area so grid columns, the mouse
+              position (absolute + translateX), and locationX touch coords all
+              share physical-left origin — spatial puzzles must not mirror. */}
+          <View
+            style={[{ width: boardSize, height: boardSize }, I18nManager.isRTL && styles.ltrBoard]}
+            {...responder.panHandlers}
+          >
             {/* pointerEvents none so the board View stays the touch target and
                 locationX/Y are relative to the board origin. */}
             <View pointerEvents="none">
@@ -178,4 +185,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: MAZE_COLORS.background },
   center: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   mouse: { position: 'absolute', top: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
+  // Applied to the play area when RTL is active so the maze, mouse, and touch
+  // coordinates all stay in the same physical-left frame.
+  ltrBoard: { direction: 'ltr' as const },
 });

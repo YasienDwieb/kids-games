@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, type ReactNode } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { SafeContainer } from '@/components/common/SafeContainer';
 import { AppBar } from '@/components/common/AppBar';
 import { COLORS, FONTS, FONT_SIZES, SPACING } from '@/constants';
@@ -20,6 +21,7 @@ export function GameShell({
   onPause,
   children,
 }: GameShellProps) {
+  const { t } = useTranslation();
   const [score, setScore] = useState<number | string | null>(null);
   const [overlays, setOverlays] = useState<Partial<Record<OverlaySlot, ReactNode>>>({});
 
@@ -57,7 +59,7 @@ export function GameShell({
               {header}
               {score != null ? <Text style={styles.score}>{score}</Text> : null}
               {onPause ? (
-                <TouchableOpacity onPress={onPause} accessibilityLabel="Pause" hitSlop={8}>
+                <TouchableOpacity onPress={onPause} accessibilityLabel={t('common.pause')} hitSlop={8}>
                   <Text style={styles.pause}>⏸️</Text>
                 </TouchableOpacity>
               ) : null}

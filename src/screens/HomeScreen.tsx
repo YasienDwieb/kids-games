@@ -5,7 +5,15 @@ import type { RootStackParamList, GameConfig } from '../types';
 import { GameCard, Chip, IconButton } from '../components/common';
 import { COLORS, FONTS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
-import { useSettings, gamesForBand, getAllGames, AGE_BANDS, bandsForGame } from '@/sdk';
+import {
+  useSettings,
+  gamesForBand,
+  getAllGames,
+  AGE_BANDS,
+  bandsForGame,
+  useTranslation,
+  gameName,
+} from '@/sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -16,14 +24,14 @@ function accentForGame(game: GameConfig, index: number): AccentName {
   return game.accent ?? ACCENT_CYCLE[index % ACCENT_CYCLE.length];
 }
 
-function ageLabelForGame(game: GameConfig): string | undefined {
+function ageBandIdForGame(game: GameConfig): string | undefined {
   const ids = bandsForGame(game);
-  const band = AGE_BANDS.find((b) => ids.includes(b.id));
-  return band?.label;
+  return AGE_BANDS.find((b) => ids.includes(b.id))?.id;
 }
 
 export function HomeScreen({ navigation }: Props) {
   const { settings, update } = useSettings();
+  const { t } = useTranslation();
   const games = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
 
   return (
@@ -32,13 +40,13 @@ export function HomeScreen({ navigation }: Props) {
         {/* greeting header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.hello}>Hello there 👋</Text>
-            <Text style={styles.title}>Let's Play!</Text>
+            <Text style={styles.hello}>{t('home.greeting')}</Text>
+            <Text style={styles.title}>{t('home.title')}</Text>
           </View>
           <IconButton
             glyph="⚙️"
             onPress={() => navigation.navigate('Settings')}
-            accessibilityLabel="Settings"
+            accessibilityLabel={t('settings.title')}
           />
         </View>
 
@@ -48,11 +56,15 @@ export function HomeScreen({ navigation }: Props) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.chips}
         >
-          <Chip label="All" active={settings.ageBand === null} onPress={() => update({ ageBand: null })} />
+          <Chip
+            label={t('home.all')}
+            active={settings.ageBand === null}
+            onPress={() => update({ ageBand: null })}
+          />
           {AGE_BANDS.map((band) => (
             <Chip
               key={band.id}
-              label={band.label}
+              label={t(`ageBands.${band.id}`)}
               active={settings.ageBand === band.id}
               onPress={() => update({ ageBand: band.id })}
             />
@@ -61,20 +73,23 @@ export function HomeScreen({ navigation }: Props) {
 
         {/* grid */}
         {games.length === 0 ? (
-          <Text style={styles.empty}>More games coming soon! 🎈</Text>
+          <Text style={styles.empty}>{t('home.empty')}</Text>
         ) : (
           <View style={styles.grid}>
-            {games.map((game, i) => (
-              <View key={game.id} style={styles.cell}>
-                <GameCard
-                  icon={game.icon}
-                  name={game.name}
-                  accent={accentForGame(game, i)}
-                  ageLabel={ageLabelForGame(game)}
-                  onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
-                />
-              </View>
-            ))}
+            {games.map((game, i) => {
+              const bandId = ageBandIdForGame(game);
+              return (
+                <View key={game.id} style={styles.cell}>
+                  <GameCard
+                    icon={game.icon}
+                    name={gameName(game)}
+                    accent={accentForGame(game, i)}
+                    ageLabel={bandId ? t(`ageBands.${bandId}`) : undefined}
+                    onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
+                  />
+                </View>
+              );
+            })}
           </View>
         )}
       </ScrollView>

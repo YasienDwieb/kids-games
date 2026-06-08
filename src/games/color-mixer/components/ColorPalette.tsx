@@ -1,6 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, SHADOWS } from '@/sdk';
+import { COLORS as TOKENS, FONTS, SHADOWS, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
@@ -32,11 +32,13 @@ export function ColorPalette({
   onSavedLiftEnd,
   paletteItemPositions,
 }: ColorPaletteProps) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
       <View style={styles.paletteEdge} />
       <View style={styles.palette}>
-        <Text style={styles.title}>Colors</Text>
+        <Text style={styles.title}>{t('color-mixer:palette.colorsTitle')}</Text>
         <View style={styles.slotsRow}>
           {availableColors.map((colorId) => (
             <PaletteSlot
@@ -52,7 +54,7 @@ export function ColorPalette({
 
         {savedColors.length > 0 && (
           <>
-            <Text style={[styles.title, styles.savedTitle]}>Saved · tap or drag up</Text>
+            <Text style={[styles.title, styles.savedTitle]}>{t('color-mixer:palette.savedTitle')}</Text>
             {/* A horizontal scroller keeps the saved area one row tall no matter how many
                 colors exist, so it can never squeeze the mixing zone. The actual lift-drag
                 is rendered by the parent in a full-screen overlay (this ScrollView clips). */}
@@ -89,6 +91,7 @@ type PaletteSlotProps = {
 };
 
 function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemPositions }: PaletteSlotProps) {
+  const { t } = useTranslation();
   const slotRef = useRef<View>(null);
   const slotPosition = useRef({ x: 0, y: 0 });
   const instanceCounter = useRef(0);
@@ -136,7 +139,7 @@ function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemP
           onDragEnd={handleDragEnd}
         />
       </View>
-      <ColorLabel name={colorData.name} />
+      <ColorLabel name={t(`color-mixer:colors.${colorId}`)} />
     </View>
   );
 }
