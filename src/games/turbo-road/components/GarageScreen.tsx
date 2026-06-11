@@ -13,15 +13,36 @@ import {
   hudTextStyle,
   useTranslation,
 } from '@/sdk';
-import { CARS, TRIMS } from '../constants';
+import { CARS, STAT_RANGE, THEME_ORDER, TRIMS } from '../constants';
 import type { CarDef, GarageScreenProps, TrimDef } from '../types';
 
 /* Width reserved at the header start so the SDK BackButton (64px circle,
    absolute top-start) never collides with the title. */
 const BACK_CLEARANCE = TOUCH_TARGET.recommended + SPACING.sm;
 
+/** Map a car stat (≈0.9–1.15) onto a 0..1 bar fill. */
+const statFill = (v: number): number =>
+  Math.min(1, Math.max(0.08, (v - STAT_RANGE.min) / (STAT_RANGE.max - STAT_RANGE.min)));
+
+/* Tiny labeled stat bar (Speed / Grip) for a car card. */
+function StatBar({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <View style={styles.statRow}>
+      <Text style={styles.statLabel} numberOfLines={1}>
+        {label}
+      </Text>
+      <View style={styles.statTrack}>
+        <View
+          style={[styles.statFill, { width: `${statFill(value) * 100}%`, backgroundColor: color }]}
+        />
+      </View>
+    </View>
+  );
+}
+
 export function GarageScreen({
   garage,
+  trophies,
   onSelectCar,
   onUnlockCar,
   onSelectTrim,
@@ -94,6 +115,27 @@ export function GarageScreen({
           </View>
         </View>
 
+        {/* Trophy shelf — one cup per completed 4-level tour. */}
+        <View style={styles.trophyShelf}>
+          <Text style={styles.trophyTitle}>{t('turbo-road:garage.trophies')}</Text>
+          {trophies === 0 ? (
+            <Text style={styles.trophyEmpty}>{t('turbo-road:garage.noTrophies')}</Text>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.trophyRow}>
+                {Array.from({ length: trophies }, (_, i) => (
+                  <View key={i} style={styles.trophyItem}>
+                    <Text style={styles.trophyEmoji}>🏆</Text>
+                    <Text style={styles.trophyName} numberOfLines={1}>
+                      {t(`turbo-road:cups.${THEME_ORDER[i % THEME_ORDER.length]}`)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
+          )}
+        </View>
+
         {/* Collection grid — 2 columns of car cards. */}
         <View style={styles.grid}>
           {CARS.map((car) => {
@@ -123,6 +165,20 @@ export function GarageScreen({
                 >
                   {t(`turbo-road:cars.${car.id}`)}
                 </Text>
+
+                {/* Personality stats — what makes this car worth unlocking. */}
+                <View style={styles.statsBlock}>
+                  <StatBar
+                    label={t('turbo-road:garage.stats.speed')}
+                    value={car.stats.speed}
+                    color={ACCENTS.coral.base}
+                  />
+                  <StatBar
+                    label={t('turbo-road:garage.stats.grip')}
+                    value={car.stats.grip}
+                    color={COLORS.gold}
+                  />
+                </View>
 
                 {isSelected && (
                   <View style={styles.selectedChip}>
@@ -260,6 +316,70 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     ...SHADOWS.sm,
+  },
+  trophyShelf: {
+    marginTop: SPACING.lg,
+    backgroundColor: COLORS.surface2,
+    borderRadius: BORDER_RADIUS.card,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.xs,
+  },
+  trophyTitle: {
+    fontFamily: FONTS.display,
+    fontSize: 15,
+    color: COLORS.inkSoft,
+  },
+  trophyEmpty: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 13,
+    color: COLORS.inkFaint,
+  },
+  trophyRow: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+  },
+  trophyItem: {
+    alignItems: 'center',
+    width: 72,
+  },
+  trophyEmoji: {
+    fontSize: 30,
+    lineHeight: 36,
+  },
+  trophyName: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 11,
+    color: COLORS.inkSoft,
+  },
+  statsBlock: {
+    alignSelf: 'stretch',
+    gap: 3,
+    marginTop: SPACING.xs,
+  },
+  statRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+  },
+  statLabel: {
+    width: 52,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 11,
+    color: COLORS.inkSoft,
+  },
+  statTrack: {
+    flex: 1,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: COLORS.line,
+    overflow: 'hidden',
+  },
+  statFill: {
+    height: 5,
+    borderRadius: 3,
   },
   grid: {
     flexDirection: 'row',

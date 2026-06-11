@@ -23,11 +23,20 @@ import {
   PROGRESS_STEP,
   SHAKE_FREQ,
 } from '../constants';
-import { createWorld, steerTo, stepWorld, toSnapshot } from '../utils/engine';
+import {
+  createWorld,
+  pauseWorld,
+  resumeWorld,
+  steerTo,
+  stepWorld,
+  toSnapshot,
+} from '../utils/engine';
 import type {
+  CarDef,
   GameEvent,
   LevelData,
   RaceAnimRefs,
+  RaceStats,
   RaceUiState,
   WorldState,
 } from '../types';
@@ -43,13 +52,17 @@ const EVENT_SOUND: Record<GameEvent, string> = {
   coin: 'success',
   hit: 'hit',
   boost: 'powerup',
+  shield: 'powerup',
+  magnet: 'powerup',
+  shieldBlock: 'pop', // absorbed — a thump, not a crash
   finish: 'win',
 };
 
-export type RaceResult = { place: 1 | 2 | 3; stars: number; coins: number };
+export type RaceResult = { place: 1 | 2 | 3; stars: number } & RaceStats;
 
 type Args = {
   level: LevelData;
+  car: CarDef;
   onFinish: (result: RaceResult) => void;
 };
 
@@ -64,6 +77,8 @@ function uiFrom(world: WorldState, level: LevelData, consumed: number[]): RaceUi
     progress: Math.min(1, Math.floor(snap.progress / PROGRESS_STEP) * PROGRESS_STEP),
     boostActive: snap.boostActive,
     slowActive: snap.slowActive,
+    shieldActive: world.shield > 0,
+    magnetActive: world.phase === 'racing' && world.elapsed < world.magnetUntil,
     consumedIds: consumed,
   };
 }
@@ -76,23 +91,27 @@ const uiChanged = (a: RaceUiState, b: RaceUiState): boolean =>
   a.progress !== b.progress ||
   a.boostActive !== b.boostActive ||
   a.slowActive !== b.slowActive ||
+  a.shieldActive !== b.shieldActive ||
+  a.magnetActive !== b.magnetActive ||
   a.consumedIds !== b.consumedIds;
 
-export function useRaceGame({ level, onFinish }: Args): {
+export function useRaceGame({ level, car, onFinish }: Args): {
   ui: RaceUiState;
   anim: RaceAnimRefs;
   steerTo: (lane: number) => void;
+  pause: () => void;
+  resume: () => void;
 } {
   const { play } = useSound();
   const { settings } = useSettings();
 
-  // Gentle pacing per age band: scale the level's base speed for the player
-  // AND the rivals (engine derives both from level.baseSpeed).
+  // Gentle pacing per age band (scales player AND rivals via baseSpeed),
+  // then the car's speed stat on top.
   const factor =
     (settings.ageBand ? AGE_SPEED_FACTOR[settings.ageBand] : undefined) ?? 1;
   const paced = useMemo<LevelData>(
-    () => ({ ...level, baseSpeed: level.baseSpeed * factor }),
-    [level, factor],
+    () => ({ ...level, baseSpeed: level.baseSpeed * factor * car.stats.speed }),
+    [level, factor, car],
   );
 
   // Fast-path channels — created once, written every frame, never re-created
@@ -108,6 +127,10 @@ export function useRaceGame({ level, onFinish }: Args): {
       rivals: level.rivals.map((r) => ({
         laneX: new Animated.Value(r.startLane),
         gap: new Animated.Value(0),
+      })),
+      traffic: level.traffic.map((t) => ({
+        lane: new Animated.Value(t.startLane),
+        gap: new Animated.Value(t.gapAhead),
       })),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,6 +180,8 @@ export function useRaceGame({ level, onFinish }: Args): {
             place: w.place,
             stars: 4 - w.place, // 1st → 3 ★, 2nd → 2 ★, 3rd → 1 ★
             coins: w.coins,
+            hits: w.hits,
+            boosts: w.boosts,
           });
         }
       }
@@ -188,6 +213,12 @@ export function useRaceGame({ level, onFinish }: Args): {
         anim.rivals[i].laneX.setValue(r.laneX);
         anim.rivals[i].gap.setValue(r.dist - w.dist);
       }
+      for (let i = 0; i < anim.traffic.length; i++) {
+        const truck = w.traffic[i];
+        if (!truck) continue;
+        anim.traffic[i].lane.setValue(truck.lane);
+        anim.traffic[i].gap.setValue(truck.dist - w.dist);
+      }
 
       /* ---- slow path: only when something visible changed ---- */
       const next = uiFrom(w, lvl, consumed.current);
@@ -217,5 +248,16 @@ export function useRaceGame({ level, onFinish }: Args): {
     }
   }, []);
 
-  return { ui, anim, steerTo: handleSteerTo };
+  // Pause/resume — the loop keeps ticking but stepWorld no-ops while paused,
+  // and the next ui change flips phase for the overlay. Resume replays one
+  // countdown beat so the child has a moment to get ready.
+  const pause = useCallback(() => {
+    pauseWorld(world.current);
+  }, []);
+  const resume = useCallback(() => {
+    resumeWorld(world.current);
+    ref.current.play('pop', { haptic: false });
+  }, []);
+
+  return { ui, anim, steerTo: handleSteerTo, pause, resume };
 }

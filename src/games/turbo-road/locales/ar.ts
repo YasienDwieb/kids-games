@@ -17,6 +17,29 @@ export const ar: GameTranslations = {
     drag: 'بالإصبع',
     tilt: 'بالإمالة',
   },
+  pause: {
+    title: 'استراحة',
+    resume: 'أكمل السباق',
+    exit: 'إنهاء السباق',
+  },
+  missions: {
+    title: 'المهام',
+    claim: 'استلم',
+    types: {
+      coins: 'اجمع {{n}} عملة',
+      first: 'افز بـ {{n}} سباقات',
+      races: 'أكمل {{n}} سباقات',
+      boost: 'خذ {{n}} منصات تسارع',
+      clean: 'أكمل {{n}} سباقات دون اصطدام',
+    },
+  },
+  cups: {
+    meadow: 'كأس المرج',
+    beach: 'كأس الشاطئ',
+    desert: 'كأس الصحراء',
+    snow: 'كأس الثلج',
+    earned: 'فزت بـ{{name}}!',
+  },
   countdown: {
     go: 'انطلق!',
   },
@@ -45,6 +68,12 @@ export const ar: GameTranslations = {
     select: 'اختر',
     unlock: 'افتح',
     done: 'تم',
+    trophies: 'الكؤوس',
+    noTrophies: 'تسابق لتفوز بالكؤوس!',
+    stats: {
+      speed: 'السرعة',
+      grip: 'التحكم',
+    },
   },
   cars: {
     turbo: 'الصاروخ',
@@ -72,5 +101,6 @@ export const ar: GameTranslations = {
     steer: 'قُد السيارة',
     coins: 'العملات',
     stars: 'النجوم',
+    pause: 'أوقف السباق مؤقتًا',
   },
 };

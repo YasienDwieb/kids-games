@@ -26,6 +26,26 @@ export const MAX_RACE_LENGTH = 6000;
 
 /** 3 → 2 → 1 → GO!; one step per COUNTDOWN_STEP_MS. */
 export const COUNTDOWN_STEP_MS = 800;
+/** Resuming from pause replays a single countdown beat ("1" → GO!). */
+export const RESUME_COUNTDOWN_MS = 800;
+
+/** Post-hit grace: obstacles can't chain-hit while this window is active. */
+export const GRACE_MS = 1600;
+/** Brief grace after a shield absorbs a hit. */
+export const SHIELD_GRACE_MS = 800;
+
+/** Magnet power-up: duration and the widened coin-collection geometry. */
+export const MAGNET_MS = 6000;
+export const MAGNET_LATERAL = 1.6; // lanes — pulls coins from neighbors
+export const MAGNET_WINDOW = 100; // dist window while magnetized
+
+/** Oncoming trucks (the 8-12 challenge layer). */
+export const TRAFFIC_MIN_LEVEL = 6;
+export const TRAFFIC_SPEED_FACTOR = 0.45; // their speed vs level base speed
+export const TRAFFIC_RESPAWN_BEHIND = 250; // recycle once this far behind
+
+/** The win overlay waits this long so the finish-line moment can play. */
+export const FINISH_CELEBRATION_MS = 1100;
 
 export const LANE_SWITCH_MS = 160;
 
@@ -102,16 +122,21 @@ export const ROAD_WIDTH_RATIO = 0.7;
 
 /* ---------------- garage catalog ---------------- */
 
+/** Car personality: `speed` multiplies base speed, `grip` multiplies the
+    steering spring (snappier lane changes). Faster cars trade away grip. */
 export const CARS: readonly CarDef[] = [
-  { id: 'turbo', emoji: '🏎️', price: 0 },
-  { id: 'zippy', emoji: '🚗', price: 80 },
-  { id: 'buggy', emoji: '🚙', price: 150 },
-  { id: 'taxi', emoji: '🚕', price: 250 },
-  { id: 'patrol', emoji: '🚓', price: 400 },
-  { id: 'truck', emoji: '🛻', price: 600 },
-  { id: 'tractor', emoji: '🚜', price: 900 },
-  { id: 'moto', emoji: '🏍️', price: 1500 },
+  { id: 'turbo', emoji: '🏎️', price: 0, stats: { speed: 1.0, grip: 1.0 } },
+  { id: 'zippy', emoji: '🚗', price: 80, stats: { speed: 1.02, grip: 0.98 } },
+  { id: 'buggy', emoji: '🚙', price: 150, stats: { speed: 0.98, grip: 1.08 } },
+  { id: 'taxi', emoji: '🚕', price: 250, stats: { speed: 1.04, grip: 0.95 } },
+  { id: 'patrol', emoji: '🚓', price: 400, stats: { speed: 1.06, grip: 0.97 } },
+  { id: 'truck', emoji: '🛻', price: 600, stats: { speed: 0.95, grip: 1.12 } },
+  { id: 'tractor', emoji: '🚜', price: 900, stats: { speed: 0.92, grip: 1.15 } },
+  { id: 'moto', emoji: '🏍️', price: 1500, stats: { speed: 1.1, grip: 0.9 } },
 ];
+
+/** Stat-bar rendering range in the garage (maps stat → 0..1 fill). */
+export const STAT_RANGE = { min: 0.85, max: 1.18 };
 
 export const TRIMS: readonly TrimDef[] = [
   { id: 'coral', ...ACCENTS.coral },
@@ -194,6 +219,27 @@ export const ENTITY_EMOJI: Record<string, string> = {
   cone: '🚧',
   barrel: '🛢️',
   boost: '⚡',
+  shield: '🛡️',
+  magnet: '🧲',
 };
 
 export const RIVAL_EMOJI = ['🚙', '🚕'] as const;
+export const TRAFFIC_EMOJI = '🚚';
+
+/* ---------------- missions (rolling, coin-rewarded) ---------------- */
+
+/** Per-type target ladders; when a ladder is exhausted the last target keeps
+    growing ×1.5 (rounded to 5). Rewards scale with the target. */
+export const MISSION_LADDERS: Record<
+  string,
+  { targets: readonly number[]; rewardPerTarget: number; emoji: string }
+> = {
+  coins: { targets: [20, 50, 100, 200], rewardPerTarget: 1, emoji: '🪙' },
+  first: { targets: [1, 3, 6, 10], rewardPerTarget: 25, emoji: '🥇' },
+  races: { targets: [3, 8, 15, 25], rewardPerTarget: 8, emoji: '🏁' },
+  boost: { targets: [3, 8, 15], rewardPerTarget: 10, emoji: '⚡' },
+  clean: { targets: [1, 3, 6], rewardPerTarget: 30, emoji: '🌟' },
+};
+
+/** The three mission slots cycle through these types. */
+export const MISSION_TYPES = ['coins', 'first', 'races', 'boost', 'clean'] as const;

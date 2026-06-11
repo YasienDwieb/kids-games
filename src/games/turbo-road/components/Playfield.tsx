@@ -26,6 +26,7 @@ import {
   ENTITY_EMOJI,
   PLAYER_Y_RATIO,
   ROAD_WIDTH_RATIO,
+  TRAFFIC_EMOJI,
   VIEW_DIST,
 } from '../constants';
 import type { PlayfieldProps } from '../types';
@@ -33,6 +34,62 @@ import type { PlayfieldProps } from '../types';
 /* Sky strip height as a ratio of the playfield height. */
 const SKY_RATIO = 0.12;
 const DASH_PERIOD = DASH_LEN + DASH_GAP;
+
+/* One-shot celebration burst at the finish line: emoji pieces spring
+   outward from the car and fade. Mount-once, cleaned up automatically. */
+const BURST_PIECES = Array.from({ length: 10 }, (_, i) => ({
+  emoji: ['🎉', '✨', '🎊'][i % 3],
+  angle: (i / 10) * Math.PI * 2,
+  radius: 70 + (i % 3) * 26,
+}));
+
+function FinishBurst({ x, y }: { x: number; y: number }) {
+  const t = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const a = Animated.timing(t, {
+      toValue: 1,
+      duration: 900,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    });
+    a.start();
+    return () => a.stop();
+  }, [t]);
+
+  const opacity = t.interpolate({ inputRange: [0, 0.7, 1], outputRange: [1, 1, 0] });
+  return (
+    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      {BURST_PIECES.map((p, i) => (
+        <Animated.Text
+          key={i}
+          style={{
+            position: 'absolute',
+            left: x - 12,
+            top: y - 12,
+            fontSize: 20,
+            opacity,
+            transform: [
+              {
+                translateX: t.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, Math.cos(p.angle) * p.radius],
+                }),
+              },
+              {
+                translateY: t.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, Math.sin(p.angle) * p.radius - 30],
+                }),
+              },
+            ],
+          }}
+        >
+          {p.emoji}
+        </Animated.Text>
+      ))}
+    </View>
+  );
+}
 
 /* The steering hint fades out shortly into the race. */
 const HINT_UNTIL_PROGRESS = 0.05;
@@ -216,6 +273,17 @@ export function Playfield({
       })),
     [anim.rivals, laneW, H],
   );
+  const trafficTransforms = useMemo(
+    () =>
+      anim.traffic.map((tr) => ({
+        x: tr.lane.interpolate({
+          inputRange: [0, 2],
+          outputRange: [laneW * 0.5 - 28, laneW * 2.5 - 28],
+        }),
+        y: tr.gap.interpolate({ inputRange: [0, VIEW_DIST], outputRange: [0, -H] }),
+      })),
+    [anim.traffic, laneW, H],
+  );
 
   // Repeating dash strip (rendered once): translated by dashShift, the
   // pattern is identical after each DASH_PERIOD so the wrap is seamless.
@@ -395,6 +463,26 @@ export function Playfield({
           );
         })}
 
+        {/* oncoming trucks (rotated to face DOWN — they drive at the player) */}
+        {level.traffic.map((truck, i) => {
+          const tr = trafficTransforms[i];
+          if (!tr) return null;
+          return (
+            <Animated.View
+              key={truck.id}
+              style={[
+                styles.rivalBox,
+                {
+                  top: playerY - 28,
+                  transform: [{ translateX: tr.x }, { translateY: tr.y }],
+                },
+              ]}
+            >
+              <Text style={styles.truckCar}>{TRAFFIC_EMOJI}</Text>
+            </Animated.View>
+          );
+        })}
+
         {/* player car: spring-followed laneX + impact shake + banking */}
         <Animated.View
           style={[
@@ -417,6 +505,7 @@ export function Playfield({
               ui.boostActive && { backgroundColor: trim.base, borderColor: COLORS.gold },
             ]}
           />
+          {ui.shieldActive && <View style={styles.shieldBubble} />}
           {ui.boostActive && (
             <>
               <View style={[styles.streak, styles.streakLeft, { backgroundColor: trim.base }]} />
@@ -424,7 +513,11 @@ export function Playfield({
             </>
           )}
           <Text style={styles.playerCar}>{playerEmoji}</Text>
+          {ui.magnetActive && <Text style={styles.magnetBadge}>🧲</Text>}
         </Animated.View>
+
+        {/* finish-line celebration: a one-shot burst around the car */}
+        {ui.phase === 'finished' && <FinishBurst x={laneW * 1.5} y={playerY} />}
       </View>
 
       {/* ---- sky strip (covers the horizon: items emerge from beneath it) ---- */}
@@ -548,6 +641,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rivalCar: { fontSize: 40, transform: [{ rotate: '90deg' }] },
+  // Oncoming: faces DOWN the screen, toward the player.
+  truckCar: { fontSize: 40, transform: [{ rotate: '-90deg' }] },
   playerBox: {
     position: 'absolute',
     left: 0,
@@ -562,6 +657,25 @@ const styles = StyleSheet.create({
     borderRadius: 34,
     borderWidth: 3,
     ...SHADOWS.sm,
+  },
+  // Held shield: a calm blue bubble around the car.
+  shieldBubble: {
+    position: 'absolute',
+    top: -6,
+    bottom: -6,
+    left: -6,
+    right: -6,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: ACCENTS.blue.base,
+    backgroundColor: ACCENTS.blue.tint,
+    opacity: 0.55,
+  },
+  magnetBadge: {
+    position: 'absolute',
+    top: -16,
+    right: -8,
+    fontSize: 18,
   },
   playerCar: { fontSize: 44, transform: [{ rotate: '90deg' }] },
   streak: {

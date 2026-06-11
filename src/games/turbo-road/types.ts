@@ -10,7 +10,7 @@ export type LaneIndex = 0 | 1 | 2;
 
 export type ThemeId = 'meadow' | 'beach' | 'desert' | 'snow';
 
-export type EntityKind = 'coin' | 'cone' | 'barrel' | 'boost';
+export type EntityKind = 'coin' | 'cone' | 'barrel' | 'boost' | 'shield' | 'magnet';
 
 export interface RoadEntity {
   id: number;
@@ -39,6 +39,23 @@ export interface RivalState {
   dist: number;
 }
 
+/** Oncoming truck spawn: starts `gapAhead` units ahead of the player and
+    drives TOWARD them; recycles ahead after being passed. */
+export interface TrafficProfile {
+  id: string;
+  startLane: LaneIndex;
+  gapAhead: number;
+  /** Their own speed as a fraction of level base speed. */
+  speedFactor: number;
+}
+
+export interface TrafficState {
+  id: string;
+  lane: LaneIndex;
+  dist: number;
+  respawns: number;
+}
+
 export interface LevelData {
   level: number;
   theme: ThemeId;
@@ -46,11 +63,20 @@ export interface LevelData {
   baseSpeed: number;
   entities: RoadEntity[];
   rivals: RivalProfile[];
+  traffic: TrafficProfile[];
 }
 
-export type RacePhase = 'countdown' | 'racing' | 'finished';
+export type RacePhase = 'countdown' | 'racing' | 'paused' | 'finished';
 
-export type GameEvent = 'go' | 'coin' | 'hit' | 'boost' | 'finish';
+export type GameEvent =
+  | 'go'
+  | 'coin'
+  | 'hit'
+  | 'boost'
+  | 'shield'
+  | 'magnet'
+  | 'shieldBlock'
+  | 'finish';
 
 export interface WorldState {
   phase: RacePhase;
@@ -66,13 +92,30 @@ export interface WorldState {
   laneVel: number;
   /** Post-hit camera shake amplitude, 1 → 0 with SHAKE_TAU decay. */
   shake: number;
+  /** Steering-grip multiplier from the selected car (scales the spring). */
+  grip: number;
   dist: number;
   speed: number;
   /** elapsed-ms timestamps until which the boost / slowdown applies. */
   boostUntil: number;
   slowUntil: number;
+  /** Countdown ends (racing starts) at this elapsed-ms; GO! flashes until
+      goFlashUntil. Reset by resumeWorld for the resume beat. */
+  countdownUntil: number;
+  goFlashUntil: number;
+  /** Obstacles can't hit while elapsed < graceUntil (post-hit forgiveness). */
+  graceUntil: number;
+  /** Shared 0→1 off-the-line ramp (player and rivals launch together). */
+  launch: number;
+  /** Held shield charges (0/1) and the magnet expiry. */
+  shield: number;
+  magnetUntil: number;
   coins: number;
+  /** Race stats for missions. */
+  hits: number;
+  boosts: number;
   rivals: RivalState[];
+  traffic: TrafficState[];
   /** Entities not yet consumed. */
   entities: RoadEntity[];
   place: 1 | 2 | 3;
@@ -134,6 +177,8 @@ export interface CarDef {
   emoji: string;
   /** Coin price; 0 = owned from the start. */
   price: number;
+  /** Personality: speed multiplies base speed, grip multiplies steering. */
+  stats: { speed: number; grip: number };
 }
 
 export interface TrimDef {
@@ -148,6 +193,33 @@ export interface GarageState {
   owned: CarId[];
   selected: CarId;
   trim: TrimId;
+}
+
+/* ---------- missions ---------- */
+
+export type MissionType = 'coins' | 'first' | 'races' | 'boost' | 'clean';
+
+export interface Mission {
+  id: number;
+  type: MissionType;
+  /** Index into the type's target ladder (keeps growth deterministic). */
+  tier: number;
+  target: number;
+  progress: number;
+  reward: number;
+}
+
+export interface MissionsState {
+  active: Mission[];
+  nextId: number;
+}
+
+/** Per-race stats fed into mission progress. */
+export interface RaceStats {
+  coins: number;
+  place: 1 | 2 | 3;
+  hits: number;
+  boosts: number;
 }
 
 /* ---------- control preferences ---------- */
@@ -189,6 +261,8 @@ export interface RaceAnimRefs {
   shake: Animated.Value;
   /** One per rival: eased lane position and dist gap to the player. */
   rivals: { laneX: Animated.Value; gap: Animated.Value }[];
+  /** One per oncoming truck: lane (snaps on respawn) and dist gap. */
+  traffic: { lane: Animated.Value; gap: Animated.Value }[];
 }
 
 /** Slow-path UI state — changes only on real events (coin, place change,
@@ -202,6 +276,9 @@ export interface RaceUiState {
   progress: number;
   boostActive: boolean;
   slowActive: boolean;
+  /** Held shield charge + magnet window (HUD chips, car effects). */
+  shieldActive: boolean;
+  magnetActive: boolean;
   /** Consumed (collected / crashed) entity ids — the Playfield hides these. */
   consumedIds: readonly number[];
 }
@@ -225,6 +302,9 @@ export interface HudProps {
   level: number;
   place: 1 | 2 | 3;
   coins: number;
+  shieldActive: boolean;
+  magnetActive: boolean;
+  onPause: () => void;
 }
 
 export interface ProgressBarProps {
@@ -240,6 +320,8 @@ export interface StartScreenProps {
   trim: TrimDef;
   walletCoins: number;
   control: ControlMode;
+  missions: Mission[];
+  onClaimMission: (id: number) => void;
   onControlChange: (mode: ControlMode) => void;
   onRace: () => void;
   onGarage: () => void;
@@ -249,12 +331,21 @@ export interface WinOverlayProps {
   place: 1 | 2 | 3;
   stars: number;
   coinsEarned: number;
+  /** Set when this race completed a 4-level tour — shows the cup banner. */
+  cupTheme?: ThemeId;
   onNext: () => void;
   onGarage: () => void;
 }
 
+export interface PauseOverlayProps {
+  onResume: () => void;
+  onExit: () => void;
+}
+
 export interface GarageScreenProps {
   garage: GarageState;
+  /** Number of cups earned (one per completed 4-level tour). */
+  trophies: number;
   onSelectCar: (id: CarId) => void;
   onUnlockCar: (id: CarId) => void;
   onSelectTrim: (id: TrimId) => void;

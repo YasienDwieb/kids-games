@@ -10,17 +10,24 @@ import {
   BOOST_MS,
   COLLISION_WINDOW,
   COUNTDOWN_STEP_MS,
+  GRACE_MS,
   HIT_FACTOR,
   HIT_MS,
   LATERAL_OBSTACLE,
   LATERAL_PICKUP,
+  MAGNET_LATERAL,
+  MAGNET_MS,
+  MAGNET_WINDOW,
   PLAYER_Y_RATIO,
+  RESUME_COUNTDOWN_MS,
   RIVAL_LANE_MS,
   RUBBER_BAND,
   SHAKE_TAU,
+  SHIELD_GRACE_MS,
   SPEED_TAU_ACCEL,
   SPEED_TAU_BRAKE,
   STEER_OMEGA,
+  TRAFFIC_RESPAWN_BEHIND,
   VIEW_DIST,
 } from '../constants';
 import type {
@@ -35,7 +42,6 @@ import type {
 
 /** Countdown shows 3 → 2 → 1 (then GO! once racing starts). */
 const COUNTDOWN_STEPS = 3;
-const COUNTDOWN_LABELS = ['3', '2', '1'] as const;
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -46,7 +52,29 @@ function bounceLane(x: number): LaneIndex {
   return (p === 3 ? 1 : p) as LaneIndex;
 }
 
-export function createWorld(level: LevelData): WorldState {
+/** An obstacle (cone/barrel/truck) reached the car: the shield absorbs it
+    when held, otherwise brake + shake; either way a grace window opens so
+    hits never chain. Returns the event to emit. */
+function applyObstacleHit(world: WorldState): GameEvent {
+  if (world.shield > 0) {
+    world.shield -= 1;
+    world.graceUntil = world.elapsed + SHIELD_GRACE_MS;
+    world.shake = 0.45; // a thump, not a crash
+    return 'shieldBlock';
+  }
+  world.slowUntil = world.elapsed + HIT_MS;
+  world.boostUntil = 0;
+  world.shake = 1;
+  world.hits += 1;
+  world.graceUntil = world.elapsed + GRACE_MS;
+  return 'hit';
+}
+
+export function createWorld(
+  level: LevelData,
+  opts: { grip?: number } = {},
+): WorldState {
+  const countdownUntil = COUNTDOWN_STEP_MS * COUNTDOWN_STEPS;
   return {
     phase: 'countdown',
     elapsed: 0,
@@ -55,11 +83,20 @@ export function createWorld(level: LevelData): WorldState {
     targetLaneX: 1,
     laneVel: 0,
     shake: 0,
+    grip: opts.grip ?? 1,
     dist: 0,
     speed: 0,
     boostUntil: 0,
     slowUntil: 0,
+    countdownUntil,
+    goFlashUntil: countdownUntil + COUNTDOWN_STEP_MS,
+    graceUntil: 0,
+    launch: 0,
+    shield: 0,
+    magnetUntil: 0,
     coins: 0,
+    hits: 0,
+    boosts: 0,
     rivals: level.rivals.map((r) => ({
       id: r.id,
       emoji: r.emoji,
@@ -67,10 +104,29 @@ export function createWorld(level: LevelData): WorldState {
       laneX: r.startLane,
       dist: 0,
     })),
+    traffic: level.traffic.map((t) => ({
+      id: t.id,
+      lane: t.startLane,
+      dist: t.gapAhead,
+      respawns: 0,
+    })),
     // Copy entities so consuming them never mutates the (reusable) LevelData.
     entities: level.entities.map((e) => ({ ...e })),
     place: 1,
   };
+}
+
+/** Pause an in-flight race (no-op in any other phase). */
+export function pauseWorld(world: WorldState): void {
+  if (world.phase === 'racing') world.phase = 'paused';
+}
+
+/** Resume from pause through a single countdown beat ("1" → GO!). */
+export function resumeWorld(world: WorldState): void {
+  if (world.phase !== 'paused') return;
+  world.phase = 'countdown';
+  world.countdownUntil = world.elapsed + RESUME_COUNTDOWN_MS;
+  world.goFlashUntil = world.countdownUntil + COUNTDOWN_STEP_MS;
 }
 
 /** Continuous steering: set the lane position the car eases toward (0..2).
@@ -101,22 +157,24 @@ export function stepWorld(
   dtMs: number,
 ): GameEvent[] {
   const events: GameEvent[] = [];
-  if (world.phase === 'finished') return events;
+  if (world.phase === 'finished' || world.phase === 'paused') return events;
 
   world.elapsed += dtMs;
   const dt = dtMs / 1000;
 
-  // Steering: critically-damped spring chasing targetLaneX. Sub-stepped
-  // semi-implicit Euler so the integration stays stable for ANY dt the
-  // caller passes (the hook clamps to 50ms; tests step whole seconds).
-  // Lateral velocity is kept on the world so the renderer can bank the car
-  // into turns. Runs during the countdown too (grid pre-positioning).
+  // Steering: critically-damped spring chasing targetLaneX, scaled by the
+  // car's grip stat. Sub-stepped semi-implicit Euler so the integration
+  // stays stable for ANY dt the caller passes (the hook clamps to 50ms;
+  // tests step whole seconds). Lateral velocity is kept on the world so the
+  // renderer can bank the car into turns. Runs during the countdown too
+  // (grid pre-positioning).
+  const omega = STEER_OMEGA * world.grip;
   let rem = dt;
   while (rem > 1e-9) {
     const h = Math.min(rem, 0.02);
     const accel =
-      STEER_OMEGA * STEER_OMEGA * (world.targetLaneX - world.playerLaneX) -
-      2 * STEER_OMEGA * world.laneVel;
+      omega * omega * (world.targetLaneX - world.playerLaneX) -
+      2 * omega * world.laneVel;
     world.laneVel += accel * h;
     world.playerLaneX += world.laneVel * h;
     rem -= h;
@@ -134,7 +192,7 @@ export function stepWorld(
   world.shake *= Math.exp(-dt / SHAKE_TAU);
 
   if (world.phase === 'countdown') {
-    if (world.elapsed >= COUNTDOWN_STEP_MS * COUNTDOWN_STEPS) {
+    if (world.elapsed >= world.countdownUntil) {
       world.phase = 'racing';
       events.push('go');
     }
@@ -153,10 +211,9 @@ export function stepWorld(
   world.speed += (targetSpeed - world.speed) * (1 - Math.exp(-dt / tau));
   world.dist += world.speed * dt;
 
-  // Shared launch ramp so the whole grid accelerates off the line together.
-  const racingTime =
-    (world.elapsed - COUNTDOWN_STEP_MS * COUNTDOWN_STEPS) / 1000;
-  const launch = 1 - Math.exp(-Math.max(0, racingTime) / SPEED_TAU_ACCEL);
+  // Shared launch ramp so the whole grid accelerates off the line together
+  // (stateful, so pausing/resuming doesn't reset the rivals' pace).
+  world.launch += (1 - world.launch) * (1 - Math.exp(-dt / SPEED_TAU_ACCEL));
 
   // Rivals: base factor × rubber band × launch, deterministic bouncing lane
   // changes — and an eased laneX so a lane change is a glide, not a teleport.
@@ -170,7 +227,7 @@ export function stepWorld(
       gap > 0
         ? lerp(1, RUBBER_BAND.slow, strength)
         : lerp(1, RUBBER_BAND.catchUp, strength);
-    rival.dist += level.baseSpeed * profile.baseFactor * band * launch * dt;
+    rival.dist += level.baseSpeed * profile.baseFactor * band * world.launch * dt;
     rival.lane = bounceLane(
       profile.startLane + Math.floor(rival.dist / profile.laneChangeEvery),
     );
@@ -179,28 +236,77 @@ export function stepWorld(
     rival.laneX += Math.abs(dRival) <= maxMove ? dRival : Math.sign(dRival) * maxMove;
   }
 
+  // Oncoming traffic: trucks drive TOWARD the player and recycle ahead once
+  // passed (deterministic lanes via the bounce sequence).
+  for (let i = 0; i < world.traffic.length; i++) {
+    const truck = world.traffic[i];
+    const profile = level.traffic[i];
+    if (!profile) continue;
+    truck.dist -= level.baseSpeed * profile.speedFactor * world.launch * dt;
+    if (truck.dist < world.dist - TRAFFIC_RESPAWN_BEHIND) {
+      truck.respawns += 1;
+      truck.dist = world.dist + VIEW_DIST + 200 + i * 320;
+      truck.lane = bounceLane(profile.startLane + truck.respawns);
+    }
+  }
+
+  const graced = world.elapsed < world.graceUntil;
+
+  // Truck collisions: same rules as static obstacles (grace/shield apply),
+  // but the truck survives the crash and drives on.
+  if (!graced) {
+    for (const truck of world.traffic) {
+      if (Math.abs(truck.dist - world.dist) > COLLISION_WINDOW) continue;
+      if (Math.abs(truck.lane - world.playerLaneX) > LATERAL_OBSTACLE) continue;
+      events.push(applyObstacleHit(world));
+      break; // one crash per frame is plenty
+    }
+  }
+
   // Consume entities by CONTINUOUS overlap: the car hits what it visually
-  // touches — forgiving for obstacles, generous for pickups.
-  for (let i = world.entities.length - 1; i >= 0; i--) {
+  // touches — forgiving for obstacles, generous for pickups. An active
+  // magnet widens the coin geometry so neighboring-lane coins snap in.
+  // Forward order matters: entities are dist-sorted, so the NEAREST one in
+  // the window is touched first (its grace then forgives the next).
+  const magnetized = world.elapsed < world.magnetUntil;
+  for (let i = 0; i < world.entities.length; i++) {
     const e = world.entities[i];
-    if (Math.abs(e.dist - world.dist) > COLLISION_WINDOW) continue;
+    const isPickup = e.kind !== 'cone' && e.kind !== 'barrel';
+    const window =
+      magnetized && e.kind === 'coin'
+        ? Math.max(COLLISION_WINDOW, MAGNET_WINDOW)
+        : COLLISION_WINDOW;
+    if (Math.abs(e.dist - world.dist) > window) continue;
     const lateral = Math.abs(e.lane - world.playerLaneX);
-    const isPickup = e.kind === 'coin' || e.kind === 'boost';
-    if (lateral > (isPickup ? LATERAL_PICKUP : LATERAL_OBSTACLE)) continue;
+    const reach =
+      magnetized && e.kind === 'coin'
+        ? MAGNET_LATERAL
+        : isPickup
+          ? LATERAL_PICKUP
+          : LATERAL_OBSTACLE;
+    if (lateral > reach) continue;
+    // Post-hit forgiveness — read live: a truck crash this same frame must
+    // not be doubled by a cone.
+    if (!isPickup && world.elapsed < world.graceUntil) continue;
     world.entities.splice(i, 1);
+    i -= 1; // account for the removal while iterating forward
     if (e.kind === 'coin') {
       world.coins += 1;
       events.push('coin');
     } else if (e.kind === 'boost') {
       world.boostUntil = world.elapsed + BOOST_MS;
       world.slowUntil = 0;
+      world.boosts += 1;
       events.push('boost');
+    } else if (e.kind === 'shield') {
+      world.shield = 1; // holds one charge
+      events.push('shield');
+    } else if (e.kind === 'magnet') {
+      world.magnetUntil = world.elapsed + MAGNET_MS;
+      events.push('magnet');
     } else {
       // cone | barrel
-      world.slowUntil = world.elapsed + HIT_MS;
-      world.boostUntil = 0;
-      world.shake = 1;
-      events.push('hit');
+      events.push(applyObstacleHit(world));
     }
   }
 
@@ -232,15 +338,9 @@ const Y_MAX = 1.08; // just below the bottom edge (scroll-off)
 export function toSnapshot(world: WorldState, level: LevelData): RaceSnapshot {
   let countdown: string | undefined;
   if (world.phase === 'countdown') {
-    const step = Math.min(
-      Math.floor(world.elapsed / COUNTDOWN_STEP_MS),
-      COUNTDOWN_STEPS - 1,
-    );
-    countdown = COUNTDOWN_LABELS[step];
-  } else if (
-    world.phase === 'racing' &&
-    world.elapsed < COUNTDOWN_STEP_MS * (COUNTDOWN_STEPS + 1)
-  ) {
+    const beatsLeft = Math.ceil((world.countdownUntil - world.elapsed) / COUNTDOWN_STEP_MS);
+    countdown = String(Math.min(Math.max(beatsLeft, 1), COUNTDOWN_STEPS));
+  } else if (world.phase === 'racing' && world.elapsed < world.goFlashUntil) {
     countdown = 'go'; // GO! flashes through the first racing beat
   }
 

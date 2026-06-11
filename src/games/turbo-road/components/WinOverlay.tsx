@@ -50,7 +50,14 @@ const CONFETTI: ConfettiPiece[] = Array.from({ length: 12 }, (_, i) => ({
   delay: (i % 4) * 550,
 }));
 
-export function WinOverlay({ place, stars, coinsEarned, onNext, onGarage }: WinOverlayProps) {
+export function WinOverlay({
+  place,
+  stars,
+  coinsEarned,
+  cupTheme,
+  onNext,
+  onGarage,
+}: WinOverlayProps) {
   const { t } = useTranslation();
   const window = useWindowDimensions();
 
@@ -143,6 +150,14 @@ export function WinOverlay({ place, stars, coinsEarned, onNext, onGarage }: WinO
 
         <Text style={styles.title}>{t(`turbo-road:win.title.p${place}`)}</Text>
 
+        {cupTheme !== undefined && (
+          <View style={styles.cupBanner}>
+            <Text style={styles.cupText}>
+              🏆 {t('turbo-road:cups.earned', { name: t(`turbo-road:cups.${cupTheme}`) })}
+            </Text>
+          </View>
+        )}
+
         <View style={styles.starsRow}>
           {[0, 1, 2].map((i) => (
             <Animated.View key={i} style={{ transform: [{ scale: starPops[i] }] }}>
@@ -216,6 +231,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.sm,
     marginTop: SPACING.sm,
+  },
+  cupBanner: {
+    marginTop: SPACING.sm,
+    paddingVertical: 6,
+    paddingHorizontal: SPACING.md,
+    borderRadius: 999,
+    backgroundColor: ACCENTS.orange.tint,
+    borderWidth: 1,
+    borderColor: COLORS.gold,
+  },
+  cupText: {
+    fontFamily: FONTS.display,
+    fontSize: 15,
+    color: COLORS.ink,
   },
   coinsPill: {
     flexDirection: 'row',

@@ -16,8 +16,18 @@ import {
   RIVAL_EMOJI,
   SPEED_PER_LEVEL,
   THEME_ORDER,
+  TRAFFIC_MIN_LEVEL,
+  TRAFFIC_SPEED_FACTOR,
+  VIEW_DIST,
 } from '../constants';
-import type { LaneIndex, LevelData, RivalProfile, RoadEntity } from '../types';
+import type {
+  EntityKind,
+  LaneIndex,
+  LevelData,
+  RivalProfile,
+  RoadEntity,
+  TrafficProfile,
+} from '../types';
 
 /** Small, fast seeded PRNG — same seed ⇒ same sequence ⇒ same level. */
 function mulberry32(seed: number): () => number {
@@ -105,11 +115,10 @@ export function generateLevel(level: number): LevelData {
     cursor += groupGap + rand() * 120;
   }
 
-  // 2–3 boost pads, spread along the road, nudged clear of obstacle clusters.
-  const boostCount = rand() < 0.5 ? 2 : 3;
-  for (let i = 0; i < boostCount; i++) {
-    let dist =
-      start + ((i + 1) / (boostCount + 1)) * (end - start) + (rand() - 0.5) * 160;
+  // Pad-style pickups, spread along the road, nudged clear of obstacle
+  // clusters: 2–3 boost pads, plus a shield (level 3+) and a magnet (4+).
+  const placePad = (kind: EntityKind, frac: number) => {
+    let dist = start + frac * (end - start) + (rand() - 0.5) * 160;
     while (
       entities.some(
         (e) =>
@@ -119,8 +128,15 @@ export function generateLevel(level: number): LevelData {
     ) {
       dist += COLLISION_WINDOW * 3;
     }
-    entities.push({ id: nextId++, kind: 'boost', lane: lane(), dist });
+    entities.push({ id: nextId++, kind, lane: lane(), dist });
+  };
+
+  const boostCount = rand() < 0.5 ? 2 : 3;
+  for (let i = 0; i < boostCount; i++) {
+    placePad('boost', (i + 1) / (boostCount + 1));
   }
+  if (level >= 3) placePad('shield', 0.3 + rand() * 0.2);
+  if (level >= 4) placePad('magnet', 0.55 + rand() * 0.2);
 
   entities.sort((a, b) => a.dist - b.dist);
 
@@ -133,5 +149,18 @@ export function generateLevel(level: number): LevelData {
     laneChangeEvery: 320 + Math.floor(rand() * 240),
   }));
 
-  return { level, theme, raceLength, baseSpeed, entities, rivals };
+  // Oncoming trucks for big kids: none before TRAFFIC_MIN_LEVEL, then 1,
+  // growing to 2 — staggered well ahead so the first encounter is readable.
+  const truckCount =
+    level < TRAFFIC_MIN_LEVEL
+      ? 0
+      : Math.min(2, 1 + Math.floor((level - TRAFFIC_MIN_LEVEL) / 4));
+  const traffic: TrafficProfile[] = Array.from({ length: truckCount }, (_, i) => ({
+    id: `truck-${i + 1}`,
+    startLane: lane(),
+    gapAhead: VIEW_DIST + 500 + i * 700,
+    speedFactor: TRAFFIC_SPEED_FACTOR,
+  }));
+
+  return { level, theme, raceLength, baseSpeed, entities, rivals, traffic };
 }

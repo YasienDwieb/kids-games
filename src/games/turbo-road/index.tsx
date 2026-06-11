@@ -6,8 +6,8 @@
    progression is the SDK `useLevels` checkpoint; the coin wallet lives in the
    garage store and is banked exactly once per race in `handleFinish`. */
 
-import { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AppState, StyleSheet, View } from 'react-native';
 import {
   COLORS,
   levelsFromGenerator,
@@ -15,26 +15,39 @@ import {
   SafeContainer,
   useFreeOrientation,
   useLevels,
+  useLoopSound,
   useScreenBack,
   useSound,
   useTilt,
 } from '@/sdk';
 import { GarageScreen } from './components/GarageScreen';
 import { Hud } from './components/Hud';
+import { PauseOverlay } from './components/PauseOverlay';
 import { Playfield } from './components/Playfield';
 import { ProgressBar } from './components/ProgressBar';
 import { StartScreen } from './components/StartScreen';
 import { WinOverlay } from './components/WinOverlay';
 import { useGarage } from './hooks/useGarage';
+import { useMissions } from './hooks/useMissions';
 import { usePrefs } from './hooks/usePrefs';
 import { useRaceGame, type RaceResult } from './hooks/useRaceGame';
 import { generateLevel } from './utils/levels';
-import { CARS, THEMES, TILT_DEADZONE, TILT_FULL, TRIMS } from './constants';
+import {
+  CARS,
+  FINISH_CELEBRATION_MS,
+  THEME_ORDER,
+  THEMES,
+  TILT_DEADZONE,
+  TILT_FULL,
+  TRIMS,
+} from './constants';
 import type {
+  CarDef,
   CarId,
   ControlMode,
   LevelData,
   RoadTheme,
+  ThemeId,
   TrimDef,
   TrimId,
 } from './types';
@@ -49,19 +62,39 @@ function Race({
   levelNumber,
   theme,
   playerEmoji,
+  car,
   trim,
   control,
   onFinish,
+  onExit,
 }: {
   level: LevelData;
   levelNumber: number;
   theme: RoadTheme;
   playerEmoji: string;
+  car: CarDef;
   trim: TrimDef;
   control: ControlMode;
   onFinish: (result: RaceResult) => void;
+  onExit: () => void;
 }) {
-  const { ui, anim, steerTo } = useRaceGame({ level, onFinish });
+  const { ui, anim, steerTo, pause, resume } = useRaceGame({ level, car, onFinish });
+
+  // Ambient engine hum (synthesized rumble, no music): runs while driving,
+  // revs up under boost, sags after a crash.
+  useLoopSound('engine', {
+    active: ui.phase === 'racing',
+    volume: 0.3,
+    rate: ui.boostActive ? 1.3 : ui.slowActive ? 0.72 : 1,
+  });
+
+  // Auto-pause when the app goes to background.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') pause();
+    });
+    return () => sub.remove();
+  }, [pause]);
 
   // Tilt steering: deadzone (a roughly-level phone holds the center lane,
   // no drift) + a gentle response curve, mapped to a lane target where
@@ -90,9 +123,17 @@ function Race({
       {/* Hud is not inset-aware; float it inside the safe area over the
           full-bleed playfield. pointerEvents box-none keeps steering live. */}
       <SafeContainer backgroundColor="transparent" style={styles.hudLayer}>
-        <Hud level={levelNumber} place={ui.place} coins={ui.coins} />
+        <Hud
+          level={levelNumber}
+          place={ui.place}
+          coins={ui.coins}
+          shieldActive={ui.shieldActive}
+          magnetActive={ui.magnetActive}
+          onPause={pause}
+        />
       </SafeContainer>
       <ProgressBar progress={ui.progress} />
+      {ui.phase === 'paused' && <PauseOverlay onResume={resume} onExit={onExit} />}
     </View>
   );
 }
@@ -109,16 +150,26 @@ export default function TurboRoadGame() {
   });
   const { garage, selectCar, selectTrim, unlockCar, addCoins } = useGarage();
   const { prefs, setControl } = usePrefs();
+  const { missions, recordRace, claim } = useMissions();
 
   const [view, setView] = useState<ViewName>('start');
   const [result, setResult] = useState<RaceResult | null>(null);
   // Bumped on every race entry so replaying the same level remounts <Race>.
   const [attempt, setAttempt] = useState(0);
+  // The win overlay is delayed past the finish-line celebration burst.
+  const overlayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (overlayTimer.current) clearTimeout(overlayTimer.current);
+    },
+    [],
+  );
 
   // Back (on-screen button + Android hardware) pops internal views first;
   // only the start view lets the press bubble up and exit to Home.
   useScreenBack(() => {
     if (view === 'race' || view === 'garage') {
+      if (overlayTimer.current) clearTimeout(overlayTimer.current);
       setResult(null);
       setView('start');
       return true;
@@ -126,24 +177,32 @@ export default function TurboRoadGame() {
     return false;
   });
 
-  const playerEmoji = (CARS.find((c) => c.id === garage.selected) ?? CARS[0]).emoji;
+  const car: CarDef = CARS.find((c) => c.id === garage.selected) ?? CARS[0];
   const trim: TrimDef = TRIMS.find((tr) => tr.id === garage.trim) ?? TRIMS[0];
   const theme: RoadTheme = THEMES[data.theme];
+  // One cup per completed 4-level tour; this race awards one when it closes
+  // a tour (level 4, 8, 12, …). `level` is the level being played.
+  const trophies = Math.floor((level - 1) / 4);
+  const cupTheme: ThemeId | undefined =
+    level % 4 === 0 ? THEME_ORDER[(level / 4 - 1) % THEME_ORDER.length] : undefined;
 
   const handleRace = useCallback(() => {
+    if (overlayTimer.current) clearTimeout(overlayTimer.current);
     setResult(null);
     setAttempt((a) => a + 1);
     setView('race');
   }, []);
 
-  // Fires exactly once per race (the hook guarantees it) — bank the coins
-  // into the garage wallet here, then show the win overlay.
+  // Fires exactly once per race (the hook guarantees it) — bank the coins,
+  // feed the missions, then show the win overlay AFTER the finish-line
+  // celebration has had its moment.
   const handleFinish = useCallback(
     (r: RaceResult) => {
       addCoins(r.coins);
-      setResult(r);
+      recordRace(r);
+      overlayTimer.current = setTimeout(() => setResult(r), FINISH_CELEBRATION_MS);
     },
-    [addCoins],
+    [addCoins, recordRace],
   );
 
   const handleNext = useCallback(() => {
@@ -193,6 +252,22 @@ export default function TurboRoadGame() {
     [play, unlockCar],
   );
 
+  const handleClaimMission = useCallback(
+    (id: number) => {
+      const reward = claim(id);
+      if (reward > 0) {
+        addCoins(reward);
+        play('win');
+      }
+    },
+    [addCoins, claim, play],
+  );
+
+  const handleExitRace = useCallback(() => {
+    setResult(null);
+    setView('start');
+  }, []);
+
   if (status === 'loading') {
     return <View style={styles.canvas} />;
   }
@@ -210,6 +285,7 @@ export default function TurboRoadGame() {
     return (
       <GarageScreen
         garage={garage}
+        trophies={trophies}
         onSelectCar={handleSelectCar}
         onUnlockCar={handleUnlockCar}
         onSelectTrim={handleSelectTrim}
@@ -226,16 +302,19 @@ export default function TurboRoadGame() {
           level={data}
           levelNumber={level}
           theme={theme}
-          playerEmoji={playerEmoji}
+          playerEmoji={car.emoji}
+          car={car}
           trim={trim}
           control={prefs.control}
           onFinish={handleFinish}
+          onExit={handleExitRace}
         />
         {result && (
           <WinOverlay
             place={result.place}
             stars={result.stars}
             coinsEarned={result.coins}
+            cupTheme={cupTheme}
             onNext={handleNext}
             onGarage={handleGarage}
           />
@@ -250,10 +329,12 @@ export default function TurboRoadGame() {
         level={level}
         totalStars={score}
         theme={theme}
-        playerEmoji={playerEmoji}
+        playerEmoji={car.emoji}
         trim={trim}
         walletCoins={garage.coins}
         control={prefs.control}
+        missions={missions}
+        onClaimMission={handleClaimMission}
         onControlChange={handleControlChange}
         onRace={handleRace}
         onGarage={handleGarage}

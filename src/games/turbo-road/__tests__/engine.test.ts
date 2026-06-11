@@ -11,8 +11,17 @@ import {
   RUBBER_BAND,
   SPEED_TAU_ACCEL,
   THEME_ORDER,
+  VIEW_DIST,
 } from '../constants';
-import { createWorld, requestLane, steerTo, stepWorld, toSnapshot } from '../utils/engine';
+import {
+  createWorld,
+  pauseWorld,
+  requestLane,
+  resumeWorld,
+  steerTo,
+  stepWorld,
+  toSnapshot,
+} from '../utils/engine';
 import { generateLevel } from '../utils/levels';
 import type { LevelData, RivalProfile, RoadEntity, WorldState } from '../types';
 
@@ -25,6 +34,7 @@ const makeLevel = (overrides: Partial<LevelData> = {}): LevelData => ({
   baseSpeed: 100,
   entities: [],
   rivals: [],
+  traffic: [],
   ...overrides,
 });
 
@@ -239,6 +249,126 @@ describe('entity consumption', () => {
     expect(toSnapshot(world, level).boostActive).toBe(true);
   });
 
+  it('post-hit grace: a second cone right after a crash is forgiven', () => {
+    const cone1 = { id: 1, kind: 'cone' as const, lane: 1 as const, dist: 30 };
+    const cone2 = { id: 2, kind: 'cone' as const, lane: 1 as const, dist: 40 };
+    const level = makeLevel({ entities: [cone1, cone2] });
+    const world = raceWorld(level);
+    world.speed = level.baseSpeed;
+    expect(stepWorld(world, level, 100)).toEqual(['hit']); // cone1 crashes
+    expect(stepWorld(world, level, 100)).toEqual([]); // cone2 inside grace
+    expect(world.hits).toBe(1);
+    expect(world.entities.map((e) => e.id)).toEqual([2]); // cone2 untouched
+  });
+
+  it('shield: picked up, shown held, absorbs the next hit', () => {
+    const shield = { id: 1, kind: 'shield' as const, lane: 1 as const, dist: 30 };
+    const cone = { id: 2, kind: 'cone' as const, lane: 1 as const, dist: 300 };
+    const level = makeLevel({ entities: [shield, cone] });
+    const world = raceWorld(level);
+    world.speed = level.baseSpeed;
+    expect(stepWorld(world, level, 100)).toEqual(['shield']);
+    expect(world.shield).toBe(1);
+
+    // Drive into the cone: absorbed, no slowdown, no hit counted.
+    world.dist = cone.dist - 20;
+    expect(stepWorld(world, level, 50)).toEqual(['shieldBlock']);
+    expect(world.shield).toBe(0);
+    expect(world.hits).toBe(0);
+    expect(world.slowUntil).toBe(0);
+  });
+
+  it('magnet: collects coins from a neighboring lane while active', () => {
+    const magnet = { id: 1, kind: 'magnet' as const, lane: 1 as const, dist: 30 };
+    const farCoin = { id: 2, kind: 'coin' as const, lane: 0 as const, dist: 300 };
+    const level = makeLevel({ entities: [magnet, farCoin] });
+    const world = raceWorld(level);
+    world.speed = level.baseSpeed;
+    expect(stepWorld(world, level, 100)).toEqual(['magnet']);
+
+    // Lane 0 coin, player in lane 1 — out of normal reach, magnet grabs it.
+    world.dist = farCoin.dist - 20;
+    expect(stepWorld(world, level, 50)).toEqual(['coin']);
+    expect(world.coins).toBe(1);
+  });
+});
+
+/* ---------- pause / resume ---------- */
+
+describe('pause & resume', () => {
+  it('freezes the world while paused and resumes through a countdown beat', () => {
+    const level = makeLevel();
+    const world = raceWorld(level);
+    world.speed = level.baseSpeed;
+    stepWorld(world, level, 100);
+    const distAtPause = world.dist;
+
+    pauseWorld(world);
+    expect(world.phase).toBe('paused');
+    expect(stepWorld(world, level, 5000)).toEqual([]); // inert
+    expect(world.dist).toBe(distAtPause);
+
+    resumeWorld(world);
+    expect(world.phase).toBe('countdown');
+    expect(toSnapshot(world, level).countdown).toBe('1'); // one beat
+    expect(stepWorld(world, level, COUNTDOWN_STEP_MS)).toEqual(['go']);
+    expect(world.phase).toBe('racing');
+    expect(world.dist).toBe(distAtPause); // no teleport across the pause
+  });
+
+  it('only racing can pause; only paused can resume', () => {
+    const level = makeLevel();
+    const world = createWorld(level);
+    pauseWorld(world); // still in countdown — ignored
+    expect(world.phase).toBe('countdown');
+    resumeWorld(world); // not paused — ignored
+    expect(world.phase).toBe('countdown');
+  });
+});
+
+/* ---------- oncoming traffic ---------- */
+
+describe('oncoming traffic', () => {
+  const truckLevel = (overrides: Partial<LevelData> = {}) =>
+    makeLevel({
+      traffic: [
+        { id: 'truck-1', startLane: 1, gapAhead: 400, speedFactor: 0.5 },
+      ],
+      ...overrides,
+    });
+
+  it('approaches the player faster than the road scrolls', () => {
+    const level = truckLevel();
+    const world = raceWorld(level);
+    world.speed = level.baseSpeed;
+    world.launch = 1;
+    const gapBefore = world.traffic[0].dist - world.dist;
+    stepWorld(world, level, 500);
+    const gapAfter = world.traffic[0].dist - world.dist;
+    // Closing speed = player speed + truck speed > player speed alone.
+    expect(gapBefore - gapAfter).toBeGreaterThan(world.speed * 0.5 * 0.99);
+  });
+
+  it('crashing into a truck behaves like an obstacle hit', () => {
+    const level = truckLevel();
+    const world = raceWorld(level);
+    world.speed = level.baseSpeed;
+    world.traffic[0].dist = world.dist + 20; // right on the bumper
+    expect(stepWorld(world, level, 50)).toEqual(['hit']);
+    expect(world.hits).toBe(1);
+  });
+
+  it('recycles ahead after being passed, in a new deterministic lane', () => {
+    const level = truckLevel();
+    const world = raceWorld(level);
+    world.traffic[0].dist = world.dist - 300; // already far behind
+    stepWorld(world, level, 50);
+    expect(world.traffic[0].dist).toBeGreaterThan(world.dist + VIEW_DIST);
+    expect(world.traffic[0].respawns).toBe(1);
+  });
+});
+
+describe('between-lane collisions', () => {
   it('a hit between lanes counts only when actually touching', () => {
     // Player parked between lanes 1 and 2 (laneX 1.5): a cone in lane 2 is
     // 0.5 lanes away — outside LATERAL_OBSTACLE — but a coin still collects.

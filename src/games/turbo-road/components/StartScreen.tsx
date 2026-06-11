@@ -22,7 +22,8 @@ import {
   Star,
   useTranslation,
 } from '@/sdk';
-import type { StartScreenProps } from '../types';
+import { MISSION_LADDERS } from '../constants';
+import type { Mission, StartScreenProps } from '../types';
 
 /* ------------------------------------------------------------------ */
 /* Road-trip map geometry — computed once at module load.              */
@@ -79,6 +80,46 @@ const PATH_DOTS: Pt[] = (() => {
 const NODE_SIZE = { done: 24, current: 28, future: 20 } as const;
 const RING_SIZE = 44;
 
+/* One mission row: emoji · label · progress (or a chunky Claim button). */
+function MissionRow({
+  mission,
+  onClaim,
+}: {
+  mission: Mission;
+  onClaim: (id: number) => void;
+}) {
+  const { t } = useTranslation();
+  const done = mission.progress >= mission.target;
+  const ratio = Math.min(1, mission.progress / mission.target);
+
+  return (
+    <View style={styles.missionRow}>
+      <Text style={styles.missionEmoji}>{MISSION_LADDERS[mission.type].emoji}</Text>
+      <View style={styles.missionBody}>
+        <Text style={styles.missionLabel} numberOfLines={1}>
+          {t(`turbo-road:missions.types.${mission.type}`, { n: mission.target })}
+        </Text>
+        <View style={styles.missionTrack}>
+          <View style={[styles.missionFill, { width: `${ratio * 100}%` }]} />
+        </View>
+      </View>
+      {done ? (
+        <PressableButton
+          label={`${t('turbo-road:missions.claim')} 🪙${mission.reward}`}
+          accent="coral"
+          onPress={() => onClaim(mission.id)}
+          style={styles.claimBtn}
+          textStyle={styles.claimText}
+        />
+      ) : (
+        <Text style={styles.missionCount}>
+          {mission.progress}/{mission.target}
+        </Text>
+      )}
+    </View>
+  );
+}
+
 export function StartScreen({
   level,
   totalStars,
@@ -87,6 +128,8 @@ export function StartScreen({
   trim,
   walletCoins,
   control,
+  missions,
+  onClaimMission,
   onControlChange,
   onRace,
   onGarage,
@@ -230,6 +273,16 @@ export function StartScreen({
         </View>
       </View>
 
+      {/* Missions — the come-back-tomorrow layer. */}
+      {missions.length > 0 && (
+        <View style={styles.missionsCard}>
+          <Text style={styles.missionsTitle}>{t('turbo-road:missions.title')}</Text>
+          {missions.map((m) => (
+            <MissionRow key={m.id} mission={m} onClaim={onClaimMission} />
+          ))}
+        </View>
+      )}
+
       {/* Steering mode — finger-follow (default) or tilt-the-phone. */}
       <View style={styles.controlsRow}>
         <Text style={styles.controlsLabel}>{t('turbo-road:controls.label')}</Text>
@@ -272,6 +325,52 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
+  missionsCard: {
+    marginHorizontal: SPACING.lg,
+    marginTop: SPACING.md,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.card,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.xs,
+    ...SHADOWS.sm,
+  },
+  missionsTitle: {
+    fontFamily: FONTS.display,
+    fontSize: 15,
+    color: COLORS.inkSoft,
+  },
+  missionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    minHeight: 40,
+  },
+  missionEmoji: { fontSize: 20 },
+  missionBody: { flex: 1, gap: 4 },
+  missionLabel: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 13,
+    color: COLORS.ink,
+  },
+  missionTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.line,
+    overflow: 'hidden',
+  },
+  missionFill: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: ACCENTS.coral.base,
+  },
+  missionCount: {
+    fontFamily: FONTS.display,
+    fontSize: 13,
+    color: COLORS.inkSoft,
+  },
+  claimBtn: { minWidth: 0 },
+  claimText: { fontSize: 13 },
   controlsRow: {
     flexDirection: 'row',
     alignItems: 'center',
