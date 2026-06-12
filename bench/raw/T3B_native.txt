@@ -1,0 +1,12 @@
+src/screens/HomeScreen.tsx
+src/games/registry.ts
+src/types/index.ts
+src/sdk/index.ts
+src/sdk/i18n/gameMeta.ts
+src/sdk/age/bands.ts
+src/sdk/age/__tests__/bands.test.ts
+src/sdk/config/validate.ts
+src/sdk/config/types.ts
+src/sdk/config/__tests__/registry.test.ts
+src/sdk/config/__tests__/validate.test.ts
+src/sdk/config/registry.ts

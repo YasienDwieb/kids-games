@@ -1,0 +1,6 @@
+17:export function bandsForGame(config: GameConfig): string[] {
+25:  return getAllGames().filter((game) => bandsForGame(game).includes(bandId));
+export function bandsForGame(config: GameConfig): string[] {
+  if (config.bands && config.bands.length > 0) return config.bands;
+  return AGE_BANDS.filter((band) => overlaps(config.ageRange, band)).map((b) => b.id);
+}

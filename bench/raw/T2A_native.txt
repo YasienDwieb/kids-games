@@ -1,0 +1,10 @@
+src/sdk/index.ts:7:export { validateGameConfig } from './config/validate';
+src/sdk/config/__tests__/validate.test.ts:1:import { validateGameConfig } from '../validate';
+src/sdk/config/__tests__/validate.test.ts:14:describe('validateGameConfig', () => {
+src/sdk/config/__tests__/validate.test.ts:16:    expect(() => validateGameConfig(valid)).not.toThrow();
+src/sdk/config/__tests__/validate.test.ts:20:    expect(() => validateGameConfig({ ...valid, id: '' })).toThrow(/id/);
+src/sdk/config/__tests__/validate.test.ts:24:    expect(() => validateGameConfig({ ...valid, id: 'Bad Id!' })).toThrow(/id/);
+src/sdk/config/__tests__/validate.test.ts:28:    expect(() => validateGameConfig({ ...valid, ageRange: { min: 8, max: 3 } })).toThrow(/ageRange/);
+src/sdk/config/__tests__/validate.test.ts:32:    expect(() => validateGameConfig({ ...valid, component: undefined as never })).toThrow(/component/);
+src/sdk/config/registry.ts:2:import { validateGameConfig } from './validate';
+src/sdk/config/registry.ts:7:  validateGameConfig(config);

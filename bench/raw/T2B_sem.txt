@@ -1,0 +1,40 @@
+⊕ function bandsForGame (src/sdk/age/bands.ts:17–20)
+
+  → depends on:
+    → function overlaps (src/sdk/age/bands.ts)
+    → type GameConfig (src/sdk/config/types.ts)
+
+  ← depended on by:
+    ← function ageBandIdForGame (src/screens/HomeScreen.tsx)
+    ← test_suite age bands (src/sdk/age/__tests__/bands.test.ts)
+    ← test derives overlapping bands from a game ageRange (inclusive overlap) (src/sdk/age/__tests__/bands.test.ts)
+    ← test honors an explicit bands override (src/sdk/age/__tests__/bands.test.ts)
+    ← function gamesForBand (src/sdk/age/bands.ts)
+    ← export bandsForGame (src/sdk/index.ts)
+    ← export AGE_BANDS (src/sdk/index.ts)
+    ← export gamesForBand (src/sdk/index.ts)
+
+  ! 11 entities transitively affected (depth 2):
+
+    Direct dependents (8)
+      → function ageBandIdForGame (src/screens/HomeScreen.tsx:L27)
+      → test_suite age bands (src/sdk/age/__tests__/bands.test.ts:L10)
+      → test derives overlapping bands from a game ageRange (inclusive overlap) (src/sdk/age/__tests__/bands.test.ts:L17)
+      → test honors an explicit bands override (src/sdk/age/__tests__/bands.test.ts:L21)
+      → function gamesForBand (src/sdk/age/bands.ts:L22)
+      → export bandsForGame (src/sdk/index.ts:L58)
+      → export AGE_BANDS (src/sdk/index.ts:L58)
+      → export gamesForBand (src/sdk/index.ts:L58)
+
+    Depth 2 (3)
+      → function HomeScreen (src/screens/HomeScreen.tsx:L32)
+      → test gamesForBand returns games overlapping that band (src/sdk/age/__tests__/bands.test.ts:L25)
+      → test returns empty for an unknown band id (src/sdk/age/__tests__/bands.test.ts:L32)
+
+  ⚡ 5 tests affected:
+    test_suite age bands (src/sdk/age/__tests__/bands.test.ts)
+    test derives overlapping bands from a game ageRange (inclusive overlap) (src/sdk/age/__tests__/bands.test.ts)
+    test honors an explicit bands override (src/sdk/age/__tests__/bands.test.ts)
+    test gamesForBand returns games overlapping that band (src/sdk/age/__tests__/bands.test.ts)
+    test returns empty for an unknown band id (src/sdk/age/__tests__/bands.test.ts)
+

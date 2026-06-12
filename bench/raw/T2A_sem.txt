@@ -1,0 +1,48 @@
+⊕ function validateGameConfig (src/sdk/config/validate.ts:5–24)
+
+  → depends on:
+    → type GameConfig (src/sdk/config/types.ts)
+
+  ← depended on by:
+    ← test accepts a valid config (src/sdk/config/__tests__/validate.test.ts)
+    ← test rejects a missing id (src/sdk/config/__tests__/validate.test.ts)
+    ← test rejects an invalid id format (src/sdk/config/__tests__/validate.test.ts)
+    ← test rejects ageRange where min > max (src/sdk/config/__tests__/validate.test.ts)
+    ← test rejects a missing component (src/sdk/config/__tests__/validate.test.ts)
+    ← function registerGame (src/sdk/config/registry.ts)
+    ← export validateGameConfig (src/sdk/index.ts)
+
+  ! 16 entities transitively affected (depth 2):
+
+    Direct dependents (7)
+      → test accepts a valid config (src/sdk/config/__tests__/validate.test.ts:L15)
+      → test rejects a missing id (src/sdk/config/__tests__/validate.test.ts:L19)
+      → test rejects an invalid id format (src/sdk/config/__tests__/validate.test.ts:L23)
+      → test rejects ageRange where min > max (src/sdk/config/__tests__/validate.test.ts:L27)
+      → test rejects a missing component (src/sdk/config/__tests__/validate.test.ts:L31)
+      → function registerGame (src/sdk/config/registry.ts:L6)
+      → export validateGameConfig (src/sdk/index.ts:L7)
+
+    Depth 2 (9)
+      → test_suite registry (src/sdk/config/__tests__/registry.test.ts:L9)
+      → test registers and retrieves a game (src/sdk/config/__tests__/registry.test.ts:L12)
+      → test throws on invalid config (src/sdk/config/__tests__/registry.test.ts:L18)
+      → test throws on duplicate id (src/sdk/config/__tests__/registry.test.ts:L22)
+      → test filters by age (src/sdk/config/__tests__/registry.test.ts:L27)
+      → export registerGame (src/sdk/index.ts:L6)
+      → export getGame (src/sdk/index.ts:L6)
+      → export getAllGames (src/sdk/index.ts:L6)
+      → export getGamesForAge (src/sdk/index.ts:L6)
+
+  ⚡ 10 tests affected:
+    test accepts a valid config (src/sdk/config/__tests__/validate.test.ts)
+    test rejects a missing id (src/sdk/config/__tests__/validate.test.ts)
+    test rejects an invalid id format (src/sdk/config/__tests__/validate.test.ts)
+    test rejects ageRange where min > max (src/sdk/config/__tests__/validate.test.ts)
+    test rejects a missing component (src/sdk/config/__tests__/validate.test.ts)
+    test_suite registry (src/sdk/config/__tests__/registry.test.ts)
+    test registers and retrieves a game (src/sdk/config/__tests__/registry.test.ts)
+    test throws on invalid config (src/sdk/config/__tests__/registry.test.ts)
+    test throws on duplicate id (src/sdk/config/__tests__/registry.test.ts)
+    test filters by age (src/sdk/config/__tests__/registry.test.ts)
+

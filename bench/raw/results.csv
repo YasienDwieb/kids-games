@@ -1,0 +1,13 @@
+task,level,arm,wall_ms_median,bytes,round_trips,recall_hits,recall_total,recall_pct
+T1A-list-entities,L1-simple,native,16,325,1,6,6,100
+T1A-list-entities,L1-simple,sem,23,227,1,6,6,100
+T1B-get-definition,L1-simple,native,19,363,2,2,2,100
+T1B-get-definition,L1-simple,sem,100,2467,1,2,2,100
+T2A-direct-deps,L2-medium,native,20,1035,2,1,2,50
+T2A-direct-deps,L2-medium,sem,97,2783,1,2,2,100
+T2B-direct-deps,L2-medium,native,20,660,2,2,3,66
+T2B-direct-deps,L2-medium,sem,102,2115,1,3,3,100
+T3A-transitive-impact,L3-complex,native,22,565,3,5,5,100
+T3A-transitive-impact,L3-complex,sem,102,2007,1,1,5,20
+T3B-type-impact,L3-complex,native,18,329,1,6,6,100
+T3B-type-impact,L3-complex,sem,101,5638,1,6,6,100
