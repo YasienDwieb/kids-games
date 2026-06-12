@@ -20,9 +20,11 @@ export const BOOST_MS = 2000;
 export const HIT_FACTOR = 0.45;
 export const HIT_MS = 1400;
 
-export const RACE_LENGTH_BASE = 2600;
-export const RACE_LENGTH_PER_LEVEL = 250;
-export const MAX_RACE_LENGTH = 6000;
+/* Race duration target: ~35s at level 1 (9000u / 260u·s⁻¹), staying in the
+   30–45s band as speed and length grow together. */
+export const RACE_LENGTH_BASE = 9000;
+export const RACE_LENGTH_PER_LEVEL = 600;
+export const MAX_RACE_LENGTH = 16000;
 
 /** 3 → 2 → 1 → GO!; one step per COUNTDOWN_STEP_MS. */
 export const COUNTDOWN_STEP_MS = 800;
@@ -72,6 +74,11 @@ export const SHAKE_FREQ = 55; // rad/s of the shake oscillation
 
 /** Rivals ease between lanes at one lane per this many ms (no teleporting). */
 export const RIVAL_LANE_MS = 260;
+
+/** Rivals keep at least this following gap (world units) when sharing a
+    lane — both rubber-band toward the player, so without separation they
+    stack into one visual blob. */
+export const RIVAL_MIN_GAP = 90;
 
 /** Tilt steering: gravity (g units) along screen-right for FULL deflection
     (center lane → edge lane). ≈16° of phone tilt. */

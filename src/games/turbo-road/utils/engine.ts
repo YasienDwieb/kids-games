@@ -21,6 +21,7 @@ import {
   PLAYER_Y_RATIO,
   RESUME_COUNTDOWN_MS,
   RIVAL_LANE_MS,
+  RIVAL_MIN_GAP,
   RUBBER_BAND,
   SHAKE_TAU,
   SHIELD_GRACE_MS,
@@ -102,6 +103,7 @@ export function createWorld(
       emoji: r.emoji,
       lane: r.startLane,
       laneX: r.startLane,
+      laneShift: 0,
       dist: 0,
     })),
     traffic: level.traffic.map((t) => ({
@@ -229,8 +231,41 @@ export function stepWorld(
         : lerp(1, RUBBER_BAND.catchUp, strength);
     rival.dist += level.baseSpeed * profile.baseFactor * band * world.launch * dt;
     rival.lane = bounceLane(
-      profile.startLane + Math.floor(rival.dist / profile.laneChangeEvery),
+      profile.startLane +
+        Math.floor(rival.dist / profile.laneChangeEvery) +
+        rival.laneShift,
     );
+  }
+
+  // Anti-stacking: both rivals rubber-band toward the player, so they
+  // naturally converge — when they crowd into the same lane, the trailing
+  // one slides out (persistently, via laneShift) and is held at a minimum
+  // following gap so they never read as one blob.
+  for (let i = 0; i < world.rivals.length; i++) {
+    for (let j = i + 1; j < world.rivals.length; j++) {
+      const a = world.rivals[i];
+      const b = world.rivals[j];
+      if (a.lane !== b.lane) continue;
+      if (Math.abs(a.dist - b.dist) > RIVAL_MIN_GAP) continue;
+      const lead = a.dist >= b.dist ? a : b;
+      const trail = lead === a ? b : a;
+      const trailProfile = level.rivals[world.rivals.indexOf(trail)];
+      let guard = 0;
+      while (trail.lane === lead.lane && trailProfile && guard < 3) {
+        trail.laneShift += 1;
+        trail.lane = bounceLane(
+          trailProfile.startLane +
+            Math.floor(trail.dist / trailProfile.laneChangeEvery) +
+            trail.laneShift,
+        );
+        guard += 1;
+      }
+      trail.dist = Math.min(trail.dist, lead.dist - RIVAL_MIN_GAP);
+    }
+  }
+
+  // Eased rendering position — a lane change is a glide, not a teleport.
+  for (const rival of world.rivals) {
     const dRival = rival.lane - rival.laneX;
     const maxMove = dtMs / RIVAL_LANE_MS;
     rival.laneX += Math.abs(dRival) <= maxMove ? dRival : Math.sign(dRival) * maxMove;

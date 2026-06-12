@@ -36,6 +36,9 @@ export interface RivalState {
   lane: LaneIndex;
   /** Rendered lane position — eases toward `lane` so rivals never teleport. */
   laneX: number;
+  /** Persistent offset into the bounce sequence, bumped by the anti-stacking
+      separation so the new lane survives the per-frame recompute. */
+  laneShift: number;
   dist: number;
 }
 

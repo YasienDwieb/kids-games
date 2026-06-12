@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
   placeText: {
     fontFamily: FONTS.display,
     fontSize: 20,
+    lineHeight: 26,
     color: COLORS.ink,
   },
   icon: { fontSize: 17 },

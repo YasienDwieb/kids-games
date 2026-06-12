@@ -8,6 +8,7 @@ import {
   LANE_SWITCH_MS,
   MAX_BASE_SPEED,
   MAX_RACE_LENGTH,
+  RIVAL_MIN_GAP,
   RUBBER_BAND,
   SPEED_TAU_ACCEL,
   THEME_ORDER,
@@ -380,6 +381,60 @@ describe('between-lane collisions', () => {
     world.targetLaneX = 1.5;
     expect(stepWorld(world, level, 100)).toEqual(['coin']);
     expect(world.entities.map((e) => e.id)).toEqual([1]); // cone untouched
+  });
+});
+
+/* ---------- rival separation (anti-stacking) ---------- */
+
+describe('rival separation', () => {
+  it('same-lane crowding: trailing rival changes lane and keeps a gap', () => {
+    const level = makeLevel({
+      rivals: [
+        rival({ id: 'a', startLane: 1 }),
+        rival({ id: 'b', startLane: 1 }),
+      ],
+    });
+    const world = raceWorld(level);
+    world.launch = 1;
+    // Both in lane 1 at (nearly) the same dist — the stacking blob.
+    world.rivals[0].dist = 500;
+    world.rivals[1].dist = 495;
+
+    stepWorld(world, level, 50);
+
+    const [a, b] = world.rivals;
+    expect(a.lane).not.toBe(b.lane); // pulled apart laterally…
+    expect(Math.abs(a.dist - b.dist)).toBeGreaterThanOrEqual(RIVAL_MIN_GAP); // …and longitudinally
+  });
+
+  it('the lane fix is persistent (no flicker on the next frame)', () => {
+    const level = makeLevel({
+      rivals: [
+        rival({ id: 'a', startLane: 1 }),
+        rival({ id: 'b', startLane: 1 }),
+      ],
+    });
+    const world = raceWorld(level);
+    world.launch = 1;
+    world.rivals[0].dist = 500;
+    world.rivals[1].dist = 495;
+    stepWorld(world, level, 50);
+    const lanesAfterFix = world.rivals.map((r) => r.lane);
+    stepWorld(world, level, 50);
+    expect(world.rivals.map((r) => r.lane)).toEqual(lanesAfterFix);
+  });
+});
+
+/* ---------- race duration sanity ---------- */
+
+describe('race duration', () => {
+  it('every level lasts roughly 25-60s at cruise speed (no 5-second races)', () => {
+    for (let lvl = 1; lvl <= 30; lvl++) {
+      const level = generateLevel(lvl);
+      const seconds = level.raceLength / level.baseSpeed;
+      expect(seconds).toBeGreaterThan(25);
+      expect(seconds).toBeLessThan(60);
+    }
   });
 });
 
