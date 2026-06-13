@@ -127,6 +127,11 @@ export const ASSETS = {
     type: 'audio',
     tags: ['random', 'misc', 'surprise', 'blip-alt'],
   },
+  'sfx.engine': {
+    modules: [require('./audio/EngineLoop.wav')],
+    type: 'audio',
+    tags: ['engine', 'motor', 'drive', 'road'],
+  },
 } as const satisfies Record<string, AssetEntry>;
 
 export type AssetId = keyof typeof ASSETS;

@@ -44,6 +44,11 @@ export type { Settings } from './settings/store';
 // Audio
 export { useSound } from './audio/useSound';
 export type { PlayOptions } from './audio/useSound';
+export { useLoopSound } from './audio/useLoopSound';
+
+// Motion & orientation
+export { useTilt } from './motion/useTilt';
+export { useFreeOrientation } from './orientation/useFreeOrientation';
 
 // Layout
 export { GameShell } from './layout/GameShell';
