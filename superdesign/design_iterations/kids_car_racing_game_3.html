@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Turbo Road — Champion Rally · Design Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --canvas:#FBF3E6; --canvas2:#F6EAD7; --surface:#FFFFFF; --surface2:#FFFAF1;
+    --ink:#3B3026; --ink-soft:#8C8073; --ink-faint:#B7AD9F;
+    --hairline:rgba(59,48,38,0.08); --hairline-strong:rgba(59,48,38,0.14);
+    --violet:#8B7CF0; --violet-deep:#6E5DE0; --violet-tint:#ECE8FE;
+    --gold:#F6C747;
+    --coral:#F47C6E; --coral-deep:#E0604F; --coral-tint:#FCE5E1;
+    --green:#6FC27B; --green-deep:#54A862; --green-tint:#E4F4E6;
+    --blue:#5CB8E4; --blue-deep:#3A9FD1; --blue-tint:#E0F2FB;
+    --orange:#F4A65A; --orange-deep:#E08D3C; --orange-tint:#FCEED9;
+    --scrim:rgba(59,48,38,0.34); --shadow:rgba(74,52,28,0.16);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:#EFE7D9; color:var(--ink);
+    font-family:'Nunito',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .f-display{ font-family:'Fredoka',sans-serif; }
+  .ar, .ar .f-display{ font-family:'IBM Plex Sans Arabic',sans-serif; }
+
+  /* ===== page chrome ===== */
+  .page-head{ max-width:1100px; margin:0 auto; padding:40px 24px 8px; text-align:center; }
+  .page-head h1{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:22px; margin:0 0 6px; color:var(--ink); }
+  .page-head p{ margin:0; font-size:14px; font-weight:600; color:var(--ink-soft); }
+  .gallery{ display:flex; flex-wrap:wrap; gap:32px; justify-content:center; padding:32px 24px 72px; }
+  .frame-wrap{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .frame-caption{ font-family:'Nunito',sans-serif; font-weight:600; font-size:14px; color:#8C8073; }
+
+  /* ===== phone frame ===== */
+  .phone{
+    width:390px; height:844px; border-radius:48px; border:10px solid #3B3026;
+    overflow:hidden; position:relative; background:var(--canvas);
+    box-shadow:0 34px 70px rgba(74,52,28,0.28), 0 12px 28px var(--shadow);
+  }
+  .screen{ position:absolute; inset:0; overflow:hidden; }
+
+  /* ===== shared primitives ===== */
+  .icon-btn{
+    width:52px; height:52px; border-radius:50%; background:var(--surface);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 6px 16px var(--shadow);
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:26px; color:var(--ink);
+    line-height:1; flex:none; user-select:none;
+  }
+  .pill{
+    background:var(--surface); border-radius:999px; padding:9px 16px;
+    box-shadow:0 5px 14px var(--shadow);
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; color:var(--ink);
+    display:inline-flex; align-items:center; gap:6px; line-height:1; white-space:nowrap;
+  }
+  .pill.small{ padding:7px 12px; font-size:13px; }
+  .chip{
+    background:var(--surface); border:1.5px solid var(--hairline-strong); border-radius:999px;
+    padding:8px 14px; font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px;
+    color:var(--ink); display:inline-flex; align-items:center; gap:6px; line-height:1;
+  }
+  .btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    min-height:64px; width:100%; border-radius:20px; border:none; cursor:pointer;
+    background:var(--coral); color:#fff;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:23px; letter-spacing:.04em;
+    box-shadow:0 6px 0 var(--coral-deep), 0 10px 24px var(--shadow);
+    transition:transform .08s ease, box-shadow .08s ease; user-select:none;
+  }
+  .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--coral-deep), 0 6px 14px var(--shadow); }
+  .btn-ghost{
+    background:var(--surface); color:var(--coral);
+    box-shadow:0 6px 0 var(--hairline-strong), 0 10px 24px var(--shadow);
+  }
+  .btn-ghost:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--hairline-strong), 0 6px 14px var(--shadow); }
+  .btn-mini{
+    min-height:38px; width:auto; padding:0 16px; border-radius:14px; font-size:14px; letter-spacing:.03em;
+    box-shadow:0 4px 0 var(--coral-deep), 0 8px 16px var(--shadow);
+  }
+  .btn-mini:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--coral-deep), 0 4px 10px var(--shadow); }
+  .btn-mini.disabled{ opacity:.45; filter:saturate(.6); }
+
+  .topbar{
+    position:relative; display:flex; align-items:center; justify-content:space-between;
+    padding:20px 16px 0; z-index:5; min-height:72px;
+  }
+  .topbar .title{
+    position:absolute; left:0; right:0; top:20px; height:52px;
+    display:flex; align-items:center; justify-content:center; pointer-events:none;
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:20px; color:var(--ink);
+  }
+
+  /* ===== checkered helpers ===== */
+  .checker{
+    background-color:#fff;
+    background-image:
+      linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%),
+      linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%);
+    background-size:14px 14px; background-position:0 0, 7px 7px;
+  }
+  .checker.fine{ background-size:10px 10px; background-position:0 0, 5px 5px; }
+
+  /* ===== animations (slow & gentle) ===== */
+  @keyframes dashScroll{ from{ background-position-y:0; } to{ background-position-y:88px; } }
+  @keyframes curbScroll{ from{ background-position-y:0; } to{ background-position-y:48px; } }
+  @keyframes streakFall{ from{ transform:translateY(-140px); opacity:0; } 12%{ opacity:1; } 88%{ opacity:1; } to{ transform:translateY(880px); opacity:0; } }
+  @keyframes bob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+  @keyframes coinSpin{ 0%,100%{ transform:scaleX(1); } 50%{ transform:scaleX(0.18); } }
+  @keyframes boostPulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(244,124,110,0.45); transform:scale(1); }
+    50%{ box-shadow:0 0 0 12px rgba(244,124,110,0); transform:scale(1.05); }
+  }
+  @keyframes starPop{
+    0%{ transform:scale(0) rotate(-24deg); opacity:0; }
+    60%{ transform:scale(1.3) rotate(8deg); opacity:1; }
+    100%{ transform:scale(1) rotate(0deg); opacity:1; }
+  }
+  @keyframes comboPop{
+    0%{ transform:rotate(-5deg) scale(0); opacity:0; }
+    55%{ transform:rotate(-5deg) scale(1.22); opacity:1; }
+    100%{ transform:rotate(-5deg) scale(1); opacity:1; }
+  }
+  @keyframes confettiDrift{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(14px) rotate(16deg); }
+  }
+  @keyframes trophyFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+  @keyframes flagWave{ 0%,100%{ transform:rotate(-3deg); } 50%{ transform:rotate(4deg); } }
+
+  .anim-bob{ animation:bob 2s ease-in-out infinite; }
+  .anim-coin{ display:inline-block; animation:coinSpin 1.6s ease-in-out infinite; }
+  .anim-trophy{ animation:trophyFloat 2.6s ease-in-out infinite; }
+
+  /* ===== race playfield ===== */
+  .race-bg{ position:absolute; inset:0; background:var(--orange-tint); } /* sandy event margins */
+  .road{
+    position:absolute; top:0; bottom:0; left:50%; width:70%; transform:translateX(-50%);
+    background:#3B3026;
+  }
+  .road .lane-dash{
+    position:absolute; top:0; bottom:0; width:8px; transform:translateX(-50%);
+    background-image:repeating-linear-gradient(to bottom, var(--gold) 0 46px, transparent 46px 88px);
+    animation:dashScroll 1.15s linear infinite; opacity:.95;
+  }
+  .road .edge-line{
+    position:absolute; top:0; bottom:0; width:3px; background:rgba(251,243,230,0.35);
+  }
+  .curb{
+    position:absolute; top:0; bottom:0; width:10px;
+    background-image:repeating-linear-gradient(to bottom, var(--coral) 0 24px, #FFFFFF 24px 48px);
+    animation:curbScroll 1.15s linear infinite;
+  }
+  .streak{
+    position:absolute; width:2px; height:110px; border-radius:2px;
+    background:linear-gradient(to bottom, transparent, rgba(251,243,230,0.4), transparent);
+    animation:streakFall .85s linear infinite;
+  }
+  .finish-strip{ position:absolute; top:0; left:0; right:0; height:16px; opacity:.95; }
+  .ribbon{ position:absolute; left:0; right:0; height:8px; opacity:.55; z-index:3; }
+
+  .sprite{ position:absolute; line-height:1; filter:drop-shadow(0 8px 8px rgba(59,48,38,0.35)); }
+  .boost-pad{
+    position:absolute; width:54px; height:64px; border-radius:16px;
+    background:var(--coral-tint); border:2px solid var(--coral);
+    display:flex; align-items:center; justify-content:center; font-size:26px;
+    animation:boostPulse 1.8s ease-in-out infinite;
+  }
+  .pos-badge{
+    background:var(--surface); border-radius:999px; padding:9px 18px;
+    box-shadow:0 5px 14px var(--shadow);
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:18px; color:var(--ink); line-height:1;
+  }
+  .combo-pill{
+    background:var(--coral-tint); border:1.5px solid var(--coral); color:var(--coral-deep);
+    border-radius:999px; padding:7px 13px; line-height:1;
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:14px;
+    box-shadow:0 4px 12px var(--shadow);
+    animation:comboPop .5s cubic-bezier(.2,1.6,.4,1) both .3s;
+    display:inline-flex; gap:5px; align-items:center;
+  }
+  .standings{
+    position:absolute; left:8px; top:50%; transform:translateY(-50%); z-index:4;
+    background:var(--surface); border-radius:18px; padding:8px 6px;
+    box-shadow:0 6px 16px var(--shadow);
+    display:flex; flex-direction:column; gap:6px; align-items:center;
+  }
+  .standings .row{
+    width:34px; height:34px; border-radius:12px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:0; font-size:15px; line-height:1;
+  }
+  .standings .row b{ font-family:'Fredoka',sans-serif; font-size:9px; font-weight:600; color:var(--ink-soft); }
+  .standings .row.me{ background:var(--coral-tint); }
+  .standings .row.me b{ color:var(--coral-deep); }
+  .progress-rail{
+    position:absolute; right:12px; top:120px; bottom:150px; width:4px; border-radius:4px;
+    background:rgba(59,48,38,0.18); z-index:4;
+  }
+  .progress-rail .flag{ position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-size:14px; }
+  .progress-rail .dot{
+    position:absolute; top:36%; left:50%; transform:translateX(-50%);
+    width:13px; height:13px; border-radius:50%; background:var(--coral); border:2.5px solid #fff;
+    box-shadow:0 2px 6px var(--shadow);
+  }
+  .steer-hint{
+    position:absolute; bottom:22px; font-family:'Fredoka',sans-serif; font-weight:600;
+    font-size:44px; color:var(--ink); opacity:.3; z-index:3; line-height:1;
+  }
+  .margin-prop{ position:absolute; font-size:22px; z-index:1; line-height:1; }
+  .margin-prop.flag{ animation:flagWave 2.4s ease-in-out infinite; transform-origin:bottom center; display:inline-block; }
+
+  /* ===== level start (event poster) ===== */
+  .poster-edge{ position:absolute; left:0; right:0; height:10px; opacity:.85; z-index:2; }
+  .eyebrow{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; letter-spacing:.24em;
+    color:var(--coral-deep);
+  }
+  .eyebrow .rule{ width:26px; height:2px; border-radius:2px; background:var(--hairline-strong); }
+  .pedestal{
+    position:relative; background:var(--coral-tint); border-radius:28px; overflow:hidden;
+    box-shadow:0 14px 30px var(--shadow);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pedestal .base{ position:absolute; bottom:0; left:0; right:0; height:12px; opacity:.8; }
+  .doodle{ position:absolute; inset:0; z-index:0; pointer-events:none; }
+
+  /* ===== win overlay ===== */
+  .scrim{ position:absolute; inset:0; background:var(--scrim); z-index:8; }
+  .win-card{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:9;
+    width:312px; background:var(--surface); border-radius:28px; padding:28px 24px 24px;
+    box-shadow:0 28px 56px rgba(74,52,28,0.3);
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
+  .win-stars{ display:flex; gap:8px; font-size:38px; color:var(--gold); line-height:1; }
+  .win-stars span{ display:inline-block; animation:starPop .55s cubic-bezier(.2,1.6,.4,1) both;
+    text-shadow:0 3px 0 rgba(224,141,60,0.35); }
+  .win-stars span:nth-child(2){ animation-delay:.18s; }
+  .win-stars span:nth-child(3){ animation-delay:.36s; }
+  .podium{ display:flex; align-items:flex-end; gap:8px; margin-top:4px; }
+  .podium .col{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .podium .step{
+    width:74px; border-radius:12px 12px 4px 4px; background:var(--canvas2);
+    border:1.5px solid var(--hairline-strong); display:flex; align-items:flex-start; justify-content:center;
+    font-family:'Fredoka',sans-serif; font-weight:700; color:var(--ink-soft); font-size:16px; padding-top:6px;
+  }
+  .podium .first .step{ background:var(--coral-tint); border-color:var(--coral); color:var(--coral-deep); }
+  .podium .car{ font-size:30px; line-height:1; filter:drop-shadow(0 4px 4px rgba(59,48,38,0.25)); }
+  .podium .first .car{ font-size:38px; animation:bob 2s ease-in-out infinite; }
+  .coins-earned{
+    background:rgba(246,199,71,0.22); border:1.5px solid var(--gold); border-radius:999px;
+    padding:8px 16px; font-family:'Fredoka',sans-serif; font-weight:700; font-size:16px; color:var(--ink);
+  }
+  .confetti{ position:absolute; z-index:9; pointer-events:none; animation:confettiDrift 3s ease-in-out infinite; }
+  .confetti.dot{ width:8px; height:8px; border-radius:3px; }
+
+  /* ===== garage (trophy shelf) ===== */
+  .shelf-row{ display:flex; gap:12px; padding:0 16px; position:relative; z-index:1; }
+  .shelf-bar{
+    height:8px; margin:0 16px 14px; border-radius:4px; background:var(--canvas2);
+    border:1px solid var(--hairline); box-shadow:0 6px 10px var(--shadow);
+  }
+  .car-card{
+    flex:1; background:var(--surface); border-radius:24px; padding:12px 10px 12px;
+    box-shadow:0 8px 20px var(--shadow); border:3px solid transparent;
+    display:flex; flex-direction:column; align-items:center; gap:6px; position:relative;
+    min-height:158px;
+  }
+  .car-card.selected{ border-color:var(--coral); }
+  .car-card .emoji{ font-size:52px; line-height:1.15; }
+  .car-card .name{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; color:var(--ink); line-height:1; }
+  .car-card.locked .emoji{ filter:grayscale(1) brightness(0); opacity:.26; }
+  .car-card.locked .name{ color:var(--ink-faint); }
+  .sel-chip{
+    position:absolute; top:-10px; right:10px; background:var(--coral); color:#fff;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:11px; border-radius:999px;
+    padding:4px 10px; line-height:1; box-shadow:0 3px 8px var(--shadow);
+  }
+  .lock-badge{
+    position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%;
+    background:var(--surface2); border:1px solid var(--hairline-strong);
+    display:flex; align-items:center; justify-content:center; font-size:12px;
+  }
+  .price-pill{
+    background:rgba(246,199,71,0.22); border:1px solid var(--gold); border-radius:999px;
+    padding:4px 10px; font-family:'Fredoka',sans-serif; font-weight:600; font-size:12px;
+    color:var(--ink); line-height:1;
+  }
+  .stat{ width:100%; display:flex; align-items:center; gap:6px; padding:0 6px; }
+  .stat span{
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:10px; color:var(--ink-soft);
+    width:36px; flex:none; line-height:1;
+  }
+  .stat .track{ flex:1; height:4px; border-radius:999px; background:var(--hairline); overflow:hidden; }
+  .stat .track i{ display:block; height:100%; border-radius:999px; }
+  .swatch{ width:26px; height:26px; border-radius:50%; border:2.5px solid #fff; box-shadow:0 2px 6px var(--shadow); }
+  .swatch.on{ outline:3px solid var(--coral); outline-offset:2px; }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <h1>Turbo Road — Champion Rally</h1>
+  <p>Race-day energy for the 8–12 ceiling: gold-dash asphalt, live standings, podium wins and a trophy-shelf garage — chrome stays warm cream, coral and chunky.</p>
+</header>
+
+<main class="gallery">
+
+  <!-- ============================================================= -->
+  <!-- FRAME 1 · LEVEL START — event poster                          -->
+  <!-- ============================================================= -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen" style="background:var(--canvas);">
+
+        <!-- checkered poster border accents -->
+        <div class="poster-edge checker fine" style="top:0;"></div>
+        <div class="poster-edge checker fine" style="bottom:0;"></div>
+
+        <!-- faint road doodle -->
+        <svg class="doodle" width="370" height="824" viewBox="0 0 370 824" fill="none">
+          <path d="M-30 660 C 120 600, 60 430, 200 380 S 420 220, 330 90"
+                stroke="#3B3026" stroke-opacity="0.07" stroke-width="34" stroke-linecap="round"/>
+          <path d="M-30 660 C 120 600, 60 430, 200 380 S 420 220, 330 90"
+                stroke="#FBF3E6" stroke-width="4" stroke-dasharray="14 18" stroke-linecap="round" opacity="0.9"/>
+        </svg>
+
+        <div class="topbar">
+          <div class="icon-btn">‹</div>
+          <div class="title f-display">Turbo Road</div>
+          <div class="pill">🪙 248</div>
+        </div>
+
+        <div style="position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; padding:24px 24px 0;">
+          <div class="eyebrow"><span class="rule"></span>🏁&nbsp;RACE DAY&nbsp;🏁<span class="rule"></span></div>
+
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <div class="chip" style="border-color:rgba(246,199,71,0.9); background:rgba(246,199,71,0.16);">🎖️ Level 3</div>
+            <div class="chip">🏖️ Beach</div>
+          </div>
+
+          <div class="pedestal" style="width:262px; height:236px; margin-top:28px;">
+            <span class="anim-bob" style="font-size:120px; line-height:1; filter:drop-shadow(0 14px 12px rgba(59,48,38,0.28));">🏎️</span>
+            <div class="base checker fine"></div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px; margin-top:16px; font-size:22px; line-height:1;">
+            <span>⭐</span><span>⭐</span><span>⭐</span>
+          </div>
+          <div style="margin-top:6px; font-weight:700; font-size:13px; color:var(--ink-soft);">Best result</div>
+        </div>
+
+        <div style="position:absolute; left:24px; right:24px; bottom:36px; z-index:2; display:flex; flex-direction:column; gap:14px;">
+          <button class="btn">RACE!</button>
+          <button class="btn btn-ghost" style="min-height:56px; font-size:19px;">Garage</button>
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Level Start</div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- FRAME 2 · RACE — the star                                     -->
+  <!-- ============================================================= -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="race-bg"></div>
+
+        <!-- themed margins: beach event props -->
+        <span class="margin-prop" style="left:12px; top:150px;">🌴</span>
+        <span class="margin-prop flag" style="left:18px; top:330px;">🚩</span>
+        <span class="margin-prop" style="left:10px; bottom:210px;">⛱️</span>
+        <span class="margin-prop" style="right:12px; top:220px;">🌴</span>
+        <span class="margin-prop flag" style="right:16px; top:430px;">🚩</span>
+        <span class="margin-prop" style="right:10px; bottom:250px;">🐚</span>
+
+        <!-- road -->
+        <div class="road">
+          <div class="edge-line" style="left:0;"></div>
+          <div class="edge-line" style="right:0;"></div>
+          <div class="lane-dash" style="left:33.33%;"></div>
+          <div class="lane-dash" style="left:66.66%;"></div>
+
+          <!-- speed streaks (fast, translucent cream) -->
+          <div class="streak" style="left:10%; animation-delay:0s;"></div>
+          <div class="streak" style="left:44%; animation-delay:.3s;"></div>
+          <div class="streak" style="left:58%; animation-delay:.55s;"></div>
+          <div class="streak" style="left:90%; animation-delay:.15s;"></div>
+
+          <!-- finish line, prominent -->
+          <div class="finish-strip checker fine"></div>
+
+          <!-- rivals -->
+          <div class="sprite anim-bob" style="left:16.6%; top:38%; transform:translateX(-50%); font-size:44px; animation-delay:.4s;">🚙</div>
+          <div class="sprite anim-bob" style="left:83.3%; top:15%; transform:translateX(-50%); font-size:40px; animation-delay:.9s;">🚕</div>
+
+          <!-- coin row (center lane) -->
+          <div style="position:absolute; left:50%; top:51%; transform:translateX(-50%); display:flex; gap:8px;">
+            <span class="anim-coin" style="font-size:22px;">🪙</span>
+            <span class="anim-coin" style="font-size:22px; animation-delay:.25s;">🪙</span>
+            <span class="anim-coin" style="font-size:22px; animation-delay:.5s;">🪙</span>
+          </div>
+
+          <!-- cone -->
+          <div class="sprite" style="left:83.3%; top:60%; transform:translateX(-50%); font-size:32px;">🚧</div>
+
+          <!-- boost pad -->
+          <div class="boost-pad" style="left:16.6%; top:69%; transform:translateX(-50%);">⚡</div>
+
+          <!-- player car -->
+          <div class="sprite anim-bob" style="left:50%; bottom:64px; transform:translateX(-50%); font-size:64px;">🏎️</div>
+        </div>
+
+        <!-- racing curbs hugging the road -->
+        <div class="curb" style="left:calc(15% - 10px);"></div>
+        <div class="curb" style="right:calc(15% - 10px);"></div>
+
+        <!-- checkered ribbon under the HUD -->
+        <div class="ribbon checker fine" style="top:112px;"></div>
+
+        <!-- back button floats above HUD -->
+        <div class="icon-btn" style="position:absolute; top:20px; left:16px; z-index:6;">‹</div>
+
+        <!-- HUD row, y≈24 -->
+        <div style="position:absolute; top:24px; left:80px; z-index:5;"><div class="pill small">🏁 3</div></div>
+        <div style="position:absolute; top:24px; left:50%; transform:translateX(-50%); z-index:5;"><div class="pos-badge">2nd</div></div>
+        <div style="position:absolute; top:24px; right:16px; z-index:5;"><div class="pill small">🪙 24</div></div>
+
+        <!-- combo meter, freshly popped -->
+        <div style="position:absolute; top:72px; left:50%; transform:translateX(-50%); z-index:5;">
+          <div class="combo-pill">✨ x3</div>
+        </div>
+
+        <!-- live standings strip (left edge) -->
+        <div class="standings">
+          <div class="row"><b>1</b>🚕</div>
+          <div class="row me"><b>2</b>🏎️</div>
+          <div class="row"><b>3</b>🚙</div>
+        </div>
+
+        <!-- race progress rail (right edge) -->
+        <div class="progress-rail">
+          <span class="flag">🏁</span>
+          <span class="dot"></span>
+        </div>
+
+        <!-- steer hint ghost chevrons -->
+        <div class="steer-hint" style="left:22px;">‹</div>
+        <div class="steer-hint" style="right:22px;">›</div>
+      </div>
+    </div>
+    <div class="frame-caption">Race</div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- FRAME 3 · WIN — podium overlay                                -->
+  <!-- ============================================================= -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen">
+        <!-- dimmed race scene beneath -->
+        <div class="race-bg"></div>
+        <div class="road">
+          <div class="edge-line" style="left:0;"></div>
+          <div class="edge-line" style="right:0;"></div>
+          <div class="lane-dash" style="left:33.33%;"></div>
+          <div class="lane-dash" style="left:66.66%;"></div>
+          <div class="finish-strip checker fine"></div>
+          <div class="sprite" style="left:50%; top:9%; transform:translateX(-50%); font-size:60px;">🏎️</div>
+          <div class="sprite" style="left:16.6%; top:30%; transform:translateX(-50%); font-size:42px;">🚕</div>
+          <div class="sprite" style="left:83.3%; top:42%; transform:translateX(-50%); font-size:42px;">🚙</div>
+        </div>
+        <div class="curb" style="left:calc(15% - 10px);"></div>
+        <div class="curb" style="right:calc(15% - 10px);"></div>
+
+        <div class="scrim"></div>
+
+        <!-- confetti scatter -->
+        <span class="confetti" style="top:96px; left:48px; font-size:22px;">🎉</span>
+        <span class="confetti" style="top:70px; right:54px; font-size:18px; animation-delay:.7s;">✨</span>
+        <span class="confetti" style="bottom:130px; left:64px; font-size:18px; animation-delay:1.2s;">✨</span>
+        <span class="confetti" style="bottom:110px; right:48px; font-size:22px; animation-delay:.4s;">🎉</span>
+        <span class="confetti dot" style="top:140px; left:104px; background:var(--gold);"></span>
+        <span class="confetti dot" style="top:118px; right:110px; background:var(--coral); animation-delay:.9s;"></span>
+        <span class="confetti dot" style="top:170px; right:70px; background:var(--green); animation-delay:1.5s;"></span>
+        <span class="confetti dot" style="bottom:160px; left:110px; background:var(--blue); animation-delay:.5s;"></span>
+        <span class="confetti dot" style="bottom:180px; right:120px; background:var(--gold); animation-delay:1.8s;"></span>
+
+        <!-- podium card -->
+        <div class="win-card">
+          <span class="anim-trophy" style="font-size:76px; line-height:1; filter:drop-shadow(0 8px 10px rgba(74,52,28,0.25));">🏆</span>
+          <div class="f-display" style="font-weight:700; font-size:32px; line-height:1.1; color:var(--ink);">1st Place!</div>
+          <div class="win-stars"><span>★</span><span>★</span><span>★</span></div>
+
+          <div class="podium">
+            <div class="col">
+              <span class="car">🚕</span>
+              <div class="step" style="height:46px;">2</div>
+            </div>
+            <div class="col first">
+              <span class="car">🏎️</span>
+              <div class="step" style="height:68px;">1</div>
+            </div>
+            <div class="col">
+              <span class="car">🚙</span>
+              <div class="step" style="height:34px;">3</div>
+            </div>
+          </div>
+
+          <div class="coins-earned">+12 🪙</div>
+
+          <div style="width:100%; display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+            <button class="btn" style="min-height:60px; font-size:21px;">Next Race ›</button>
+            <button class="btn btn-ghost" style="min-height:52px; font-size:17px;">Garage</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Win</div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- FRAME 4 · GARAGE — trophy shelf                               -->
+  <!-- ============================================================= -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen" style="background:var(--canvas);">
+        <div class="topbar">
+          <div class="icon-btn">‹</div>
+          <div class="title f-display">My Garage</div>
+          <div class="pill">🪙 248</div>
+        </div>
+
+        <!-- hero: selected car + trim -->
+        <div style="display:flex; align-items:center; gap:16px; margin:14px 16px 18px; background:var(--surface); border-radius:24px; padding:14px 16px; box-shadow:0 8px 20px var(--shadow);">
+          <div class="pedestal" style="width:104px; height:96px; border-radius:20px; flex:none; box-shadow:none;">
+            <span class="anim-bob" style="font-size:56px; line-height:1; filter:drop-shadow(0 6px 6px rgba(59,48,38,0.25));">🏎️</span>
+            <div class="base checker fine" style="height:8px;"></div>
+          </div>
+          <div style="flex:1;">
+            <div class="f-display" style="font-weight:700; font-size:19px; color:var(--ink);">Turbo</div>
+            <div style="font-weight:700; font-size:11px; letter-spacing:.12em; color:var(--ink-soft); margin:8px 0 8px;">TRIM</div>
+            <div style="display:flex; gap:12px;">
+              <span class="swatch on" style="background:var(--coral);"></span>
+              <span class="swatch" style="background:var(--green);"></span>
+              <span class="swatch" style="background:var(--blue);"></span>
+              <span class="swatch" style="background:var(--orange);"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- shelf 1 -->
+        <div class="shelf-row">
+          <div class="car-card selected">
+            <div class="sel-chip">Selected</div>
+            <span class="emoji">🏎️</span>
+            <div class="name">Turbo</div>
+            <div class="stat"><span>Speed</span><div class="track"><i style="width:82%; background:var(--coral);"></i></div></div>
+            <div class="stat"><span>Boost</span><div class="track"><i style="width:64%; background:var(--gold);"></i></div></div>
+          </div>
+          <div class="car-card">
+            <span class="emoji">🚙</span>
+            <div class="name">Buggy</div>
+            <div class="stat"><span>Speed</span><div class="track"><i style="width:58%; background:var(--coral);"></i></div></div>
+            <div class="stat"><span>Boost</span><div class="track"><i style="width:76%; background:var(--gold);"></i></div></div>
+          </div>
+        </div>
+        <div class="shelf-bar" style="margin-top:10px;"></div>
+
+        <!-- shelf 2 -->
+        <div class="shelf-row">
+          <div class="car-card">
+            <span class="emoji">🛻</span>
+            <div class="name">Truck</div>
+            <div class="stat"><span>Speed</span><div class="track"><i style="width:46%; background:var(--coral);"></i></div></div>
+            <div class="stat"><span>Boost</span><div class="track"><i style="width:88%; background:var(--gold);"></i></div></div>
+          </div>
+          <div class="car-card locked">
+            <div class="lock-badge">🔒</div>
+            <span class="emoji">🚓</span>
+            <div class="name">Patrol</div>
+            <div class="price-pill">120 🪙</div>
+            <button class="btn btn-mini">Unlock</button>
+          </div>
+        </div>
+        <div class="shelf-bar" style="margin-top:10px;"></div>
+
+        <!-- shelf 3 -->
+        <div class="shelf-row">
+          <div class="car-card locked">
+            <div class="lock-badge">🔒</div>
+            <span class="emoji">🚜</span>
+            <div class="name">Tractor</div>
+            <div class="price-pill">200 🪙</div>
+            <button class="btn btn-mini">Unlock</button>
+          </div>
+          <div class="car-card locked">
+            <div class="lock-badge">🔒</div>
+            <span class="emoji">🏍️</span>
+            <div class="name">Moto</div>
+            <div class="price-pill">350 🪙</div>
+            <button class="btn btn-mini disabled">Unlock</button>
+          </div>
+        </div>
+        <div class="shelf-bar" style="margin-top:10px;"></div>
+      </div>
+    </div>
+    <div class="frame-caption">Garage</div>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- FRAME 5 · ARABIC RTL — level start mirrored                   -->
+  <!-- ============================================================= -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen ar" dir="rtl" style="background:var(--canvas);">
+
+        <div class="poster-edge checker fine" style="top:0;"></div>
+        <div class="poster-edge checker fine" style="bottom:0;"></div>
+
+        <svg class="doodle" width="370" height="824" viewBox="0 0 370 824" fill="none" style="transform:scaleX(-1);">
+          <path d="M-30 660 C 120 600, 60 430, 200 380 S 420 220, 330 90"
+                stroke="#3B3026" stroke-opacity="0.07" stroke-width="34" stroke-linecap="round"/>
+          <path d="M-30 660 C 120 600, 60 430, 200 380 S 420 220, 330 90"
+                stroke="#FBF3E6" stroke-width="4" stroke-dasharray="14 18" stroke-linecap="round" opacity="0.9"/>
+        </svg>
+
+        <!-- dir=rtl: first child sits at the RIGHT -->
+        <div class="topbar">
+          <div class="icon-btn">›</div>
+          <div class="title f-display" style="font-weight:700;">سباق السيارات</div>
+          <div class="pill">🪙 248</div>
+        </div>
+
+        <div style="position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; padding:24px 24px 0;">
+          <div class="eyebrow" style="letter-spacing:0; font-size:15px;"><span class="rule"></span>🏁&nbsp;يوم السباق&nbsp;🏁<span class="rule"></span></div>
+
+          <div style="display:flex; gap:8px; margin-top:16px;">
+            <div class="chip" style="border-color:rgba(246,199,71,0.9); background:rgba(246,199,71,0.16);">🎖️ المستوى 3</div>
+            <div class="chip">🏖️ الشاطئ</div>
+          </div>
+
+          <div class="pedestal" style="width:262px; height:236px; margin-top:28px;">
+            <span class="anim-bob" style="font-size:120px; line-height:1; filter:drop-shadow(0 14px 12px rgba(59,48,38,0.28));">🏎️</span>
+            <div class="base checker fine"></div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px; margin-top:16px; font-size:22px; line-height:1;">
+            <span>⭐</span><span>⭐</span><span>⭐</span>
+          </div>
+          <div style="margin-top:6px; font-weight:700; font-size:13px; color:var(--ink-soft);">أفضل نتيجة</div>
+        </div>
+
+        <div style="position:absolute; left:24px; right:24px; bottom:36px; z-index:2; display:flex; flex-direction:column; gap:14px;">
+          <button class="btn" style="letter-spacing:0;">انطلق!</button>
+          <button class="btn btn-ghost" style="min-height:56px; font-size:19px; letter-spacing:0;">المرآب</button>
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Arabic · RTL</div>
+  </div>
+
+</main>
+</body>
+</html>

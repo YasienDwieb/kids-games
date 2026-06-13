@@ -128,6 +128,39 @@ const KEYS: string[] = [
   'turbo-road:a11y.coins',
   'turbo-road:a11y.stars',
   'turbo-road:a11y.pause',
+  // shape-detective
+  'shape-detective:meta.name',
+  'shape-detective:loading',
+  'shape-detective:pattern.instruction',
+  'shape-detective:pattern.choose',
+  'shape-detective:pattern.optionLabel',
+  'shape-detective:levelSolved.title',
+  'shape-detective:levelSolved.next',
+  'shape-detective:levelSolved.finish',
+  // shape-detective — translated shape kind/size attributes
+  'shape-detective:shapes.kind.circle',
+  'shape-detective:shapes.kind.square',
+  'shape-detective:shapes.kind.triangle',
+  'shape-detective:shapes.kind.star',
+  'shape-detective:shapes.kind.heart',
+  'shape-detective:shapes.kind.diamond',
+  'shape-detective:shapes.size.small',
+  'shape-detective:shapes.size.medium',
+  'shape-detective:shapes.size.large',
+  // shape-detective — translated color names (i18n-hardened: no raw hex in UI)
+  'shape-detective:shapes.color.purple',
+  'shape-detective:shapes.color.blue',
+  'shape-detective:shapes.color.green',
+  'shape-detective:shapes.color.coral',
+  'shape-detective:shapes.color.orange',
+  'shape-detective:shapes.color.pink',
+  // shape-detective Sprint 3 — oddOneOut + sort
+  'shape-detective:oddOneOut.instruction',
+  'shape-detective:oddOneOut.itemLabel',
+  'shape-detective:sort.instruction',
+  'shape-detective:sort.dropHere',
+  'shape-detective:sort.binLabel',
+  'shape-detective:sort.itemLabel',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {

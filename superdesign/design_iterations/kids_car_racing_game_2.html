@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Turbo Road — Sunny Adventure</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --canvas:#FBF3E6; --canvas2:#F6EAD7; --surface:#FFFFFF; --surface2:#FFFAF1;
+    --ink:#3B3026; --ink-soft:#8C8073; --ink-faint:#B7AD9F;
+    --hair:rgba(59,48,38,0.08); --hair2:rgba(59,48,38,0.14);
+    --violet:#8B7CF0; --violet-deep:#6E5DE0; --violet-tint:#ECE8FE;
+    --gold:#F6C747;
+    --coral:#F47C6E; --coral-deep:#E0604F; --coral-tint:#FCE5E1;
+    --green:#6FC27B; --green-deep:#54A862; --green-tint:#E4F4E6;
+    --blue:#5CB8E4; --blue-deep:#3A9FD1; --blue-tint:#E0F2FB;
+    --orange:#F4A65A; --orange-deep:#E08D3C; --orange-tint:#FCEED9;
+    --scrim:rgba(59,48,38,0.34); --shadow:rgba(74,52,28,0.16);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:#EFE7D9; color:var(--ink);
+    font-family:'Nunito',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .fredoka{ font-family:'Fredoka',sans-serif; }
+  .plex-ar{ font-family:'IBM Plex Sans Arabic',sans-serif; }
+
+  /* ============ Page chrome ============ */
+  .page-header{ text-align:center; padding:40px 24px 8px; }
+  .page-header h1{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:22px; margin:0; color:var(--ink); }
+  .page-header p{ margin:8px 0 0; font-size:14px; font-weight:600; color:var(--ink-soft); }
+  .gallery{ display:flex; flex-wrap:wrap; gap:32px; justify-content:center; align-items:flex-start; padding:32px 24px 64px; }
+  .frame-wrap{ display:flex; flex-direction:column; align-items:center; }
+  .frame-caption{ margin-top:16px; font-family:'Nunito',sans-serif; font-weight:600; font-size:14px; color:#8C8073; }
+
+  /* ============ Phone frame ============ */
+  .phone{
+    width:410px; height:864px; border-radius:48px; background:#3B3026; padding:10px;
+    box-shadow:0 24px 64px rgba(74,52,28,0.28), 0 8px 24px rgba(74,52,28,0.16);
+    flex:none;
+  }
+  .screen{
+    width:390px; height:844px; border-radius:38px; overflow:hidden; position:relative;
+    background:var(--canvas);
+  }
+
+  /* ============ Primitives ============ */
+  .iconbtn{
+    width:52px; height:52px; border-radius:50%; background:var(--surface);
+    border:1px solid var(--hair);
+    box-shadow:0 4px 12px var(--shadow);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:26px; color:var(--ink);
+    line-height:1; cursor:pointer; user-select:none; flex:none;
+  }
+  .hudpill{
+    height:40px; padding:0 16px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--hair);
+    box-shadow:0 4px 12px var(--shadow);
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; color:var(--ink);
+    white-space:nowrap;
+  }
+  .btn-clay{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--coral); color:#fff; border:none; border-radius:20px;
+    font-family:'Fredoka',sans-serif; font-weight:600;
+    box-shadow:0 6px 0 var(--coral-deep), 0 10px 24px var(--shadow);
+    cursor:pointer; user-select:none; transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn-clay:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--coral-deep), 0 6px 14px var(--shadow); }
+  .btn-ghost{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--surface); color:var(--coral-deep); border:none; border-radius:20px;
+    font-family:'Fredoka',sans-serif; font-weight:600;
+    box-shadow:0 6px 0 rgba(59,48,38,0.14), 0 10px 24px var(--shadow);
+    cursor:pointer; user-select:none; transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn-ghost:active{ transform:translateY(4px); box-shadow:0 2px 0 rgba(59,48,38,0.14), 0 6px 14px var(--shadow); }
+  .chip{
+    height:36px; padding:0 14px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--hair2);
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:14px; color:var(--ink);
+  }
+  .topbar{
+    position:relative; display:flex; align-items:center; justify-content:space-between;
+    padding:16px 16px 0; z-index:5;
+  }
+  .topbar .title{
+    position:absolute; left:0; right:0; top:24px; text-align:center; pointer-events:none;
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:22px; color:var(--ink);
+  }
+
+  /* ============ Level-start: road-trip map ============ */
+  .map-zone{ position:relative; width:100%; height:432px; margin-top:8px; }
+  .map-svg{ position:absolute; top:0; left:50%; transform:translateX(-50%); }
+  .map-svg.mirrored{ transform:translateX(-50%) scaleX(-1); }
+  .map-node-num{
+    position:absolute; width:24px; height:24px; margin:-12px 0 0 -12px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:12px; color:#fff;
+    pointer-events:none;
+  }
+  .map-node-num.future{ color:var(--ink-faint); }
+  .pulse-ring{ transform-box:fill-box; transform-origin:center; animation:ringPulse 1.8s ease-in-out infinite; }
+  .pedestal{
+    position:absolute; bottom:64px; left:50%; transform:translateX(-50%);
+    width:208px; height:200px; border-radius:28px; background:var(--coral-tint);
+    border:1px solid var(--hair);
+    box-shadow:0 12px 28px var(--shadow);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pedestal .car{ font-size:120px; line-height:1; filter:drop-shadow(0 10px 10px rgba(59,48,38,0.22)); animation:heroBob 3s ease-in-out infinite; }
+  .best-row{
+    position:absolute; bottom:8px; left:0; right:0; text-align:center;
+    font-size:26px; letter-spacing:4px;
+  }
+  .best-label{ position:absolute; bottom:-16px; left:0; right:0; text-align:center; font-size:12px; font-weight:700; color:var(--ink-soft); }
+
+  /* ============ Race playfield ============ */
+  .playfield{ position:absolute; inset:0; background:var(--green-tint); }
+  .sky{
+    position:absolute; top:0; left:0; right:0; height:96px; background:var(--blue-tint);
+    border-bottom:1px solid var(--hair); overflow:hidden; z-index:1;
+  }
+  .sun{ position:absolute; top:14px; right:48px; font-size:42px; }
+  .cloud{ position:absolute; font-size:32px; opacity:.95; }
+  .cloud.c1{ top:18px; animation:cloudCross 26s linear infinite; }
+  .cloud.c2{ top:48px; font-size:24px; opacity:.7; animation:cloudCross 38s linear infinite reverse; }
+  .grass-decor{ position:absolute; font-size:32px; z-index:2; }
+  .grass-patch{ position:absolute; background:var(--green); opacity:.38; border-radius:50%; z-index:1; }
+  .road{
+    position:absolute; top:96px; bottom:0; left:50%; transform:translateX(-50%);
+    width:272px; z-index:2;
+    background:linear-gradient(rgba(255,250,241,0.10), rgba(255,250,241,0.10)), #3B3026;
+    border-left:4px solid rgba(255,255,255,0.4);
+    border-right:4px solid rgba(255,255,255,0.4);
+  }
+  .finish{
+    position:absolute; top:6px; left:0; right:0; height:16px; opacity:.45;
+    background:repeating-conic-gradient(#FFFFFF 0% 25%, #3B3026 0% 50%);
+    background-size:16px 16px;
+  }
+  .lane-sep{ position:absolute; top:0; bottom:0; width:10px; overflow:hidden; }
+  .lane-sep.s1{ left:calc(33.33% - 5px); }
+  .lane-sep.s2{ left:calc(66.66% - 5px); }
+  .dash-col{ display:flex; flex-direction:column; animation:roadScroll 1.5s linear infinite; }
+  .dash{ width:10px; height:40px; border-radius:6px; margin-bottom:32px; flex:none; }
+  .dash.white{ background:rgba(255,255,255,0.85); }
+  .dash.gold{ background:var(--gold); }
+  .road-item{ position:absolute; transform:translate(-50%,-50%); line-height:1; z-index:3; }
+  .car-up{ display:inline-block; transform:rotate(90deg); filter:drop-shadow(6px 0 6px rgba(59,48,38,0.35)); }
+  .player-bob{ animation:carBob 2s ease-in-out infinite; }
+  .coin{ display:inline-block; font-size:26px; animation:coinSpin 1.8s ease-in-out infinite; filter:drop-shadow(0 3px 3px rgba(59,48,38,0.3)); }
+  .boost-pad{
+    width:52px; height:60px; border-radius:14px; background:var(--coral-tint);
+    border:2px solid var(--coral);
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+    animation:boostPulse 1.6s ease-in-out infinite;
+  }
+  .hud{ position:absolute; z-index:6; }
+  .pos-badge{
+    height:44px; padding:0 20px; border-radius:999px; background:var(--surface);
+    border:1px solid var(--hair); box-shadow:0 4px 12px var(--shadow);
+    display:inline-flex; align-items:center;
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:20px; color:var(--ink);
+  }
+  .progress-rail{
+    position:absolute; right:10px; top:128px; bottom:128px; width:4px; border-radius:2px;
+    background:rgba(59,48,38,0.18); z-index:5;
+  }
+  .progress-rail .flag{ position:absolute; top:-22px; left:50%; transform:translateX(-50%); font-size:16px; }
+  .progress-rail .dot{
+    position:absolute; top:58%; left:50%; transform:translate(-50%,-50%);
+    width:14px; height:14px; border-radius:50%; background:var(--coral);
+    border:3px solid var(--surface); box-shadow:0 2px 6px var(--shadow);
+  }
+  .steer-hint{
+    position:absolute; bottom:20px; z-index:5; opacity:.3;
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:44px; color:var(--ink); line-height:1;
+  }
+
+  /* ============ Win overlay ============ */
+  .scrim{ position:absolute; inset:0; background:var(--scrim); z-index:10; }
+  .win-card{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-52%);
+    width:312px; padding:32px 24px 24px; border-radius:28px; background:var(--surface);
+    box-shadow:0 24px 56px rgba(74,52,28,0.3);
+    text-align:center; z-index:12;
+  }
+  .win-card .trophy{ font-size:80px; line-height:1; display:block; animation:trophyPop .6s cubic-bezier(.34,1.56,.64,1) backwards; }
+  .win-card h2{ font-family:'Fredoka',sans-serif; font-weight:700; font-size:32px; color:var(--ink); margin:8px 0 0; }
+  .stars{ margin-top:8px; }
+  .stars .st{ display:inline-block; color:var(--gold); font-size:40px; line-height:1; animation:starPop .55s cubic-bezier(.34,1.56,.64,1) backwards; text-shadow:0 3px 0 rgba(224,141,60,0.35); }
+  .stars .st.mid{ font-size:50px; }
+  .stars .st:nth-child(1){ animation-delay:.25s; }
+  .stars .st:nth-child(2){ animation-delay:.45s; }
+  .stars .st:nth-child(3){ animation-delay:.65s; }
+  .coins-earned{
+    display:inline-flex; align-items:center; gap:6px; margin-top:16px;
+    height:40px; padding:0 18px; border-radius:999px;
+    background:rgba(246,199,71,0.22); border:1px solid var(--hair);
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:18px; color:var(--ink);
+  }
+  .confetti{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:11; }
+  .cf{ position:absolute; top:-16px; border-radius:3px; animation:confettiFall linear infinite; }
+  .cf.round{ border-radius:50%; }
+  .float-emoji{ position:absolute; z-index:12; animation:gentleFloat 3s ease-in-out infinite; }
+
+  /* ============ Garage ============ */
+  .carousel{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:12px; }
+  .garage-pedestal{
+    width:164px; height:128px; border-radius:24px; background:var(--coral-tint);
+    border:1px solid var(--hair); box-shadow:0 10px 24px var(--shadow);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .garage-pedestal .car{ font-size:76px; line-height:1; filter:drop-shadow(0 8px 8px rgba(59,48,38,0.22)); }
+  .page-dots{ display:flex; gap:8px; justify-content:center; margin-top:12px; }
+  .page-dots .pd{ width:8px; height:8px; border-radius:999px; background:var(--ink-faint); opacity:.5; }
+  .page-dots .pd.on{ width:20px; background:var(--coral); opacity:1; }
+  .trim-row{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:12px; }
+  .trim-label{ font-family:'Nunito',sans-serif; font-weight:800; font-size:12px; letter-spacing:1px; text-transform:uppercase; color:var(--ink-soft); }
+  .swatch{ width:30px; height:30px; border-radius:50%; box-shadow:0 2px 6px var(--shadow); }
+  .swatch.sel{ box-shadow:0 0 0 3px var(--surface2), 0 0 0 6px var(--coral), 0 2px 6px var(--shadow); }
+  .car-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px; }
+  .car-card{
+    position:relative; background:var(--surface); border-radius:24px; border:1px solid var(--hair);
+    box-shadow:0 8px 20px var(--shadow); padding:14px 12px 12px; text-align:center;
+  }
+  .car-card.selected{ border:3px solid var(--coral); padding:12px 10px 10px; }
+  .car-card .emo{ font-size:52px; line-height:1.1; display:block; }
+  .car-card .nm{ font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px; color:var(--ink); margin-top:4px; }
+  .car-card.locked .emo{ filter:grayscale(.85); opacity:.4; }
+  .car-card.locked .nm{ color:var(--ink-soft); }
+  .lock-badge{
+    position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%;
+    background:var(--surface2); border:1px solid var(--hair2);
+    display:flex; align-items:center; justify-content:center; font-size:13px;
+  }
+  .sel-chip{
+    display:inline-flex; align-items:center; height:24px; padding:0 10px; margin-top:6px;
+    border-radius:999px; background:var(--coral-tint); color:var(--coral-deep);
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:11px;
+  }
+  .unlock-btn{ width:100%; height:48px; margin-top:10px; font-size:14px; border-radius:16px; }
+  .unlock-btn.cant{ opacity:.45; }
+
+  /* ============ Animations ============ */
+  @keyframes roadScroll{ from{ transform:translateY(-72px);} to{ transform:translateY(0);} }
+  @keyframes carBob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-5px);} }
+  @keyframes heroBob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-6px);} }
+  @keyframes coinSpin{ 0%,100%{ transform:scaleX(1);} 50%{ transform:scaleX(0.18);} }
+  @keyframes boostPulse{
+    0%,100%{ box-shadow:0 0 0 0 rgba(244,124,110,0.5); transform:scale(1); }
+    50%{ box-shadow:0 0 0 12px rgba(244,124,110,0); transform:scale(1.05); }
+  }
+  @keyframes cloudCross{ from{ left:-72px; } to{ left:410px; } }
+  @keyframes ringPulse{ 0%,100%{ transform:scale(1); opacity:.9; } 50%{ transform:scale(1.25); opacity:.35; } }
+  @keyframes starPop{ from{ transform:scale(0) rotate(-20deg); } 60%{ transform:scale(1.25) rotate(6deg); } to{ transform:scale(1) rotate(0); } }
+  @keyframes trophyPop{ from{ transform:scale(.4); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  @keyframes confettiFall{
+    from{ transform:translateY(0) rotate(0deg); opacity:1; }
+    85%{ opacity:1; }
+    to{ transform:translateY(880px) rotate(420deg); opacity:0; }
+  }
+  @keyframes gentleFloat{ 0%,100%{ transform:translateY(0) rotate(-4deg);} 50%{ transform:translateY(-8px) rotate(4deg);} }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <h1>Turbo Road — Sunny Adventure</h1>
+  <p>Playful, saturated playfield for ages 4–8: storybook road-trip map, sunny sky and grassy roadside, with all chrome on the cream token system.</p>
+</header>
+
+<main class="gallery">
+
+  <!-- ================================================================ FRAME 1 · LEVEL START -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen">
+
+        <div class="topbar">
+          <div class="iconbtn">‹</div>
+          <div class="title">Turbo Road</div>
+          <div class="hudpill">🪙 248</div>
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:16px;">
+          <div class="chip" style="background:var(--coral-tint); border-color:transparent; color:var(--coral-deep);">Level 3</div>
+          <div class="chip">🏖️ Beach</div>
+        </div>
+
+        <!-- road-trip map + hero pedestal -->
+        <div class="map-zone">
+          <svg class="map-svg" width="330" height="300" viewBox="0 0 330 300" fill="none">
+            <path d="M 36 250 C 44 216 40 196 48 170 C 60 132 116 154 165 140 C 196 131 216 122 240 110 C 268 96 282 72 290 48"
+                  stroke="rgba(59,48,38,0.22)" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 13"/>
+            <!-- passed -->
+            <circle cx="36" cy="250" r="12" fill="#F47C6E"/>
+            <circle cx="48" cy="170" r="12" fill="#F47C6E"/>
+            <!-- current -->
+            <circle class="pulse-ring" cx="165" cy="140" r="20" stroke="#F47C6E" stroke-width="3" fill="none"/>
+            <circle cx="165" cy="140" r="13" fill="#F47C6E"/>
+            <!-- future -->
+            <circle cx="240" cy="110" r="10" fill="#FFFFFF" stroke="rgba(59,48,38,0.14)" stroke-width="2"/>
+            <circle cx="290" cy="48" r="10" fill="#FFFFFF" stroke="rgba(59,48,38,0.14)" stroke-width="2"/>
+          </svg>
+          <!-- node numbers (HTML so digits never mirror) -->
+          <div class="map-node-num" style="left:66px;  top:250px;">1</div>
+          <div class="map-node-num" style="left:78px;  top:170px;">2</div>
+          <div class="map-node-num" style="left:195px; top:140px;">3</div>
+          <div class="map-node-num future" style="left:270px; top:110px;">4</div>
+          <div class="map-node-num future" style="left:320px; top:48px;">5</div>
+
+          <div class="pedestal">
+            <span class="car">🏎️</span>
+            <div class="best-row">⭐⭐⭐</div>
+          </div>
+          <div class="best-label">Best result</div>
+        </div>
+
+        <div style="padding:32px 24px 0; display:flex; flex-direction:column; gap:16px;">
+          <button class="btn-clay" style="height:64px; font-size:24px;">RACE!</button>
+          <button class="btn-ghost" style="height:56px; font-size:18px;">Garage</button>
+        </div>
+
+      </div>
+    </div>
+    <div class="frame-caption">Level Start</div>
+  </div>
+
+  <!-- ================================================================ FRAME 2 · RACE -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="playfield">
+
+          <!-- sky -->
+          <div class="sky">
+            <span class="sun">☀️</span>
+            <span class="cloud c1">☁️</span>
+            <span class="cloud c2">☁️</span>
+          </div>
+
+          <!-- grassy margins -->
+          <div class="grass-patch" style="left:6px; top:170px; width:56px; height:30px;"></div>
+          <div class="grass-patch" style="right:8px; top:330px; width:48px; height:26px;"></div>
+          <div class="grass-patch" style="left:10px; top:520px; width:50px; height:28px;"></div>
+          <div class="grass-patch" style="right:6px; top:660px; width:54px; height:30px;"></div>
+          <span class="grass-decor" style="left:12px; top:120px;">🌳</span>
+          <span class="grass-decor" style="right:10px; top:200px;">🌳</span>
+          <span class="grass-decor" style="left:16px; top:380px; font-size:20px;">🌸</span>
+          <span class="grass-decor" style="right:18px; top:450px; font-size:20px;">🌸</span>
+          <span class="grass-decor" style="left:10px; top:560px;">🌳</span>
+          <span class="grass-decor" style="right:12px; top:600px; font-size:20px;">🌸</span>
+          <span class="grass-decor" style="left:18px; top:720px; font-size:20px;">🌸</span>
+          <span class="grass-decor" style="right:8px; top:760px;">🌳</span>
+
+          <!-- road -->
+          <div class="road">
+            <div class="finish"></div>
+            <div class="lane-sep s1">
+              <div class="dash-col">
+                <div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div>
+              </div>
+            </div>
+            <div class="lane-sep s2">
+              <div class="dash-col">
+                <div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div>
+              </div>
+            </div>
+
+            <!-- rivals -->
+            <div class="road-item" style="left:83%; top:22%; font-size:44px;"><span class="car-up">🚕</span></div>
+            <div class="road-item" style="left:16.6%; top:45%; font-size:44px;"><span class="car-up">🚙</span></div>
+
+            <!-- coins -->
+            <div class="road-item" style="left:50%; top:32%; display:flex; gap:8px;">
+              <span class="coin">🪙</span>
+              <span class="coin" style="animation-delay:.3s;">🪙</span>
+              <span class="coin" style="animation-delay:.6s;">🪙</span>
+            </div>
+
+            <!-- cone -->
+            <div class="road-item" style="left:16.6%; top:66%; font-size:34px; filter:drop-shadow(0 4px 4px rgba(59,48,38,0.3));">🚧</div>
+
+            <!-- boost pad -->
+            <div class="road-item" style="left:83%; top:56%;">
+              <div class="boost-pad">⚡</div>
+            </div>
+
+            <!-- player car -->
+            <div class="road-item player-bob" style="left:50%; top:calc(100% - 80px); font-size:54px;">
+              <span class="car-up">🏎️</span>
+            </div>
+          </div>
+
+          <!-- HUD -->
+          <div class="hud iconbtn" style="left:12px; top:16px;">‹</div>
+          <div class="hud hudpill" style="left:76px; top:24px;">🏁 3</div>
+          <div class="hud pos-badge" style="left:50%; top:22px; transform:translateX(-50%);">2nd</div>
+          <div class="hud hudpill" style="right:12px; top:24px;">🪙 24</div>
+
+          <!-- race progress rail -->
+          <div class="progress-rail">
+            <span class="flag">🏁</span>
+            <span class="dot"></span>
+          </div>
+
+          <!-- steer hints -->
+          <div class="steer-hint" style="left:24px;">‹</div>
+          <div class="steer-hint" style="right:24px;">›</div>
+
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Race</div>
+  </div>
+
+  <!-- ================================================================ FRAME 3 · WIN -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen">
+        <div class="playfield">
+
+          <div class="sky">
+            <span class="sun">☀️</span>
+            <span class="cloud c1">☁️</span>
+            <span class="cloud c2">☁️</span>
+          </div>
+
+          <div class="grass-patch" style="left:6px; top:170px; width:56px; height:30px;"></div>
+          <div class="grass-patch" style="right:8px; top:330px; width:48px; height:26px;"></div>
+          <div class="grass-patch" style="left:10px; top:520px; width:50px; height:28px;"></div>
+          <span class="grass-decor" style="left:12px; top:120px;">🌳</span>
+          <span class="grass-decor" style="right:10px; top:200px;">🌳</span>
+          <span class="grass-decor" style="left:16px; top:380px; font-size:20px;">🌸</span>
+          <span class="grass-decor" style="right:18px; top:450px; font-size:20px;">🌸</span>
+          <span class="grass-decor" style="left:10px; top:560px;">🌳</span>
+          <span class="grass-decor" style="right:8px; top:760px;">🌳</span>
+
+          <div class="road">
+            <div class="finish"></div>
+            <div class="lane-sep s1">
+              <div class="dash-col">
+                <div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div><div class="dash white"></div>
+              </div>
+            </div>
+            <div class="lane-sep s2">
+              <div class="dash-col">
+                <div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div><div class="dash gold"></div>
+              </div>
+            </div>
+            <div class="road-item" style="left:83%; top:26%; font-size:44px;"><span class="car-up">🚕</span></div>
+            <div class="road-item" style="left:16.6%; top:48%; font-size:44px;"><span class="car-up">🚙</span></div>
+            <div class="road-item player-bob" style="left:50%; top:18%; font-size:54px;"><span class="car-up">🏎️</span></div>
+          </div>
+
+          <div class="hud iconbtn" style="left:12px; top:16px;">‹</div>
+          <div class="hud hudpill" style="left:76px; top:24px;">🏁 3</div>
+          <div class="hud pos-badge" style="left:50%; top:22px; transform:translateX(-50%);">1st</div>
+          <div class="hud hudpill" style="right:12px; top:24px;">🪙 36</div>
+
+          <!-- scrim + rainbow confetti -->
+          <div class="scrim"></div>
+          <div class="confetti">
+            <span class="cf" style="left:8%;  width:8px;  height:12px; background:var(--coral);  animation-duration:3.6s; animation-delay:0s;"></span>
+            <span class="cf round" style="left:18%; width:8px;  height:8px;  background:var(--gold);   animation-duration:4.4s; animation-delay:.8s;"></span>
+            <span class="cf" style="left:28%; width:7px;  height:11px; background:var(--green);  animation-duration:3.9s; animation-delay:1.6s;"></span>
+            <span class="cf round" style="left:38%; width:10px; height:10px; background:var(--blue);   animation-duration:4.8s; animation-delay:.4s;"></span>
+            <span class="cf" style="left:48%; width:8px;  height:12px; background:var(--orange); animation-duration:3.4s; animation-delay:2s;"></span>
+            <span class="cf round" style="left:58%; width:7px;  height:7px;  background:var(--violet); animation-duration:4.2s; animation-delay:1.2s;"></span>
+            <span class="cf" style="left:68%; width:9px;  height:13px; background:var(--coral);  animation-duration:5s;   animation-delay:.6s;"></span>
+            <span class="cf round" style="left:78%; width:8px;  height:8px;  background:var(--green);  animation-duration:3.7s; animation-delay:1.9s;"></span>
+            <span class="cf" style="left:88%; width:8px;  height:12px; background:var(--gold);   animation-duration:4.5s; animation-delay:.2s;"></span>
+            <span class="cf round" style="left:94%; width:6px;  height:6px;  background:var(--blue);   animation-duration:3.5s; animation-delay:1.4s;"></span>
+            <span class="cf" style="left:13%; width:7px;  height:10px; background:var(--orange); animation-duration:4.7s; animation-delay:2.4s;"></span>
+            <span class="cf round" style="left:62%; width:9px;  height:9px;  background:var(--gold);   animation-duration:4s;   animation-delay:2.8s;"></span>
+          </div>
+
+          <span class="float-emoji" style="left:34px; top:236px; font-size:30px;">🎉</span>
+          <span class="float-emoji" style="right:36px; top:266px; font-size:26px; animation-delay:1.2s;">✨</span>
+          <span class="float-emoji" style="right:48px; top:618px; font-size:26px; animation-delay:.6s;">🎉</span>
+          <span class="float-emoji" style="left:46px; top:600px; font-size:24px; animation-delay:1.8s;">✨</span>
+
+          <div class="win-card">
+            <span class="trophy">🏆</span>
+            <h2>1st Place!</h2>
+            <div class="stars">
+              <span class="st">★</span><span class="st mid">★</span><span class="st">★</span>
+            </div>
+            <div class="coins-earned">+12 🪙</div>
+            <div style="display:flex; flex-direction:column; gap:12px; margin-top:24px;">
+              <button class="btn-clay" style="height:56px; font-size:20px;">Next Race ›</button>
+              <button class="btn-ghost" style="height:52px; font-size:17px;">Garage</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="frame-caption">Win</div>
+  </div>
+
+  <!-- ================================================================ FRAME 4 · GARAGE -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen">
+
+        <div class="topbar">
+          <div class="iconbtn">‹</div>
+          <div class="title">My Garage</div>
+          <div class="hudpill">🪙 248</div>
+        </div>
+
+        <!-- carousel hero -->
+        <div class="carousel">
+          <div class="iconbtn" style="width:48px; height:48px; font-size:22px;">‹</div>
+          <div class="garage-pedestal"><span class="car">🏎️</span></div>
+          <div class="iconbtn" style="width:48px; height:48px; font-size:22px;">›</div>
+        </div>
+        <div class="page-dots">
+          <span class="pd on"></span><span class="pd"></span><span class="pd"></span>
+        </div>
+        <div class="trim-row">
+          <span class="trim-label">Trim</span>
+          <span class="swatch sel" style="background:var(--coral);"></span>
+          <span class="swatch" style="background:var(--green);"></span>
+          <span class="swatch" style="background:var(--blue);"></span>
+          <span class="swatch" style="background:var(--orange);"></span>
+        </div>
+
+        <!-- collection grid -->
+        <div class="car-grid">
+          <div class="car-card selected">
+            <span class="emo">🏎️</span>
+            <div class="nm">Turbo</div>
+            <span class="sel-chip">Selected</span>
+          </div>
+          <div class="car-card">
+            <span class="emo">🚙</span>
+            <div class="nm">Buggy</div>
+          </div>
+          <div class="car-card">
+            <span class="emo">🛻</span>
+            <div class="nm">Truck</div>
+          </div>
+          <div class="car-card locked">
+            <span class="lock-badge">🔒</span>
+            <span class="emo">🚓</span>
+            <div class="nm">Patrol</div>
+            <button class="btn-clay unlock-btn">Unlock · 120 🪙</button>
+          </div>
+          <div class="car-card locked">
+            <span class="lock-badge">🔒</span>
+            <span class="emo">🚜</span>
+            <div class="nm">Tractor</div>
+            <button class="btn-clay unlock-btn">Unlock · 200 🪙</button>
+          </div>
+          <div class="car-card locked">
+            <span class="lock-badge">🔒</span>
+            <span class="emo">🏍️</span>
+            <div class="nm">Moto</div>
+            <button class="btn-clay unlock-btn cant">Unlock · 350 🪙</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="frame-caption">Garage</div>
+  </div>
+
+  <!-- ================================================================ FRAME 5 · ARABIC RTL -->
+  <div class="frame-wrap">
+    <div class="phone">
+      <div class="screen plex-ar" dir="rtl">
+
+        <div class="topbar">
+          <div class="iconbtn">›</div>
+          <div class="title plex-ar" style="font-family:'IBM Plex Sans Arabic',sans-serif; font-weight:700;">سباق السيارات</div>
+          <div class="hudpill" style="font-family:'IBM Plex Sans Arabic',sans-serif;">🪙 248</div>
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:16px;">
+          <div class="chip" style="background:var(--coral-tint); border-color:transparent; color:var(--coral-deep); font-family:'IBM Plex Sans Arabic',sans-serif;">المستوى 3</div>
+          <div class="chip" style="font-family:'IBM Plex Sans Arabic',sans-serif;">🏖️ الشاطئ</div>
+        </div>
+
+        <!-- mirrored road-trip map + hero -->
+        <div class="map-zone" dir="ltr">
+          <svg class="map-svg mirrored" width="330" height="300" viewBox="0 0 330 300" fill="none">
+            <path d="M 36 250 C 44 216 40 196 48 170 C 60 132 116 154 165 140 C 196 131 216 122 240 110 C 268 96 282 72 290 48"
+                  stroke="rgba(59,48,38,0.22)" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 13"/>
+            <circle cx="36" cy="250" r="12" fill="#F47C6E"/>
+            <circle cx="48" cy="170" r="12" fill="#F47C6E"/>
+            <circle class="pulse-ring" cx="165" cy="140" r="20" stroke="#F47C6E" stroke-width="3" fill="none"/>
+            <circle cx="165" cy="140" r="13" fill="#F47C6E"/>
+            <circle cx="240" cy="110" r="10" fill="#FFFFFF" stroke="rgba(59,48,38,0.14)" stroke-width="2"/>
+            <circle cx="290" cy="48" r="10" fill="#FFFFFF" stroke="rgba(59,48,38,0.14)" stroke-width="2"/>
+          </svg>
+          <!-- numbers stay Western digits, positions mirrored: x' = 330 − x, offset to map left edge 30px -->
+          <div class="map-node-num" style="left:324px; top:250px;">1</div>
+          <div class="map-node-num" style="left:312px; top:170px;">2</div>
+          <div class="map-node-num" style="left:195px; top:140px;">3</div>
+          <div class="map-node-num future" style="left:120px; top:110px;">4</div>
+          <div class="map-node-num future" style="left:70px;  top:48px;">5</div>
+
+          <div class="pedestal">
+            <span class="car">🏎️</span>
+            <div class="best-row">⭐⭐⭐</div>
+          </div>
+          <div class="best-label plex-ar" style="font-family:'IBM Plex Sans Arabic',sans-serif;">أفضل نتيجة</div>
+        </div>
+
+        <div style="padding:32px 24px 0; display:flex; flex-direction:column; gap:16px;">
+          <button class="btn-clay" style="height:64px; font-size:24px; font-family:'IBM Plex Sans Arabic',sans-serif; font-weight:700;">انطلق!</button>
+          <button class="btn-ghost" style="height:56px; font-size:18px; font-family:'IBM Plex Sans Arabic',sans-serif; font-weight:600;">المرآب</button>
+        </div>
+
+      </div>
+    </div>
+    <div class="frame-caption">Arabic · RTL</div>
+  </div>
+
+</main>
+
+</body>
+</html>
