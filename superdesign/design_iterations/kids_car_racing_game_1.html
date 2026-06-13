@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Turbo Road — Pure App · Design Review</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ============ TOKENS ============ */
+  :root {
+    --canvas: #FBF3E6;
+    --canvas2: #F6EAD7;
+    --surface: #FFFFFF;
+    --surface2: #FFFAF1;
+    --ink: #3B3026;
+    --ink-soft: #8C8073;
+    --ink-faint: #B7AD9F;
+    --hairline: rgba(59,48,38,0.08);
+    --hairline-strong: rgba(59,48,38,0.14);
+    --violet: #8B7CF0;
+    --violet-deep: #6E5DE0;
+    --violet-tint: #ECE8FE;
+    --gold: #F6C747;
+    --accent: #F47C6E;        /* coral base */
+    --accent-deep: #E0604F;   /* coral deep */
+    --accent-tint: #FCE5E1;   /* coral tint */
+    --green: #6FC27B; --green-deep: #54A862; --green-tint: #E4F4E6;
+    --blue: #5CB8E4;  --blue-deep: #3A9FD1;  --blue-tint: #E0F2FB;
+    --orange: #F4A65A; --orange-deep: #E08D3C; --orange-tint: #FCEED9;
+    --scrim: rgba(59,48,38,0.34);
+    --shadow-color: rgba(74,52,28,0.16);
+    --road: #4A3F33; /* warm dark taupe — Pure App variation */
+  }
+
+  body {
+    background: #EFE7D9;
+    font-family: 'Nunito', sans-serif;
+    color: var(--ink);
+  }
+
+  .font-display { font-family: 'Fredoka', sans-serif; }
+  .font-arabic  { font-family: 'IBM Plex Sans Arabic', sans-serif; }
+
+  /* ============ PHONE FRAME ============ */
+  .bezel {
+    background: #3B3026;
+    border-radius: 48px;
+    padding: 10px;
+    box-shadow: 0 24px 60px rgba(74,52,28,0.26), 0 6px 18px rgba(74,52,28,0.14);
+    flex: none;
+  }
+  .phone {
+    width: 390px;
+    height: 844px;
+    border-radius: 38px;
+    overflow: hidden;
+    position: relative;
+    background: var(--canvas);
+  }
+
+  /* ============ CLAYMORPHISM BUTTONS ============ */
+  .btn-clay {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--accent);
+    color: #FFFFFF;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 var(--accent-deep), 0 10px 24px var(--shadow-color);
+    transition: transform .08s ease, box-shadow .08s ease;
+    user-select: none;
+  }
+  .btn-clay:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 var(--accent-deep), 0 6px 14px var(--shadow-color);
+  }
+  .btn-ghost {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 6px 0 var(--hairline-strong), 0 10px 24px var(--shadow-color);
+  }
+  .btn-ghost:active {
+    box-shadow: 0 2px 0 var(--hairline-strong), 0 6px 14px var(--shadow-color);
+  }
+  .btn-clay.btn-disabled {
+    background: var(--canvas2);
+    color: var(--ink-faint);
+    box-shadow: 0 6px 0 var(--hairline-strong), 0 10px 24px rgba(74,52,28,0.08);
+    cursor: default;
+  }
+  .btn-clay.btn-disabled:active { transform: none; }
+
+  /* ============ PILLS, CHIPS, ICON BUTTON ============ */
+  .hud-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--ink);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    line-height: 1;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 999px;
+    padding: 9px 16px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .icon-btn {
+    width: 52px; height: 52px;
+    border-radius: 999px;
+    background: var(--surface);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--ink);
+    cursor: pointer;
+    line-height: 1;
+    flex: none;
+  }
+
+  /* ============ APP BAR ============ */
+  .appbar {
+    position: relative;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 16px 0;
+    height: 76px;
+  }
+  .appbar-title {
+    position: absolute;
+    left: 0; right: 0; top: 24px;
+    height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--ink);
+    pointer-events: none;
+  }
+
+  /* ============ RACE PLAYFIELD ============ */
+  .playfield { position: absolute; inset: 0; background: var(--canvas2); }
+  .road {
+    position: absolute; top: 0; bottom: 0;
+    left: 59px; width: 272px; /* ~70% of 390 */
+    background: var(--road);
+  }
+  .road-edge {
+    position: absolute; top: 0; bottom: 0; width: 3px;
+    background: rgba(251,243,230,0.22);
+  }
+  .lane-sep {
+    position: absolute; top: -56px; bottom: 0; width: 5px;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--canvas) 0px, var(--canvas) 26px,
+      transparent 26px, transparent 56px
+    );
+    animation: roadScroll 1.6s linear infinite;
+    border-radius: 3px;
+  }
+  @keyframes roadScroll {
+    from { transform: translateY(0); }
+    to   { transform: translateY(56px); }
+  }
+  .finish-strip {
+    position: absolute; top: 0; left: 0; right: 0; height: 18px;
+    background-image: conic-gradient(#3B3026 25%, #FBF3E6 0 50%, #3B3026 0 75%, #FBF3E6 0);
+    background-size: 18px 18px;
+    opacity: 0.4;
+  }
+  .sprite { position: absolute; line-height: 1; }
+  .player-car {
+    font-size: 64px;
+    filter: drop-shadow(0 10px 10px rgba(20,14,8,0.35));
+    animation: carBob 2s ease-in-out infinite;
+  }
+  @keyframes carBob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-4px); }
+  }
+  .rival-car {
+    font-size: 44px;
+    filter: drop-shadow(0 8px 8px rgba(20,14,8,0.3));
+    animation: carBob 2.6s ease-in-out infinite;
+  }
+  .coin {
+    font-size: 26px;
+    display: inline-block;
+    filter: drop-shadow(0 4px 5px rgba(20,14,8,0.3));
+    animation: coinSpin 1.8s ease-in-out infinite;
+  }
+  @keyframes coinSpin {
+    0%, 100% { transform: scaleX(1); }
+    50%      { transform: scaleX(0.18); }
+  }
+  .boost-pad {
+    width: 58px; height: 58px;
+    border-radius: 16px;
+    background: var(--accent-tint);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    animation: boostPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes boostPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(244,124,110,0.55); }
+    50%      { box-shadow: 0 0 0 10px rgba(244,124,110,0); }
+  }
+  .meadow { position: absolute; line-height: 1; opacity: 0.85; }
+  .steer-hint {
+    position: absolute; bottom: 24px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 44px;
+    color: rgba(59,48,38,0.3);
+    line-height: 1;
+  }
+  .progress-rail {
+    position: absolute; right: 12px; top: 124px; bottom: 132px;
+    width: 4px; border-radius: 2px;
+    background: rgba(59,48,38,0.14);
+  }
+  .progress-flag { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); font-size: 15px; line-height: 1; }
+  .progress-dot {
+    position: absolute; top: 38%; left: 50%;
+    width: 14px; height: 14px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: var(--accent);
+    border: 2.5px solid #FFFFFF;
+    box-shadow: 0 2px 6px rgba(74,52,28,0.3);
+  }
+
+  /* ============ WIN OVERLAY ============ */
+  .scrim { position: absolute; inset: 0; background: var(--scrim); }
+  .win-card {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -52%);
+    width: 310px;
+    background: var(--surface);
+    border-radius: 28px;
+    padding: 32px 24px 24px;
+    box-shadow: 0 24px 56px rgba(59,48,38,0.3);
+    text-align: center;
+  }
+  .win-star {
+    display: inline-block;
+    font-size: 38px;
+    color: var(--gold);
+    transform: scale(0);
+    animation: starPop .5s cubic-bezier(.34,1.56,.64,1) forwards;
+    line-height: 1;
+  }
+  .win-star:nth-child(1) { animation-delay: .15s; }
+  .win-star:nth-child(2) { animation-delay: .35s; font-size: 46px; }
+  .win-star:nth-child(3) { animation-delay: .55s; }
+  @keyframes starPop {
+    0%   { transform: scale(0); }
+    70%  { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  .confetti { position: absolute; pointer-events: none; animation: confettiFloat 3s ease-in-out infinite; line-height: 1; }
+  .confetti-dot { width: 8px; height: 8px; border-radius: 999px; }
+  @keyframes confettiFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); opacity: .9; }
+    50%      { transform: translateY(-10px) rotate(12deg); opacity: .55; }
+  }
+  .coins-earned {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(246,199,71,0.22);
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  /* ============ LEVEL START / GARAGE ============ */
+  .pedestal {
+    background: var(--accent-tint);
+    border-radius: 28px;
+    box-shadow: 0 12px 28px var(--shadow-color);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-car {
+    font-size: 120px;
+    line-height: 1;
+    filter: drop-shadow(0 14px 14px rgba(74,52,28,0.22));
+    animation: carBob 2.4s ease-in-out infinite;
+  }
+  .road-doodle {
+    position: absolute;
+    width: 480px; height: 480px;
+    border: 4px dashed rgba(59,48,38,0.07);
+    border-radius: 999px;
+    pointer-events: none;
+  }
+  .swatch {
+    width: 28px; height: 28px; border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(74,52,28,0.18);
+    cursor: pointer;
+    flex: none;
+  }
+  .swatch-selected {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .car-card {
+    background: var(--surface);
+    border-radius: 24px;
+    box-shadow: 0 8px 20px var(--shadow-color);
+    padding: 14px 12px 12px;
+    text-align: center;
+    position: relative;
+  }
+  .car-card-selected {
+    box-shadow: 0 0 0 3px var(--accent), 0 8px 20px var(--shadow-color);
+  }
+  .selected-chip {
+    display: inline-flex; align-items: center;
+    background: var(--accent-tint);
+    color: var(--accent-deep);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1;
+  }
+  .price-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--canvas2);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1;
+  }
+  .lock-badge {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 16px; line-height: 1;
+  }
+  .btn-mini { height: 38px; border-radius: 14px; font-size: 14px; padding: 0 16px;
+    box-shadow: 0 4px 0 var(--accent-deep), 0 6px 14px var(--shadow-color); }
+  .btn-mini:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--accent-deep), 0 4px 10px var(--shadow-color); }
+  .btn-mini.btn-disabled { box-shadow: 0 4px 0 var(--hairline-strong), 0 6px 14px rgba(74,52,28,0.06); }
+  .btn-mini.btn-disabled:active { transform: none; }
+
+  .caption {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: #8C8073;
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  /* ============ RTL FONT OVERRIDE ============ */
+  /* Must come AFTER the component rules above (.btn-clay, .hud-pill, .chip,
+     .appbar-title all set Fredoka at single-class specificity) so the Arabic
+     frame's text actually renders in IBM Plex Sans Arabic, not a Fredoka
+     fallback. Compound selectors raise specificity; the [dir="rtl"] catch-all
+     covers any component nested inside the RTL frame. */
+  .font-arabic,
+  .appbar-title.font-arabic,
+  .btn-clay.font-arabic,
+  .hud-pill.font-arabic,
+  .chip.font-arabic,
+  [dir="rtl"] .font-arabic {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ PAGE HEADER ============ -->
+  <header class="max-w-6xl mx-auto px-8 pt-12 pb-2 text-center">
+    <p class="font-display" style="font-weight:700; font-size:26px; color:#3B3026;">Turbo Road — Pure App</p>
+    <p style="font-weight:600; font-size:15px; color:#8C8073; margin-top:6px;">The most conservative option — warm cream canvas, native AppBar pattern, and zero visual noise. Closest to the current app design.</p>
+  </header>
+
+  <!-- ============ FRAMES ROW ============ -->
+  <main class="flex flex-wrap justify-center items-start" style="gap:32px; padding:40px 24px 80px;">
+
+    <!-- ════════════════════ FRAME 1 · LEVEL START ════════════════════ -->
+    <div>
+      <div class="bezel">
+        <div class="phone">
+          <!-- faint road doodles -->
+          <div class="road-doodle" style="top:-260px; left:-180px;"></div>
+          <div class="road-doodle" style="bottom:-300px; right:-220px;"></div>
+
+          <!-- AppBar -->
+          <div class="appbar">
+            <div class="icon-btn">‹</div>
+            <div class="appbar-title">Turbo Road</div>
+            <div class="hud-pill">🪙 248</div>
+          </div>
+
+          <!-- Level chips -->
+          <div class="flex justify-center" style="gap:8px; margin-top:24px;">
+            <div class="chip">Level 3</div>
+            <div class="chip">🏖️ Beach</div>
+          </div>
+
+          <!-- Hero pedestal -->
+          <div class="flex flex-col items-center" style="margin-top:48px;">
+            <div class="pedestal" style="width:264px; height:240px;">
+              <span class="hero-car">🏎️</span>
+            </div>
+            <div style="margin-top:20px; font-size:24px; letter-spacing:4px; line-height:1;">⭐⭐⭐</div>
+            <div style="margin-top:8px; font-weight:700; font-size:13px; color:#8C8073;">Best result</div>
+          </div>
+
+          <!-- CTAs -->
+          <div class="absolute left-0 right-0" style="bottom:40px; padding:0 24px;">
+            <button class="btn-clay w-full" style="height:64px; font-size:24px;">RACE!</button>
+            <button class="btn-clay btn-ghost w-full" style="height:56px; font-size:18px; margin-top:16px;">Garage</button>
+          </div>
+        </div>
+      </div>
+      <p class="caption">Level Start</p>
+    </div>
+
+    <!-- ════════════════════ FRAME 2 · RACE ════════════════════ -->
+    <div>
+      <div class="bezel">
+        <div class="phone">
+          <div class="playfield">
+            <!-- side meadow details -->
+            <span class="meadow" style="left:18px; top:200px; font-size:20px;">🌳</span>
+            <span class="meadow" style="left:24px; top:430px; font-size:14px;">🌼</span>
+            <span class="meadow" style="left:14px; top:640px; font-size:18px;">🌳</span>
+            <span class="meadow" style="right:24px; top:300px; font-size:14px;">🌼</span>
+            <span class="meadow" style="right:16px; top:540px; font-size:20px;">🌳</span>
+            <span class="meadow" style="right:26px; top:740px; font-size:14px;">🌼</span>
+
+            <!-- road -->
+            <div class="road">
+              <div class="road-edge" style="left:0;"></div>
+              <div class="road-edge" style="right:0;"></div>
+              <div class="lane-sep" style="left:calc(33.33% - 2px);"></div>
+              <div class="lane-sep" style="left:calc(66.66% - 3px);"></div>
+              <div class="finish-strip"></div>
+
+              <!-- rivals -->
+              <span class="sprite rival-car" style="left:6%; top:44%;">🚙</span>
+              <span class="sprite rival-car" style="right:8%; top:20%; animation-delay:.6s;">🚕</span>
+
+              <!-- coins (middle lane) -->
+              <div class="sprite" style="left:50%; top:31%; transform:translateX(-50%); display:flex; gap:10px;">
+                <span class="coin">🪙</span>
+                <span class="coin" style="animation-delay:.3s;">🪙</span>
+                <span class="coin" style="animation-delay:.6s;">🪙</span>
+              </div>
+
+              <!-- cone (left lane) -->
+              <span class="sprite" style="left:9%; top:63%; font-size:34px; filter:drop-shadow(0 6px 6px rgba(20,14,8,0.3));">🚧</span>
+
+              <!-- boost pad (right lane) -->
+              <div class="sprite boost-pad" style="right:5%; top:55%;">⚡</div>
+
+              <!-- player car -->
+              <span class="sprite player-car" style="left:50%; bottom:88px; margin-left:-32px;">🏎️</span>
+            </div>
+
+            <!-- HUD -->
+            <div class="icon-btn" style="position:absolute; left:16px; top:24px; z-index:30;">‹</div>
+            <div class="hud-pill" style="position:absolute; left:84px; top:32px; z-index:20;">🏁 3</div>
+            <div class="hud-pill" style="position:absolute; left:50%; top:32px; transform:translateX(-50%); z-index:20; font-weight:700; font-size:18px; font-family:'Fredoka',sans-serif;">2nd</div>
+            <div class="hud-pill" style="position:absolute; right:16px; top:32px; z-index:20;">🪙 24</div>
+
+            <!-- race progress rail -->
+            <div class="progress-rail">
+              <span class="progress-flag">🏁</span>
+              <div class="progress-dot"></div>
+            </div>
+
+            <!-- steer hints -->
+            <span class="steer-hint" style="left:20px;">‹</span>
+            <span class="steer-hint" style="right:20px;">›</span>
+          </div>
+        </div>
+      </div>
+      <p class="caption">Race</p>
+    </div>
+
+    <!-- ════════════════════ FRAME 3 · WIN OVERLAY ════════════════════ -->
+    <div>
+      <div class="bezel">
+        <div class="phone">
+          <!-- race playfield behind (dimmed) -->
+          <div class="playfield">
+            <span class="meadow" style="left:18px; top:200px; font-size:20px;">🌳</span>
+            <span class="meadow" style="left:24px; top:430px; font-size:14px;">🌼</span>
+            <span class="meadow" style="left:14px; top:640px; font-size:18px;">🌳</span>
+            <span class="meadow" style="right:24px; top:300px; font-size:14px;">🌼</span>
+            <span class="meadow" style="right:16px; top:540px; font-size:20px;">🌳</span>
+            <div class="road">
+              <div class="road-edge" style="left:0;"></div>
+              <div class="road-edge" style="right:0;"></div>
+              <div class="lane-sep" style="left:calc(33.33% - 2px); animation:none;"></div>
+              <div class="lane-sep" style="left:calc(66.66% - 3px); animation:none;"></div>
+              <div class="finish-strip" style="top:120px; opacity:.6;"></div>
+              <span class="sprite rival-car" style="left:6%; top:34%; animation:none;">🚙</span>
+              <span class="sprite rival-car" style="right:8%; top:46%; animation:none;">🚕</span>
+              <span class="sprite player-car" style="left:50%; top:22%; margin-left:-32px; animation:none;">🏎️</span>
+            </div>
+            <div class="hud-pill" style="position:absolute; left:16px; top:32px;">🏁 3</div>
+            <div class="hud-pill" style="position:absolute; left:50%; top:32px; transform:translateX(-50%); font-weight:700; font-size:18px;">1st</div>
+            <div class="hud-pill" style="position:absolute; right:16px; top:32px;">🪙 36</div>
+          </div>
+
+          <!-- scrim -->
+          <div class="scrim"></div>
+
+          <!-- confetti around card -->
+          <span class="confetti" style="left:48px; top:206px; font-size:20px;">🎉</span>
+          <span class="confetti" style="right:52px; top:186px; font-size:16px; animation-delay:.5s;">✨</span>
+          <span class="confetti" style="right:84px; top:248px; font-size:14px; animation-delay:1.2s;">🎉</span>
+          <span class="confetti" style="left:88px; top:166px; font-size:14px; animation-delay:.9s;">✨</span>
+          <span class="confetti confetti-dot" style="left:64px; top:260px; background:#F47C6E; animation-delay:.2s;"></span>
+          <span class="confetti confetti-dot" style="right:60px; top:300px; background:#F6C747; animation-delay:.7s;"></span>
+          <span class="confetti confetti-dot" style="left:110px; top:210px; background:#6FC27B; animation-delay:1.4s;"></span>
+          <span class="confetti confetti-dot" style="right:104px; top:170px; background:#5CB8E4; animation-delay:1.0s;"></span>
+
+          <!-- win card -->
+          <div class="win-card">
+            <div style="font-size:80px; line-height:1;">🏆</div>
+            <div class="font-display" style="font-weight:700; font-size:32px; color:#3B3026; margin-top:16px;">1st Place!</div>
+            <div style="margin-top:16px; display:flex; justify-content:center; align-items:center; gap:10px;">
+              <span class="win-star">★</span><span class="win-star">★</span><span class="win-star">★</span>
+            </div>
+            <div style="margin-top:16px;">
+              <span class="coins-earned">+12 🪙</span>
+            </div>
+            <button class="btn-clay w-full" style="height:60px; font-size:20px; margin-top:24px;">Next Race ›</button>
+            <button class="btn-clay btn-ghost w-full" style="height:52px; font-size:17px; margin-top:16px;">Garage</button>
+          </div>
+        </div>
+      </div>
+      <p class="caption">Win</p>
+    </div>
+
+    <!-- ════════════════════ FRAME 4 · GARAGE ════════════════════ -->
+    <div>
+      <div class="bezel">
+        <div class="phone">
+          <!-- AppBar -->
+          <div class="appbar">
+            <div class="icon-btn">‹</div>
+            <div class="appbar-title">My Garage</div>
+            <div class="hud-pill">🪙 248</div>
+          </div>
+
+          <!-- Hero + trim -->
+          <div class="flex flex-col items-center" style="margin-top:16px;">
+            <div class="pedestal" style="width:216px; height:152px;">
+              <span class="hero-car" style="font-size:88px;">🏎️</span>
+            </div>
+            <div class="flex items-center" style="gap:16px; margin-top:20px;">
+              <span class="swatch swatch-selected" style="background:#F47C6E;"></span>
+              <span class="swatch" style="background:#6FC27B;"></span>
+              <span class="swatch" style="background:#5CB8E4;"></span>
+              <span class="swatch" style="background:#F4A65A;"></span>
+            </div>
+            <div style="margin-top:8px; font-weight:700; font-size:13px; color:#8C8073;">Trim</div>
+          </div>
+
+          <!-- Car grid -->
+          <div class="grid grid-cols-2" style="gap:12px; padding:20px 20px 24px;">
+            <!-- Turbo · selected -->
+            <div class="car-card car-card-selected">
+              <div style="font-size:56px; line-height:1;">🏎️</div>
+              <div class="font-display" style="font-weight:600; font-size:17px; margin-top:8px;">Turbo</div>
+              <div style="margin-top:8px;"><span class="selected-chip">Selected</span></div>
+            </div>
+            <!-- Buggy · unlocked -->
+            <div class="car-card">
+              <div style="font-size:56px; line-height:1;">🚙</div>
+              <div class="font-display" style="font-weight:600; font-size:17px; margin-top:8px;">Buggy</div>
+              <div style="margin-top:8px; font-weight:700; font-size:12px; color:#8C8073; padding:6px 0;">Tap to select</div>
+            </div>
+            <!-- Truck · unlocked -->
+            <div class="car-card">
+              <div style="font-size:56px; line-height:1;">🛻</div>
+              <div class="font-display" style="font-weight:600; font-size:17px; margin-top:8px;">Truck</div>
+              <div style="margin-top:8px; font-weight:700; font-size:12px; color:#8C8073; padding:6px 0;">Tap to select</div>
+            </div>
+            <!-- Patrol · locked, affordable -->
+            <div class="car-card">
+              <span class="lock-badge">🔒</span>
+              <div style="font-size:56px; line-height:1; opacity:.4; filter:saturate(.4);">🚓</div>
+              <div class="font-display" style="font-weight:600; font-size:17px; margin-top:8px; color:#8C8073;">Patrol</div>
+              <div class="flex items-center justify-center" style="gap:8px; margin-top:8px;">
+                <span class="price-pill">120 🪙</span>
+                <button class="btn-clay btn-mini">Unlock</button>
+              </div>
+            </div>
+            <!-- Tractor · locked, affordable -->
+            <div class="car-card">
+              <span class="lock-badge">🔒</span>
+              <div style="font-size:56px; line-height:1; opacity:.4; filter:saturate(.4);">🚜</div>
+              <div class="font-display" style="font-weight:600; font-size:17px; margin-top:8px; color:#8C8073;">Tractor</div>
+              <div class="flex items-center justify-center" style="gap:8px; margin-top:8px;">
+                <span class="price-pill">200 🪙</span>
+                <button class="btn-clay btn-mini">Unlock</button>
+              </div>
+            </div>
+            <!-- Moto · locked, NOT affordable -->
+            <div class="car-card">
+              <span class="lock-badge">🔒</span>
+              <div style="font-size:56px; line-height:1; opacity:.4; filter:saturate(.4);">🏍️</div>
+              <div class="font-display" style="font-weight:600; font-size:17px; margin-top:8px; color:#8C8073;">Moto</div>
+              <div class="flex items-center justify-center" style="gap:8px; margin-top:8px;">
+                <span class="price-pill">350 🪙</span>
+                <button class="btn-clay btn-mini btn-disabled">Unlock</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="caption">Garage</p>
+    </div>
+
+    <!-- ════════════════════ FRAME 5 · ARABIC RTL ════════════════════ -->
+    <div>
+      <div class="bezel">
+        <div class="phone font-arabic" dir="rtl" lang="ar">
+          <!-- faint road doodles -->
+          <div class="road-doodle" style="top:-260px; right:-180px;"></div>
+          <div class="road-doodle" style="bottom:-300px; left:-220px;"></div>
+
+          <!-- AppBar (mirrored: back at top-right, wallet top-left) -->
+          <div class="appbar">
+            <div class="icon-btn">›</div>
+            <div class="appbar-title font-arabic" style="font-weight:700; font-size:22px;">سباق السيارات</div>
+            <div class="hud-pill font-arabic">🪙 248</div>
+          </div>
+
+          <!-- Level chips -->
+          <div class="flex justify-center" style="gap:8px; margin-top:24px;">
+            <div class="chip font-arabic">المستوى 3</div>
+            <div class="chip font-arabic">🏖️ الشاطئ</div>
+          </div>
+
+          <!-- Hero pedestal -->
+          <div class="flex flex-col items-center" style="margin-top:48px;">
+            <div class="pedestal" style="width:264px; height:240px;">
+              <span class="hero-car">🏎️</span>
+            </div>
+            <div style="margin-top:20px; font-size:24px; letter-spacing:4px; line-height:1;">⭐⭐⭐</div>
+            <div class="font-arabic" style="margin-top:8px; font-weight:600; font-size:13px; color:#8C8073;">أفضل نتيجة</div>
+          </div>
+
+          <!-- CTAs -->
+          <div class="absolute left-0 right-0" style="bottom:40px; padding:0 24px;">
+            <button class="btn-clay w-full font-arabic" style="height:64px; font-size:24px; font-weight:700;">انطلق!</button>
+            <button class="btn-clay btn-ghost w-full font-arabic" style="height:56px; font-size:18px; font-weight:600; margin-top:16px;">المرآب</button>
+          </div>
+        </div>
+      </div>
+      <p class="caption">Arabic · RTL</p>
+    </div>
+
+  </main>
+</body>
+</html>

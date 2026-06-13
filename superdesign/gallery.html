@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superdesign Gallery — Turbo Road</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #718096;
+            --border-color: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a202c;
+            --bg-secondary: #2d3748;
+            --bg-card: #2d3748;
+            --text-primary: #f7fafc;
+            --text-secondary: #a0aec0;
+            --border-color: #4a5568;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .header-content h1 {
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .header-content p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-secondary);
+            transform: translateY(-1px);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .design-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .design-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .design-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .design-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .design-title h3 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            font-family: inherit;
+        }
+
+        .design-type {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 400;
+            font-family: inherit;
+        }
+
+        .design-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+
+        .design-size, .design-date {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-family: inherit;
+        }
+
+        .design-preview {
+            height: 560px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .design-preview iframe {
+            border: none;
+            transform: scale(0.5);
+            transform-origin: top left;
+            width: 200%;
+            height: 200%;
+        }
+
+        .design-actions {
+            padding: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: #3182ce;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>superdesign.gallery</h1>
+            <p id="file-count">Turbo Road — 3 design variations · open "View Full" for the real animated experience</p>
+        </div>
+        <div class="header-controls">
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span id="theme-icon">🌙</span>
+                <span id="theme-text">Dark</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="gallery-grid">
+
+      <div class="design-card" data-file="kids_car_racing_game_1.html">
+        <div class="design-header">
+          <div class="design-title">
+            <h3>Variation 1 — Pure App (closest to current app design)</h3>
+            <span class="design-type">.HTML</span>
+          </div>
+          <div class="design-meta">
+              <span class="design-size">27.8 KB</span>
+              <span class="design-date">Jun 10, 15:47</span>
+          </div>
+        </div>
+        <div class="design-preview">
+          <iframe src="./design_iterations/kids_car_racing_game_1.html" loading="lazy" data-file="kids_car_racing_game_1.html"></iframe>
+        </div>
+        <div class="design-actions">
+          <button onclick="openFullscreen('./design_iterations/kids_car_racing_game_1.html')" class="btn-primary">View Full</button>
+          <button onclick="copyPath('./design_iterations/kids_car_racing_game_1.html')" class="btn-secondary">Copy Path</button>
+        </div>
+      </div>
+
+      <div class="design-card" data-file="kids_car_racing_game_2.html">
+        <div class="design-header">
+          <div class="design-title">
+            <h3>Variation 2 — Sunny Adventure (vivid playfield, ages 4–8 energy)</h3>
+            <span class="design-type">.HTML</span>
+          </div>
+          <div class="design-meta">
+              <span class="design-size">34.0 KB</span>
+              <span class="design-date">Jun 10, 15:45</span>
+          </div>
+        </div>
+        <div class="design-preview">
+          <iframe src="./design_iterations/kids_car_racing_game_2.html" loading="lazy" data-file="kids_car_racing_game_2.html"></iframe>
+        </div>
+        <div class="design-actions">
+          <button onclick="openFullscreen('./design_iterations/kids_car_racing_game_2.html')" class="btn-primary">View Full</button>
+          <button onclick="copyPath('./design_iterations/kids_car_racing_game_2.html')" class="btn-secondary">Copy Path</button>
+        </div>
+      </div>
+
+      <div class="design-card" data-file="kids_car_racing_game_3.html">
+        <div class="design-header">
+          <div class="design-title">
+            <h3>Variation 3 — Champion Rally (sportier, ages 8–12 ceiling)</h3>
+            <span class="design-type">.HTML</span>
+          </div>
+          <div class="design-meta">
+              <span class="design-size">33.8 KB</span>
+              <span class="design-date">Jun 10, 15:44</span>
+          </div>
+        </div>
+        <div class="design-preview">
+          <iframe src="./design_iterations/kids_car_racing_game_3.html" loading="lazy" data-file="kids_car_racing_game_3.html"></iframe>
+        </div>
+        <div class="design-actions">
+          <button onclick="openFullscreen('./design_iterations/kids_car_racing_game_3.html')" class="btn-primary">View Full</button>
+          <button onclick="copyPath('./design_iterations/kids_car_racing_game_3.html')" class="btn-secondary">Copy Path</button>
+        </div>
+      </div>
+
+    </div>
+
+    <script>
+        const theme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        updateThemeButton();
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (theme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'Light';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'Dark';
+            }
+        }
+
+        function openFullscreen(path) {
+            window.open(path, '_blank');
+        }
+
+        function copyPath(path) {
+            navigator.clipboard.writeText(path).then(() => {
+                showToast('Path copied to clipboard!', 'success');
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#48bb78',
+                error: '#e53e3e',
+                info: '#4299e1',
+                warning: '#ed8936'
+            };
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${colors[type] || colors.info};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                z-index: 1000;
+                font-size: 14px;
+                font-family: inherit;
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
