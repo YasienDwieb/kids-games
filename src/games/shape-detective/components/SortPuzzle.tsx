@@ -14,52 +14,65 @@
  *   └──────────────────────────────────────────────┘
  *
  * Coordinate-space contract (mirrors mouse-maze/index.tsx pattern):
- *   • ONE drag surface View owns the PanResponder.  `e.nativeEvent.locationX/Y`
- *     are always relative to this surface's top-left corner.
+ *   • ONE drag surface View owns the GestureDetector.  event.nativeEvent.x/y
+ *     are always relative to this surface's top-left corner (same space as
+ *     PanResponder's locationX/Y was).
  *   • ALL bin rects and tray-item rects are measured relative to the SAME
  *     surface via `childRef.measureLayout(surfaceRef.current, …)` called
  *     inside each child's onLayout.  measureLayout returns (left, top, width,
  *     height) in the ancestor's coordinate space, so drag coords and target
- *     rects share ONE spatial origin.
+ *     rects share ONE spatial origin — no transformation needed.
  *   • The ghost View is `position:'absolute'` with top:0 / start:0 inside the
  *     surface; translateX/Y move it in surface-local coords — same origin.
  *
+ * Why event.nativeEvent.x/y === surface-local:
+ *   GestureDetector wraps the surface View.  Per RNGH v2 docs, x/y (without
+ *   "absolute") are relative to the handler's attached view — i.e. the surface.
+ *   This is the same coordinate system that measureLayout(surfaceRef) produces,
+ *   so hit-testing is a direct numeric comparison with zero transforms required.
+ *
  * RTL coordinate pinning (same as mouse-maze ltrBoard):
- *   `direction: 'ltr'` on the surface pins locationX to the physical-left
- *   origin even when I18nManager.isRTL is true.  Without this, RTL would flip
- *   the surface's internal coordinate system so locationX counts from the
- *   physical right, breaking all hit-test math.  measureLayout against the
- *   pinned surface ref returns coords in the same physical-left-origin space.
+ *   `direction: 'ltr'` on the surface pins x to the physical-left origin even
+ *   when I18nManager.isRTL is true.  Without this, RTL would flip the surface's
+ *   internal coordinate system so x counts from the physical right, breaking
+ *   all hit-test math.  measureLayout against the pinned surface ref returns
+ *   coords in the same physical-left-origin space.
  *
  * Async / stale-state safety:
  *   • Placement is committed synchronously at release using the rects that are
  *     current at that moment — no intermediate setState that could be stale.
  *   • Flash timers are tracked in a ref Set and cleared on unmount (no setState
  *     on unmounted component).
- *   • Touch-DOWN (grant) only PICKS UP a tray item.
- *     Placement into a bin only happens on RELEASE over that bin.
+ *   • Touch-DOWN (onBegin) only PICKS UP a tray item.
+ *     Placement into a bin only happens on RELEASE (onEnd) over that bin.
  *
  * Win condition:
  *   Solved when every item[i] is placed in bin assignments[i] — identical to
  *   the previous logic; generate.ts / types.ts are not touched.
  *   Items all start loose in the tray (placements initialised to null[]).
+ *
+ * Gesture-handler threading:
+ *   Gesture.Pan().runOnJS(true) keeps all callbacks on the JS thread so we can
+ *   call setState() and Animated.Value.setValue() directly.  No worklets or
+ *   runOnUI needed (those are reanimated-only; reanimated is NOT installed).
  */
 
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from 'react';
 import {
   Animated,
   I18nManager,
-  PanResponder,
   StyleSheet,
   Text,
   View,
-  type GestureResponderEvent,
 } from 'react-native';
+import {
+  Gesture,
+  GestureDetector,
+} from 'react-native-gesture-handler';
 import {
   ACCENTS,
   BORDER_RADIUS,
@@ -149,7 +162,8 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   // -------------------------------------------------------------------------
   // Drag surface ref — the single coordinate origin for ALL measurements.
   // binRects and trayRects are filled via measureLayout relative to this ref
-  // so they share the same coordinate space as locationX/locationY.
+  // so they share the same coordinate space as event.nativeEvent.x/y from
+  // the GestureDetector that wraps this same View.
   // -------------------------------------------------------------------------
   const surfaceRef = useRef<View>(null);
 
@@ -166,12 +180,17 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   const draggingIdxRef = useRef<number>(-1);
   const [draggingIdx, setDraggingIdx] = useState<number>(-1);
 
-  // Ghost position (surface-local) — mirrors mouse-maze pan.getTranslateTransform()
+  // Ghost position (surface-local) and opacity — driven by Animated.Value
+  // so we can call .setValue() directly from runOnJS callbacks without any
+  // intermediate bridge round-trip.
   const ghostX = useRef(new Animated.Value(0)).current;
   const ghostY = useRef(new Animated.Value(0)).current;
   const ghostOpacity = useRef(new Animated.Value(0)).current;
+  // Lift scale for the "press to lift" cue — springs to 1.08 on pickup.
+  const ghostScale = useRef(new Animated.Value(1)).current;
 
-  // Stable refs so PanResponder closure (created once) always sees current state.
+  // Stable refs so gesture callbacks always see current placements without
+  // stale-closure issues (Gesture.Pan() is created once via useMemo equivalent).
   const placementsRef = useRef(placements);
   placementsRef.current = placements;
 
@@ -238,18 +257,19 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   }
 
   // -------------------------------------------------------------------------
-  // Drag handlers (stored in a ref so PanResponder closure is stable)
+  // Drag logic — extracted into a stable ref so the Gesture object can be
+  // created once and still call fresh handlers via the ref on each event.
   // -------------------------------------------------------------------------
 
   const handleRef = useRef({
-    grant: (_x: number, _y: number) => {},
-    move: (_x: number, _y: number) => {},
-    release: (_x: number, _y: number) => {},
+    begin: (_x: number, _y: number) => {},
+    update: (_x: number, _y: number) => {},
+    end: (_x: number, _y: number) => {},
   });
 
   handleRef.current = {
-    // GRANT: pick up a loose tray item. NEVER place into a bin here.
-    grant: (x: number, y: number) => {
+    // BEGIN: pick up a loose tray item. NEVER place into a bin here.
+    begin: (x: number, y: number) => {
       const looseTrayRects = trayRects.current.map((r, i) =>
         placementsRef.current[i] !== null ? null : r,
       );
@@ -260,21 +280,30 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
       ghostX.setValue(x - SHAPE_CELL / 2);
       ghostY.setValue(y - SHAPE_CELL / 2);
       ghostOpacity.setValue(1);
+      // Subtle lift scale cue
+      Animated.spring(ghostScale, {
+        toValue: 1.08,
+        useNativeDriver: true,
+        speed: 40,
+        bounciness: 6,
+      }).start();
     },
 
-    move: (x: number, y: number) => {
+    // UPDATE: move the ghost to follow the finger.
+    update: (x: number, y: number) => {
       if (draggingIdxRef.current === -1) return;
       ghostX.setValue(x - SHAPE_CELL / 2);
       ghostY.setValue(y - SHAPE_CELL / 2);
     },
 
-    // RELEASE: commit placement synchronously using current rects.
-    release: (x: number, y: number) => {
+    // END: commit placement synchronously using current rects.
+    end: (x: number, y: number) => {
       const idx = draggingIdxRef.current;
       // Clear dragging state immediately.
       draggingIdxRef.current = -1;
       setDraggingIdx(-1);
       ghostOpacity.setValue(0);
+      ghostScale.setValue(1);
 
       if (idx === -1) return;
 
@@ -355,27 +384,46 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   };
 
   // -------------------------------------------------------------------------
-  // PanResponder — created once; delegates to handleRef.
-  // Attached to the drag surface (same root View that owns surfaceRef).
-  // locationX/Y are therefore in surface-local coords — same space as all
-  // measureLayout results.
+  // Gesture.Pan() — created once; delegates all work through handleRef so it
+  // always calls the latest closures without being recreated on every render.
+  //
+  // runOnJS(true) keeps ALL callbacks on the JS thread, which is required when
+  // reanimated is NOT installed.  With runOnJS(true) we can call setState() and
+  // Animated.Value.setValue() directly — no worklets, no runOnUI.
+  //
+  // Coordinate space proof:
+  //   • GestureDetector wraps the same View that holds surfaceRef.
+  //   • event.nativeEvent.x/y (NOT absoluteX/absoluteY) are relative to that
+  //     GestureDetector child view — which is exactly the surface.
+  //   • measureLayout(surfaceRef, ...) also returns coords relative to the
+  //     surface.  Both origins are the surface's top-left corner, so the numbers
+  //     are directly comparable with no transformation.
+  //   • direction:'ltr' on the surface pins physical-left as x=0 even in RTL
+  //     locales; measureLayout against the same pinned ref gives the same
+  //     physical-left origin — the spaces remain identical.
   // -------------------------------------------------------------------------
 
-  const responder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: () => true,
-        onPanResponderGrant: (e: GestureResponderEvent) =>
-          handleRef.current.grant(e.nativeEvent.locationX, e.nativeEvent.locationY),
-        onPanResponderMove: (e: GestureResponderEvent) =>
-          handleRef.current.move(e.nativeEvent.locationX, e.nativeEvent.locationY),
-        onPanResponderRelease: (e: GestureResponderEvent) =>
-          handleRef.current.release(e.nativeEvent.locationX, e.nativeEvent.locationY),
-        onPanResponderTerminationRequest: () => false,
-      }),
-    [],
-  );
+  const panGesture = Gesture.Pan()
+    .runOnJS(true)
+    .onBegin((event) => {
+      // In RNGH v2 Gesture API, GestureStateChangeEvent<PanGestureHandlerEventPayload>
+      // is a flat intersection — coords are directly on event, NOT under nativeEvent.
+      handleRef.current.begin(event.x, event.y);
+    })
+    .onUpdate((event) => {
+      // GestureUpdateEvent<PanGestureHandlerEventPayload> — same flat shape.
+      handleRef.current.update(event.x, event.y);
+    })
+    .onEnd((event) => {
+      handleRef.current.end(event.x, event.y);
+    })
+    .onFinalize((event) => {
+      // Guard: if the gesture was cancelled (e.g. interrupted by a scroll),
+      // ensure we always clean up dragging state so nothing gets stuck.
+      if (draggingIdxRef.current !== -1) {
+        handleRef.current.end(event.x, event.y);
+      }
+    });
 
   // -------------------------------------------------------------------------
   // Render helpers
@@ -389,134 +437,140 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
 
   // -------------------------------------------------------------------------
   // Render
-  // -------------------------------------------------------------------------
-
+  //
   // The drag surface is the single coordinate origin:
-  //   • PanResponder attached here → locationX/Y relative to this View.
+  //   • GestureDetector wraps it → event.nativeEvent.x/y relative to this View.
   //   • surfaceRef passed to measureLayout for bins and tray slots.
   //   • direction:'ltr' pins physical-left as the origin in RTL locales
-  //     (same as mouse-maze ltrBoard) so locationX and measureLayout results
-  //     are always in the same physical-left-origin space.
+  //     (same as mouse-maze ltrBoard) so x and measureLayout results are always
+  //     in the same physical-left-origin space.
+  // -------------------------------------------------------------------------
   return (
-    <View
-      ref={surfaceRef}
-      style={[styles.root, I18nManager.isRTL && styles.ltrSurface]}
-      {...responder.panHandlers}
-    >
-      {/* Instruction */}
-      <Text style={styles.instruction}>{t('shape-detective:sort.instruction')}</Text>
+    <GestureDetector gesture={panGesture}>
+      <View
+        ref={surfaceRef}
+        style={[styles.root, I18nManager.isRTL && styles.ltrSurface]}
+      >
+        {/* Instruction */}
+        <Text style={styles.instruction}>{t('shape-detective:sort.instruction')}</Text>
 
-      {/* Bins row — children measured relative to surfaceRef via measureLayout */}
-      <View style={styles.binsRow}>
-        {puzzle.bins.map((bin, binIdx) => {
-          const placed = placedInBin(binIdx);
-          const label = binLabel(bin.attribute, bin.value, t);
+        {/* Bins row — children measured relative to surfaceRef via measureLayout */}
+        <View style={styles.binsRow}>
+          {puzzle.bins.map((bin, binIdx) => {
+            const placed = placedInBin(binIdx);
+            const label = binLabel(bin.attribute, bin.value, t);
 
-          return (
-            <View
-              key={binIdx}
-              ref={(v) => {
-                binViewRefs.current[binIdx] = v;
-              }}
-              style={styles.bin}
-              onLayout={() => {
-                // Re-measure in surface-local coordinates every time layout changes.
-                remeasureBin(binIdx);
-              }}
-              accessible
-              accessibilityRole="none"
-              accessibilityLabel={t('shape-detective:sort.binLabel', {
-                name: label,
-                count: placed.length,
-              })}
-            >
-              <Text style={styles.binLabel}>{label}</Text>
-              <View style={styles.binContents}>
-                {placed.map((shape, i) => (
-                  <View key={i} style={styles.placedShape}>
-                    <ShapeView shape={shape} />
-                  </View>
-                ))}
-                {placed.length === 0 && (
-                  <Text style={styles.binPlaceholder}>{t('shape-detective:sort.dropHere')}</Text>
-                )}
+            return (
+              <View
+                key={binIdx}
+                ref={(v) => {
+                  binViewRefs.current[binIdx] = v;
+                }}
+                style={styles.bin}
+                onLayout={() => {
+                  // Re-measure in surface-local coordinates every time layout changes.
+                  remeasureBin(binIdx);
+                }}
+                accessible
+                accessibilityRole="none"
+                accessibilityLabel={t('shape-detective:sort.binLabel', {
+                  name: label,
+                  count: placed.length,
+                })}
+              >
+                <Text style={styles.binLabel}>{label}</Text>
+                <View style={styles.binContents}>
+                  {placed.map((shape, i) => (
+                    <View key={i} style={styles.placedShape}>
+                      <ShapeView shape={shape} />
+                    </View>
+                  ))}
+                  {placed.length === 0 && (
+                    <Text style={styles.binPlaceholder}>{t('shape-detective:sort.dropHere')}</Text>
+                  )}
+                </View>
               </View>
-            </View>
-          );
-        })}
+            );
+          })}
+        </View>
+
+        {/* Tray of draggable shapes */}
+        <View style={styles.tray}>
+          {puzzle.items.map((shape, idx) => {
+            const placed = placements[idx] !== null;
+            const flash = flashes[idx];
+
+            if (placed) {
+              // Empty slot — keeps tray layout stable
+              return <View key={idx} style={styles.traySlotEmpty} />;
+            }
+
+            const borderColor: string =
+              flash === 'correct'
+                ? ACCENTS.green.base
+                : flash === 'wrong'
+                ? ACCENTS.coral.base
+                : COLORS.line2;
+
+            const bgColor: string =
+              flash === 'correct'
+                ? ACCENTS.green.tint
+                : flash === 'wrong'
+                ? ACCENTS.coral.tint
+                : COLORS.surface;
+
+            const kindLabel = t(`shape-detective:shapes.kind.${shape.kind}`);
+            const sizeLabel = t(`shape-detective:shapes.size.${shape.size}`);
+
+            return (
+              <View
+                key={idx}
+                ref={(v) => {
+                  trayViewRefs.current[idx] = v;
+                }}
+                style={[styles.traySlot, { borderColor, backgroundColor: bgColor }]}
+                onLayout={() => {
+                  // Re-measure in surface-local coordinates every time layout changes.
+                  remeasureTray(idx);
+                }}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={t('shape-detective:sort.itemLabel', {
+                  index: idx + 1,
+                  kind: kindLabel,
+                  size: sizeLabel,
+                })}
+              >
+                <ShapeView shape={shape} />
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Floating drag ghost — positioned above everything in surface-local coords.
+            top:0 / start:0 anchor at the surface origin (which is direction:ltr so
+            start === physical-left regardless of locale). translateX/Y move it in
+            surface-local coords — the same space as event.nativeEvent.x/y. */}
+        {draggingShape !== null && (
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.ghost,
+              {
+                transform: [
+                  { translateX: ghostX },
+                  { translateY: ghostY },
+                  { scale: ghostScale },
+                ],
+                opacity: ghostOpacity,
+              },
+            ]}
+          >
+            <ShapeView shape={draggingShape} />
+          </Animated.View>
+        )}
       </View>
-
-      {/* Tray of draggable shapes */}
-      <View style={styles.tray}>
-        {puzzle.items.map((shape, idx) => {
-          const placed = placements[idx] !== null;
-          const flash = flashes[idx];
-
-          if (placed) {
-            // Empty slot — keeps tray layout stable
-            return <View key={idx} style={styles.traySlotEmpty} />;
-          }
-
-          const borderColor: string =
-            flash === 'correct'
-              ? ACCENTS.green.base
-              : flash === 'wrong'
-              ? ACCENTS.coral.base
-              : COLORS.line2;
-
-          const bgColor: string =
-            flash === 'correct'
-              ? ACCENTS.green.tint
-              : flash === 'wrong'
-              ? ACCENTS.coral.tint
-              : COLORS.surface;
-
-          const kindLabel = t(`shape-detective:shapes.kind.${shape.kind}`);
-          const sizeLabel = t(`shape-detective:shapes.size.${shape.size}`);
-
-          return (
-            <View
-              key={idx}
-              ref={(v) => {
-                trayViewRefs.current[idx] = v;
-              }}
-              style={[styles.traySlot, { borderColor, backgroundColor: bgColor }]}
-              onLayout={() => {
-                // Re-measure in surface-local coordinates every time layout changes.
-                remeasureTray(idx);
-              }}
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel={t('shape-detective:sort.itemLabel', {
-                index: idx + 1,
-                kind: kindLabel,
-                size: sizeLabel,
-              })}
-            >
-              <ShapeView shape={shape} />
-            </View>
-          );
-        })}
-      </View>
-
-      {/* Floating drag ghost — positioned above everything in surface-local coords.
-          top:0 / start:0 anchor at the surface origin (which is direction:ltr so
-          start === physical-left regardless of locale). translateX/Y move it. */}
-      {draggingShape !== null && (
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            styles.ghost,
-            {
-              transform: [{ translateX: ghostX }, { translateY: ghostY }],
-              opacity: ghostOpacity,
-            },
-          ]}
-        >
-          <ShapeView shape={draggingShape} />
-        </Animated.View>
-      )}
-    </View>
+    </GestureDetector>
   );
 }
 
@@ -534,8 +588,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
   },
   // Pins the drag surface to physical-left-origin in RTL locales.
-  // locationX from PanResponder and left/top from measureLayout are then
-  // both measured from the same physical corner — they share one space.
+  // event.nativeEvent.x from GestureDetector and left/top from measureLayout
+  // are then both measured from the same physical corner — they share one space.
   ltrSurface: {
     direction: 'ltr' as const,
   },

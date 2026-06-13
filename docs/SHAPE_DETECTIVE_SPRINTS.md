@@ -136,6 +136,18 @@ advance. (No crash; tidied for cleanliness.)
   `ltr` pin is unrelated (needed for touch hit-testing) and was left intact.
   Tests: 112 shape-detective + 270 i18n green.
 
+- **SortPuzzle drag-and-drop broken on device → rebuilt on gesture-handler.** The
+  original PanResponder version never dragged: (1) `App.tsx` was missing
+  `GestureHandlerRootView` (required wrapper — gestures silently no-op without it),
+  and (2) bin/tray rects were measured parent-relative while the drag used
+  root-relative `locationX/Y`, so hit-tests missed and stray touches false-hit
+  ("teleport"). **Fix:** added `GestureHandlerRootView` at the app root (outermost,
+  `flex:1`); rebuilt SortPuzzle with `GestureDetector` + `Gesture.Pan().runOnJS(true)`
+  (RN `Animated` ghost — reanimated is not installed). One shared surface coordinate
+  space via `measureLayout(surfaceRef)`. Confirmed working on device.
+  - Note: `color-mixer` nests its own (now-redundant) `GestureHandlerRootView` —
+    harmless under the app-level one; tidy later.
+
 ## Notes / decisions
 
 - **Language-light by design:** puzzles use shapes + numerals only; the only translated

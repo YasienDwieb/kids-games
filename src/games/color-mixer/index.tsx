@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   COLORS as TOKENS,
@@ -191,7 +190,7 @@ export default function ColorMixerGame() {
 
   if (mode === 'challenge' && showChallengePicker) {
     return (
-      <GestureHandlerRootView style={styles.root}>
+      <View style={styles.root}>
         <ChallengePicker
           challenges={challenge.challenges}
           completedChallenges={challenge.completedChallenges}
@@ -202,12 +201,12 @@ export default function ColorMixerGame() {
           }}
           onBack={() => handleSwitchMode('freeplay')}
         />
-      </GestureHandlerRootView>
+      </View>
     );
   }
 
   return (
-    <GestureHandlerRootView style={styles.root}>
+    <View style={styles.root}>
       <View style={styles.container}>
         {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + SPACING.xs }]}>
@@ -328,7 +327,7 @@ export default function ColorMixerGame() {
         onDeleteSaved={mixer.deleteSavedColor}
         onClose={() => setShowCollection(false)}
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
