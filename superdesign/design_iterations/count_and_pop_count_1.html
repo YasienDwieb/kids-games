@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Count &amp; Pop — Count this many</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --canvas: #FBF3E6;
+    --canvas2: #F6EAD7;
+    --surface: #FFFFFF;
+    --ink: #3B3026;
+    --ink-soft: #8C8073;
+    --line: rgba(59, 48, 38, 0.08);
+    --line2: rgba(59, 48, 38, 0.14);
+    --pink: #F58FB8;
+    --pink-deep: #E66FA0;
+    --pink-tint: #FCE5EF;
+    --gold: #F6C747;
+    --green: #6FC27B;
+    --green-deep: #54A862;
+    --coral: #F47C6E;
+    --shadow: rgba(74, 52, 28, 0.16);
+    --display: 'Fredoka', sans-serif;
+    --body: 'Nunito', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--body);
+    background: var(--canvas2);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    color: var(--ink);
+  }
+
+  /* ---- phone frame ---- */
+  .phone {
+    position: relative;
+    width: 390px;
+    min-height: 760px;
+    background: var(--canvas);
+    border-radius: 44px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(74, 52, 28, 0.28), 0 4px 0 #fff inset;
+    display: flex;
+    flex-direction: column;
+    /* warm dotted texture */
+    background-image: radial-gradient(circle at 1px 1px, rgba(59,48,38,0.04) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+
+  /* ---- HUD / top bar ---- */
+  .hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 20px 8px;
+  }
+  .hud-btn {
+    width: 46px; height: 46px;
+    border-radius: 16px;
+    background: var(--surface);
+    border: none;
+    display: grid; place-items: center;
+    font-size: 22px; color: var(--ink);
+    box-shadow: 0 3px 0 var(--line2), 0 6px 14px var(--shadow);
+    cursor: pointer;
+  }
+  .hud-title {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 19px;
+    letter-spacing: 0.2px;
+    color: var(--ink);
+  }
+  .score-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface);
+    padding: 9px 15px;
+    border-radius: 20px;
+    box-shadow: 0 3px 0 var(--line2), 0 6px 14px var(--shadow);
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .score-pill .star { color: var(--gold); font-size: 15px; }
+
+  /* ---- prompt card (target) ---- */
+  .prompt {
+    margin: 14px 20px 6px;
+    background: linear-gradient(160deg, #fff, var(--pink-tint));
+    border-radius: 28px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 6px 0 var(--pink-tint), 0 14px 26px rgba(230, 111, 160, 0.18);
+    border: 2px solid #fff;
+  }
+  .prompt-text {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 23px;
+    color: var(--ink);
+  }
+  .prompt-text small {
+    display: block;
+    font-family: var(--body);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+  }
+  /* the big target numeral chip */
+  .target {
+    width: 78px; height: 78px;
+    border-radius: 24px;
+    background: var(--pink);
+    color: #fff;
+    display: grid; place-items: center;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 44px;
+    box-shadow: 0 6px 0 var(--pink-deep), 0 12px 22px rgba(230, 111, 160, 0.4);
+    position: relative;
+    animation: targetBob 2.4s ease-in-out infinite;
+  }
+  @keyframes targetBob {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-5px) rotate(3deg); }
+  }
+
+  /* ---- progress ---- */
+  .progress {
+    margin: 12px 20px 4px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .pips { display: flex; gap: 8px; flex: 1; }
+  .pip {
+    flex: 1;
+    height: 14px;
+    border-radius: 8px;
+    background: var(--line2);
+  }
+  .pip.done { background: var(--green); box-shadow: 0 2px 0 var(--green-deep); }
+  .pip.now { background: var(--pink); box-shadow: 0 2px 0 var(--pink-deep); animation: pipPulse 1s ease-in-out infinite; }
+  @keyframes pipPulse { 0%,100%{ transform: scaleY(1);} 50%{ transform: scaleY(1.35);} }
+  .progress-count {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .progress-count b { color: var(--pink-deep); }
+
+  /* ---- object grid ---- */
+  .grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 18px 24px 30px;
+    align-content: center;
+  }
+  .obj {
+    aspect-ratio: 1;
+    border-radius: 26px;
+    background: var(--surface);
+    display: grid; place-items: center;
+    font-size: 46px;
+    border: 2px solid #fff;
+    box-shadow: 0 5px 0 var(--line2), 0 10px 18px var(--shadow);
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.12s ease;
+  }
+  .obj:active { transform: translateY(3px) scale(0.96); }
+
+  /* popped → dashed empty slot */
+  .obj.popped {
+    background: var(--canvas2);
+    border: 2px dashed var(--line2);
+    box-shadow: none;
+    font-size: 0;
+  }
+  .obj.popped::after {
+    content: '✓';
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--green);
+    opacity: 0.55;
+  }
+
+  /* the ONE object mid-pop — dramatic */
+  .obj.popping {
+    z-index: 5;
+    background: var(--pink-tint);
+    border-color: var(--pink);
+    animation: popHit 0.9s ease-out infinite;
+  }
+  @keyframes popHit {
+    0%   { transform: scale(1);   }
+    35%  { transform: scale(1.42) rotate(8deg); }
+    70%  { transform: scale(1.42) rotate(-6deg); opacity: 0.85; }
+    100% { transform: scale(1.42) rotate(8deg); }
+  }
+  /* sparkle burst ring around the popping object */
+  .obj.popping::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+    border-radius: 50%;
+    border: 5px solid var(--pink);
+    opacity: 0;
+    animation: ring 0.9s ease-out infinite;
+  }
+  @keyframes ring {
+    0%   { transform: scale(0.5); opacity: 0.9; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+  /* little sparkles */
+  .spark {
+    position: absolute;
+    font-size: 18px;
+    animation: sparkle 0.9s ease-out infinite;
+  }
+  .spark.s1 { top: -6px; left: 50%; }
+  .spark.s2 { top: 50%; right: -10px; animation-delay: 0.1s; }
+  .spark.s3 { bottom: -8px; left: 30%; animation-delay: 0.2s; }
+  @keyframes sparkle {
+    0% { transform: scale(0); opacity: 0; }
+    40% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.4) translateY(-12px); opacity: 0; }
+  }
+
+  /* caption under phone */
+  .caption {
+    position: absolute;
+    bottom: 16px; left: 0; right: 0;
+    text-align: center;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.4px;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <!-- HUD -->
+    <div class="hud">
+      <button class="hud-btn" aria-label="Back">‹</button>
+      <div class="hud-title">Count &amp; Pop</div>
+      <div class="score-pill"><span class="star">★</span> 40</div>
+    </div>
+
+    <!-- Prompt / target -->
+    <div class="prompt">
+      <div class="prompt-text">
+        <small>TAP THIS MANY</small>
+        Pop 5 apples!
+      </div>
+      <div class="target">5</div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress">
+      <div class="pips">
+        <div class="pip done"></div>
+        <div class="pip done"></div>
+        <div class="pip done"></div>
+        <div class="pip now"></div>
+        <div class="pip"></div>
+      </div>
+      <div class="progress-count"><b>3</b> / 5</div>
+    </div>
+
+    <!-- Object grid (8 tiles): 3 popped, 1 mid-pop, rest tappable -->
+    <div class="grid">
+      <div class="obj popped"></div>
+      <div class="obj">🍎</div>
+      <div class="obj popped"></div>
+
+      <div class="obj popping">🍎
+        <span class="spark s1">✨</span>
+        <span class="spark s2">⭐️</span>
+        <span class="spark s3">✨</span>
+      </div>
+      <div class="obj">🍎</div>
+      <div class="obj popped"></div>
+
+      <div class="obj">🍎</div>
+      <div class="obj">🍎</div>
+      <div class="obj">🍎</div>
+    </div>
+
+    <div class="caption">COUNT THIS MANY · one apple mid-pop</div>
+  </div>
+</body>
+</html>

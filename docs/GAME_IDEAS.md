@@ -62,7 +62,10 @@ longer sequences. Score = longest sequence reached.
 
 ---
 
-## 3. Count & Pop — Numbers & Math
+## 3. Count & Pop — Numbers & Math  🚧 IN PROGRESS
+
+> **Status:** in build — sprints in `docs/COUNT_AND_POP_SPRINTS.md`. Branch
+> `feature/add-count-and-pop`. UI design (frontend-design → superdesign) first.
 
 - **Learning area:** Counting, number recognition, early arithmetic
 - **Age band:** Preschool → Early (3–7)
@@ -107,5 +110,5 @@ RTL). Build once the level/progress and content patterns are proven by the other
 
 1. **Shape Detective** — language-light, exercises levels/progress, broadest age span.
 2. **Echo** — small, self-contained, showcases audio.
-3. **Count & Pop** — numbers, reuses pop mechanics.
+3. 🚧 **Count & Pop** — numbers, reuses pop mechanics. *(in build — `docs/COUNT_AND_POP_SPRINTS.md`)*
 4. **Letter Hunt** — most content/i18n work; do it last.

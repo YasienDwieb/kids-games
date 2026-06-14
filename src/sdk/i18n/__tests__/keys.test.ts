@@ -161,6 +161,10 @@ const KEYS: string[] = [
   'shape-detective:sort.dropHere',
   'shape-detective:sort.binLabel',
   'shape-detective:sort.itemLabel',
+  // count-and-pop
+  'count-and-pop:meta.name',
+  'count-and-pop:meta.description',
+  'count-and-pop:placeholder',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {
