@@ -161,6 +161,27 @@ const KEYS: string[] = [
   'shape-detective:sort.dropHere',
   'shape-detective:sort.binLabel',
   'shape-detective:sort.itemLabel',
+  // echo
+  'echo:meta.name',
+  'echo:meta.description',
+  'echo:hud.round',
+  'echo:hud.best',
+  'echo:hud.roundValue',
+  'echo:hud.bestValue',
+  'echo:start.title',
+  'echo:start.subtitle',
+  'echo:start.button',
+  'echo:start.buttonA11y',
+  'echo:playback.watch',
+  'echo:input.yourTurn',
+  'echo:gameover.title',
+  'echo:gameover.score',
+  'echo:gameover.newBest',
+  'echo:gameover.newBestA11y',
+  'echo:gameover.playAgain',
+  'echo:gameover.playAgainA11y',
+  'echo:pads.label',
+  'echo:pads.labelDisabled',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {

@@ -7,3 +7,4 @@ import './mouse-maze/config';
 import './balloon-archer/config';
 import './turbo-road/config';
 import './shape-detective/config';
+import './echo/config';

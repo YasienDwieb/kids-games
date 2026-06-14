@@ -44,7 +44,11 @@ highest reuse.
 
 ---
 
-## 2. Echo — Memory & Focus
+## 2. Echo — Memory & Focus  ✅ BUILT
+
+> **Status:** shipped. Sprints + post-launch redesign in `docs/ECHO_SPRINTS.md`.
+> English name **Echo**; Arabic name **تذكّر وكرّر** ("Remember & Repeat") — صدى was a
+> literal translation that meant nothing as a game to Arabic kids/parents.
 
 - **Learning area:** Sequence memory, focus, listening
 - **Age band:** Early → Kids (5–10)
@@ -105,7 +109,7 @@ RTL). Build once the level/progress and content patterns are proven by the other
 
 ## Recommended build order
 
-1. **Shape Detective** — language-light, exercises levels/progress, broadest age span.
-2. **Echo** — small, self-contained, showcases audio.
-3. **Count & Pop** — numbers, reuses pop mechanics.
+1. ✅ **Shape Detective** — language-light, exercises levels/progress, broadest age span. *(built — `docs/SHAPE_DETECTIVE_SPRINTS.md`)*
+2. ✅ **Echo** — small, self-contained, showcases audio. *(built — `docs/ECHO_SPRINTS.md`)*
+3. **Count & Pop** — numbers, reuses pop mechanics. *(next)*
 4. **Letter Hunt** — most content/i18n work; do it last.

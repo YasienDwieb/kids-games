@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Echo — Idle / Start</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF9F0; --cream-2:#FCEFD9; --ink:#3A2E2A; --ink-soft:#7A6B63;
+    --blue:#3FA7E0; --blue-deep:#1E7FBE; --blue-tint:#DCF0FB;
+    --orange:#F39A41; --orange-deep:#D97B1B; --orange-tint:#FCE9D2;
+    --gold:#F6C747; --gold-deep:#D9A218; --gold-tint:#FCF1CF;
+    --violet:#9B82E6; --violet-deep:#6F54C9; --violet-tint:#ECE6FB;
+    --shadow: 0 10px 0 rgba(58,46,42,.12), 0 18px 30px rgba(58,46,42,.16);
+    --shadow-lift: 0 16px 0 rgba(58,46,42,.14), 0 26px 44px rgba(58,46,42,.20);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Nunito',sans-serif; min-height:100vh; color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #FFFDF8 0%, var(--cream) 45%, var(--cream-2) 100%);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  /* phone frame */
+  .phone{
+    width:390px; height:818px; background:var(--cream); border-radius:46px;
+    box-shadow: var(--shadow); position:relative; overflow:hidden;
+    display:flex; flex-direction:column;
+    border:1px solid rgba(58,46,42,.06);
+  }
+  .phone::before{ /* faint grain/texture */
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image:radial-gradient(rgba(217,123,27,.06) 1px, transparent 1px);
+    background-size:18px 18px;
+  }
+  /* top bar */
+  .topbar{display:flex; align-items:center; justify-content:space-between; padding:18px 22px 6px;}
+  .back{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:22px;color:var(--ink);box-shadow:0 4px 0 rgba(58,46,42,.10),0 8px 16px rgba(58,46,42,.10);}
+  .title{font-family:'Fredoka';font-weight:700;font-size:26px;letter-spacing:.3px;}
+  .title .dot{color:var(--blue)} .title .dot2{color:var(--orange)} .title .dot3{color:var(--gold)} .title .dot4{color:var(--violet)}
+  .spacer{width:46px}
+
+  /* HUD */
+  .hud{display:flex;gap:12px;justify-content:center;padding:8px 22px 4px;}
+  .pill{display:flex;align-items:center;gap:8px;background:#fff;border-radius:22px;padding:9px 16px;
+    box-shadow:0 5px 0 rgba(58,46,42,.08),0 10px 18px rgba(58,46,42,.10);}
+  .pill .k{font-family:'Nunito';font-weight:700;color:var(--ink-soft);font-size:13px;text-transform:uppercase;letter-spacing:.6px}
+  .pill .v{font-family:'Fredoka';font-weight:700;color:var(--ink);font-size:20px}
+  .pill .v.gold{color:var(--gold-deep)}
+
+  /* phase banner */
+  .phase{margin:18px auto 6px;display:flex;align-items:center;gap:10px;background:var(--ink);
+    color:#fff;border-radius:26px;padding:12px 22px;font-family:'Fredoka';font-weight:600;font-size:19px;
+    box-shadow:0 8px 0 rgba(58,46,42,.18),0 14px 26px rgba(58,46,42,.22);}
+  .phase .emo{font-size:22px}
+
+  /* board */
+  .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:8px 26px 0;}
+  .board{position:relative;width:316px;height:316px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:18px;}
+  .pad{border-radius:34px;display:flex;align-items:center;justify-content:center;position:relative;
+    box-shadow:var(--shadow);transition:transform .12s,box-shadow .12s,filter .12s;}
+  .pad svg{width:64px;height:64px;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.18));}
+  .pad.blue{background:linear-gradient(160deg,var(--blue) 0%,var(--blue-deep) 100%);}
+  .pad.orange{background:linear-gradient(160deg,var(--orange) 0%,var(--orange-deep) 100%);}
+  .pad.gold{background:linear-gradient(160deg,var(--gold) 0%,var(--gold-deep) 100%);}
+  .pad.violet{background:linear-gradient(160deg,var(--violet) 0%,var(--violet-deep) 100%);}
+  .pad .glyph{color:#fff}
+
+  /* center hub badge */
+  .hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78px;height:78px;border-radius:50%;
+    background:var(--cream);box-shadow:0 6px 0 rgba(58,46,42,.12),0 12px 22px rgba(58,46,42,.16);
+    display:flex;align-items:center;justify-content:center;font-size:30px;border:3px solid #fff;}
+
+  /* start CTA */
+  .cta{margin-top:6px;background:linear-gradient(160deg,var(--blue) 0%,var(--blue-deep) 100%);color:#fff;
+    font-family:'Fredoka';font-weight:700;font-size:24px;border:none;border-radius:30px;padding:20px 60px;cursor:pointer;
+    box-shadow:0 10px 0 var(--blue-deep),0 18px 30px rgba(30,127,190,.4);}
+  .hint{font-family:'Nunito';font-weight:700;color:var(--ink-soft);font-size:16px;text-align:center;max-width:280px;line-height:1.4}
+  .label{position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:1px;
+    text-transform:uppercase;color:var(--ink-soft);font-weight:800}
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="topbar">
+      <div class="back">‹</div>
+      <div class="title">Echo<span class="dot">.</span></div>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="hud">
+      <div class="pill"><span class="k">Round</span><span class="v">—</span></div>
+      <div class="pill"><span class="k">Best</span><span class="v gold">7</span></div>
+    </div>
+
+    <div class="stage">
+      <div class="board">
+        <!-- blue / star -->
+        <div class="pad blue">
+          <span class="glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.9l-5.8 3.05 1.1-6.45-4.7-4.6 6.5-.95z"/></svg></span>
+        </div>
+        <!-- orange / heart -->
+        <div class="pad orange">
+          <span class="glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.3-4.6-9.7-9.2C.8 8.4 2.3 5 5.6 5c2 0 3.3 1.1 4.4 2.6C11.1 6.1 12.4 5 14.4 5c3.3 0 4.8 3.4 3.3 6.8C19.3 16.4 12 21 12 21z"/></svg></span>
+        </div>
+        <!-- gold / circle -->
+        <div class="pad gold">
+          <span class="glyph"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8.5"/></svg></span>
+        </div>
+        <!-- violet / square -->
+        <div class="pad violet">
+          <span class="glyph"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="4.5"/></svg></span>
+        </div>
+        <div class="hub">🔊</div>
+      </div>
+
+      <button class="cta">Start ▸</button>
+      <div class="hint">Watch the colors light up, then tap them back in the same order!</div>
+    </div>
+    <div class="label">Echo · Idle / Start</div>
+  </div>
+</body>
+</html>
