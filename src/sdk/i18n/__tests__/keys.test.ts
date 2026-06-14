@@ -165,6 +165,22 @@ const KEYS: string[] = [
   'count-and-pop:meta.name',
   'count-and-pop:meta.description',
   'count-and-pop:placeholder',
+  'count-and-pop:loading',
+  'count-and-pop:countThisMany.title',
+  'count-and-pop:countThisMany.instruction',
+  'count-and-pop:countThisMany.progress',
+  'count-and-pop:howMany.title',
+  'count-and-pop:howMany.instruction',
+  'count-and-pop:makeN.title',
+  'count-and-pop:makeN.instruction',
+  'count-and-pop:addition.title',
+  'count-and-pop:addition.instruction',
+  'count-and-pop:levelSolved.title',
+  'count-and-pop:levelSolved.next',
+  'count-and-pop:levelSolved.finish',
+  'count-and-pop:a11y.objectTile',
+  'count-and-pop:a11y.objectPopped',
+  'count-and-pop:a11y.choiceButton',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {

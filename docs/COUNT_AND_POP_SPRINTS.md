@@ -76,28 +76,45 @@ real `[MIN,MAX]_CHOICE_COUNT` bound; bumped in-file sweep 200→1000.
 
 ---
 
-## Sprint 2 — Core UI: objects, popping & both modes playable ⬜ TODO
+## Sprint 2 — Core UI: objects, popping & both modes playable ✅ DONE
 
 Goal: fully playable — both base modes work with the satisfying pop/burst feedback
 (reuse Balloon Archer's burst feel).
 
-- [ ] **2.1** `components/CountObject.tsx` — a tappable object emoji in an `EmojiFrame`-style
-      tinted tile; on tap → **pop burst** (scale-up + fade + small particle/sparkle ring,
-      RN Animated only) + `sfx.pop`. Coordinate-pinned, RTL-safe.
-- [ ] **2.2** `components/NumberChoice.tsx` — chunky tappable numeral button (Fredoka bold,
-      Western digits, `PressableButton`/surface styling), selected/correct/wrong states.
-- [ ] **2.3** `components/CountThisMany.tsx` — shows target numeral + a grid of objects;
-      kid pops objects until popped == target → solved (over-pop = gentle `wrong` + reset
-      that pop). Live "popped / target" indicator.
-- [ ] **2.4** `components/HowMany.tsx` — shows a group of objects + a row of `NumberChoice`;
-      tap the matching numeral.
-- [ ] **2.5** `index.tsx` — `useLevels` host wiring: render the round for the current
-      level's mode, score via `useGameShell`, success/wrong sounds, win overlay
-      (`EmojiFrame` + `Star`s + `PressableButton`), next/finish, `ResumePrompt`. Mirror
-      Shape Detective's `handleCorrect`/`handleNext` (advance-once, live `isLast`, timer
-      ref cleanup).
+- [x] **2.1** `components/CountObject.tsx` — tappable object tile; on tap → **pop burst**
+      (scale 1→1.42 + fade + expanding sparkle ring, RN Animated only) → becomes a dashed
+      "popped" slot with ✓. Pop sound via host callback. RTL-safe (flex wrap, no pin).
+- [x] **2.2** `components/NumberChoice.tsx` — chunky 3D numeral button (Fredoka bold, Western
+      digits, candy-button deep-shade edge), default/selected/correct(green)/wrong(coral) states.
+- [x] **2.3** `components/CountThisMany.tsx` — pink prompt card + bobbing target numeral chip +
+      object grid + live `{{popped}} / {{target}}` pips. Solve fires exactly at `popped === target`;
+      over-pop impossible (excess tiles disabled once done).
+- [x] **2.4** `components/HowMany.tsx` — prompt + object group in a surface card + `NumberChoice`
+      row from `round.choices`; tap the matching numeral; correct/wrong feedback.
+- [x] **2.5** `index.tsx` — `useLevels` host: renders by `round.mode` (countThisMany → CountThisMany;
+      howMany/makeN/addition → choice-row UI). Score via `useGameShell`, success/wrong/pop sounds,
+      `LevelSolvedOverlay` (EmojiFrame 🏆/⭐️ + 3 Stars + pink `PressableButton`), `ResumePrompt`.
+      Mirrors Shape Detective: advance-once in `handleNext`, live `isLast`, timer ref cleanup,
+      overlay hidden on level change.
 
-**Done when:** count + how-many rounds play end-to-end with pops, scoring, win overlay.
+**Done when:** count + how-many rounds play end-to-end with pops, scoring, win overlay. ✅
+**Verified:** tsc clean, 633 tests green (incl. keys.test). UI matches the approved pink mockups
+(pop burst, dashed popped slots, prompt card, N/M progress, green-correct choice, solved overlay).
+Host traps clean (no double-advance, live isLast, timers cleaned). 16 i18n keys added (EN + AR).
+
+**Post-build fixes (critic-found, fixed before commit):**
+- 🐛 **Blocker:** `play('sfx.pop')` was silent — `play()` takes an *intent* not an asset key →
+  changed to `play('pop')`. Every core-mode tile pop now plays sound.
+- `NumberChoice` correct-badge `right:-8` → `end:-8` so it mirrors correctly in RTL.
+
+**Carry-forward for Sprint 3:**
+- makeN currently shows only `have` objects; addition shows `a+b` as one flat grid → Sprint 3.1
+  should split into two visual groups (have + needed slots; `a` group `+` `b` group) for clarity.
+- a11y: add `accessibilityState` (disabled/selected) + role to the choice row (labels already present).
+- Device check: confirm the 3-column object grid fits small phones (SE) without overflow.
+- Dead `handlePick` early-return for `countThisMany` (never called) — harmless, can remove in 3.x.
+- HowMany reveals the correct answer immediately on a wrong tap — acceptable for an educational
+  game; note for future tuning.
 
 ---
 

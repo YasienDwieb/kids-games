@@ -8,4 +8,35 @@ export const ar: GameTranslations = {
     description: 'اعدد وفرقّع وتعلّم الأرقام!',
   },
   placeholder: 'اعدد وفرقّع قريبًا! 🔢',
+  loading: 'نجهّز لك الأرقام…',
+  // Prompt instructions per mode
+  countThisMany: {
+    title: 'اضغط هذا العدد',
+    instruction: 'فرقّع {{count}} {{emoji}}!',
+    progress: '{{popped}} / {{target}}',
+  },
+  howMany: {
+    title: 'كم عددها؟',
+    instruction: 'كم {{emoji}} هنا؟',
+  },
+  makeN: {
+    title: 'اجعلها',
+    instruction: 'أضف {{needed}} كي تصل إلى {{target}} {{emoji}}!',
+  },
+  addition: {
+    title: 'اجمعها',
+    instruction: '{{a}} + {{b}} = ؟',
+  },
+  // Level solved overlay
+  levelSolved: {
+    title: 'أحسنت!',
+    next: 'المستوى التالي',
+    finish: 'رائع، أنهيت اللعبة!',
+  },
+  // Accessibility labels
+  a11y: {
+    objectTile: '{{emoji}}، اضغط لتفرقّع',
+    objectPopped: '{{emoji}}، انفجر',
+    choiceButton: 'الرقم {{value}}',
+  },
 };
