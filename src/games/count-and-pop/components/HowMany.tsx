@@ -4,17 +4,28 @@
  * Layout:
  *   ┌──────────────────────────────┐
  *   │ Prompt card                  │  ← mode-specific title + instruction
- *   │ Object group card            │  ← emoji tiles (count/a+b objects, swimming anim)
+ *   │ Object display               │  ← mode-specific visual:
+ *   │   howMany → flat emoji grid (swimming anim)
+ *   │   makeN   → GroupCount: filled group + empty slots separated by "+"
+ *   │   addition→ GroupCount: two filled groups separated by "+"
  *   │ Choice row                   │  ← 3-4 NumberChoice buttons
  *   └──────────────────────────────┘
  *
  * Used by the host for howMany, makeN, and addition rounds.
  * The host owns sound + advance logic; this component only calls onPick(index).
  *
- * RTL: choice row uses standard flex row — no direction pin needed. Logical
- * indices are position-independent; correctIndex is never adjusted for visual
- * position. The object group grid mirrors naturally in RTL, which is correct
- * because a group of identical objects has no reading order.
+ * RTL:
+ *   - Choice row: standard flex row, no direction pin. Logical indices are
+ *     position-independent; correctIndex is never adjusted for visual position.
+ *   - Object grid (howMany): flexWrap row — mirrors naturally (identical objects,
+ *     no reading order). Safe to mirror.
+ *   - GroupCount (makeN/addition): flex row groups with no direction pin — mirrors
+ *     naturally; group contents are equal-weight emoji tiles, not ordered sequences.
+ *
+ * a11y:
+ *   - NumberChoice gets accessibilityState.disabled + accessibilityState.selected.
+ *   - accessibilityState.selected is true for the correct choice only (post-answer).
+ *   - disabled state reflects whether any interaction is possible.
  */
 
 import { useEffect, useRef } from 'react';
@@ -37,6 +48,7 @@ import {
   useTranslation,
 } from '@/sdk';
 import { NumberChoice } from './NumberChoice';
+import { GroupCount } from './GroupCount';
 import type { NumberChoiceState } from './NumberChoice';
 import type {
   HowManyRound,
@@ -61,7 +73,7 @@ type HowManyProps = {
 };
 
 // ---------------------------------------------------------------------------
-// Swim animation for object group
+// Swim animation for the flat howMany object group
 // ---------------------------------------------------------------------------
 
 function SwimmingEmoji({
@@ -122,20 +134,16 @@ export function HowMany({
   const { t } = useTranslation();
   const { mode, objectEmoji, choices, correctIndex } = round;
 
-  // Derive display count and prompt text based on mode
-  let displayCount: number;
+  // Derive prompt text based on mode
   let promptTitle: string;
   let promptInstruction: string;
 
   if (mode === 'howMany') {
-    displayCount = round.count;
     promptTitle = t('count-and-pop:howMany.title');
     promptInstruction = t('count-and-pop:howMany.instruction', {
       emoji: objectEmoji,
     });
   } else if (mode === 'makeN') {
-    // Show `have` objects; prompt asks how many more to reach target
-    displayCount = round.have;
     promptTitle = t('count-and-pop:makeN.title');
     promptInstruction = t('count-and-pop:makeN.instruction', {
       needed: round.target - round.have,
@@ -143,8 +151,7 @@ export function HowMany({
       emoji: objectEmoji,
     });
   } else {
-    // addition: show a + b as two groups (displayed inline)
-    displayCount = round.a + round.b;
+    // addition
     promptTitle = t('count-and-pop:addition.title');
     promptInstruction = t('count-and-pop:addition.instruction', {
       a: round.a,
@@ -160,8 +167,9 @@ export function HowMany({
     return 'default';
   };
 
-  // Stagger delay per object tile (swim animation offset)
-  const swimDelays = Array.from({ length: displayCount }, (_, i) => i * 300);
+  // For the flat howMany grid: stagger delay per tile
+  const howManyCount = mode === 'howMany' ? round.count : 0;
+  const swimDelays = Array.from({ length: howManyCount }, (_, i) => i * 300);
 
   return (
     <View style={styles.root}>
@@ -171,36 +179,51 @@ export function HowMany({
         <Text style={styles.promptInstruction}>{promptInstruction}</Text>
       </View>
 
-      {/* Object group card — scrollable for large counts */}
-      <ScrollView
-        scrollEnabled={displayCount > 9}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.groupCardContent}
-        style={styles.groupCard}
-      >
-        <View style={[styles.groupInner, SHADOWS.sm]}>
-          <View style={styles.emojiGrid}>
-            {swimDelays.map((delay, i) => (
-              <SwimmingEmoji key={i} emoji={objectEmoji} delayMs={delay} />
-            ))}
+      {/* Object display — mode-specific */}
+      {mode === 'howMany' ? (
+        /* Flat emoji grid for howMany — scrollable for large counts */
+        <ScrollView
+          scrollEnabled={howManyCount > 9}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.groupCardContent}
+          style={styles.groupCard}
+        >
+          <View style={[styles.groupInner, SHADOWS.sm]}>
+            <View style={styles.emojiGrid}>
+              {swimDelays.map((delay, i) => (
+                <SwimmingEmoji key={i} emoji={objectEmoji} delayMs={delay} />
+              ))}
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      ) : (
+        /* Two-group visual for makeN / addition */
+        <GroupCount round={round as MakeNRound | AdditionRound} />
 
-      {/* Choice row */}
+      )}
+
+      {/* Choice row — no direction pin: equal-option buttons, safe to mirror in RTL */}
       <View style={styles.choiceRow}>
-        {choices.map((value, idx) => (
-          <NumberChoice
-            key={idx}
-            value={value}
-            state={getChoiceState(idx)}
-            onPress={() => onPick(idx)}
-            disabled={disabled || selectedIndex !== null}
-            accessibilityLabel={t('count-and-pop:a11y.choiceButton', {
-              value,
-            })}
-          />
-        ))}
+        {choices.map((value, idx) => {
+          const state = getChoiceState(idx);
+          const isAnswered = selectedIndex !== null;
+          return (
+            <NumberChoice
+              key={idx}
+              value={value}
+              state={state}
+              onPress={() => onPick(idx)}
+              disabled={disabled || isAnswered}
+              accessibilityLabel={t('count-and-pop:a11y.choiceButton', {
+                value,
+              })}
+              accessibilityState={{
+                disabled: disabled || isAnswered,
+                selected: state === 'correct',
+              }}
+            />
+          );
+        })}
       </View>
     </View>
   );
@@ -245,7 +268,7 @@ const styles = StyleSheet.create({
     color: COLORS.ink,
     textAlign: 'center',
   },
-  // Object group card
+  // Object group card (howMany flat grid only)
   groupCard: {
     width: '100%',
     maxWidth: 420,

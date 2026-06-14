@@ -118,26 +118,46 @@ Host traps clean (no double-advance, live isLast, timers cleaned). 16 i18n keys 
 
 ---
 
-## Sprint 3 — Advanced modes, i18n, polish & verification ⬜ TODO
+## Sprint 3 — Advanced modes, i18n, polish & verification ✅ DONE (device run pending)
 
 Goal: production-ready — makeN + addition modes, localized, juicy, accessible, tested.
 
-- [ ] **3.1** `components/MakeN.tsx` + `components/Addition.tsx` (or fold into existing
-      mode components) — "how many more to make N?" and `a + b = ?` using `NumberChoice`.
-      Show the equation/visual groups clearly with object visuals.
-- [ ] **3.2** en/ar complete — instructions per mode, HUD, win/finish, resume; full parity,
-      keys in keys.test.ts, **Western digits** for all numbers in both langs.
-- [ ] **3.3** RTL pass — instructions/HUD mirror correctly; object grid + numeral choice row
-      coordinate-behavior verified (do NOT mirror an *ordered* number sequence — but a
-      choice row of equal options can mirror; pin only true spatial/drag surfaces). HUD
-      Western digits. See memory `rtl-sequence-pinning-trap`.
-- [ ] **3.4** Juice — pop burst on each object, success spring on solve, gentle shake on
-      wrong choice, spring trophy + 3 `Star`s on level/last-level solved. RN Animated only.
-- [ ] **3.5** Accessibility — every object + numeral choice + Start/Next has localized
-      `accessibilityLabel` + role + state. No enum leak.
-- [ ] **3.6** Verify — tsc clean, all engine + i18n tests green. Device run pending (human step).
+- [x] **3.1** `components/GroupCount.tsx` — two-group visuals. **makeN**: filled `have` tiles
+      (green tint) + dashed empty `needed` slots + `+` divider, so the kid sees the gap to fill.
+      **addition**: two distinct groups (blue group A + orange group B) + `+` divider. `HowMany`
+      dispatches to `GroupCount` for makeN/addition; flat grid stays for howMany. Reuses `NumberChoice`.
+- [x] **3.2** en/ar complete — all 18 keys, full parity (en `as const` + ar `: GameTranslations`),
+      meaningful kid-friendly Arabic, **Western digits**, all interpolation placeholders resolve.
+- [x] **3.3** RTL pass — no `left`/`right` (grep clean), badge `end:-8`, no `direction:ltr` pins on
+      equal-option rows. **Arabic addition `{{a}} + {{b}} = ؟` wrapped in a Unicode LTR isolate
+      (U+2066…U+2069)** so Bidi doesn't reorder it to `؟ = b + a`. See memory `rtl-bidi-isolate-math`.
+- [x] **3.4** Juice (RN Animated only) — pop burst per object, `solvePopAnim` spring on correct,
+      `triggerShake` on wrong, spring trophy + 3 `Star`s on solve.
+- [x] **3.5** Accessibility — `CountObject`/`NumberChoice` carry `accessibilityRole` +
+      localized `accessibilityLabel` + `accessibilityState` (`disabled`/`selected`). No enum leak.
+- [x] **3.6** Cleanup + verify — removed dead `handlePick` countThisMany branch; tsc clean,
+      633 tests green.
 
 **Done when:** game ships — all 4 modes, localized, polished, verified on device EN + AR.
+**Critic verdict:** `shipReady = true`, `gameComplete = true`, zero blockers. **Only the
+on-device EN+AR smoke test remains (human step).**
+
+**Post-build fixes (critic nits, fixed before commit):**
+- Arabic addition instruction wrapped in LTR isolate (Bidi reorder risk).
+- `COLORS.text.secondary` → `COLORS.inkSoft` (canonical token).
+
+**Device-test checklist (human):** run EN + AR (AR needs app reload after language switch).
+- **countThisMany** (L1,3,5,7): bobbing target chip; pop sound + burst per tap; pips fill;
+  `popped/target` Western digits; over-pop blocked; solved overlay.
+- **howMany** (L2,4,6,8): correct emoji count; 3–4 NumberChoice buttons fit small phones (SE);
+  green+badge+spring on correct, coral+shake on wrong; AR row mirrors but logical answer holds.
+- **makeN** (L9,10): `have` tiles + dashed `needed` slots + `+` divider, distinct from howMany.
+- **addition** (L11,12): blue group A + orange group B + `+` divider; **verify AR math reads
+  `a + b = ؟` (not reversed)**; correct = a+b highlights green.
+- **Sound:** pop on every tile; success/wrong; win on L12; rapid taps don't drop audio.
+- **Nav:** overlay advances; L12 loops to L1; back to home; ResumePrompt continue/start-over.
+- **Small-phone fit (SE 375pt):** choice row, object grid (up to 10), and GroupCount two-group
+  row all fit without overflow/clip.
 
 ---
 

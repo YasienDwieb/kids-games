@@ -1,11 +1,11 @@
 /**
- * Count & Pop — main game screen (Sprint 2).
+ * Count & Pop — main game screen (Sprint 3).
  *
  * Modes playable:
  *   countThisMany → CountThisMany (pop exactly N tiles)
  *   howMany       → HowMany (count shown objects, pick numeral)
- *   makeN         → HowMany (choice-row variant with makeN prompt)
- *   addition      → HowMany (choice-row variant with addition prompt)
+ *   makeN         → HowMany + GroupCount (two-group visual: have + empty slots)
+ *   addition      → HowMany + GroupCount (two-group visual: a + b)
  *
  * Flow:
  *   loading   → blank screen
@@ -15,6 +15,13 @@
  * Win/celebration:
  *   Last level → 'win' sound + LevelSolvedOverlay.
  *   Others     → 'success' sound + same overlay.
+ *
+ * Juice (Sprint 3.4 — RN Animated only, no Reanimated):
+ *   - Wrong answer: board shake (triggerShake) reused from Sprint 2.
+ *   - Correct answer (choice modes): solve-pop spring on the round view
+ *     (scale 1→1.04→1) before the overlay appears after 600ms.
+ *   - Correct answer (countThisMany): same solve-pop spring on onSolved.
+ *   - LevelSolvedOverlay: trophy + stars already present (Sprint 2).
  *
  * Traps avoided:
  *   - Stale-isLast: handleNext is a live closure reading isLast at call time.
@@ -152,8 +159,11 @@ export default function CountAndPopGame(): React.JSX.Element {
   // Prevents double-advance after the level is already won.
   const [solved, setSolved] = useState(false);
 
-  // Shake animation for wrong answers
+  // Shake animation for wrong answers (translateX on round view)
   const shakeAnim = useRef(new Animated.Value(0)).current;
+
+  // Solve-pop spring animation for correct answers (scale on round view)
+  const solvePopAnim = useRef(new Animated.Value(1)).current;
 
   // Pending setTimeout ids — cleared on unmount.
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -172,7 +182,10 @@ export default function CountAndPopGame(): React.JSX.Element {
     shell.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
-  }, [level, shell]);
+    // Reset juice anims for fresh level
+    shakeAnim.setValue(0);
+    solvePopAnim.setValue(1);
+  }, [level, shell, shakeAnim, solvePopAnim]);
 
   // Clear any pending timer when the component unmounts.
   useEffect(() => {
@@ -208,11 +221,30 @@ export default function CountAndPopGame(): React.JSX.Element {
     ]).start();
   }, [shakeAnim]);
 
+  // Solve-pop spring — gentle scale bounce on correct answer.
+  const triggerSolvePop = useCallback(() => {
+    solvePopAnim.setValue(1);
+    Animated.sequence([
+      Animated.timing(solvePopAnim, {
+        toValue: 1.04,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.spring(solvePopAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 18,
+        bounciness: 10,
+      }),
+    ]).start();
+  }, [solvePopAnim]);
+
   // Shared correct-answer handler — used by both mode types.
   const handleCorrect = useCallback(() => {
     void play(isLast ? 'win' : 'success');
     addScore(10);
     setSolved(true);
+    triggerSolvePop();
     if (timerRef.current !== null) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       shell.showOverlay(
@@ -220,7 +252,7 @@ export default function CountAndPopGame(): React.JSX.Element {
         <LevelSolvedOverlay isLast={isLast} onNext={handleNext} t={t} />,
       );
     }, 600);
-  }, [play, isLast, addScore, shell, handleNext, t]);
+  }, [play, isLast, addScore, shell, handleNext, t, triggerSolvePop]);
 
   // handlePick: used by HowMany (choice-row modes).
   // Guards on `selectedIndex !== null || solved` to prevent double-advance.
@@ -231,8 +263,8 @@ export default function CountAndPopGame(): React.JSX.Element {
       setSelectedIndex(idx);
 
       const { round } = data;
-      // countThisMany doesn't use this handler
-      if (round.mode === 'countThisMany') return;
+      // Only choice-row modes have correctIndex; countThisMany never calls handlePick.
+      if (!('correctIndex' in round)) return;
 
       if (idx === round.correctIndex) {
         handleCorrect();
@@ -291,7 +323,12 @@ export default function CountAndPopGame(): React.JSX.Element {
       <Animated.View
         style={[
           styles.root,
-          { transform: [{ translateX: shakeAnim }] },
+          {
+            transform: [
+              { translateX: shakeAnim },
+              { scale: solvePopAnim },
+            ],
+          },
         ]}
       >
         <CountThisMany
@@ -309,7 +346,12 @@ export default function CountAndPopGame(): React.JSX.Element {
     <Animated.View
       style={[
         styles.root,
-        { transform: [{ translateX: shakeAnim }] },
+        {
+          transform: [
+            { translateX: shakeAnim },
+            { scale: solvePopAnim },
+          ],
+        },
       ]}
     >
       <HowMany
@@ -342,7 +384,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontFamily: FONTS.display,
     fontSize: FONT_SIZES.md,
-    color: COLORS.text.secondary,
+    color: COLORS.inkSoft,
     textAlign: 'center',
   },
 });

@@ -25,7 +25,9 @@ export const ar: GameTranslations = {
   },
   addition: {
     title: 'اجمعها',
-    instruction: '{{a}} + {{b}} = ؟',
+    // LTR isolate (U+2066…U+2069) keeps the math expression left-to-right
+    // so Unicode Bidi doesn't reorder it to "؟ = b + a" inside the RTL paragraph.
+    instruction: '⁦{{a}} + {{b}} = ؟⁩',
   },
   // Level solved overlay
   levelSolved: {

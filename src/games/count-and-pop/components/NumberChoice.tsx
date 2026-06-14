@@ -42,6 +42,11 @@ type NumberChoiceProps = {
   onPress: () => void;
   disabled: boolean;
   accessibilityLabel: string;
+  /** Logical a11y state — disabled reflects interaction availability; selected marks the correct answer. */
+  accessibilityState?: {
+    disabled?: boolean;
+    selected?: boolean;
+  };
 };
 
 // ---------------------------------------------------------------------------
@@ -56,6 +61,7 @@ export function NumberChoice({
   onPress,
   disabled,
   accessibilityLabel,
+  accessibilityState,
 }: NumberChoiceProps): React.JSX.Element {
   const pressTranslate = useRef(new Animated.Value(0)).current;
   const popScale = useRef(new Animated.Value(1)).current;
@@ -157,6 +163,7 @@ export function NumberChoice({
         accessible
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
+        accessibilityState={accessibilityState}
         style={[
           styles.socket,
           SHADOWS.sm,

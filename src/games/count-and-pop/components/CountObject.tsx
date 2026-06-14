@@ -118,7 +118,12 @@ export function CountObject({
   // Popped state: show dashed slot with a check mark
   if (popped) {
     return (
-      <View style={styles.tileWrapper} accessible accessibilityLabel={accessibilityLabel}>
+      <View
+        style={styles.tileWrapper}
+        accessible
+        accessibilityLabel={accessibilityLabel}
+        accessibilityState={{ selected: true, disabled: true }}
+      >
         {/* Sparkle ring — expands + fades during the pop animation */}
         <Animated.View
           pointerEvents="none"
@@ -162,6 +167,7 @@ export function CountObject({
       accessible
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled, selected: false }}
       style={styles.tileWrapper}
     >
       <Animated.View
