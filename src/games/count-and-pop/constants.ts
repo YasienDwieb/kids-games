@@ -45,6 +45,8 @@ export const MAX_CHOICE_COUNT = 4;
 // ---------------------------------------------------------------------------
 // Mode rotation — 12 levels mapped to modes
 // Ramp: L1–4 easy counting, L5–8 mid counting, L9–10 makeN, L11–12 addition
+// (Still exported for backward-compat and existing tests; endless engine uses
+// MODE_ROTATION_ENDLESS below.)
 // ---------------------------------------------------------------------------
 
 export const MODE_ROTATION: ReadonlyArray<RoundMode> = [
@@ -60,6 +62,40 @@ export const MODE_ROTATION: ReadonlyArray<RoundMode> = [
   'makeN',         // 10
   'addition',      // 11
   'addition',      // 12
+] as const;
+
+/**
+ * Endless mode rotation — 16-entry cycle used by the infinite engine.
+ *
+ * Designed so a kid playing for hours sees all four modes roughly equally
+ * after the early "easy counting only" warm-up, while the per-level difficulty
+ * bands (maxCountFor / choiceCountFor) supply the progression.
+ *
+ * Cycle pattern:
+ *   Slots  1– 4  (easy band):   countThisMany × 2, howMany × 2
+ *   Slots  5– 8  (mid band):    countThisMany, howMany, makeN, howMany
+ *   Slots  9–12  (hard band):   countThisMany, makeN, howMany, addition
+ *   Slots 13–16  (expert band): makeN, addition, countThisMany, addition
+ *
+ * After level 16 the cycle repeats with the next difficulty band's counts.
+ */
+export const MODE_ROTATION_ENDLESS: ReadonlyArray<RoundMode> = [
+  'countThisMany', // 1
+  'howMany',       // 2
+  'countThisMany', // 3
+  'howMany',       // 4
+  'countThisMany', // 5
+  'howMany',       // 6
+  'makeN',         // 7
+  'howMany',       // 8
+  'countThisMany', // 9
+  'makeN',         // 10
+  'howMany',       // 11
+  'addition',      // 12
+  'makeN',         // 13
+  'addition',      // 14
+  'countThisMany', // 15
+  'addition',      // 16
 ] as const;
 
 // ---------------------------------------------------------------------------

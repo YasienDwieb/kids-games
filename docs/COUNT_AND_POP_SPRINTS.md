@@ -161,6 +161,42 @@ on-device EN+AR smoke test remains (human step).**
 
 ---
 
+## Post-launch — device feedback (endless redesign + polish)
+
+On-device feedback after the first build:
+1. choice-button row wasn't centered, 2. Arabic فرقّع was slangy, 3. the game was
+~2 min long with constant (memorizable) levels.
+
+**Fixes:**
+- **Centered choice row** — `choiceRow` gained `justifyContent:'center'` + `alignItems:'stretch'`.
+- **Arabic rename** — اعدد و**فرقّع** → **عُدّ والعب** ("Count & Play"); the slangy فرقّع verb
+  replaced with عُدّ/اضغط (count/tap) across instruction + a11y strings. (English **Count & Pop**
+  and registry `id: count-and-pop` unchanged — id is the stable key.)
+- **ENDLESS + per-session randomized engine** (the big one — play for hours):
+  - `makeCountAndPopLevels(sessionSeed)` → `levelsFromGenerator` with **no `count`** → infinite;
+    `isLast` permanently false (no "finish" screen).
+  - `buildLevel(level, sessionSeed)` is pure/deterministic-by-seed; level seed is
+    `level * 7919 XOR sessionSeed`. The host (`index.tsx`) creates the session seed via the
+    **only two `Math.random()` calls** in the game (mount + explicit "new game"); builders stay pure.
+    → every new game randomizes (kids can't memorize levels); tests pass a fixed seed.
+  - **Unbounded difficulty, bounded visuals:** 16-entry `MODE_ROTATION_ENDLESS` cycle (warm-up
+    bands intro count→howMany→makeN→addition, then all-mode rotation forever). Counts cap at
+    `MAX_OBJECTS=10`, sums at `MAX_SUM=12`, choices at 4 — numbers never grow off-screen;
+    variety comes from mode-mix + randomized values. Solvable + valid at any level (swept 1..300).
+  - `LevelSolvedOverlay` simplified (always ⭐️ + "Next"); dead `isLast`/finish branch removed
+    (the `levelSolved.finish` key kept in locales for a possible future finite mode).
+- **setState-in-render fix** (separate device bug): `CountThisMany` deferred its `onPop`/`onSolved`
+  side-effects out of the `setPoppedSet` updater into a post-commit effect.
+
+**Verified:** tsc clean; **613 tests** green (fixed-12-level tests replaced by an endless
+multi-seed sweep). Verify: 300 levels × 2 seeds all solvable/in-range/one-correct; two seeds
+diverge 92%; same seed byte-identical. Critic: `shipReady = true`, zero blockers.
+
+**Mechanic (updated):** all 4 modes (count / how-many / make-N / addition) rotate **endlessly**,
+randomized each new game. No fixed ladder.
+
+---
+
 ## Pre-build — UI design (frontend-design → superdesign) ⬜ IN PROGRESS
 
 Before Sprint 0 code: design the game UI as an HTML/CSS mockup via

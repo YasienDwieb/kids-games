@@ -12,9 +12,8 @@
  *   resumable → ResumePrompt (continue / start over)
  *   playing   → current round + score HUD via GameShell
  *
- * Win/celebration:
- *   Last level → 'win' sound + LevelSolvedOverlay.
- *   Others     → 'success' sound + same overlay.
+ * Win/celebration (endless — there is no last level):
+ *   Every solve → 'success' sound + LevelSolvedOverlay (⭐️ + "Next").
  *
  * Juice (Sprint 3.4 — RN Animated only, no Reanimated):
  *   - Wrong answer: board shake (triggerShake) reused from Sprint 2.
@@ -29,7 +28,7 @@
  *   - Timer leak: timerRef cleaned up in useEffect return.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import {
   ACCENTS,
@@ -50,32 +49,28 @@ import {
 } from '@/sdk';
 import { CountThisMany } from './components/CountThisMany';
 import { HowMany } from './components/HowMany';
-import { countAndPopLevels } from './utils/levels';
+import { makeCountAndPopLevels } from './utils/levels';
 
 // ---------------------------------------------------------------------------
 // Level-solved overlay — rendered via GameShell 'win' slot.
 // ---------------------------------------------------------------------------
 
 type LevelSolvedOverlayProps = {
-  isLast: boolean;
   onNext: () => void;
   t: ReturnType<typeof useTranslation>['t'];
 };
 
+// Endless game — there is no "last level", so the overlay is always the
+// celebratory "keep going" form (star + "Next"). The `levelSolved.finish`
+// string is retained in the locales for a possible future finite mode.
 function LevelSolvedOverlay({
-  isLast,
   onNext,
   t,
 }: LevelSolvedOverlayProps): React.JSX.Element {
   return (
     <View style={overlayStyles.root}>
       <View style={[overlayStyles.card, SHADOWS.lg]}>
-        {/* Trophy on last level, star otherwise */}
-        <EmojiFrame
-          emoji={isLast ? '🏆' : '⭐️'}
-          size={72}
-          tint={ACCENTS.pink.tint}
-        />
+        <EmojiFrame emoji="⭐️" size={72} tint={ACCENTS.pink.tint} />
         {/* 3-star reward row */}
         <View style={overlayStyles.starsRow}>
           <Star size={28} filled />
@@ -86,11 +81,7 @@ function LevelSolvedOverlay({
           {t('count-and-pop:levelSolved.title')}
         </Text>
         <PressableButton
-          label={
-            isLast
-              ? t('count-and-pop:levelSolved.finish')
-              : t('count-and-pop:levelSolved.next')
-          }
+          label={t('count-and-pop:levelSolved.next')}
           onPress={onNext}
           accent="pink"
         />
@@ -137,19 +128,38 @@ export default function CountAndPopGame(): React.JSX.Element {
   const shell = useGameShell();
   const { t } = useTranslation();
 
+  // -------------------------------------------------------------------------
+  // Per-session seed — the ONLY call to Math.random() in the entire game.
+  //
+  // Rules:
+  //   - Created ONCE at component mount via useMemo([]).
+  //   - Stored in a ref so startNewGame can replace it without a re-render cycle.
+  //   - Changing the seed recreates the LevelSource (new source identity → useLevels
+  //     re-derives data for level 1 with the new session's values).
+  //   - Tests never reach this code; they call buildLevel / makeCountAndPopLevels
+  //     with an explicit fixed seed for determinism.
+  // -------------------------------------------------------------------------
+  const initialSeed = useMemo(() => Math.floor(Math.random() * 0x7fffffff), []);
+  const sessionSeedRef = useRef(initialSeed);
+  const [sessionSeed, setSessionSeed] = useState(initialSeed);
+
+  // Recreate the LevelSource whenever the session seed changes (i.e. on new game).
+  // useMemo on [sessionSeed] keeps the source identity stable across re-renders
+  // within the same session, which is required for useLevels' data memo to work.
+  const source = useMemo(() => makeCountAndPopLevels(sessionSeed), [sessionSeed]);
+
   const {
     status,
     data,
     level,
     score,
-    isLast,
     start,
     startOver,
     advance,
     addScore,
   } = useLevels({
     gameId: 'count-and-pop',
-    source: countAndPopLevels,
+    source,
   });
 
   // Which choice index the player tapped (null = unanswered this round).
@@ -198,16 +208,26 @@ export default function CountAndPopGame(): React.JSX.Element {
   // Handlers
   // ---------------------------------------------------------------------------
 
-  // Live closure — reads isLast at call time, not at pick time.
-  // This prevents the stale-isLast trap when the overlay fires after a delay.
+  // Endless: always advance to the next level.
+  // isLast is permanently false (source.count is undefined), so the "finish"
+  // branch is dead — we keep it typed but never reached, which lets the
+  // LevelSolvedOverlay always show the "Next" label correctly.
   const handleNext = useCallback(() => {
     shell.hideOverlay('win');
-    if (isLast) {
-      startOver();
-    } else {
-      advance();
-    }
-  }, [advance, isLast, shell, startOver]);
+    advance();
+  }, [advance, shell]);
+
+  // startNewGame: re-roll the session seed then reset to level 1.
+  // Each call to startOver() reuses the SAME session seed (resume-friendly).
+  // Only this explicit new-game path generates a brand-new seed.
+  // NOTE: This is the second (and only other) place a random number is produced —
+  // it is still in the React host, never in the pure domain layer.
+  const startNewGame = useCallback(() => {
+    const newSeed = Math.floor(Math.random() * 0x7fffffff);
+    sessionSeedRef.current = newSeed;
+    setSessionSeed(newSeed);
+    startOver();
+  }, [startOver]);
 
   // Shake animation for wrong answer feedback.
   const triggerShake = useCallback(() => {
@@ -240,8 +260,9 @@ export default function CountAndPopGame(): React.JSX.Element {
   }, [solvePopAnim]);
 
   // Shared correct-answer handler — used by both mode types.
+  // In endless mode isLast is always false; always play 'success'.
   const handleCorrect = useCallback(() => {
-    void play(isLast ? 'win' : 'success');
+    void play('success');
     addScore(10);
     setSolved(true);
     triggerSolvePop();
@@ -249,10 +270,10 @@ export default function CountAndPopGame(): React.JSX.Element {
     timerRef.current = setTimeout(() => {
       shell.showOverlay(
         'win',
-        <LevelSolvedOverlay isLast={isLast} onNext={handleNext} t={t} />,
+        <LevelSolvedOverlay onNext={handleNext} t={t} />,
       );
     }, 600);
-  }, [play, isLast, addScore, shell, handleNext, t, triggerSolvePop]);
+  }, [play, addScore, shell, handleNext, t, triggerSolvePop]);
 
   // handlePick: used by HowMany (choice-row modes).
   // Guards on `selectedIndex !== null || solved` to prevent double-advance.
@@ -307,7 +328,8 @@ export default function CountAndPopGame(): React.JSX.Element {
   if (status === 'resumable') {
     return (
       <View style={styles.root}>
-        <ResumePrompt level={level} onContinue={start} onStartOver={startOver} />
+        {/* startNewGame re-seeds so a fresh game always feels different. */}
+        <ResumePrompt level={level} onContinue={start} onStartOver={startNewGame} />
       </View>
     );
   }
