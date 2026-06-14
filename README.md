@@ -4,7 +4,7 @@
 
 # Kids Games
 
-A multi-game Expo React Native app for young children (ages 2–10). Each game is a self-contained module that plugs into a shared **SDK** providing navigation, a kid-friendly design system, sound, storage, levels/progress, settings, and age bands.
+A multi-game Expo React Native app for young children (ages 2–12). Each game is a self-contained module that plugs into a shared **SDK** providing navigation, a kid-friendly design system, sound, storage, levels/progress, settings, and age bands.
 
 ## Screenshots
 
@@ -76,7 +76,9 @@ src/
 │   ├── simple-pairs/       # Memory matching card game
 │   ├── color-mixer/        # Color mixing & discovery game
 │   ├── mouse-maze/         # Swipe-to-solve maze with levels
-│   └── balloon-archer/     # Aim-and-pop balloon arcade game
+│   ├── balloon-archer/     # Aim-and-pop balloon arcade game
+│   ├── shape-detective/    # Shape pattern & logic puzzles
+│   └── turbo-road/         # Steer-and-dodge road-trip racing
 ├── types/                  # RootStackParamList, shared types
 ├── hooks/                  # Shared hooks
 └── utils/                  # Shared helpers
@@ -113,6 +115,8 @@ See `CLAUDE.md` (Design-system adherence) and the `kids-games-dev` skill for the
 | **Color Mixer** | 4–8 | Color theory | Blend RGB colors to discover famous colors, solve closeness challenges, and save your own |
 | **Mouse Maze** | 3–8 | Logic | Swipe to guide the mouse to the cheese, collecting stars; levels resume on return |
 | **Balloon Archer** | 5–8 | Aim & arcade | Aim your bow and pop the balloons across levels, with limited arrows |
+| **Shape Detective** | 3–10 | Patterns & logic | Spot the next shape, find the odd one out, and sort shapes into groups |
+| **Turbo Road** | 4–12 | Racing | Steer, dodge, and collect along sunny roads; win cups and unlock cars in the garage |
 
 ## Adding a New Game
 
