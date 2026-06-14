@@ -40,28 +40,39 @@ Critic: `readyForSprint1 = true`, no blockers.
 
 ---
 
-## Sprint 1 — Domain model & level generation (pure, tested) ⬜ TODO
+## Sprint 1 — Domain model & level generation (pure, tested) ✅ DONE
 
 Goal: pure, tested data layer — round generation + difficulty ramp. No UI, no timers,
 no `Math.random` (seeded PRNG only).
 
-- [ ] **1.1** `types.ts` — `RoundMode` (`'countThisMany' | 'howMany' | 'makeN' | 'addition'`),
-      `Round` discriminated union, `LevelData` (`{ level, mode, round }`). All readonly.
-      - `countThisMany`: `{ target: number, objectEmoji: string }`
-      - `howMany`: `{ count: number, objectEmoji: string, choices: number[], correctIndex }`
-      - `makeN`: `{ have: number, target: number, objectEmoji, choices, correctIndex }` (tap how many MORE)
-      - `addition`: `{ a: number, b: number, objectEmoji, choices, correctIndex }` (tap a+b)
-- [ ] **1.2** `constants.ts` — object emoji pool (🍎🐟⭐️🎈🐞… kid-friendly), `MAX_OBJECTS`,
-      choice-count ramp, mode-rotation table. Palette/tokens via `ACCENTS.pink`/`COLORS` only.
-- [ ] **1.3** `utils/generate.ts` — self-contained mulberry32 seeded PRNG + deterministic
-      builders per mode. Each `howMany/makeN/addition` round has **exactly one** correct
-      choice; distractors are plausible (±1, ±2, never negative, never out of range).
-- [ ] **1.4** `utils/levels.ts` — `buildLevel(level)` 12-level ramp (1–5 → 1–10 → makeN →
-      addition), seeded by `level * prime`. `countAndPopLevels` via `levelsFromGenerator`.
-- [ ] **1.5** `__tests__/generate.test.ts` + `levels.test.ts` — exactly-one-correct,
-      in-range counts, no-negative distractors, determinism, non-mutation across many seeds.
+- [x] **1.1** `types.ts` — `RoundMode`, `Round` discriminated union (on `mode`), `LevelData`
+      (`{ level, mode, round }`). All readonly. All 4 modes per spec.
+- [x] **1.2** `constants.ts` — `OBJECT_EMOJI` (8 kid-friendly), `MAX_OBJECTS=10`, `MAX_SUM=12`,
+      `MIN/MAX_CHOICE_COUNT` (3→4), `MODE_ROTATION` table, `CORRECT_COLOR`/`WRONG_COLOR` from `ACCENTS`.
+- [x] **1.3** `utils/generate.ts` — self-contained mulberry32 + `shuffled`/`pick` + 4 deterministic
+      builders. Each choice-round has **exactly one** correct choice; distractors plausible,
+      distinct, never negative, never out of range.
+- [x] **1.4** `utils/levels.ts` — `buildLevel(level)` 12-level ramp (1–5 → 1–10 → makeN →
+      addition), seeded `level * 7919`. `countAndPopLevels` via `levelsFromGenerator({count:12})`.
+- [x] **1.5** `__tests__/generate.test.ts` + `levels.test.ts` — **325 tests**: exactly-one-correct,
+      in-range, no-negative, distinct, determinism, non-mutation, 1000-seed cross-builder sweep,
+      mode-ramp match per level.
 
-**Done when:** tests pass; `buildLevel` produces valid solvable rounds 1..N.
+**Done when:** tests pass; `buildLevel` produces valid solvable rounds 1..N. ✅
+**Verified:** 325 tests green, tsc clean. Independent 2000-seed adversarial sweep (one-correct,
+no-negative, in-range, distinct, determinism) passed. No `Math.random`/`Date.now`/timers/React.
+Post-build fixes: replaced a tautological `toHaveLength(round.choices.length)` assertion with a
+real `[MIN,MAX]_CHOICE_COUNT` bound; bumped in-file sweep 200→1000.
+
+**Carry-forward for Sprint 2 (UI):**
+- `LevelData = { level, mode, round }`; switch on `round.mode` to render each mode.
+- `countThisMany` has **no** `choices` — UI renders a field of tappable objects and counts pops
+  internally; all other modes expose `choices` + `correctIndex`.
+- `makeN` distractor range is `[0, target]` → `0` is a valid distractor ("add 0"); handle gracefully.
+- `choiceCountFor` ramps 3→4 (3 for L1–6, 4 for L7–12) — `NumberChoice` row must fit both widths.
+- `CORRECT_COLOR = ACCENTS.green.base`, `WRONG_COLOR = ACCENTS.coral.base` exported for feedback.
+- Latent (non-blocking): `buildMakeN` doesn't hard-floor choice count at `MIN_CHOICE_COUNT`; the
+  ramp never feeds it `target ≤ 2`, so it's fine — but don't route a tiny-target makeN to it later.
 
 ---
 
