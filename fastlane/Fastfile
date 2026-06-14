@@ -1,0 +1,79 @@
+default_platform(:android)
+
+# fastlane supply uploads listing text, images AND changelogs inside one
+# per-version-code loop (supply/uploader.rb#perform_upload_meta). With no binary
+# upload it has no version code and dies with "Could not find release for version
+# code ''". So every listing lane must target an EXISTING release: a version_code
+# that lives on the given track. Use the `tracks` lane to look these up.
+def require_version_code(options)
+  vc = options[:version_code] || ENV["ANDROID_VERSION_CODE"]
+  if vc.to_s.empty?
+    UI.user_error!("version_code required — pass version_code:<code> track:<track> " \
+                   "(an existing release). Run `fastlane tracks` to list them.")
+  end
+  vc.to_i
+end
+
+def android_track(options)
+  options[:track] || ENV["ANDROID_TRACK"] || "production"
+end
+
+platform :android do
+  desc "List Play tracks and their releases (version codes) — read-only."
+  lane :tracks do
+    key = CredentialsManager::AppfileConfig.try_fetch_value(:json_key_file)
+    # fastlane chdir's into fastlane/ when running a lane, so the repo-root-relative
+    # key path needs re-resolving (basename works since cwd is fastlane/).
+    key = [key, File.basename(key.to_s), File.join("..", key.to_s)].find { |p| p && File.exist?(p) } || key
+    pkg = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
+    require_relative "play_api"
+    PlayApi.new(key, pkg).each_track do |track, releases|
+      rels = releases.map { |r| "[#{r[:status]}] vc=#{r[:version_codes].join(',')} name=#{r[:name].inspect}" }
+      UI.message("track=#{track.inspect}: #{rels.empty? ? '(no releases)' : rels.join(' | ')}")
+    end
+  end
+
+  desc "Validate listing text + images + changelogs against the Play API (no changes)."
+  desc "Requires version_code: of an existing release on track: (default production)."
+  lane :validate do |options|
+    upload_to_play_store(
+      validate_only: true,
+      track: android_track(options),
+      version_code: require_version_code(options),
+      skip_upload_apk: true,
+      skip_upload_aab: true
+    )
+  end
+
+  desc "Upload listing text + images for an existing release (no binary, no changelogs)."
+  desc "Requires version_code: of an existing release on track: (default production)."
+  lane :metadata do |options|
+    upload_to_play_store(
+      track: android_track(options),
+      version_code: require_version_code(options),
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_changelogs: true
+    )
+  end
+
+  desc "Push only release notes for an existing release."
+  desc "Requires version_code: of an existing release on track: (default production)."
+  lane :changelog do |options|
+    upload_to_play_store(
+      track: android_track(options),
+      version_code: require_version_code(options),
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: false
+    )
+  end
+
+  desc "Pull current listing from Play Console into fastlane/metadata."
+  lane :pull do
+    download_from_play_store
+  end
+end

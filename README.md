@@ -26,6 +26,13 @@ Android device, and install it (you may need to allow "install from unknown sour
 
 > This is a pre-store build for early experimentation — a Play Store listing will follow.
 
+## Store listing (Google Play)
+
+The Google Play store listing — title, descriptions, release notes, and graphics
+(English + Arabic) — is managed as code with [`fastlane supply`](https://docs.fastlane.tools/actions/supply/)
+under [`fastlane/`](fastlane/). See **[docs/PLAY_STORE.md](docs/PLAY_STORE.md)** for the
+layout, character limits, and the `tracks` / `validate` / `metadata` / `changelog` / `pull` lanes.
+
 ## Getting Started
 
 ```bash
