@@ -174,25 +174,36 @@ export function CountThisMany({
     solvedRef.current = false;
   }, [round]);
 
-  const handlePop = useCallback(
-    (index: number) => {
-      if (solvedRef.current) return;
+  // Side-effects (onPop/onSolved) are deferred to an effect so they never run
+  // inside the setPoppedSet updater (which executes during render — calling a
+  // parent setState there throws "Cannot update a component while rendering a
+  // different component"). The effect fires after commit, when it's safe.
+  const pendingPopRef = useRef<number | null>(null);
 
-      setPoppedSet((prev) => {
-        if (prev.has(index)) return prev;
-        const next = new Set(prev);
-        next.add(index);
-        const newCount = next.size;
-        onPop(newCount);
-        if (newCount >= target && !solvedRef.current) {
-          solvedRef.current = true;
-          onSolved();
-        }
-        return next;
-      });
-    },
-    [target, onPop, onSolved],
-  );
+  const handlePop = useCallback((index: number) => {
+    if (solvedRef.current) return;
+
+    setPoppedSet((prev) => {
+      if (prev.has(index)) return prev;
+      const next = new Set(prev);
+      next.add(index);
+      pendingPopRef.current = next.size; // signal: a pop landed this commit
+      return next;
+    });
+  }, []);
+
+  // After the popped set commits, notify the host (pop sound + solve check).
+  useEffect(() => {
+    const newCount = pendingPopRef.current;
+    if (newCount === null) return;
+    pendingPopRef.current = null;
+
+    onPop(newCount);
+    if (newCount >= target && !solvedRef.current) {
+      solvedRef.current = true;
+      onSolved();
+    }
+  }, [poppedSet, target, onPop, onSolved]);
 
   const poppedCount = poppedSet.size;
   const allDone = poppedCount >= target;
