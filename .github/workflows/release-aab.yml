@@ -1,0 +1,92 @@
+name: Release — build AAB & submit to Play
+
+# Builds a production AAB on EAS, submits it to the Play "internal" track as a
+# draft, then pushes the en/ar store listing + release notes via Fastlane supply.
+#
+# Division of labour:
+#   • EAS    — builds the AAB and owns versionCode (remote autoIncrement).
+#   • Play   — receives the binary via `eas submit` (internal track, draft).
+#   • supply — attaches listing text/images/changelogs to that release.
+#
+# This workflow does NOT bump semver or push tags — the APK release workflow
+# remains the version authority. versionCode (the only value Play requires to be
+# unique) is auto-incremented remotely by EAS.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-aab
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build AAB & submit to Play (internal · draft)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 20.1.0 # must satisfy eas.json cli.version (>= 20.1.0)
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # EAS resolves config plugins locally, so node_modules must be present.
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install fastlane
+        run: gem install fastlane --no-document
+
+      - name: Write Play service-account key
+        env:
+          PLAY_KEY: ${{ secrets.PLAY_STORE_KEY_JSON }}
+        run: |
+          set -euo pipefail
+          test -n "$PLAY_KEY" || { echo "::error::PLAY_STORE_KEY_JSON secret is empty"; exit 1; }
+          printf '%s' "$PLAY_KEY" > fastlane/play-store-key.json
+
+      - name: Build AAB (EAS, production profile)
+        run: |
+          set -euo pipefail
+          eas build --platform android --profile production \
+            --non-interactive --wait --json > build.json
+          obj='(if type=="array" then .[0] else . end)'
+          BUILD_ID=$(jq -r "${obj}.id" build.json)
+          VERSION_CODE=$(jq -r "${obj}.appBuildVersion" build.json)
+          [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] || { echo "::error::no build id"; exit 1; }
+          [ -n "$VERSION_CODE" ] && [ "$VERSION_CODE" != "null" ] || { echo "::error::no versionCode"; exit 1; }
+          echo "BUILD_ID=$BUILD_ID"       >> "$GITHUB_ENV"
+          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
+          echo "Built $BUILD_ID — versionCode $VERSION_CODE"
+
+      - name: Submit AAB to Play (internal · draft)
+        run: |
+          set -euo pipefail
+          eas submit --platform android --profile production \
+            --id "$BUILD_ID" --non-interactive
+
+      # Listing text/images/changelogs attach to the release `eas submit` just
+      # created on the internal track. SUPPLY_JSON_KEY (absolute) overrides the
+      # Appfile path so it resolves regardless of fastlane's working dir.
+      - name: Push store listing (en/ar)
+        env:
+          SUPPLY_JSON_KEY: ${{ github.workspace }}/fastlane/play-store-key.json
+        run: fastlane metadata version_code:"$VERSION_CODE" track:internal
+
+      - name: Push release notes (en/ar)
+        env:
+          SUPPLY_JSON_KEY: ${{ github.workspace }}/fastlane/play-store-key.json
+        run: fastlane changelog version_code:"$VERSION_CODE" track:internal
