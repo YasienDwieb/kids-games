@@ -43,3 +43,10 @@ yarn-error.*
 docs/superpowers
 # Claude Code transient runtime artifacts
 .claude/scheduled_tasks.lock
+
+# fastlane
+fastlane/play-store-key.json
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
