@@ -14,7 +14,7 @@ export const ar: GameTranslations = {
     bestValue: 'أفضل نتيجة {{number}}',
   },
   start: {
-    title: 'صدى',
+    title: 'تذكّر وكرّر',
     subtitle: 'شاهد الأضواء ثم اضغط عليها بالترتيب!',
     button: 'ابدأ',
     buttonA11y: 'ابدأ اللعبة',
