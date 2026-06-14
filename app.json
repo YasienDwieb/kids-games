@@ -23,7 +23,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "dev.waybeyond.kidszone"
+      "package": "dev.waybeyond.kidszone",
+      "blockedPermissions": ["android.permission.ACTIVITY_RECOGNITION"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
