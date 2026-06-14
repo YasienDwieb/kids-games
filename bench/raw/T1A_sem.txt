@@ -1,0 +1,8 @@
+entities: src/sdk/config/registry.ts
+
+  variable registry (L4:4)
+  function registerGame (L6:13)
+  function getGame (L15:17)
+  function getAllGames (L19:21)
+  function getGamesForAge (L23:27)
+  function _resetRegistry (L30:32)

@@ -1,0 +1,42 @@
+context for function bandsForGame (budget: 800, used: 419)
+
+  target:
+    function bandsForGame (src/sdk/age/bands.ts, ~27 tokens)
+      function bandsForGame(config: GameConfig): string[] {
+  direct dependencies:
+    function overlaps (src/sdk/age/bands.ts, ~33 tokens)
+      function overlaps(a: { min: number; max: number }, b: { min: number; max: number }): boolean {
+    type GameConfig (src/sdk/config/types.ts, ~70 tokens)
+      type GameConfig = {
+  direct dependents:
+    function ageBandIdForGame (src/screens/HomeScreen.tsx, ~20 tokens)
+      function ageBandIdForGame(game: GameConfig): string | undefined {
+    test_suite age bands (src/sdk/age/__tests__/bands.test.ts, ~117 tokens)
+      describe('age bands', () => {
+    test derives overlapping bands from a game ageRange (inclusive overlap) (src/sdk/age/__tests__/bands.test.ts, ~23 tokens)
+      it('derives overlapping bands from a game ageRange (inclusive overlap)', () => {
+    test honors an explicit bands override (src/sdk/age/__tests__/bands.test.ts, ~20 tokens)
+      it('honors an explicit bands override', () => {
+    function gamesForBand (src/sdk/age/bands.ts, ~28 tokens)
+      function gamesForBand(bandId: string): GameConfig[] {
+    export bandsForGame (src/sdk/index.ts, ~10 tokens)
+      export { AGE_BANDS, bandsForGame, gamesForBand } from './age/bands';
+    export AGE_BANDS (src/sdk/index.ts, ~10 tokens)
+      export { AGE_BANDS, bandsForGame, gamesForBand } from './age/bands';
+    export gamesForBand (src/sdk/index.ts, ~10 tokens)
+      export { AGE_BANDS, bandsForGame, gamesForBand } from './age/bands';
+  transitive dependents:
+    function HomeScreen (src/screens/HomeScreen.tsx, ~7 tokens)
+      function HomeScreen({ navigation }: Props) {
+    test gamesForBand returns games overlapping that band (src/sdk/age/__tests__/bands.test.ts, ~11 tokens)
+      it('gamesForBand returns games overlapping that band', () => {
+    test returns empty for an unknown band id (src/sdk/age/__tests__/bands.test.ts, ~13 tokens)
+      it('returns empty for an unknown band id', () => {
+    export HomeScreen (src/screens/index.ts, ~7 tokens)
+      export { HomeScreen } from './HomeScreen';
+    function RootNavigator (src/app/navigation/RootNavigator.tsx, ~3 tokens)
+      function RootNavigator() {
+    export RootNavigator (src/app/navigation/index.ts, ~7 tokens)
+      export { RootNavigator } from './RootNavigator';
+    function App (App.tsx, ~3 tokens)
+      function App() {

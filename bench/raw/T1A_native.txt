@@ -1,0 +1,6 @@
+4:const registry: GameRegistry = {};
+6:export function registerGame(config: GameConfig): GameRegistry {
+15:export function getGame(id: string): GameConfig | undefined {
+19:export function getAllGames(): GameConfig[] {
+23:export function getGamesForAge(age: number): GameConfig[] {
+30:export function _resetRegistry(): void {
