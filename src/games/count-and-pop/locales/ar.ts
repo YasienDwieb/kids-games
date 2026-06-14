@@ -4,15 +4,15 @@ import type { GameTranslations } from './en';
 // Western digits for numbers; emoji left as-is.
 export const ar: GameTranslations = {
   meta: {
-    name: 'اعدد وفرقّع',
-    description: 'اعدد وفرقّع وتعلّم الأرقام!',
+    name: 'عُدّ والعب',
+    description: 'عُدّ والعب وتعلّم الأرقام!',
   },
-  placeholder: 'اعدد وفرقّع قريبًا! 🔢',
+  placeholder: 'عُدّ والعب قريبًا! 🔢',
   loading: 'نجهّز لك الأرقام…',
   // Prompt instructions per mode
   countThisMany: {
     title: 'اضغط هذا العدد',
-    instruction: 'فرقّع {{count}} {{emoji}}!',
+    instruction: 'اضغط {{count}} {{emoji}}!',
     progress: '{{popped}} / {{target}}',
   },
   howMany: {
@@ -37,8 +37,8 @@ export const ar: GameTranslations = {
   },
   // Accessibility labels
   a11y: {
-    objectTile: '{{emoji}}، اضغط لتفرقّع',
-    objectPopped: '{{emoji}}، انفجر',
+    objectTile: '{{emoji}}، اضغط لتعدّه',
+    objectPopped: '{{emoji}}، تم عدّه',
     choiceButton: 'الرقم {{value}}',
   },
 };

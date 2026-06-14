@@ -289,9 +289,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: SPACING.sm,
   },
-  // Choice row
+  // Choice row — centered, equal-width buttons
   choiceRow: {
     flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'stretch',
     gap: SPACING.sm,
     width: '100%',
     maxWidth: 420,
