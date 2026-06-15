@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Echo — Your Turn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FFF9F0; --cream-2:#FCEFD9; --ink:#3A2E2A; --ink-soft:#7A6B63;
+    --blue:#3FA7E0; --blue-deep:#1E7FBE;
+    --orange:#F39A41; --orange-deep:#D97B1B;
+    --gold:#F6C747; --gold-deep:#D9A218;
+    --violet:#9B82E6; --violet-deep:#6F54C9;
+    --green:#5BBF73;
+    --shadow: 0 10px 0 rgba(58,46,42,.12), 0 18px 30px rgba(58,46,42,.16);
+    --shadow-lift: 0 14px 0 rgba(58,46,42,.16), 0 26px 44px rgba(58,46,42,.22);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Nunito',sans-serif;min-height:100vh;color:var(--ink);
+    background:radial-gradient(1200px 600px at 50% -10%,#FFFDF8 0%,var(--cream) 45%,var(--cream-2) 100%);
+    display:flex;align-items:center;justify-content:center;padding:24px;}
+  .phone{width:390px;height:818px;background:var(--cream);border-radius:46px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(58,46,42,.06);}
+  .phone::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background-image:radial-gradient(rgba(217,123,27,.06) 1px,transparent 1px);background-size:18px 18px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 6px;position:relative;z-index:2;}
+  .back{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--ink);box-shadow:0 4px 0 rgba(58,46,42,.10),0 8px 16px rgba(58,46,42,.10);}
+  .title{font-family:'Fredoka';font-weight:700;font-size:26px}.title .dot{color:var(--orange)}
+  .spacer{width:46px}
+  .hud{display:flex;gap:12px;justify-content:center;padding:8px 22px 4px;position:relative;z-index:2;}
+  .pill{display:flex;align-items:center;gap:8px;background:#fff;border-radius:22px;padding:9px 16px;box-shadow:0 5px 0 rgba(58,46,42,.08),0 10px 18px rgba(58,46,42,.10);}
+  .pill .k{font-weight:700;color:var(--ink-soft);font-size:13px;text-transform:uppercase;letter-spacing:.6px}
+  .pill .v{font-family:'Fredoka';font-weight:700;color:var(--ink);font-size:20px}
+  .pill .v.gold{color:var(--gold-deep)}
+  /* YOUR-TURN banner: bright, encouraging, green accent */
+  .phase{margin:18px auto 6px;display:flex;align-items:center;gap:10px;
+    background:linear-gradient(160deg,var(--green),#3F9E58);color:#fff;border-radius:26px;padding:12px 24px;
+    font-family:'Fredoka';font-weight:600;font-size:19px;box-shadow:0 8px 0 #357f48,0 14px 26px rgba(63,158,88,.4);position:relative;z-index:2;}
+  .phase .emo{font-size:22px}
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:8px 26px 56px;position:relative;z-index:2;}
+  .board{position:relative;width:316px;height:316px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:18px;}
+  /* all pads LIFTED & tappable: full color, chunky shadow */
+  .pad{border-radius:34px;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:var(--shadow-lift);}
+  .pad svg{width:64px;height:64px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.18));}
+  .pad .glyph{color:#fff}
+  .pad.blue{background:linear-gradient(160deg,var(--blue),var(--blue-deep));}
+  .pad.orange{background:linear-gradient(160deg,var(--orange),var(--orange-deep));}
+  .pad.gold{background:linear-gradient(160deg,var(--gold),var(--gold-deep));}
+  .pad.violet{background:linear-gradient(160deg,var(--violet),var(--violet-deep));}
+  /* a thin top highlight makes them read as physical / pressable */
+  .pad::before{content:"";position:absolute;inset:6px 6px auto 6px;height:26%;border-radius:26px 26px 40px 40px;
+    background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0));}
+  .hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78px;height:78px;border-radius:50%;background:var(--cream);box-shadow:0 6px 0 rgba(58,46,42,.12),0 12px 22px rgba(58,46,42,.16);display:flex;align-items:center;justify-content:center;font-size:26px;border:3px solid #fff;font-family:'Fredoka';font-weight:700;color:var(--ink);}
+  .seq{position:absolute;bottom:-42px;left:50%;transform:translateX(-50%);display:flex;gap:8px;}
+  .seq i{width:11px;height:11px;border-radius:50%;background:rgba(58,46,42,.18);}
+  .seq i.done{background:var(--green);}
+  .seq i.next{background:#fff;box-shadow:0 0 0 3px var(--green);}
+  .label{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-soft);font-weight:800;z-index:3}
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="topbar"><div class="back">‹</div><div class="title">Echo<span class="dot">.</span></div><div class="spacer"></div></div>
+    <div class="hud">
+      <div class="pill"><span class="k">Round</span><span class="v">4</span></div>
+      <div class="pill"><span class="k">Best</span><span class="v gold">7</span></div>
+    </div>
+    <div class="phase"><span class="emo">👆</span> Your turn!</div>
+    <div class="stage">
+      <div class="board">
+        <div class="pad blue"><span class="glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.6 1.1 6.45L12 17.9l-5.8 3.05 1.1-6.45-4.7-4.6 6.5-.95z"/></svg></span></div>
+        <div class="pad orange"><span class="glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.3-4.6-9.7-9.2C.8 8.4 2.3 5 5.6 5c2 0 3.3 1.1 4.4 2.6C11.1 6.1 12.4 5 14.4 5c3.3 0 4.8 3.4 3.3 6.8C19.3 16.4 12 21 12 21z"/></svg></span></div>
+        <div class="pad gold"><span class="glyph"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8.5"/></svg></span></div>
+        <div class="pad violet"><span class="glyph"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="4.5"/></svg></span></div>
+        <div class="hub">2/4</div>
+        <div class="seq"><i class="done"></i><i class="done"></i><i class="next"></i><i></i></div>
+      </div>
+    </div>
+    <div class="label">Echo · Your Turn (pads lifted, 2 of 4 tapped)</div>
+  </div>
+</body>
+</html>

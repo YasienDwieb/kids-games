@@ -36,6 +36,8 @@ type PressableButtonProps = {
   style?: ViewStyle;
   textStyle?: TextStyle;
   align?: 'center' | 'flex-start';
+  /** Localized accessibility label. Falls back to `label` when omitted. */
+  accessibilityLabel?: string;
 };
 
 // Chunky, kid-friendly button with a solid bottom edge that compresses on
@@ -53,6 +55,7 @@ export function PressableButton({
   style,
   textStyle,
   align = 'center',
+  accessibilityLabel,
 }: PressableButtonProps) {
   const translate = useRef(new Animated.Value(0)).current;
 
@@ -78,6 +81,9 @@ export function PressableButton({
       onPressIn={() => !disabled && press(EDGE)}
       onPressOut={() => press(0)}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled }}
       style={[
         styles.socket,
         SHADOWS.sm,
