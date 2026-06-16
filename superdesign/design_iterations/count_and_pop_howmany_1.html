@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Count &amp; Pop — How many?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --canvas: #FBF3E6; --canvas2: #F6EAD7; --surface: #FFFFFF;
+    --ink: #3B3026; --ink-soft: #8C8073;
+    --line: rgba(59,48,38,0.08); --line2: rgba(59,48,38,0.14);
+    --pink: #F58FB8; --pink-deep: #E66FA0; --pink-tint: #FCE5EF;
+    --gold: #F6C747; --green: #6FC27B; --green-deep: #54A862;
+    --green-tint: #E4F4E6; --coral: #F47C6E;
+    --shadow: rgba(74,52,28,0.16);
+    --display: 'Fredoka', sans-serif; --body: 'Nunito', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: var(--body); background: var(--canvas2);
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 40px 16px; color: var(--ink);
+  }
+  .phone {
+    position: relative; width: 390px; min-height: 760px;
+    background: var(--canvas); border-radius: 44px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(74,52,28,0.28), 0 4px 0 #fff inset;
+    display: flex; flex-direction: column;
+    background-image: radial-gradient(circle at 1px 1px, rgba(59,48,38,0.04) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  .hud { display: flex; align-items: center; justify-content: space-between; padding: 22px 20px 8px; }
+  .hud-btn {
+    width: 46px; height: 46px; border-radius: 16px; background: var(--surface);
+    border: none; display: grid; place-items: center; font-size: 22px; color: var(--ink);
+    box-shadow: 0 3px 0 var(--line2), 0 6px 14px var(--shadow); cursor: pointer;
+  }
+  .hud-title { font-family: var(--display); font-weight: 600; font-size: 19px; }
+  .score-pill {
+    display: flex; align-items: center; gap: 6px; background: var(--surface);
+    padding: 9px 15px; border-radius: 20px; box-shadow: 0 3px 0 var(--line2), 0 6px 14px var(--shadow);
+    font-family: var(--display); font-weight: 600; font-size: 16px;
+  }
+  .score-pill .star { color: var(--gold); font-size: 15px; }
+
+  /* prompt */
+  .prompt {
+    margin: 14px 20px 4px; background: linear-gradient(160deg, #fff, var(--pink-tint));
+    border-radius: 28px; padding: 18px 22px; text-align: center;
+    box-shadow: 0 6px 0 var(--pink-tint), 0 14px 26px rgba(230,111,160,0.18);
+    border: 2px solid #fff;
+  }
+  .prompt small {
+    display: block; font-family: var(--body); font-weight: 800; font-size: 12px;
+    color: var(--ink-soft); letter-spacing: 1px; margin-bottom: 3px;
+  }
+  .prompt h1 { font-family: var(--display); font-weight: 600; font-size: 25px; color: var(--ink); }
+
+  /* the group of objects to count */
+  .group-card {
+    margin: 16px 20px 6px;
+    background: var(--surface);
+    border-radius: 30px;
+    border: 2px solid #fff;
+    box-shadow: 0 6px 0 var(--line2), 0 14px 26px var(--shadow);
+    padding: 24px 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px 6px;
+    place-items: center;
+    flex: 1;
+    align-content: center;
+  }
+  .fish {
+    font-size: 50px;
+    animation: swim 3s ease-in-out infinite;
+  }
+  .fish:nth-child(2n) { animation-delay: 0.4s; }
+  .fish:nth-child(3n) { animation-delay: 0.8s; }
+  @keyframes swim {
+    0%,100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-7px) rotate(4deg); }
+  }
+
+  /* choice row */
+  .choices {
+    display: flex; gap: 14px; justify-content: center;
+    padding: 6px 20px 34px;
+  }
+  .choice {
+    flex: 1;
+    height: 84px;
+    border-radius: 24px;
+    background: var(--surface);
+    border: 2px solid #fff;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 38px;
+    color: var(--ink);
+    display: grid; place-items: center;
+    box-shadow: 0 6px 0 var(--line2), 0 10px 18px var(--shadow);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+    position: relative;
+  }
+  .choice:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--line2); }
+  /* correct/selected */
+  .choice.correct {
+    background: var(--green-tint);
+    border-color: var(--green);
+    color: var(--green-deep);
+    box-shadow: 0 6px 0 var(--green-deep), 0 12px 22px rgba(111,194,123,0.4);
+    animation: pop 0.5s ease;
+  }
+  .choice.correct::after {
+    content: '✓';
+    position: absolute;
+    top: -12px; right: -10px;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    font-size: 20px;
+    display: grid; place-items: center;
+    box-shadow: 0 3px 8px rgba(84,168,98,0.5);
+    animation: badgePop 0.4s ease;
+  }
+  @keyframes pop { 0%{transform: scale(1);} 50%{transform: scale(1.08);} 100%{transform: scale(1);} }
+  @keyframes badgePop { 0%{transform: scale(0);} 70%{transform: scale(1.25);} 100%{transform: scale(1);} }
+
+  .caption {
+    position: absolute; bottom: 16px; left: 0; right: 0; text-align: center;
+    font-family: var(--display); font-weight: 600; font-size: 13px; color: var(--ink-soft);
+    letter-spacing: 0.4px;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="hud">
+      <button class="hud-btn" aria-label="Back">‹</button>
+      <div class="hud-title">Count &amp; Pop</div>
+      <div class="score-pill"><span class="star">★</span> 60</div>
+    </div>
+
+    <div class="prompt">
+      <small>HOW MANY?</small>
+      <h1>How many fish? 🐟</h1>
+    </div>
+
+    <!-- group of 6 fish to count -->
+    <div class="group-card">
+      <span class="fish">🐟</span>
+      <span class="fish">🐟</span>
+      <span class="fish">🐟</span>
+      <span class="fish">🐟</span>
+      <span class="fish">🐟</span>
+      <span class="fish">🐟</span>
+    </div>
+
+    <!-- numeral choices, "6" chosen correct -->
+    <div class="choices">
+      <button class="choice">5</button>
+      <button class="choice correct">6</button>
+      <button class="choice">7</button>
+      <button class="choice">8</button>
+    </div>
+
+    <div class="caption">HOW MANY · choice 6 = correct (green)</div>
+  </div>
+</body>
+</html>
