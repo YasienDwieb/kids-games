@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kids Zone",
     "slug": "kids-zone",
-    "version": "1.0.1",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,7 +24,9 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "dev.waybeyond.kidszone",
-      "blockedPermissions": ["android.permission.ACTIVITY_RECOGNITION"]
+      "blockedPermissions": [
+        "android.permission.ACTIVITY_RECOGNITION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
