@@ -10,7 +10,9 @@ import {
   useTranslation,
   useLanguage,
   LANGUAGES,
-  getAllTopics,
+  eligibleGameIds,
+  getGame,
+  gameName,
   createFlowProgressStore,
   DEFAULT_FLOW_PROGRESS,
   type LanguageCode,
@@ -52,16 +54,21 @@ export function SettingsScreen({ navigation }: Props) {
   const { language, changeLanguage } = useLanguage();
   const [switching, setSwitching] = useState(false);
 
-  const topics = getAllTopics();
-  const selectedTopicIds = settings.flowTopicIds; // null = all
+  const flowGames = eligibleGameIds(); // games that registered a flow adapter
+  const selectedGameIds = settings.flowGameIds; // null = all
 
-  const isTopicOn = (id: string) => selectedTopicIds == null || selectedTopicIds.includes(id);
+  const isGameOn = (id: string) => selectedGameIds == null || selectedGameIds.includes(id);
 
-  const toggleTopic = (id: string) => {
-    const current = selectedTopicIds ?? topics.map((tp) => tp.id);
+  const labelForGame = (id: string) => {
+    const game = getGame(id);
+    return game ? gameName(game) : id;
+  };
+
+  const toggleGame = (id: string) => {
+    const current = selectedGameIds ?? flowGames;
     const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
     // All selected → store null (means "all"); else store the explicit list.
-    update({ flowTopicIds: next.length === topics.length ? null : next });
+    update({ flowGameIds: next.length === flowGames.length ? null : next });
   };
 
   const resetJourney = () => {
@@ -118,14 +125,14 @@ export function SettingsScreen({ navigation }: Props) {
           />
           {settings.mode === 'guided' ? (
             <>
-              <Text style={styles.sectionLabel}>{t('settings.guided.topics')}</Text>
+              <Text style={styles.sectionLabel}>{t('settings.guided.games')}</Text>
               <View style={styles.topicRow}>
-                {topics.map((tp) => (
+                {flowGames.map((id) => (
                   <Chip
-                    key={tp.id}
-                    label={t(`flow.topics.${tp.id}`)}
-                    active={isTopicOn(tp.id)}
-                    onPress={() => toggleTopic(tp.id)}
+                    key={id}
+                    label={labelForGame(id)}
+                    active={isGameOn(id)}
+                    onPress={() => toggleGame(id)}
                   />
                 ))}
               </View>

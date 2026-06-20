@@ -1,12 +1,12 @@
 // src/screens/FlowPlayerScreen.tsx
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
-  SceneCanvas, useFlow, activeTopics, getAllTopics, useSettings, useTranslation,
-  FONTS, FONT_SIZES, COLORS, type Actor,
+  SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
+  FONTS, FONT_SIZES, COLORS,
 } from '@/sdk';
 import { BackButton } from '../components/common';
 
@@ -15,7 +15,6 @@ type Props = NativeStackScreenProps<RootStackParamList, 'FlowPlayer'>;
 export function FlowPlayerScreen({ navigation }: Props) {
   const { settings } = useSettings();
   const { t } = useTranslation();
-  const { width, height } = useWindowDimensions();
 
   // Landscape lock for guided mode only; restore portrait on exit.
   useEffect(() => {
@@ -25,43 +24,41 @@ export function FlowPlayerScreen({ navigation }: Props) {
     };
   }, []);
 
-  const topics = useMemo(
-    () => activeTopics(getAllTopics(), settings.flowTopicIds),
-    [settings.flowTopicIds],
+  const adapters = useMemo(
+    () => selectedAdapters(settings.flowGameIds),
+    [settings.flowGameIds],
   );
-  const { status, unit, advance } = useFlow({ topics });
+  const { status, unit, advance } = useFlow({ adapters });
 
-  const [actors, setActors] = useState<Actor[]>([]);
+  // Smooth cross-fade on the shared backdrop when the unit changes.
+  const fade = useRef(new Animated.Value(0)).current;
   const advancing = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Clean up any pending advance timer on unmount.
-  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
+  useEffect(() => () => clearTimeout(timer.current), []);
 
-  // Lay out the active unit's actors. Depends on width/height as well as the
-  // unit because the landscape lock is async: dimensions arrive portrait on
-  // mount and update once the rotation lands, so we must re-lay-out then.
-  // Under the lock that dimension change happens only on the initial flip.
+  // Fade the new unit in whenever it changes.
   useEffect(() => {
-    if (unit) {
-      advancing.current = false;
-      setActors(unit.enterActors({ width, height, rng: Math.random }));
-    }
-  }, [unit, width, height]);
+    advancing.current = false;
+    fade.setValue(0);
+    Animated.timing(fade, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+  }, [unit?.key, fade]);
 
-  const handleComplete = () => {
-    if (!unit || advancing.current) return;
+  const handleComplete = useCallback(() => {
+    if (advancing.current) return;
     advancing.current = true;
-    timerRef.current = setTimeout(() => advance(), 350);
-  };
-
-  const UnitComponent = unit?.Component;
+    Animated.timing(fade, { toValue: 0, duration: 250, useNativeDriver: true }).start(() => {
+      timer.current = setTimeout(() => advance(), 80);
+    });
+  }, [advance, fade]);
 
   return (
     <View style={styles.root}>
-      <SceneCanvas actors={actors}>
-        {status === 'playing' && UnitComponent ? (
-          <UnitComponent actors={actors} onComplete={handleComplete} />
+      <SceneCanvas>
+        {status === 'playing' && unit ? (
+          <Animated.View style={[styles.fill, { opacity: fade }]}>
+            {unit.render(handleComplete)}
+          </Animated.View>
         ) : null}
         {status === 'done' ? (
           <View style={styles.rest} pointerEvents="box-none">
@@ -76,6 +73,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.canvas },
+  fill: { flex: 1 },
   rest: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   restText: {
     fontFamily: FONTS.displayBold,

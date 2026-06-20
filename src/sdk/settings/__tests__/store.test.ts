@@ -20,9 +20,9 @@ describe('settingsStore', () => {
 });
 
 describe('settings defaults', () => {
-  it('defaults to free mode, all topics, scoreless', () => {
+  it('defaults to free mode, all games, scoreless', () => {
     expect(DEFAULT_SETTINGS.mode).toBe('free');
-    expect(DEFAULT_SETTINGS.flowTopicIds).toBeNull();
+    expect(DEFAULT_SETTINGS.flowGameIds).toBeNull();
     expect(DEFAULT_SETTINGS.flowScoring).toBe(false);
   });
 

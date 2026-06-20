@@ -186,14 +186,9 @@ const KEYS: string[] = [
   'core:flow.continue',
   'core:flow.allCaughtUp',
   'core:flow.exit',
-  'core:flow.topics.four',
-  'core:flow.fourCount.prompt',
-  'core:flow.fourCount.starLabel',
-  'core:flow.fourShapes.prompt',
-  'core:flow.fourShapes.starLabel',
   'core:settings.guided.section',
   'core:settings.guided.mode',
-  'core:settings.guided.topics',
+  'core:settings.guided.games',
   'core:settings.guided.reset',
 ];
 

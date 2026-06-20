@@ -3,30 +3,32 @@ import { act, create } from 'react-test-renderer';
 import { useEffect } from 'react';
 import { useFlow, type UseFlowResult } from '../useFlow';
 import {
-  registerFlowUnit, registerTopic, resetFlowRegistryForTests, getAllTopics,
-} from '../curriculum';
+  registerFlowAdapter, getAllFlowAdapters, resetFlowAdaptersForTests, type FlowAdapter,
+} from '../adapter';
 import { createFlowProgressStore, DEFAULT_FLOW_PROGRESS } from '../progress';
 
 // Probe component: surfaces the hook result to the test via a ref callback.
 function Probe({ onResult }: { onResult: (r: UseFlowResult) => void }) {
-  const r = useFlow({ topics: getAllTopics() });
+  const r = useFlow({ adapters: getAllFlowAdapters() });
   useEffect(() => { onResult(r); });
   return null;
 }
 
-const stub = (id: string, topicId: string) => ({
-  id, topicId, enterActors: () => [], exitActors: () => [], Component: () => null,
+const stub = (gameId: string, count: number): FlowAdapter => ({
+  gameId,
+  count,
+  unitAt: (i) => ({ key: `${gameId}-${i}`, render: () => null }),
 });
 
 beforeEach(async () => {
-  resetFlowRegistryForTests();
+  resetFlowAdaptersForTests();
   await createFlowProgressStore().set(DEFAULT_FLOW_PROGRESS);
-  registerFlowUnit(stub('a', 't1'));
-  registerFlowUnit(stub('b', 't1'));
-  registerTopic({ id: 't1', unitIds: ['a', 'b'] });
+  // Two games, one unit each → interleaved journey of length 2.
+  registerFlowAdapter(stub('a', 1));
+  registerFlowAdapter(stub('b', 1));
 });
 
-it('starts playing on the first unit then advances to done', async () => {
+it('starts on the first game then mashes to the second, then done', async () => {
   let latest: UseFlowResult | null = null;
   await act(async () => {
     create(<Probe onResult={(r) => { latest = r; }} />);
@@ -34,10 +36,11 @@ it('starts playing on the first unit then advances to done', async () => {
   // settle the async load
   await act(async () => { await Promise.resolve(); });
   expect(latest!.status).toBe('playing');
-  expect(latest!.unit?.id).toBe('a');
+  expect(latest!.total).toBe(2);
+  expect(latest!.unit?.key).toBe('a-0');
 
   await act(async () => { latest!.advance(); });
-  expect(latest!.unit?.id).toBe('b');
+  expect(latest!.unit?.key).toBe('b-0');
 
   await act(async () => { latest!.advance(); });
   expect(latest!.status).toBe('done');

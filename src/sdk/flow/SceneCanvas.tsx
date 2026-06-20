@@ -4,13 +4,20 @@ import { COLORS } from '@/constants';
 import type { Actor } from './actors';
 import { ActorLayer } from './ActorLayer';
 
-export function SceneCanvas({ actors, children }: { actors: Actor[]; children?: ReactNode }) {
+export function SceneCanvas({
+  actors = [],
+  children,
+}: {
+  /** Optional shared sprites for opt-in actor morphs; omit for component units. */
+  actors?: Actor[];
+  children?: ReactNode;
+}) {
   return (
     <View style={styles.root}>
-      {/* Oversized backdrop so actors can enter/exit frame during morphs. */}
+      {/* Oversized backdrop, persistent across units, so the world feels continuous. */}
       <View style={styles.backdrop} pointerEvents="none" />
-      <ActorLayer actors={actors} />
-      {/* Unit interaction overlay (Pressables positioned at actor coords). */}
+      {actors.length > 0 ? <ActorLayer actors={actors} /> : null}
+      {/* Active unit's interactive content. */}
       <View style={styles.overlay}>{children}</View>
     </View>
   );

@@ -32,7 +32,7 @@ export const ar: CoreTranslations = {
     guided: {
       section: 'الوضع الموجّه',
       mode: 'الرحلة الموجّهة',
-      topics: 'المواضيع',
+      games: 'الألعاب في الرحلة',
       reset: 'إعادة تقدّم الرحلة',
     },
   },
@@ -55,14 +55,5 @@ export const ar: CoreTranslations = {
     continue: 'تابع رحلتك',
     allCaughtUp: 'أحسنت! أنهيت كل شيء 🌟',
     exit: 'تم',
-    topics: { four: 'الأربعة' },
-    fourCount: {
-      prompt: 'انقر النجوم لتعدّها!',
-      starLabel: 'نجمة للعدّ',
-    },
-    fourShapes: {
-      prompt: 'أي نجمة مختلفة؟',
-      starLabel: 'نجمة',
-    },
   },
 };

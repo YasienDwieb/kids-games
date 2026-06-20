@@ -1,40 +1,31 @@
-import { resolveStart, advancePosition, DEFAULT_FLOW_PROGRESS, type FlowProgress } from '../progress';
-import type { Topic } from '../curriculum';
-
-const topics: Topic[] = [
-  { id: 't1', unitIds: ['a', 'b'] },
-  { id: 't2', unitIds: ['c'] },
-];
+import { resolveStart, advanceStep, DEFAULT_FLOW_PROGRESS } from '../progress';
 
 describe('resolveStart', () => {
-  it('returns done when there are no topics', () => {
-    expect(resolveStart([], DEFAULT_FLOW_PROGRESS)).toEqual({ done: true });
+  it('returns done when the journey is empty', () => {
+    expect(resolveStart(0, DEFAULT_FLOW_PROGRESS)).toEqual({ done: true });
   });
-  it('starts at first topic when nothing saved', () => {
-    expect(resolveStart(topics, DEFAULT_FLOW_PROGRESS)).toEqual({ done: false, topicId: 't1', unitIndex: 0 });
+
+  it('starts at step 0 when nothing is saved', () => {
+    expect(resolveStart(5, DEFAULT_FLOW_PROGRESS)).toEqual({ done: false, step: 0 });
   });
-  it('resumes a saved valid position', () => {
-    const saved: FlowProgress = { topicId: 't1', unitIndex: 1, updatedAt: 1 };
-    expect(resolveStart(topics, saved)).toEqual({ done: false, topicId: 't1', unitIndex: 1 });
+
+  it('resumes a saved mid-journey step', () => {
+    expect(resolveStart(5, { step: 3, seed: 1, updatedAt: 1 })).toEqual({ done: false, step: 3 });
   });
-  it('clamps an out-of-range saved index', () => {
-    const saved: FlowProgress = { topicId: 't2', unitIndex: 9, updatedAt: 1 };
-    expect(resolveStart(topics, saved)).toEqual({ done: false, topicId: 't2', unitIndex: 0 });
-  });
-  it('falls back to first topic when saved topic is gone', () => {
-    const saved: FlowProgress = { topicId: 'ghost', unitIndex: 0, updatedAt: 1 };
-    expect(resolveStart(topics, saved)).toEqual({ done: false, topicId: 't1', unitIndex: 0 });
+
+  it('treats a saved step past the end as done (rest state)', () => {
+    expect(resolveStart(5, { step: 5, seed: 1, updatedAt: 1 })).toEqual({ done: true });
+    expect(resolveStart(5, { step: 9, seed: 1, updatedAt: 1 })).toEqual({ done: true });
   });
 });
 
-describe('advancePosition', () => {
-  it('advances within a topic', () => {
-    expect(advancePosition(topics, { topicId: 't1', unitIndex: 0 })).toEqual({ done: false, topicId: 't1', unitIndex: 1 });
+describe('advanceStep', () => {
+  it('advances within the journey', () => {
+    expect(advanceStep(5, 0)).toEqual({ done: false, step: 1 });
+    expect(advanceStep(5, 3)).toEqual({ done: false, step: 4 });
   });
-  it('rolls into the next topic', () => {
-    expect(advancePosition(topics, { topicId: 't1', unitIndex: 1 })).toEqual({ done: false, topicId: 't2', unitIndex: 0 });
-  });
-  it('returns done after the last unit of the last topic', () => {
-    expect(advancePosition(topics, { topicId: 't2', unitIndex: 0 })).toEqual({ done: true });
+
+  it('returns done after the last unit', () => {
+    expect(advanceStep(5, 4)).toEqual({ done: true });
   });
 });

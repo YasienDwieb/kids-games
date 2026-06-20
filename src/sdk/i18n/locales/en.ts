@@ -31,7 +31,7 @@ export const en = {
     guided: {
       section: 'Guided mode',
       mode: 'Guided journey',
-      topics: 'Topics',
+      games: 'Games in the journey',
       reset: 'Reset journey progress',
     },
   },
@@ -54,15 +54,6 @@ export const en = {
     continue: 'Continue your journey',
     allCaughtUp: "You're all caught up 🌟",
     exit: 'Done',
-    topics: { four: 'Four' },
-    fourCount: {
-      prompt: 'Tap the stars to count them!',
-      starLabel: 'Star to count',
-    },
-    fourShapes: {
-      prompt: 'Which star is different?',
-      starLabel: 'Star',
-    },
   },
 } as const;
 

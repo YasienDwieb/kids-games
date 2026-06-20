@@ -1,7 +1,35 @@
 # Guided Flow Mode — Design
 
 **Date:** 2026-06-20
-**Status:** Approved (design); ready for implementation planning
+**Status:** Implemented, then revised (see Revision below)
+
+## Revision — content model (2026-06-20, post-implementation)
+
+After the first implementation, the content model was deliberately changed. The
+sections below describe the *original* approach (authored "topics" of flow-native
+**actor units** that morph, with the "Four" showcase). That proved to make flow
+content an authoring bottleneck. The shipped model instead is:
+
+- **Content comes from the games automatically.** Each flow-eligible game
+  implements a single **`FlowAdapter`** (`src/games/<id>/flow.tsx`) that turns its
+  existing generated content (levels/rounds) into journey units, rendered via the
+  game's own round/puzzle components. No per-topic authoring.
+- **The flow interleaves** the parent-selected games' content round-robin
+  (`buildSequence`), so a unit from one game is followed by one from another.
+- **Parent control is per-game** (`settings.flowGameIds`) — which games feed the
+  journey — not per-topic.
+- **Progress is a single step cursor** (`{ step, seed }`) over the interleaved
+  sequence; scoreless; resumes where the child left off.
+- **Transitions** are a smooth cross-fade on the persistent shared `SceneCanvas`
+  backdrop. True element-**morph** (`ActorLayer`/`actors`/`planTransition`) is
+  retained in the engine as an **opt-in** for any game that chooses to render its
+  content as shared actors — "morph where it fits", crossfade otherwise.
+- The bespoke "Four" star units, the `Topic`/curriculum registry, and the
+  per-topic settings were **retired**.
+
+Engine pieces that survived unchanged in spirit: `SceneCanvas`, scoreless
+progress/resume, landscape lock, settings store shape, i18n/RTL handling,
+`ActorLayer`/`transition` (now opt-in).
 
 ## 1. Purpose
 
