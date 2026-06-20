@@ -176,60 +176,73 @@ export function HowMany({
   const howManyCount = mode === 'howMany' ? round.count : 0;
   const swimDelays = Array.from({ length: howManyCount }, (_, i) => i * 300);
 
+  // Object display — mode-specific.
+  const objectDisplay =
+    mode === 'howMany' ? (
+      /* Flat emoji grid for howMany — scrollable for large counts */
+      <ScrollView
+        scrollEnabled={howManyCount > 9}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.groupCardContent}
+        style={[styles.groupCard, landscape && styles.objectLandscape]}
+      >
+        <View style={[styles.groupInner, SHADOWS.sm]}>
+          <View style={styles.emojiGrid}>
+            {swimDelays.map((delay, i) => (
+              <SwimmingEmoji key={i} emoji={objectEmoji} delayMs={delay} />
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    ) : (
+      /* Two-group visual for makeN / addition */
+      <GroupCount round={round as MakeNRound | AdditionRound} />
+    );
+
+  // Choice buttons — a row in portrait, a column beside the objects in landscape.
+  const choiceGroup = (
+    <View style={[styles.choiceRow, landscape && styles.choiceColumnLandscape]}>
+      {choices.map((value, idx) => {
+        const state = getChoiceState(idx);
+        const isAnswered = selectedIndex !== null;
+        return (
+          <NumberChoice
+            key={idx}
+            value={value}
+            state={state}
+            onPress={() => onPick(idx)}
+            disabled={disabled || isAnswered}
+            accessibilityLabel={t('count-and-pop:a11y.choiceButton', { value })}
+            accessibilityState={{
+              disabled: disabled || isAnswered,
+              selected: state === 'correct',
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+
   return (
     <View style={[styles.root, landscape && styles.rootLandscape]}>
       {/* Prompt card */}
-      <View style={[styles.promptCard, landscape && styles.wideLandscape, SHADOWS.md]}>
+      <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
         <Text style={styles.promptTitle}>{promptTitle}</Text>
         <Text style={styles.promptInstruction}>{promptInstruction}</Text>
       </View>
 
-      {/* Object display — mode-specific */}
-      {mode === 'howMany' ? (
-        /* Flat emoji grid for howMany — scrollable for large counts */
-        <ScrollView
-          scrollEnabled={howManyCount > 9}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.groupCardContent}
-          style={[styles.groupCard, landscape && styles.wideLandscape]}
-        >
-          <View style={[styles.groupInner, SHADOWS.sm]}>
-            <View style={styles.emojiGrid}>
-              {swimDelays.map((delay, i) => (
-                <SwimmingEmoji key={i} emoji={objectEmoji} delayMs={delay} />
-              ))}
-            </View>
-          </View>
-        </ScrollView>
+      {landscape ? (
+        /* Landscape: objects and choices share the width so both stay on screen. */
+        <View style={styles.bodyRowLandscape}>
+          {objectDisplay}
+          {choiceGroup}
+        </View>
       ) : (
-        /* Two-group visual for makeN / addition */
-        <GroupCount round={round as MakeNRound | AdditionRound} />
-
+        <>
+          {objectDisplay}
+          {choiceGroup}
+        </>
       )}
-
-      {/* Choice row — no direction pin: equal-option buttons, safe to mirror in RTL */}
-      <View style={[styles.choiceRow, landscape && styles.wideLandscape]}>
-        {choices.map((value, idx) => {
-          const state = getChoiceState(idx);
-          const isAnswered = selectedIndex !== null;
-          return (
-            <NumberChoice
-              key={idx}
-              value={value}
-              state={state}
-              onPress={() => onPick(idx)}
-              disabled={disabled || isAnswered}
-              accessibilityLabel={t('count-and-pop:a11y.choiceButton', {
-                value,
-              })}
-              accessibilityState={{
-                disabled: disabled || isAnswered,
-                selected: state === 'correct',
-              }}
-            />
-          );
-        })}
-      </View>
     </View>
   );
 }
@@ -254,8 +267,19 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
     backgroundColor: 'transparent',
   },
-  // Landscape: let prompt / objects / choices use the available width.
-  wideLandscape: { maxWidth: 720 },
+  // Landscape prompt: wider but shorter so it doesn't eat the height.
+  promptCardLandscape: { maxWidth: 760, paddingVertical: SPACING.sm },
+  // Landscape body: objects + choices side by side, centered.
+  bodyRowLandscape: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.xl,
+  },
+  // Landscape object area: cap width so the choices column has room beside it.
+  objectLandscape: { maxWidth: 520, flexShrink: 1 },
+  // Landscape choices: stacked vertically beside the objects.
+  choiceColumnLandscape: { flexDirection: 'column', maxWidth: undefined },
   // Prompt card
   promptCard: {
     width: '100%',
