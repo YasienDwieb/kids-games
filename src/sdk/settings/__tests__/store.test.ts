@@ -18,3 +18,17 @@ describe('settingsStore', () => {
     expect((await settingsStore.get()).soundEnabled).toBe(false);
   });
 });
+
+describe('settings defaults', () => {
+  it('defaults to free mode, all topics, scoreless', () => {
+    expect(DEFAULT_SETTINGS.mode).toBe('free');
+    expect(DEFAULT_SETTINGS.flowTopicIds).toBeNull();
+    expect(DEFAULT_SETTINGS.flowScoring).toBe(false);
+  });
+
+  it('keeps existing audio/lang defaults intact', () => {
+    expect(DEFAULT_SETTINGS.soundEnabled).toBe(true);
+    expect(DEFAULT_SETTINGS.hapticsEnabled).toBe(true);
+    expect(DEFAULT_SETTINGS.language).toBeNull();
+  });
+});
