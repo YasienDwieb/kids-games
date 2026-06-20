@@ -186,6 +186,7 @@ const KEYS: string[] = [
   'core:flow.continue',
   'core:flow.allCaughtUp',
   'core:flow.exit',
+  'core:flow.topics.four',
   'core:flow.fourCount.prompt',
   'core:flow.fourCount.starLabel',
   'core:flow.fourShapes.prompt',
@@ -202,6 +203,10 @@ describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {
   });
 
   test.each(KEYS)('%s', (key) => {
+    // i18n.exists() is the authoritative guard — it returns false for missing keys
+    // including core-namespace keys where i18next strips the namespace before
+    // returning the fallback, making value !== key an insufficient check alone.
+    expect(i18n.exists(key)).toBe(true);
     const value = i18n.t(key);
     expect(typeof value).toBe('string');
     expect(value.length).toBeGreaterThan(0);

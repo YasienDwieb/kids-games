@@ -123,7 +123,7 @@ export function SettingsScreen({ navigation }: Props) {
                 {topics.map((tp) => (
                   <Chip
                     key={tp.id}
-                    label={tp.id}
+                    label={t(`flow.topics.${tp.id}`)}
                     active={isTopicOn(tp.id)}
                     onPress={() => toggleTopic(tp.id)}
                   />

@@ -54,6 +54,7 @@ export const en = {
     continue: 'Continue your journey',
     allCaughtUp: "You're all caught up 🌟",
     exit: 'Done',
+    topics: { four: 'Four' },
     fourCount: {
       prompt: 'Tap the stars to count them!',
       starLabel: 'Star to count',

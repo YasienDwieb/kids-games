@@ -34,20 +34,26 @@ export function FlowPlayerScreen({ navigation }: Props) {
 
   const [actors, setActors] = useState<Actor[]>([]);
   const advancing = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Keep a ref to ctx so the actors effect doesn't re-snap on ctx identity changes.
+  const ctxRef = useRef(ctx);
+  ctxRef.current = ctx;
+
+  // Clean up any pending advance timer on unmount.
+  useEffect(() => () => { clearTimeout(timerRef.current); }, []);
 
   // When the active unit changes, morph the actor pool to its enter layout.
   useEffect(() => {
     if (unit) {
       advancing.current = false;
-      setActors(unit.enterActors(ctx));
+      setActors(unit.enterActors(ctxRef.current));
     }
-  }, [unit, ctx]);
+  }, [unit]);
 
   const handleComplete = () => {
     if (!unit || advancing.current) return;
     advancing.current = true;
-    setActors(unit.exitActors(ctx)); // settle
-    setTimeout(() => advance(), 350);
+    timerRef.current = setTimeout(() => advance(), 350);
   };
 
   const UnitComponent = unit?.Component;

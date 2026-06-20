@@ -55,6 +55,7 @@ export const ar: CoreTranslations = {
     continue: 'تابع رحلتك',
     allCaughtUp: 'أحسنت! أنهيت كل شيء 🌟',
     exit: 'تم',
+    topics: { four: 'الأربعة' },
     fourCount: {
       prompt: 'انقر النجوم لتعدّها!',
       starLabel: 'نجمة للعدّ',
