@@ -1,13 +1,12 @@
 // src/screens/FlowPlayerScreen.tsx
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
   SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
-  FONTS, FONT_SIZES, COLORS,
+  FONTS, FONT_SIZES, COLORS, SPACING,
 } from '@/sdk';
 import { BackButton } from '../components/common';
 
@@ -17,26 +16,11 @@ export function FlowPlayerScreen({ navigation }: Props) {
   const { settings } = useSettings();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { width, height } = useWindowDimensions();
 
-  // The games' rounds are authored for a tall portrait canvas. In the
-  // landscape-locked flow they'd overflow top & bottom, so we render each round
-  // at the device's natural portrait size and uniformly scale it to fit the
-  // safe area — guaranteeing it stays centered and is never trimmed. The wide
-  // sides show the shared backdrop (letterbox).
-  const availW = Math.max(1, width - insets.left - insets.right);
-  const availH = Math.max(1, height - insets.top - insets.bottom);
-  const designW = Math.min(width, height); // portrait width
-  const designH = Math.max(width, height); // portrait height
-  const scale = Math.min(availW / designW, availH / designH);
-
-  // Landscape lock for guided mode only; restore portrait on exit.
-  useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => {});
-    return () => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
-    };
-  }, []);
+  // The flow runs in portrait: the games' rounds are portrait-native, so they
+  // render full-size, centered, and untrimmed. (The app is portrait-locked
+  // globally, so we don't change orientation here.) Top padding clears the
+  // status bar + the floating back button; bottom clears the home indicator.
 
   const adapters = useMemo(
     () => selectedAdapters(settings.flowGameIds),
@@ -51,7 +35,6 @@ export function FlowPlayerScreen({ navigation }: Props) {
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  // Fade the new unit in whenever it changes.
   useEffect(() => {
     advancing.current = false;
     fade.setValue(0);
@@ -70,11 +53,13 @@ export function FlowPlayerScreen({ navigation }: Props) {
     <View style={styles.root}>
       <SceneCanvas>
         {status === 'playing' && unit ? (
-          <Animated.View style={[styles.center, { opacity: fade }]}>
-            {/* Portrait design box, uniformly scaled to fit and centered. */}
-            <View style={{ width: designW, height: designH, transform: [{ scale }] }}>
-              {unit.render(handleComplete)}
-            </View>
+          <Animated.View
+            style={[
+              styles.fill,
+              { paddingTop: insets.top + SPACING.xl, paddingBottom: insets.bottom, opacity: fade },
+            ]}
+          >
+            {unit.render(handleComplete)}
           </Animated.View>
         ) : null}
         {status === 'done' ? (
@@ -90,6 +75,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.canvas },
+  fill: { flex: 1 },
   center: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   restText: {
     fontFamily: FONTS.displayBold,
