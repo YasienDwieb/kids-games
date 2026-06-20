@@ -176,15 +176,15 @@ export function HowMany({
   const howManyCount = mode === 'howMany' ? round.count : 0;
   const swimDelays = Array.from({ length: howManyCount }, (_, i) => i * 300);
 
-  // Object display — mode-specific.
-  const objectDisplay =
+  // Mode-specific object visual.
+  const objectVisual =
     mode === 'howMany' ? (
       /* Flat emoji grid for howMany — scrollable for large counts */
       <ScrollView
-        scrollEnabled={howManyCount > 9}
+        scrollEnabled={howManyCount > 9 || landscape}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.groupCardContent}
-        style={[styles.groupCard, landscape && styles.objectLandscape]}
+        style={[styles.groupCard, landscape && styles.wideLandscape]}
       >
         <View style={[styles.groupInner, SHADOWS.sm]}>
           <View style={styles.emojiGrid}>
@@ -199,30 +199,6 @@ export function HowMany({
       <GroupCount round={round as MakeNRound | AdditionRound} />
     );
 
-  // Choice buttons — a row in portrait, a column beside the objects in landscape.
-  const choiceGroup = (
-    <View style={[styles.choiceRow, landscape && styles.choiceColumnLandscape]}>
-      {choices.map((value, idx) => {
-        const state = getChoiceState(idx);
-        const isAnswered = selectedIndex !== null;
-        return (
-          <NumberChoice
-            key={idx}
-            value={value}
-            state={state}
-            onPress={() => onPick(idx)}
-            disabled={disabled || isAnswered}
-            accessibilityLabel={t('count-and-pop:a11y.choiceButton', { value })}
-            accessibilityState={{
-              disabled: disabled || isAnswered,
-              selected: state === 'correct',
-            }}
-          />
-        );
-      })}
-    </View>
-  );
-
   return (
     <View style={[styles.root, landscape && styles.rootLandscape]}>
       {/* Prompt card */}
@@ -231,18 +207,37 @@ export function HowMany({
         <Text style={styles.promptInstruction}>{promptInstruction}</Text>
       </View>
 
+      {/* Object display. In landscape it lives in a flexible, clipped middle
+          area so the choice row below always stays on-screen by construction. */}
       {landscape ? (
-        /* Landscape: objects and choices share the width so both stay on screen. */
-        <View style={styles.bodyRowLandscape}>
-          {objectDisplay}
-          {choiceGroup}
-        </View>
+        <View style={styles.visualFlexLandscape}>{objectVisual}</View>
       ) : (
-        <>
-          {objectDisplay}
-          {choiceGroup}
-        </>
+        objectVisual
       )}
+
+      {/* Choice row — no direction pin: equal-option buttons, safe to mirror in RTL */}
+      <View style={[styles.choiceRow, landscape && styles.choiceRowLandscape]}>
+        {choices.map((value, idx) => {
+          const state = getChoiceState(idx);
+          const isAnswered = selectedIndex !== null;
+          return (
+            <NumberChoice
+              key={idx}
+              value={value}
+              state={state}
+              onPress={() => onPick(idx)}
+              disabled={disabled || isAnswered}
+              accessibilityLabel={t('count-and-pop:a11y.choiceButton', {
+                value,
+              })}
+              accessibilityState={{
+                disabled: disabled || isAnswered,
+                selected: state === 'correct',
+              }}
+            />
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -267,19 +262,20 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
     backgroundColor: 'transparent',
   },
-  // Landscape prompt: wider but shorter so it doesn't eat the height.
-  promptCardLandscape: { maxWidth: 760, paddingVertical: SPACING.sm },
-  // Landscape body: objects + choices side by side, centered.
-  bodyRowLandscape: {
-    flexDirection: 'row',
+  // Landscape: let prompt / objects use the available width; trim prompt height.
+  wideLandscape: { maxWidth: 720 },
+  promptCardLandscape: { maxWidth: 720, paddingVertical: SPACING.sm },
+  // Landscape: flexible, clipped middle so the choice row is always visible.
+  visualFlexLandscape: {
+    flex: 1,
+    minHeight: 0,
+    alignSelf: 'stretch',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: SPACING.xl,
+    overflow: 'hidden',
   },
-  // Landscape object area: cap width so the choices column has room beside it.
-  objectLandscape: { maxWidth: 520, flexShrink: 1 },
-  // Landscape choices: stacked vertically beside the objects.
-  choiceColumnLandscape: { flexDirection: 'column', maxWidth: undefined },
+  // Landscape: choice row never shrinks/clips; pinned below the visual.
+  choiceRowLandscape: { maxWidth: 720, flexGrow: 0, flexShrink: 0 },
   // Prompt card
   promptCard: {
     width: '100%',
