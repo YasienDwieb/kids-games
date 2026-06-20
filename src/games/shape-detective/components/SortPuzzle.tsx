@@ -67,6 +67,7 @@ import {
   I18nManager,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import {
@@ -150,6 +151,10 @@ function binLabel(
 
 export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React.JSX.Element {
   const { t } = useTranslation();
+  // Landscape (guided flow): let the bins fill the middle and pin the tray
+  // below so the draggable shapes are never pushed off the shorter screen.
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   // Placement: which bin each item has been placed in (null = in tray)
   const [placements, setPlacements] = useState<Placements>(() =>
@@ -449,13 +454,13 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
     <GestureDetector gesture={panGesture}>
       <View
         ref={surfaceRef}
-        style={[styles.root, I18nManager.isRTL && styles.ltrSurface]}
+        style={[styles.root, landscape && styles.rootLandscape, I18nManager.isRTL && styles.ltrSurface]}
       >
         {/* Instruction */}
         <Text style={styles.instruction}>{t('shape-detective:sort.instruction')}</Text>
 
         {/* Bins row — children measured relative to surfaceRef via measureLayout */}
-        <View style={styles.binsRow}>
+        <View style={[styles.binsRow, landscape && styles.binsRowLandscape]}>
           {puzzle.bins.map((bin, binIdx) => {
             const placed = placedInBin(binIdx);
             const label = binLabel(bin.attribute, bin.value, t);
@@ -466,7 +471,7 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
                 ref={(v) => {
                   binViewRefs.current[binIdx] = v;
                 }}
-                style={styles.bin}
+                style={[styles.bin, landscape && styles.binLandscape]}
                 onLayout={() => {
                   // Re-measure in surface-local coordinates every time layout changes.
                   remeasureBin(binIdx);
@@ -495,14 +500,19 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
         </View>
 
         {/* Tray of draggable shapes */}
-        <View style={styles.tray}>
+        <View style={[styles.tray, landscape && styles.trayLandscape]}>
           {puzzle.items.map((shape, idx) => {
             const placed = placements[idx] !== null;
             const flash = flashes[idx];
 
             if (placed) {
               // Empty slot — keeps tray layout stable
-              return <View key={idx} style={styles.traySlotEmpty} />;
+              return (
+                <View
+                  key={idx}
+                  style={[styles.traySlotEmpty, landscape && styles.traySlotLandscape]}
+                />
+              );
             }
 
             const borderColor: string =
@@ -528,7 +538,11 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
                 ref={(v) => {
                   trayViewRefs.current[idx] = v;
                 }}
-                style={[styles.traySlot, { borderColor, backgroundColor: bgColor }]}
+                style={[
+                  styles.traySlot,
+                  landscape && styles.traySlotLandscape,
+                  { borderColor, backgroundColor: bgColor },
+                ]}
                 onLayout={() => {
                   // Re-measure in surface-local coordinates every time layout changes.
                   remeasureTray(idx);
@@ -586,6 +600,30 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
+  },
+  // Landscape: tighter rhythm; bins fill the middle, tray pinned below.
+  rootLandscape: {
+    gap: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  binsRowLandscape: {
+    flex: 1,
+    minHeight: 0,
+  },
+  binLandscape: {
+    minHeight: 0,
+  },
+  // Tray never shrinks/clips — pinned below the flexible bins row.
+  trayLandscape: {
+    flexShrink: 0,
+    gap: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  // Smaller tray cells in landscape so all shapes sit on one row, leaving
+  // the bins a usable height above.
+  traySlotLandscape: {
+    width: SHAPE_SIZE_PX.large + SPACING.sm,
+    height: SHAPE_SIZE_PX.large + SPACING.sm,
   },
   // Pins the drag surface to physical-left-origin in RTL locales.
   // event.nativeEvent.x from GestureDetector and left/top from measureLayout

@@ -1,6 +1,6 @@
 // src/screens/FlowPlayerScreen.tsx
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,14 +18,18 @@ export function FlowPlayerScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  // Inset the game's content off the status bar / screen edges. Horizontal
-  // padding also clears the floating back button (top-start corner) while
-  // keeping content centered in the wide landscape canvas.
+  // Inset the game's content off the status bar / screen edges. The floating
+  // back button sits in the top-start corner, so only the START side gets the
+  // extra clearance — adding it on both sides wastes landscape width and forces
+  // content (e.g. tray rows) to wrap. Each physical side gets its own safe-area
+  // inset so the side nav-bar/notch is cleared without over-padding the other.
+  const startInset = I18nManager.isRTL ? insets.right : insets.left;
+  const endInset = I18nManager.isRTL ? insets.left : insets.right;
   const contentPad = {
     paddingTop: insets.top + SPACING.sm,
-    paddingBottom: insets.bottom + SPACING.md,
-    paddingHorizontal:
-      Math.max(insets.left, insets.right) + SPACING.md + TOUCH_TARGET.recommended,
+    paddingBottom: insets.bottom + SPACING.sm,
+    paddingStart: startInset + SPACING.md + TOUCH_TARGET.recommended,
+    paddingEnd: endInset + SPACING.md,
   };
 
   // Landscape lock for guided mode only; restore portrait on exit.
