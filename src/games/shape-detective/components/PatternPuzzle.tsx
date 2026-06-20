@@ -22,7 +22,7 @@
  * flex mirroring is always correct.
  */
 
-import { I18nManager, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import {
   ACCENTS,
   BORDER_RADIUS,
@@ -89,6 +89,10 @@ export function PatternPuzzle({
   disabled = false,
 }: PatternPuzzleProps): React.JSX.Element {
   const { t } = useTranslation();
+  // Landscape (guided flow): tighten vertical rhythm and keep options on one
+  // row so the sequence + choices fit the shorter height without clipping.
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   // The separator arrow points toward the question slot.
   // In LTR the sequence renders left→right so the arrow (→) points right toward ?.
@@ -97,7 +101,7 @@ export function PatternPuzzle({
   const arrowGlyph = I18nManager.isRTL ? '←' : '→';
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, landscape && styles.rootLandscape]}>
       {/* Instruction */}
       <Text style={styles.instruction}>{t('shape-detective:pattern.instruction')}</Text>
 
@@ -132,7 +136,7 @@ export function PatternPuzzle({
       <Text style={styles.chooseLabel}>{t('shape-detective:pattern.choose')}</Text>
 
       {/* Options */}
-      <View style={styles.optionsRow}>
+      <View style={[styles.optionsRow, landscape && styles.optionsRowLandscape]}>
         {puzzle.options.map((shape, idx) => {
           const isSelected = selectedIndex === idx;
           const isCorrect = idx === puzzle.correctIndex;
@@ -194,6 +198,15 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
+  },
+  // Landscape: smaller gaps so sequence + options share the short height.
+  rootLandscape: {
+    gap: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  // Landscape: keep all answer tiles on a single row (plenty of width).
+  optionsRowLandscape: {
+    flexWrap: 'nowrap',
   },
   instruction: {
     fontFamily: FONTS.display,

@@ -35,6 +35,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import {
@@ -133,6 +134,10 @@ export function HowMany({
 }: HowManyProps): React.JSX.Element {
   const { t } = useTranslation();
   const { mode, objectEmoji, choices, correctIndex } = round;
+  // Landscape (guided flow): tighter vertical rhythm + wider content so the
+  // prompt, objects and choices fit the shorter height.
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   // Derive prompt text based on mode
   let promptTitle: string;
@@ -172,9 +177,9 @@ export function HowMany({
   const swimDelays = Array.from({ length: howManyCount }, (_, i) => i * 300);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, landscape && styles.rootLandscape]}>
       {/* Prompt card */}
-      <View style={[styles.promptCard, SHADOWS.md]}>
+      <View style={[styles.promptCard, landscape && styles.wideLandscape, SHADOWS.md]}>
         <Text style={styles.promptTitle}>{promptTitle}</Text>
         <Text style={styles.promptInstruction}>{promptInstruction}</Text>
       </View>
@@ -186,7 +191,7 @@ export function HowMany({
           scrollEnabled={howManyCount > 9}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.groupCardContent}
-          style={styles.groupCard}
+          style={[styles.groupCard, landscape && styles.wideLandscape]}
         >
           <View style={[styles.groupInner, SHADOWS.sm]}>
             <View style={styles.emojiGrid}>
@@ -203,7 +208,7 @@ export function HowMany({
       )}
 
       {/* Choice row — no direction pin: equal-option buttons, safe to mirror in RTL */}
-      <View style={styles.choiceRow}>
+      <View style={[styles.choiceRow, landscape && styles.wideLandscape]}>
         {choices.map((value, idx) => {
           const state = getChoiceState(idx);
           const isAnswered = selectedIndex !== null;
@@ -243,6 +248,14 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
+  // Landscape: tighter vertical gaps, transparent so the flow backdrop shows.
+  rootLandscape: {
+    gap: SPACING.sm,
+    paddingVertical: SPACING.xs,
+    backgroundColor: 'transparent',
+  },
+  // Landscape: let prompt / objects / choices use the available width.
+  wideLandscape: { maxWidth: 720 },
   // Prompt card
   promptCard: {
     width: '100%',
