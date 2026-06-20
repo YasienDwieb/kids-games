@@ -10,6 +10,9 @@ import {
   useTranslation,
   useLanguage,
   LANGUAGES,
+  getAllTopics,
+  createFlowProgressStore,
+  DEFAULT_FLOW_PROGRESS,
   type LanguageCode,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
@@ -49,6 +52,22 @@ export function SettingsScreen({ navigation }: Props) {
   const { language, changeLanguage } = useLanguage();
   const [switching, setSwitching] = useState(false);
 
+  const topics = getAllTopics();
+  const selectedTopicIds = settings.flowTopicIds; // null = all
+
+  const isTopicOn = (id: string) => selectedTopicIds == null || selectedTopicIds.includes(id);
+
+  const toggleTopic = (id: string) => {
+    const current = selectedTopicIds ?? topics.map((tp) => tp.id);
+    const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
+    // All selected → store null (means "all"); else store the explicit list.
+    update({ flowTopicIds: next.length === topics.length ? null : next });
+  };
+
+  const resetJourney = () => {
+    createFlowProgressStore().set({ ...DEFAULT_FLOW_PROGRESS, updatedAt: Date.now() });
+  };
+
   const onPickLanguage = async (code: LanguageCode) => {
     if (code === language) return;
     const { needsReload } = await changeLanguage(code);
@@ -87,6 +106,37 @@ export function SettingsScreen({ navigation }: Props) {
             value={settings.hapticsEnabled}
             onChange={(v) => update({ hapticsEnabled: v })}
           />
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionLabel}>{t('settings.guided.section')}</Text>
+          <ToggleRow
+            icon="🧭"
+            label={t('settings.guided.mode')}
+            value={settings.mode === 'guided'}
+            onChange={(v) => update({ mode: v ? 'guided' : 'free' })}
+          />
+          {settings.mode === 'guided' ? (
+            <>
+              <Text style={styles.sectionLabel}>{t('settings.guided.topics')}</Text>
+              <View style={styles.topicRow}>
+                {topics.map((tp) => (
+                  <Chip
+                    key={tp.id}
+                    label={tp.id}
+                    active={isTopicOn(tp.id)}
+                    onPress={() => toggleTopic(tp.id)}
+                  />
+                ))}
+              </View>
+              <ToggleRow
+                icon="🏁"
+                label={t('settings.guided.reset')}
+                value={false}
+                onChange={() => resetJourney()}
+              />
+            </>
+          ) : null}
         </View>
 
         <Text style={styles.section}>{t('settings.language')}</Text>
@@ -155,6 +205,13 @@ const styles = StyleSheet.create({
     marginBottom: -SPACING.sm,
   },
   bands: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
+  sectionLabel: {
+    fontFamily: FONTS.bodySemi,
+    fontSize: 13,
+    color: COLORS.inkSoft,
+    marginBottom: SPACING.sm,
+  },
+  topicRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginBottom: SPACING.md },
   version: {
     fontFamily: FONTS.bodySemi,
     fontSize: 13,
