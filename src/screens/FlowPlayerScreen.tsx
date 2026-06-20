@@ -30,25 +30,24 @@ export function FlowPlayerScreen({ navigation }: Props) {
     [settings.flowTopicIds],
   );
   const { status, unit, advance } = useFlow({ topics });
-  const ctx = useMemo(() => ({ width, height, rng: Math.random }), [width, height]);
 
   const [actors, setActors] = useState<Actor[]>([]);
   const advancing = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  // Keep a ref to ctx so the actors effect doesn't re-snap on ctx identity changes.
-  const ctxRef = useRef(ctx);
-  ctxRef.current = ctx;
 
   // Clean up any pending advance timer on unmount.
   useEffect(() => () => { clearTimeout(timerRef.current); }, []);
 
-  // When the active unit changes, morph the actor pool to its enter layout.
+  // Lay out the active unit's actors. Depends on width/height as well as the
+  // unit because the landscape lock is async: dimensions arrive portrait on
+  // mount and update once the rotation lands, so we must re-lay-out then.
+  // Under the lock that dimension change happens only on the initial flip.
   useEffect(() => {
     if (unit) {
       advancing.current = false;
-      setActors(unit.enterActors(ctxRef.current));
+      setActors(unit.enterActors({ width, height, rng: Math.random }));
     }
-  }, [unit]);
+  }, [unit, width, height]);
 
   const handleComplete = () => {
     if (!unit || advancing.current) return;
