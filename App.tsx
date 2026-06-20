@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -45,14 +46,23 @@ export default function App() {
   const [langReady, setLangReady] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    bootstrapLanguage().then(({ needsReload }) => {
-      if (cancelled) return;
-      if (needsReload) {
-        reloadApp();
-        return;
-      }
-      setLangReady(true);
-    });
+    bootstrapLanguage()
+      .then(({ needsReload }) => {
+        if (cancelled) return;
+        // The reload only matters for native RTL (I18nManager.forceRTL takes
+        // effect next launch). On web, direction is CSS-driven — never reload,
+        // or the app would blank/loop on first boot.
+        if (needsReload && Platform.OS !== 'web') {
+          reloadApp();
+          return;
+        }
+        setLangReady(true);
+      })
+      .catch((e) => {
+        // A locale-read failure must not blank the whole app — boot anyway.
+        console.error('bootstrapLanguage failed; continuing with defaults', e);
+        if (!cancelled) setLangReady(true);
+      });
     return () => {
       cancelled = true;
     };
