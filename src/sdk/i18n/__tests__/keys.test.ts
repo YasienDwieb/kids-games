@@ -181,6 +181,19 @@ const KEYS: string[] = [
   'count-and-pop:a11y.objectTile',
   'count-and-pop:a11y.objectPopped',
   'count-and-pop:a11y.choiceButton',
+  // flow (guided journey)
+  'core:flow.title',
+  'core:flow.continue',
+  'core:flow.allCaughtUp',
+  'core:flow.exit',
+  'core:flow.fourCount.prompt',
+  'core:flow.fourCount.starLabel',
+  'core:flow.fourShapes.prompt',
+  'core:flow.fourShapes.starLabel',
+  'core:settings.guided.section',
+  'core:settings.guided.mode',
+  'core:settings.guided.topics',
+  'core:settings.guided.reset',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {

@@ -29,6 +29,12 @@ export const ar: CoreTranslations = {
     language: 'اللغة',
     version: 'ألعاب الأطفال · الإصدار 1.0',
     switching: 'جارٍ تغيير اللغة…',
+    guided: {
+      section: 'الوضع الموجّه',
+      mode: 'الرحلة الموجّهة',
+      topics: 'المواضيع',
+      reset: 'إعادة تقدّم الرحلة',
+    },
   },
   player: {
     notFound: 'لم نجد هذه اللعبة',
@@ -43,5 +49,19 @@ export const ar: CoreTranslations = {
     preschool: 'ما قبل المدرسة',
     early: 'السنوات الأولى',
     kids: 'الكبار',
+  },
+  flow: {
+    title: 'رحلتك',
+    continue: 'تابع رحلتك',
+    allCaughtUp: 'أحسنت! أنهيت كل شيء 🌟',
+    exit: 'تم',
+    fourCount: {
+      prompt: 'انقر النجوم لتعدّها!',
+      starLabel: 'نجمة للعدّ',
+    },
+    fourShapes: {
+      prompt: 'أي نجمة مختلفة؟',
+      starLabel: 'نجمة',
+    },
   },
 };
