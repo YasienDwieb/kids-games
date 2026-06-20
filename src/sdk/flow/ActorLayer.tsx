@@ -57,14 +57,14 @@ export function ActorLayer({ actors, duration = 520 }: { actors: Actor[]; durati
         ]),
       );
     }
-    // Matched: morph geometry to target. (x/y not native-driver-able → separate driver.)
+    // Matched: morph geometry to target. translateX/translateY are transform props and fully support native driver.
     for (const m of plan.matched) {
       const t = tw.get(m.id)!;
       t.content = m.content;
       animations.push(
         Animated.parallel([
-          Animated.timing(t.x, { toValue: m.to.x, duration, useNativeDriver: false }),
-          Animated.timing(t.y, { toValue: m.to.y, duration, useNativeDriver: false }),
+          Animated.timing(t.x, { toValue: m.to.x, duration, useNativeDriver: true }),
+          Animated.timing(t.y, { toValue: m.to.y, duration, useNativeDriver: true }),
           Animated.timing(t.scale, { toValue: m.to.scale, duration, useNativeDriver: true }),
           Animated.timing(t.rotation, { toValue: m.to.rotation, duration, useNativeDriver: true }),
           Animated.timing(t.opacity, { toValue: m.to.opacity, duration, useNativeDriver: true }),
