@@ -1,6 +1,7 @@
 // src/screens/FlowPlayerScreen.tsx
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
@@ -15,6 +16,14 @@ type Props = NativeStackScreenProps<RootStackParamList, 'FlowPlayer'>;
 export function FlowPlayerScreen({ navigation }: Props) {
   const { settings } = useSettings();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  // Keep game content out from under the status bar / side nav bar / notch.
+  const safe = {
+    paddingTop: insets.top,
+    paddingBottom: insets.bottom,
+    paddingLeft: insets.left,
+    paddingRight: insets.right,
+  };
 
   // Landscape lock for guided mode only; restore portrait on exit.
   useEffect(() => {
@@ -56,12 +65,12 @@ export function FlowPlayerScreen({ navigation }: Props) {
     <View style={styles.root}>
       <SceneCanvas>
         {status === 'playing' && unit ? (
-          <Animated.View style={[styles.fill, { opacity: fade }]}>
+          <Animated.View style={[styles.fill, safe, { opacity: fade }]}>
             {unit.render(handleComplete)}
           </Animated.View>
         ) : null}
         {status === 'done' ? (
-          <View style={styles.rest} pointerEvents="box-none">
+          <View style={[styles.rest, safe]} pointerEvents="box-none">
             <Text style={styles.restText}>{t('flow.allCaughtUp')}</Text>
           </View>
         ) : null}
