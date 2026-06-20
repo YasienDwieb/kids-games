@@ -2,11 +2,12 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
   SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
-  FONTS, FONT_SIZES, COLORS, SPACING,
+  FONTS, FONT_SIZES, COLORS, SPACING, TOUCH_TARGET,
 } from '@/sdk';
 import { BackButton } from '../components/common';
 
@@ -17,10 +18,23 @@ export function FlowPlayerScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  // The flow runs in portrait: the games' rounds are portrait-native, so they
-  // render full-size, centered, and untrimmed. (The app is portrait-locked
-  // globally, so we don't change orientation here.) Top padding clears the
-  // status bar + the floating back button; bottom clears the home indicator.
+  // Inset the game's content off the status bar / screen edges. Horizontal
+  // padding also clears the floating back button (top-start corner) while
+  // keeping content centered in the wide landscape canvas.
+  const contentPad = {
+    paddingTop: insets.top + SPACING.sm,
+    paddingBottom: insets.bottom + SPACING.md,
+    paddingHorizontal:
+      Math.max(insets.left, insets.right) + SPACING.md + TOUCH_TARGET.recommended,
+  };
+
+  // Landscape lock for guided mode only; restore portrait on exit.
+  useEffect(() => {
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => {});
+    return () => {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
+    };
+  }, []);
 
   const adapters = useMemo(
     () => selectedAdapters(settings.flowGameIds),
@@ -35,6 +49,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
+  // Fade the new unit in whenever it changes.
   useEffect(() => {
     advancing.current = false;
     fade.setValue(0);
@@ -53,17 +68,12 @@ export function FlowPlayerScreen({ navigation }: Props) {
     <View style={styles.root}>
       <SceneCanvas>
         {status === 'playing' && unit ? (
-          <Animated.View
-            style={[
-              styles.fill,
-              { paddingTop: insets.top + SPACING.xl, paddingBottom: insets.bottom, opacity: fade },
-            ]}
-          >
+          <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>
             {unit.render(handleComplete)}
           </Animated.View>
         ) : null}
         {status === 'done' ? (
-          <View style={styles.center} pointerEvents="box-none">
+          <View style={styles.rest} pointerEvents="box-none">
             <Text style={styles.restText}>{t('flow.allCaughtUp')}</Text>
           </View>
         ) : null}
@@ -76,7 +86,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.canvas },
   fill: { flex: 1 },
-  center: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  rest: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   restText: {
     fontFamily: FONTS.displayBold,
     fontSize: FONT_SIZES.xl,
