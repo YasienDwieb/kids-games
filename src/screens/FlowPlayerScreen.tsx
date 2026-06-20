@@ -1,6 +1,6 @@
 // src/screens/FlowPlayerScreen.tsx
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,13 +17,18 @@ export function FlowPlayerScreen({ navigation }: Props) {
   const { settings } = useSettings();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  // Keep game content out from under the status bar / side nav bar / notch.
-  const safe = {
-    paddingTop: insets.top,
-    paddingBottom: insets.bottom,
-    paddingLeft: insets.left,
-    paddingRight: insets.right,
-  };
+  const { width, height } = useWindowDimensions();
+
+  // The games' rounds are authored for a tall portrait canvas. In the
+  // landscape-locked flow they'd overflow top & bottom, so we render each round
+  // at the device's natural portrait size and uniformly scale it to fit the
+  // safe area — guaranteeing it stays centered and is never trimmed. The wide
+  // sides show the shared backdrop (letterbox).
+  const availW = Math.max(1, width - insets.left - insets.right);
+  const availH = Math.max(1, height - insets.top - insets.bottom);
+  const designW = Math.min(width, height); // portrait width
+  const designH = Math.max(width, height); // portrait height
+  const scale = Math.min(availW / designW, availH / designH);
 
   // Landscape lock for guided mode only; restore portrait on exit.
   useEffect(() => {
@@ -65,12 +70,15 @@ export function FlowPlayerScreen({ navigation }: Props) {
     <View style={styles.root}>
       <SceneCanvas>
         {status === 'playing' && unit ? (
-          <Animated.View style={[styles.fill, safe, { opacity: fade }]}>
-            {unit.render(handleComplete)}
+          <Animated.View style={[styles.center, { opacity: fade }]}>
+            {/* Portrait design box, uniformly scaled to fit and centered. */}
+            <View style={{ width: designW, height: designH, transform: [{ scale }] }}>
+              {unit.render(handleComplete)}
+            </View>
           </Animated.View>
         ) : null}
         {status === 'done' ? (
-          <View style={[styles.rest, safe]} pointerEvents="box-none">
+          <View style={styles.center} pointerEvents="box-none">
             <Text style={styles.restText}>{t('flow.allCaughtUp')}</Text>
           </View>
         ) : null}
@@ -82,8 +90,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.canvas },
-  fill: { flex: 1 },
-  rest: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  center: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   restText: {
     fontFamily: FONTS.displayBold,
     fontSize: FONT_SIZES.xl,
