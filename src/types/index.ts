@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Home: undefined;
   GamePlayer: { gameId: string };
   Settings: undefined;
+  FlowPlayer: undefined;
 };
 
 /** Player profile (for future use) */

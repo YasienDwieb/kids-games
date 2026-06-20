@@ -24,6 +24,7 @@ import './src/sdk/i18n'; // side-effect: initializes i18next before anything rea
 import { bootstrapLanguage } from './src/sdk/i18n/useLanguage';
 import { reloadApp } from './src/sdk/i18n/reload';
 import './src/games'; // side-effect: registers all games + their translations
+import './src/flow'; // side-effect: registers flow units + topics
 
 export default function App() {
   const [fontsLoaded] = useFonts({
