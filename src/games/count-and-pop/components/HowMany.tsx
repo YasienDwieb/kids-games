@@ -252,9 +252,12 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
-  // Landscape: tighter vertical gaps, transparent so the flow backdrop shows.
+  // Landscape: distribute prompt / visual / choices evenly across the available
+  // height (no top blank, even gaps, last row never clipped) — device-agnostic,
+  // no pixel budgets. Visuals stay compact by using width (one row), not height.
   rootLandscape: {
-    gap: SPACING.xs,
+    justifyContent: 'space-evenly',
+    gap: 0,
     paddingVertical: SPACING.xs,
     backgroundColor: 'transparent',
   },

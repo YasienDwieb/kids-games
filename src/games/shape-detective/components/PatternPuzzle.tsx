@@ -199,9 +199,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
   },
-  // Landscape: smaller gaps so sequence + options share the short height.
+  // Landscape: distribute instruction / sequence / options evenly across the
+  // height (device-agnostic — no pixel budgets, last row never clipped).
   rootLandscape: {
-    gap: SPACING.sm,
+    justifyContent: 'space-evenly',
+    gap: 0,
     paddingVertical: SPACING.xs,
   },
   // Landscape: keep all answer tiles on a single row (plenty of width).

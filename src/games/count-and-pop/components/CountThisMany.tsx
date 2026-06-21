@@ -313,9 +313,10 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
-  // Landscape: tighter vertical gaps, transparent so the flow backdrop shows.
+  // Landscape: distribute sections evenly across the height (device-agnostic).
   rootLandscape: {
-    gap: SPACING.sm,
+    justifyContent: 'space-evenly',
+    gap: 0,
     paddingVertical: SPACING.xs,
     backgroundColor: 'transparent',
   },

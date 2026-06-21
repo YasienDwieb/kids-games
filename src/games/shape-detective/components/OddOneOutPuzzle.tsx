@@ -139,8 +139,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
   },
+  // Landscape: distribute instruction + grid evenly across the height.
   rootLandscape: {
-    gap: SPACING.sm,
+    justifyContent: 'space-evenly',
+    gap: 0,
     paddingVertical: SPACING.xs,
   },
   instruction: {
