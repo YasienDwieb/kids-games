@@ -1,5 +1,5 @@
 // src/screens/FlowPlayerScreen.tsx
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -40,6 +40,17 @@ export function FlowPlayerScreen({ navigation }: Props) {
     };
   }, []);
 
+  // The lock→landscape rotation is async; on a cold entry useWindowDimensions
+  // can latch stale portrait dims (content squished to one side). Remount the
+  // unit subtree when orientation settles so it re-reads the real dimensions.
+  const [orientKey, setOrientKey] = useState(0);
+  useEffect(() => {
+    const sub = ScreenOrientation.addOrientationChangeListener(() =>
+      setOrientKey((k) => k + 1),
+    );
+    return () => ScreenOrientation.removeOrientationChangeListener(sub);
+  }, []);
+
   const adapters = useMemo(
     () => selectedAdapters(settings.flowGameIds),
     [settings.flowGameIds],
@@ -72,7 +83,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
     <View style={styles.root}>
       <SceneCanvas>
         {status === 'playing' && unit ? (
-          <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>
+          <Animated.View key={orientKey} style={[styles.fill, contentPad, { opacity: fade }]}>
             {unit.render(handleComplete)}
           </Animated.View>
         ) : null}

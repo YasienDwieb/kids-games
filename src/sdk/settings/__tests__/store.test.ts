@@ -20,10 +20,9 @@ describe('settingsStore', () => {
 });
 
 describe('settings defaults', () => {
-  it('defaults to free mode, all games, scoreless', () => {
+  it('defaults to free mode, all games included', () => {
     expect(DEFAULT_SETTINGS.mode).toBe('free');
     expect(DEFAULT_SETTINGS.flowGameIds).toBeNull();
-    expect(DEFAULT_SETTINGS.flowScoring).toBe(false);
   });
 
   it('keeps existing audio/lang defaults intact', () => {

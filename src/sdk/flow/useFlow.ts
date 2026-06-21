@@ -31,6 +31,8 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
   sequenceRef.current = sequence;
 
   const [position, setPosition] = useState<FlowPosition | null>(null); // null = loading
+  const positionRef = useRef<FlowPosition | null>(null); // live value for advance()
+  positionRef.current = position;
   const seedRef = useRef(0);
 
   // Load the saved checkpoint once; resolve where to resume.
@@ -53,13 +55,12 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
   );
 
   const advance = useCallback(() => {
-    setPosition((cur) => {
-      if (!cur || cur.done) return cur;
-      const next = advanceStep(sequenceRef.current.length, cur.step);
-      // Persist the furthest step reached (done → one past the last unit).
-      persist(next.done ? sequenceRef.current.length : next.step);
-      return next;
-    });
+    const cur = positionRef.current;
+    if (!cur || cur.done) return;
+    const next = advanceStep(sequenceRef.current.length, cur.step);
+    // Persist the furthest step reached (done → one past the last unit).
+    persist(next.done ? sequenceRef.current.length : next.step);
+    setPosition(next);
   }, [persist]);
 
   const reset = useCallback(() => {
