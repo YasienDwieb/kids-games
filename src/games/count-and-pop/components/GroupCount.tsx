@@ -169,6 +169,7 @@ function ObjectGroup({
   delayOffset,
   tintColor,
   tileSize,
+  landscape = false,
   empty = false,
 }: {
   count: number;
@@ -176,10 +177,11 @@ function ObjectGroup({
   delayOffset: number;
   tintColor: string;
   tileSize: number;
+  landscape?: boolean;
   empty?: boolean;
 }): React.JSX.Element {
   return (
-    <View style={groupStyles.group}>
+    <View style={[groupStyles.group, landscape && groupStyles.groupLandscape]}>
       {Array.from({ length: count }, (_, i) =>
         empty ? (
           <EmptySlot key={i} size={tileSize} />
@@ -205,6 +207,10 @@ const groupStyles = StyleSheet.create({
     gap: SPACING.xs,
     flex: 1,
     minWidth: 60,
+  },
+  // Landscape: roomier gaps between the (smaller) tiles so they don't touch.
+  groupLandscape: {
+    gap: SPACING.sm,
   },
 });
 
@@ -257,6 +263,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
             delayOffset={0}
             tintColor={ACCENTS.green.tint}
             tileSize={tileSize}
+            landscape={landscape}
           />
           <PlusDivider />
           {/* Right: empty "needed" slots */}
@@ -266,6 +273,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
             delayOffset={round.have}
             tintColor={COLORS.canvas2}
             tileSize={tileSize}
+            landscape={landscape}
             empty
           />
         </View>
@@ -284,6 +292,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
           delayOffset={0}
           tintColor={ACCENTS.blue.tint}
           tileSize={tileSize}
+          landscape={landscape}
         />
         <PlusDivider />
         {/* Right group: b objects — orange tint */}
@@ -293,6 +302,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
           delayOffset={round.a}
           tintColor={ACCENTS.orange.tint}
           tileSize={tileSize}
+          landscape={landscape}
         />
       </View>
     </View>
