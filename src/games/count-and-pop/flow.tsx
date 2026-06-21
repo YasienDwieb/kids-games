@@ -5,9 +5,8 @@
  * with no per-topic authoring: each journey unit renders one round via the
  * same round components the game uses, scoreless, calling onComplete on solve.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { registerFlowAdapter, useSound } from '@/sdk';
+import { registerFlowAdapter, useFlowRound } from '@/sdk';
 import { CountThisMany } from './components/CountThisMany';
 import { HowMany } from './components/HowMany';
 import { buildLevel, TOTAL_LEVELS } from './utils/levels';
@@ -20,20 +19,7 @@ function CountAndPopFlowRound({
   level: LevelData;
   onComplete: () => void;
 }) {
-  const { play } = useSound();
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [solved, setSolved] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  const complete = useCallback(() => {
-    if (solved) return;
-    setSolved(true);
-    void play('success');
-    timer.current = setTimeout(onComplete, 450);
-  }, [solved, play, onComplete]);
-
+  const { play, solved, selectedIndex, complete, pick } = useFlowRound(onComplete);
   const { round } = level;
 
   if (round.mode === 'countThisMany') {
@@ -49,20 +35,14 @@ function CountAndPopFlowRound({
     );
   }
 
-  const onPick = (idx: number) => {
-    if (selectedIndex !== null || solved) return;
-    setSelectedIndex(idx);
-    if (idx === round.correctIndex) {
-      complete();
-    } else {
-      void play('wrong');
-      timer.current = setTimeout(() => setSelectedIndex(null), 900);
-    }
-  };
-
   return (
     <View style={styles.root}>
-      <HowMany round={round} selectedIndex={selectedIndex} onPick={onPick} disabled={solved} />
+      <HowMany
+        round={round}
+        selectedIndex={selectedIndex}
+        onPick={(i) => pick(i, round.correctIndex)}
+        disabled={solved || selectedIndex !== null}
+      />
     </View>
   );
 }

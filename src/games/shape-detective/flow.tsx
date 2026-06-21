@@ -5,9 +5,8 @@
  * per-topic authoring: each journey unit renders one puzzle via the same
  * puzzle components the game uses, scoreless, calling onComplete on solve.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { registerFlowAdapter, useSound } from '@/sdk';
+import { registerFlowAdapter, useFlowRound } from '@/sdk';
 import { OddOneOutPuzzle } from './components/OddOneOutPuzzle';
 import { PatternPuzzle } from './components/PatternPuzzle';
 import { SortPuzzle } from './components/SortPuzzle';
@@ -21,20 +20,7 @@ function ShapeDetectiveFlowRound({
   level: LevelData;
   onComplete: () => void;
 }) {
-  const { play } = useSound();
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [solved, setSolved] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  const complete = useCallback(() => {
-    if (solved) return;
-    setSolved(true);
-    void play('success');
-    timer.current = setTimeout(onComplete, 450);
-  }, [solved, play, onComplete]);
-
+  const { play, solved, selectedIndex, complete, pick } = useFlowRound(onComplete);
   const { puzzle } = level;
 
   if (puzzle.type === 'sort') {
@@ -52,25 +38,14 @@ function ShapeDetectiveFlowRound({
     );
   }
 
-  const onPick = (idx: number) => {
-    if (selectedIndex !== null || solved) return;
-    setSelectedIndex(idx);
-    if (idx === puzzle.correctIndex) {
-      complete();
-    } else {
-      void play('wrong');
-      timer.current = setTimeout(() => setSelectedIndex(null), 900);
-    }
-  };
-
   if (puzzle.type === 'oddOneOut') {
     return (
       <View style={styles.root}>
         <OddOneOutPuzzle
           puzzle={puzzle}
           selectedIndex={selectedIndex}
-          onPick={onPick}
-          disabled={selectedIndex !== null}
+          onPick={(i) => pick(i, puzzle.correctIndex)}
+          disabled={selectedIndex !== null || solved}
         />
       </View>
     );
@@ -81,8 +56,8 @@ function ShapeDetectiveFlowRound({
       <PatternPuzzle
         puzzle={puzzle}
         selectedIndex={selectedIndex}
-        onPick={onPick}
-        disabled={selectedIndex !== null}
+        onPick={(i) => pick(i, puzzle.correctIndex)}
+        disabled={selectedIndex !== null || solved}
       />
     </View>
   );
