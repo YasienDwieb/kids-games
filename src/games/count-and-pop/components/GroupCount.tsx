@@ -30,6 +30,7 @@ import {
   Easing,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import {
@@ -108,13 +109,21 @@ function EmojiTile({
   emoji,
   delayMs,
   tintColor,
+  size,
 }: {
   emoji: string;
   delayMs: number;
   tintColor: string;
+  size: number;
 }): React.JSX.Element {
   return (
-    <View style={[tileStyles.tile, { backgroundColor: tintColor }, SHADOWS.sm]}>
+    <View
+      style={[
+        tileStyles.tile,
+        { width: size, height: size, backgroundColor: tintColor },
+        SHADOWS.sm,
+      ]}
+    >
       <SwimmingEmoji emoji={emoji} delayMs={delayMs} />
     </View>
   );
@@ -124,11 +133,12 @@ function EmojiTile({
 // EmptySlot — a dashed outline slot for the "needed" portion in makeN
 // ---------------------------------------------------------------------------
 
-function EmptySlot(): React.JSX.Element {
-  return <View style={tileStyles.emptySlot} />;
+function EmptySlot({ size }: { size: number }): React.JSX.Element {
+  return <View style={[tileStyles.emptySlot, { width: size, height: size }]} />;
 }
 
 const TILE_SIZE = 56;
+const LANDSCAPE_TILE_SIZE = 40;
 
 const tileStyles = StyleSheet.create({
   tile: {
@@ -158,25 +168,28 @@ function ObjectGroup({
   emoji,
   delayOffset,
   tintColor,
+  tileSize,
   empty = false,
 }: {
   count: number;
   emoji: string;
   delayOffset: number;
   tintColor: string;
+  tileSize: number;
   empty?: boolean;
 }): React.JSX.Element {
   return (
     <View style={groupStyles.group}>
       {Array.from({ length: count }, (_, i) =>
         empty ? (
-          <EmptySlot key={i} />
+          <EmptySlot key={i} size={tileSize} />
         ) : (
           <EmojiTile
             key={i}
             emoji={emoji}
             delayMs={(delayOffset + i) * 280}
             tintColor={tintColor}
+            size={tileSize}
           />
         ),
       )}
@@ -226,10 +239,16 @@ const dividerStyles = StyleSheet.create({
 // ---------------------------------------------------------------------------
 
 export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
+  // Landscape (guided flow): widen the card so tiles sit in one short row
+  // instead of wrapping tall — keeps the prompt+visual+choices within height.
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
+  const tileSize = landscape ? LANDSCAPE_TILE_SIZE : TILE_SIZE;
+
   if (round.mode === 'makeN') {
     const needed = round.target - round.have;
     return (
-      <View style={[styles.card, SHADOWS.md]}>
+      <View style={[styles.card, landscape && styles.cardLandscape, SHADOWS.md]}>
         <View style={styles.groupRow}>
           {/* Left: filled "have" objects — green tint */}
           <ObjectGroup
@@ -237,6 +256,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
             emoji={round.objectEmoji}
             delayOffset={0}
             tintColor={ACCENTS.green.tint}
+            tileSize={tileSize}
           />
           <PlusDivider />
           {/* Right: empty "needed" slots */}
@@ -245,6 +265,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
             emoji={round.objectEmoji}
             delayOffset={round.have}
             tintColor={COLORS.canvas2}
+            tileSize={tileSize}
             empty
           />
         </View>
@@ -254,7 +275,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
 
   // addition: two filled groups, left=blue tint, right=orange tint
   return (
-    <View style={[styles.card, SHADOWS.md]}>
+    <View style={[styles.card, landscape && styles.cardLandscape, SHADOWS.md]}>
       <View style={styles.groupRow}>
         {/* Left group: a objects — blue tint */}
         <ObjectGroup
@@ -262,6 +283,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
           emoji={round.objectEmoji}
           delayOffset={0}
           tintColor={ACCENTS.blue.tint}
+          tileSize={tileSize}
         />
         <PlusDivider />
         {/* Right group: b objects — orange tint */}
@@ -270,6 +292,7 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
           emoji={round.objectEmoji}
           delayOffset={round.a}
           tintColor={ACCENTS.orange.tint}
+          tileSize={tileSize}
         />
       </View>
     </View>
@@ -287,6 +310,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.card,
     padding: SPACING.md,
+  },
+  // Landscape: wider card so each group's tiles fit on one row (shorter card).
+  cardLandscape: {
+    maxWidth: 680,
   },
   groupRow: {
     flexDirection: 'row',

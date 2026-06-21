@@ -207,13 +207,9 @@ export function HowMany({
         <Text style={styles.promptInstruction}>{promptInstruction}</Text>
       </View>
 
-      {/* Object display. In landscape it lives in a flexible, clipped middle
-          area so the choice row below always stays on-screen by construction. */}
-      {landscape ? (
-        <View style={styles.visualFlexLandscape}>{objectVisual}</View>
-      ) : (
-        objectVisual
-      )}
+      {/* Object display. Compact in landscape (small one-row tiles), so the
+          column fits naturally and the choice row stays on-screen. */}
+      {objectVisual}
 
       {/* Choice row — no direction pin: equal-option buttons, safe to mirror in RTL */}
       <View style={[styles.choiceRow, landscape && styles.choiceRowLandscape]}>
@@ -258,23 +254,14 @@ const styles = StyleSheet.create({
   },
   // Landscape: tighter vertical gaps, transparent so the flow backdrop shows.
   rootLandscape: {
-    gap: SPACING.sm,
+    gap: SPACING.xs,
     paddingVertical: SPACING.xs,
     backgroundColor: 'transparent',
   },
   // Landscape: let prompt / objects use the available width; trim prompt height.
   wideLandscape: { maxWidth: 720 },
-  promptCardLandscape: { maxWidth: 720, paddingVertical: SPACING.sm },
-  // Landscape: flexible, clipped middle so the choice row is always visible.
-  visualFlexLandscape: {
-    flex: 1,
-    minHeight: 0,
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  // Landscape: choice row never shrinks/clips; pinned below the visual.
+  promptCardLandscape: { maxWidth: 720, paddingVertical: SPACING.xs },
+  // Landscape: choice row uses the width; natural height in the centered column.
   choiceRowLandscape: { maxWidth: 720, flexGrow: 0, flexShrink: 0 },
   // Prompt card
   promptCard: {

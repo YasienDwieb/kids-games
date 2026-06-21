@@ -26,8 +26,8 @@ export function FlowPlayerScreen({ navigation }: Props) {
   const startInset = I18nManager.isRTL ? insets.right : insets.left;
   const endInset = I18nManager.isRTL ? insets.left : insets.right;
   const contentPad = {
-    paddingTop: insets.top + SPACING.sm,
-    paddingBottom: insets.bottom + SPACING.sm,
+    paddingTop: insets.top + SPACING.xs,
+    paddingBottom: insets.bottom + SPACING.xs,
     paddingStart: startInset + SPACING.md + TOUCH_TARGET.recommended,
     paddingEnd: endInset + SPACING.md,
   };
