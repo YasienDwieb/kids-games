@@ -13,6 +13,7 @@ import {
   bandsForGame,
   useTranslation,
   gameName,
+  PressableButton,
 } from '@/sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -50,29 +51,40 @@ export function HomeScreen({ navigation }: Props) {
           />
         </View>
 
-        {/* category chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chips}
-        >
-          <Chip
-            label={t('home.all')}
-            active={settings.ageBand === null}
-            onPress={() => update({ ageBand: null })}
-          />
-          {AGE_BANDS.map((band) => (
+        {/* category chips — hidden in guided mode */}
+        {settings.mode !== 'guided' && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chips}
+          >
             <Chip
-              key={band.id}
-              label={t(`ageBands.${band.id}`)}
-              active={settings.ageBand === band.id}
-              onPress={() => update({ ageBand: band.id })}
+              label={t('home.all')}
+              active={settings.ageBand === null}
+              onPress={() => update({ ageBand: null })}
             />
-          ))}
-        </ScrollView>
+            {AGE_BANDS.map((band) => (
+              <Chip
+                key={band.id}
+                label={t(`ageBands.${band.id}`)}
+                active={settings.ageBand === band.id}
+                onPress={() => update({ ageBand: band.id })}
+              />
+            ))}
+          </ScrollView>
+        )}
 
-        {/* grid */}
-        {games.length === 0 ? (
+        {/* grid or guided journey */}
+        {settings.mode === 'guided' ? (
+          <View style={styles.journey}>
+            <Text style={styles.journeyTitle}>{t('flow.title')}</Text>
+            <PressableButton
+              label={t('flow.continue')}
+              accent="purple"
+              onPress={() => navigation.navigate('FlowPlayer')}
+            />
+          </View>
+        ) : games.length === 0 ? (
           <Text style={styles.empty}>{t('home.empty')}</Text>
         ) : (
           <View style={styles.grid}>
@@ -140,5 +152,16 @@ const styles = StyleSheet.create({
     color: COLORS.inkSoft,
     textAlign: 'center',
     paddingVertical: 40,
+  },
+  journey: {
+    paddingHorizontal: 22,
+    paddingTop: 24,
+    gap: SPACING.lg,
+    alignItems: 'center',
+  },
+  journeyTitle: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 22,
+    color: COLORS.ink,
   },
 });

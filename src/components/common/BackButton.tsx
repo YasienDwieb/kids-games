@@ -16,6 +16,9 @@ const BACK_GLYPH = I18nManager.isRTL ? '›' : '‹';
 export function BackButton({ onPress }: BackButtonProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  // Logical-start inset: in landscape a status/nav bar or notch eats the leading
+  // edge, so offset by it. `start` is left in LTR, right in RTL.
+  const startInset = I18nManager.isRTL ? insets.right : insets.left;
   return (
     <Pressable
       onPress={onPress}
@@ -24,7 +27,7 @@ export function BackButton({ onPress }: BackButtonProps) {
       hitSlop={8}
       style={({ pressed }) => [
         styles.button,
-        { top: insets.top + SPACING.xs },
+        { top: insets.top + SPACING.xs, start: startInset + SPACING.md },
         SHADOWS.sm,
         pressed && styles.pressed,
       ]}

@@ -35,6 +35,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import {
@@ -133,6 +134,10 @@ export function HowMany({
 }: HowManyProps): React.JSX.Element {
   const { t } = useTranslation();
   const { mode, objectEmoji, choices, correctIndex } = round;
+  // Landscape (guided flow): tighter vertical rhythm + wider content so the
+  // prompt, objects and choices fit the shorter height.
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   // Derive prompt text based on mode
   let promptTitle: string;
@@ -171,39 +176,43 @@ export function HowMany({
   const howManyCount = mode === 'howMany' ? round.count : 0;
   const swimDelays = Array.from({ length: howManyCount }, (_, i) => i * 300);
 
+  // Mode-specific object visual.
+  const objectVisual =
+    mode === 'howMany' ? (
+      /* Flat emoji grid for howMany — scrollable for large counts */
+      <ScrollView
+        scrollEnabled={howManyCount > 9 || landscape}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.groupCardContent}
+        style={[styles.groupCard, landscape && styles.wideLandscape]}
+      >
+        <View style={[styles.groupInner, SHADOWS.sm]}>
+          <View style={styles.emojiGrid}>
+            {swimDelays.map((delay, i) => (
+              <SwimmingEmoji key={i} emoji={objectEmoji} delayMs={delay} />
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    ) : (
+      /* Two-group visual for makeN / addition */
+      <GroupCount round={round as MakeNRound | AdditionRound} />
+    );
+
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, landscape && styles.rootLandscape]}>
       {/* Prompt card */}
-      <View style={[styles.promptCard, SHADOWS.md]}>
+      <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
         <Text style={styles.promptTitle}>{promptTitle}</Text>
         <Text style={styles.promptInstruction}>{promptInstruction}</Text>
       </View>
 
-      {/* Object display — mode-specific */}
-      {mode === 'howMany' ? (
-        /* Flat emoji grid for howMany — scrollable for large counts */
-        <ScrollView
-          scrollEnabled={howManyCount > 9}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.groupCardContent}
-          style={styles.groupCard}
-        >
-          <View style={[styles.groupInner, SHADOWS.sm]}>
-            <View style={styles.emojiGrid}>
-              {swimDelays.map((delay, i) => (
-                <SwimmingEmoji key={i} emoji={objectEmoji} delayMs={delay} />
-              ))}
-            </View>
-          </View>
-        </ScrollView>
-      ) : (
-        /* Two-group visual for makeN / addition */
-        <GroupCount round={round as MakeNRound | AdditionRound} />
-
-      )}
+      {/* Object display. Compact in landscape (small one-row tiles), so the
+          column fits naturally and the choice row stays on-screen. */}
+      {objectVisual}
 
       {/* Choice row — no direction pin: equal-option buttons, safe to mirror in RTL */}
-      <View style={styles.choiceRow}>
+      <View style={[styles.choiceRow, landscape && styles.choiceRowLandscape]}>
         {choices.map((value, idx) => {
           const state = getChoiceState(idx);
           const isAnswered = selectedIndex !== null;
@@ -243,6 +252,20 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
+  // Landscape: distribute prompt / visual / choices evenly across the available
+  // height (no top blank, even gaps, last row never clipped) — device-agnostic,
+  // no pixel budgets. Visuals stay compact by using width (one row), not height.
+  rootLandscape: {
+    justifyContent: 'space-evenly',
+    gap: 0,
+    paddingVertical: SPACING.xs,
+    backgroundColor: 'transparent',
+  },
+  // Landscape: let prompt / objects use the available width; trim prompt height.
+  wideLandscape: { maxWidth: 720 },
+  promptCardLandscape: { maxWidth: 720, paddingVertical: SPACING.xs },
+  // Landscape: choice row uses the width; natural height in the centered column.
+  choiceRowLandscape: { maxWidth: 720, flexGrow: 0, flexShrink: 0 },
   // Prompt card
   promptCard: {
     width: '100%',

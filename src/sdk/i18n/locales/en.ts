@@ -28,6 +28,12 @@ export const en = {
     language: 'Language',
     version: 'Kids Games · v1.0',
     switching: 'Switching language…',
+    guided: {
+      section: 'Guided mode',
+      mode: 'Guided journey',
+      games: 'Games in the journey',
+      reset: 'Reset journey progress',
+    },
   },
   player: {
     notFound: 'Game not found',
@@ -42,6 +48,12 @@ export const en = {
     preschool: 'Preschool',
     early: 'Early years',
     kids: 'Big kids',
+  },
+  flow: {
+    title: 'Your journey',
+    continue: 'Continue your journey',
+    allCaughtUp: "You're all caught up 🌟",
+    exit: 'Done',
   },
 } as const;
 

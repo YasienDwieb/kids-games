@@ -181,6 +181,15 @@ const KEYS: string[] = [
   'count-and-pop:a11y.objectTile',
   'count-and-pop:a11y.objectPopped',
   'count-and-pop:a11y.choiceButton',
+  // flow (guided journey)
+  'core:flow.title',
+  'core:flow.continue',
+  'core:flow.allCaughtUp',
+  'core:flow.exit',
+  'core:settings.guided.section',
+  'core:settings.guided.mode',
+  'core:settings.guided.games',
+  'core:settings.guided.reset',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {
@@ -189,6 +198,10 @@ describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {
   });
 
   test.each(KEYS)('%s', (key) => {
+    // i18n.exists() is the authoritative guard — it returns false for missing keys
+    // including core-namespace keys where i18next strips the namespace before
+    // returning the fallback, making value !== key an insufficient check alone.
+    expect(i18n.exists(key)).toBe(true);
     const value = i18n.t(key);
     expect(typeof value).toBe('string');
     expect(value.length).toBeGreaterThan(0);

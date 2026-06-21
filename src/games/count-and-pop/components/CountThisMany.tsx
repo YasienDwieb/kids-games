@@ -25,6 +25,7 @@ import {
   Easing,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import {
@@ -161,6 +162,10 @@ export function CountThisMany({
 }: CountThisManyProps): React.JSX.Element {
   const { t } = useTranslation();
   const { target, objectEmoji } = round;
+  // Landscape (e.g. guided flow): tighten vertical rhythm and use the width so
+  // the prompt + tiles fit the shorter height instead of wrapping/clipping.
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   // Tile count: target + OVERFLOW, capped at 10 so the grid stays manageable
   const tileCount = Math.min(target + OVERFLOW, 10);
@@ -232,9 +237,9 @@ export function CountThisMany({
   }, [bobAnim]);
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, landscape && styles.rootLandscape]}>
       {/* Prompt card */}
-      <View style={[styles.promptCard, SHADOWS.md]}>
+      <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
         <Text style={styles.promptTitle}>
           {t('count-and-pop:countThisMany.title')}
         </Text>
@@ -270,7 +275,7 @@ export function CountThisMany({
       </View>
 
       {/* Object grid */}
-      <View style={styles.grid}>
+      <View style={[styles.grid, landscape && styles.gridLandscape]}>
         {Array.from({ length: tileCount }, (_, i) => {
           const isPopped = poppedSet.has(i);
           // Lock unpopped tiles once we've reached the target
@@ -308,6 +313,15 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
+  // Landscape: distribute sections evenly across the height (device-agnostic).
+  rootLandscape: {
+    justifyContent: 'space-evenly',
+    gap: 0,
+    paddingVertical: SPACING.xs,
+    backgroundColor: 'transparent',
+  },
+  promptCardLandscape: { maxWidth: 560 },
+  gridLandscape: { maxWidth: 760 },
   // Prompt card — pink gradient bg approximated with ACCENTS.pink.tint + border
   promptCard: {
     width: '100%',

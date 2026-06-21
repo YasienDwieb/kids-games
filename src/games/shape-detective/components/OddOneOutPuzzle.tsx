@@ -20,7 +20,7 @@
  * Prop contract mirrors PatternPuzzle: puzzle / selectedIndex / onPick / disabled.
  */
 
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import {
   ACCENTS,
   BORDER_RADIUS,
@@ -61,9 +61,12 @@ export function OddOneOutPuzzle({
   disabled = false,
 }: OddOneOutPuzzleProps): React.JSX.Element {
   const { t } = useTranslation();
+  // Landscape (guided flow): tighten vertical rhythm so the grid isn't clipped.
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, landscape && styles.rootLandscape]}>
       {/* Instruction */}
       <Text style={styles.instruction}>{t('shape-detective:oddOneOut.instruction')}</Text>
 
@@ -135,6 +138,12 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
+  },
+  // Landscape: distribute instruction + grid evenly across the height.
+  rootLandscape: {
+    justifyContent: 'space-evenly',
+    gap: 0,
+    paddingVertical: SPACING.xs,
   },
   instruction: {
     fontFamily: FONTS.display,
