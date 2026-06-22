@@ -21,6 +21,7 @@ export {
   HudPill,
   hudTextStyle,
   EmojiFrame,
+  EmojiImage,
   Star,
   GameCard,
   BackButton,
@@ -31,6 +32,7 @@ export {
 export { ASSETS } from './assets/manifest';
 export type { AssetId } from './assets/manifest';
 export { getAsset, findAssets, pickAsset, pickModule } from './assets/query';
+export { EMOJI_IMAGES, getEmojiImage } from './assets/emoji/images';
 export type { AssetEntry, AssetType } from './assets/types';
 
 // Storage
