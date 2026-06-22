@@ -181,6 +181,18 @@ const KEYS: string[] = [
   'count-and-pop:a11y.objectTile',
   'count-and-pop:a11y.objectPopped',
   'count-and-pop:a11y.choiceButton',
+  // match-up
+  'match-up:meta.name',
+  'match-up:meta.description',
+  'match-up:loading',
+  'match-up:score',
+  'match-up:solved.title',
+  'match-up:solved.next',
+  'match-up:prompts.animalFood',
+  'match-up:prompts.workerTool',
+  'match-up:prompts.animalHome',
+  'match-up:prompts.colorFruit',
+  'match-up:prompts.babyAnimal',
   // flow (guided journey)
   'core:flow.title',
   'core:flow.continue',
