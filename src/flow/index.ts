@@ -2,3 +2,4 @@
 // Add a game to guided mode by giving it a `flow.tsx` adapter and listing it here.
 import '@/games/count-and-pop/flow';
 import '@/games/shape-detective/flow';
+import '@/games/match-up/flow';
