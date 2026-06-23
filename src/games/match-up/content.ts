@@ -18,15 +18,26 @@ const e = (emoji: string): MatchItem => ({ kind: 'emoji', emoji });
 const c = (color: string): MatchItem => ({ kind: 'color', color });
 const pair = (top: MatchItem, bottom: MatchItem): MatchPair => ({ top, bottom });
 
-export type MatchTheme = {
+export type PairsTheme = {
+  readonly kind: 'pairs';
   readonly id: string;
-  /** Translation key (relative to the game namespace). */
   readonly promptKey: string;
   readonly pairs: readonly MatchPair[];
 };
 
+export type CountTheme = {
+  readonly kind: 'count';
+  readonly id: string;
+  readonly promptKey: string;
+  /** Kid-friendly emoji pool; one is chosen per round so only the count varies. */
+  readonly emojis: readonly string[];
+};
+
+export type MatchTheme = PairsTheme | CountTheme;
+
 export const THEMES: readonly MatchTheme[] = [
   {
+    kind: 'pairs' as const,
     id: 'animal-food',
     promptKey: 'prompts.animalFood',
     pairs: [
@@ -41,6 +52,7 @@ export const THEMES: readonly MatchTheme[] = [
     ],
   },
   {
+    kind: 'pairs' as const,
     id: 'worker-tool',
     promptKey: 'prompts.workerTool',
     pairs: [
@@ -55,6 +67,7 @@ export const THEMES: readonly MatchTheme[] = [
     ],
   },
   {
+    kind: 'pairs' as const,
     id: 'animal-home',
     promptKey: 'prompts.animalHome',
     pairs: [
@@ -69,6 +82,7 @@ export const THEMES: readonly MatchTheme[] = [
     ],
   },
   {
+    kind: 'pairs' as const,
     id: 'color-fruit',
     promptKey: 'prompts.colorFruit',
     pairs: [
@@ -81,6 +95,7 @@ export const THEMES: readonly MatchTheme[] = [
     ],
   },
   {
+    kind: 'pairs' as const,
     id: 'baby-animal',
     promptKey: 'prompts.babyAnimal',
     pairs: [
@@ -92,5 +107,11 @@ export const THEMES: readonly MatchTheme[] = [
       pair(e('🐰'), e('🐇')),
       pair(e('🐮'), e('🐄')),
     ],
+  },
+  {
+    kind: 'count',
+    id: 'number-count',
+    promptKey: 'prompts.numberCount',
+    emojis: ['🍎', '⭐', '🍌', '🐟', '🌸', '🎈', '🍪', '🦋'],
   },
 ];

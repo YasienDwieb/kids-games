@@ -13,7 +13,7 @@
 import { levelsFromGenerator } from '@/sdk';
 import type { LevelSource } from '@/sdk';
 import { THEMES } from '../content';
-import { pairCountForLevel } from '../constants';
+import { pairCountForLevel, MAX_COUNT } from '../constants';
 import type { MatchItem, RoundData } from '../types';
 
 /** Stateful PRNG from a 32-bit seed (mulberry32 — same as the other games). */
@@ -51,18 +51,37 @@ export function buildLevel(level: number, sessionSeed = 0): RoundData {
   const theme = THEMES[(level - 1) % THEMES.length];
   const count = pairCountForLevel(level);
 
-  // Sample `count` distinct pairs; top row keeps this order.
+  if (theme.kind === 'count') {
+    // Pick `count` distinct numbers from 1..MAX_COUNT.
+    const pool = Array.from({ length: MAX_COUNT }, (_, i) => i + 1);
+    const numbers = shuffled(pool, rand).slice(0, count);
+    // One emoji for the whole round so only the count varies between tiles.
+    const emoji = shuffled(theme.emojis, rand)[0];
+
+    const top: MatchItem[] = numbers.map((n) => ({ kind: 'number', n }));
+    const bottomTagged = shuffled(
+      numbers.map((n, topIdx) => ({ item: { kind: 'group', n, emoji } as MatchItem, topIdx })),
+      rand,
+    );
+    const bottom: MatchItem[] = bottomTagged.map((b) => b.item);
+    const solution: number[] = new Array(count);
+    bottomTagged.forEach((b, bottomIdx) => {
+      solution[b.topIdx] = bottomIdx;
+    });
+
+    return { themeId: theme.id, promptKey: theme.promptKey, top, bottom, solution };
+  }
+
+  // --- static pairs theme (unchanged behavior) ---
   const chosen = shuffled(theme.pairs, rand).slice(0, count);
   const top: MatchItem[] = chosen.map((p) => p.top);
 
-  // Shuffle the bottom row, remembering which top index each bottom belongs to.
   const bottomTagged = shuffled(
     chosen.map((p, topIdx) => ({ item: p.bottom, topIdx })),
     rand,
   );
   const bottom: MatchItem[] = bottomTagged.map((b) => b.item);
 
-  // solution[topIdx] = position of its partner in the shuffled bottom row.
   const solution: number[] = new Array(count);
   bottomTagged.forEach((b, bottomIdx) => {
     solution[b.topIdx] = bottomIdx;

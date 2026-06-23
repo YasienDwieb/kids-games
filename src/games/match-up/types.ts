@@ -1,9 +1,11 @@
 // Match Up — core domain types (no UI, no React imports).
 
-/** A single tile's visual: an emoji glyph, or a solid color swatch. */
+/** A single tile's visual. */
 export type MatchItem =
   | { readonly kind: 'emoji'; readonly emoji: string }
-  | { readonly kind: 'color'; readonly color: string };
+  | { readonly kind: 'color'; readonly color: string }
+  | { readonly kind: 'number'; readonly n: number }
+  | { readonly kind: 'group'; readonly n: number; readonly emoji: string };
 
 /** One top↔bottom relationship (e.g. 🐰 ↔ 🥕). */
 export type MatchPair = {
