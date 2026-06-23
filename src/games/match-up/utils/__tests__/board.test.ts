@@ -11,9 +11,11 @@ describe('nearestLooseIndex', () => {
   });
 
   it('skips null (already matched) rects', () => {
+    // Centers: idx0=(40,40), idx1=(240,40), idx2=(440,40).
+    // Point (200,40) is geometrically closest to idx1 (distance 40) — null it out;
+    // next-closest is idx0 (distance 160), not idx2 (distance 240), so result must be 0.
     const rects = [r(0, 0), null, r(400, 0)];
-    // point closer to tile 2's center (440,40) than tile 0's center (40,40)
-    expect(nearestLooseIndex(rects, { x: 260, y: 40 }, 1000)).toBe(2);
+    expect(nearestLooseIndex(rects, { x: 200, y: 40 }, 1000)).toBe(0);
   });
 
   it('returns -1 when nothing is within maxDist', () => {

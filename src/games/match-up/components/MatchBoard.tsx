@@ -215,10 +215,7 @@ export function MatchBoard({
           (targetRow === 'top' ? isTopMatched(i) : isBotMatched(i)) ? null : r,
         );
         const targetIdx = nearestLooseIndex(rects, { x, y }, SNAP_RADIUS);
-        if (targetIdx === -1) {
-          setSelected(null);
-          return; // released in empty space — no-op, no punishment
-        }
+        if (targetIdx === -1) return; // released in empty space — no-op, keeps prior tap-selection
         const topIdx = origin.row === 'top' ? origin.idx : targetIdx;
         const botIdx = origin.row === 'top' ? targetIdx : origin.idx;
         const flashTo = anchorFor(targetRow, targetIdx) ?? { x, y };
