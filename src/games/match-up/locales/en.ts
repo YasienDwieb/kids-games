@@ -15,6 +15,7 @@ export const en = {
     animalHome: 'Match each animal to its home',
     colorFruit: 'Match each color to its fruit',
     babyAnimal: 'Match each baby to its grown-up',
+    numberCount: 'Match each number to how many',
   },
 } as const;
 

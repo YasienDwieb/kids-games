@@ -17,5 +17,6 @@ export const ar: GameTranslations = {
     animalHome: 'وصّل كل حيوان ببيته',
     colorFruit: 'وصّل كل لون بفاكهته',
     babyAnimal: 'وصّل كل صغير بأبيه',
+    numberCount: 'وصّل كل رقم بالعدد المناسب',
   },
 };
