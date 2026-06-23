@@ -23,6 +23,7 @@ import {
   ACCENTS,
   BORDER_RADIUS,
   COLORS,
+  EmojiImage,
   FONTS,
   SHADOWS,
   SPACING,
@@ -147,7 +148,7 @@ export function CountObject({
             },
           ]}
         >
-          <Text style={styles.emoji}>{emoji}</Text>
+          <EmojiImage emoji={emoji} size={36} />
         </Animated.View>
         {/* Popped slot: dashed border + check */}
         <View style={[styles.tile, styles.tileDone]}>
@@ -177,7 +178,7 @@ export function CountObject({
           { transform: [{ translateY: pressTranslate }] },
         ]}
       >
-        <Text style={styles.emoji}>{emoji}</Text>
+        <EmojiImage emoji={emoji} size={36} />
       </Animated.View>
     </Pressable>
   );

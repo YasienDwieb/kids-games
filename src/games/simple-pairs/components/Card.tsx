@@ -3,6 +3,7 @@ import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 import type { Card as CardType } from '../types';
 import { LAYOUT, TIMING, GAME_COLORS } from '../constants';
 import { COLORS, SHADOWS } from '../../../constants';
+import { EmojiImage } from '@/sdk';
 
 type CardProps = {
   card: CardType;
@@ -96,7 +97,7 @@ export function Card({ card, onPress, disabled, size }: CardProps) {
             { transform: [{ rotateY: frontRotation }], opacity: frontOpacity },
           ]}
         >
-          <Text style={[styles.emoji, { fontSize: cardSize * 0.48 }]}>{card.image}</Text>
+          <EmojiImage emoji={card.image} size={cardSize * 0.48} />
         </Animated.View>
       </Animated.View>
     </Pressable>
