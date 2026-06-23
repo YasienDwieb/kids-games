@@ -32,13 +32,22 @@ import {
 } from '@/sdk';
 import { Tile, type TileState } from './Tile';
 import { TILE_SIZE, LINE_THICKNESS, SNAP_RADIUS, TAP_THRESHOLD } from '../constants';
-import { nearestLooseIndex } from '../utils/board';
+import { nearestLooseIndex, lineColorFor } from '../utils/board';
 import type { RoundData } from '../types';
 
 type Point = { x: number; y: number };
 type Rect = { x: number; y: number; width: number; height: number };
 type Row = 'top' | 'bottom';
 type Connection = { topIdx: number; botIdx: number };
+
+// Per-connection colors (coral reserved for the wrong-flash).
+const LINE_PALETTE = [
+  ACCENTS.green.base,
+  ACCENTS.orange.base,
+  ACCENTS.blue.base,
+  ACCENTS.purple.base,
+  ACCENTS.pink.base,
+];
 
 type MatchBoardProps = {
   round: RoundData;
@@ -60,26 +69,56 @@ const hitTest = (rects: (Rect | null)[], x: number, y: number): number => {
 };
 
 /** A straight line between two surface-local points, drawn as a rotated View. */
-function ConnectLine({ from, to, color }: { from: Point; to: Point; color: string }) {
+function ConnectLine({
+  from,
+  to,
+  color,
+  dots = false,
+}: {
+  from: Point;
+  to: Point;
+  color: string;
+  dots?: boolean;
+}) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const length = Math.hypot(dx, dy);
   const angle = Math.atan2(dy, dx);
+  const DOT = LINE_THICKNESS + 4;
   return (
-    <View
-      pointerEvents="none"
-      style={[
-        styles.line,
-        {
-          left: (from.x + to.x) / 2 - length / 2,
-          top: (from.y + to.y) / 2 - LINE_THICKNESS / 2,
-          width: length,
-          height: LINE_THICKNESS,
-          backgroundColor: color,
-          transform: [{ rotate: `${angle}rad` }],
-        },
-      ]}
-    />
+    <>
+      <View
+        pointerEvents="none"
+        style={[
+          styles.line,
+          {
+            left: (from.x + to.x) / 2 - length / 2,
+            top: (from.y + to.y) / 2 - LINE_THICKNESS / 2,
+            width: length,
+            height: LINE_THICKNESS,
+            backgroundColor: color,
+            transform: [{ rotate: `${angle}rad` }],
+          },
+        ]}
+      />
+      {dots
+        ? [from, to].map((p, i) => (
+            <View
+              key={i}
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: p.x - DOT / 2,
+                top: p.y - DOT / 2,
+                width: DOT,
+                height: DOT,
+                borderRadius: DOT / 2,
+                backgroundColor: color,
+              }}
+            />
+          ))
+        : null}
+    </>
   );
 }
 
@@ -260,6 +299,11 @@ export function MatchBoard({
     return 'idle';
   };
 
+  const lineColorForTile = (row: Row, i: number): string | undefined => {
+    const idx = connections.findIndex((c) => (row === 'top' ? c.topIdx === i : c.botIdx === i));
+    return idx === -1 ? undefined : lineColorFor(idx, LINE_PALETTE);
+  };
+
   return (
     <GestureDetector gesture={pan}>
       <View
@@ -277,7 +321,13 @@ export function MatchBoard({
               }}
               onLayout={() => measure('top', i)}
             >
-              <Tile item={item} size={TILE_SIZE} state={tileState('top', i)} accentColor={accentColor} />
+              <Tile
+                item={item}
+                size={TILE_SIZE}
+                state={tileState('top', i)}
+                accentColor={accentColor}
+                lineColor={lineColorForTile('top', i)}
+              />
             </View>
           ))}
         </View>
@@ -293,21 +343,33 @@ export function MatchBoard({
               }}
               onLayout={() => measure('bottom', i)}
             >
-              <Tile item={item} size={TILE_SIZE} state={tileState('bottom', i)} accentColor={accentColor} />
+              <Tile
+                item={item}
+                size={TILE_SIZE}
+                state={tileState('bottom', i)}
+                accentColor={accentColor}
+                lineColor={lineColorForTile('bottom', i)}
+              />
             </View>
           ))}
         </View>
 
         {/* Line overlay — surface-local coords, non-interactive. */}
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          {connections.map((c) => {
+          {connections.map((c, i) => {
             const from = topAnchors[c.topIdx];
             const to = botAnchors[c.botIdx];
             return from && to ? (
-              <ConnectLine key={`${c.topIdx}-${c.botIdx}`} from={from} to={to} color={accentColor} />
+              <ConnectLine
+                key={`${c.topIdx}-${c.botIdx}`}
+                from={from}
+                to={to}
+                color={lineColorFor(i, LINE_PALETTE)}
+                dots
+              />
             ) : null;
           })}
-          {drag ? <ConnectLine from={drag.from} to={drag.to} color={accentColor} /> : null}
+          {drag ? <ConnectLine from={drag.from} to={drag.to} color={COLORS.inkFaint} /> : null}
           {wrongLine ? (
             <ConnectLine from={wrongLine.from} to={wrongLine.to} color={ACCENTS.coral.base} />
           ) : null}

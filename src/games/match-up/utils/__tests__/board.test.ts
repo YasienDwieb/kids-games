@@ -1,4 +1,4 @@
-import { nearestLooseIndex } from '../board';
+import { nearestLooseIndex, lineColorFor } from '../board';
 
 type Rect = { x: number; y: number; width: number; height: number };
 const r = (x: number, y: number): Rect => ({ x, y, width: 80, height: 80 });
@@ -25,5 +25,17 @@ describe('nearestLooseIndex', () => {
 
   it('returns -1 for an all-null list', () => {
     expect(nearestLooseIndex([null, null], { x: 0, y: 0 }, 100)).toBe(-1);
+  });
+});
+
+describe('lineColorFor', () => {
+  const palette = ['a', 'b', 'c'];
+  it('returns the palette color for the index', () => {
+    expect(lineColorFor(0, palette)).toBe('a');
+    expect(lineColorFor(2, palette)).toBe('c');
+  });
+  it('cycles when the index exceeds the palette length', () => {
+    expect(lineColorFor(3, palette)).toBe('a');
+    expect(lineColorFor(4, palette)).toBe('b');
   });
 });

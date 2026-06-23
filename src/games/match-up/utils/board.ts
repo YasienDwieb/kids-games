@@ -29,3 +29,8 @@ export function nearestLooseIndex(
   }
   return best;
 }
+
+/** Pick a stable per-connection color, cycling through the palette by order. */
+export function lineColorFor(index: number, palette: readonly string[]): string {
+  return palette[index % palette.length];
+}

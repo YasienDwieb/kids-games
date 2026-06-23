@@ -8,14 +8,17 @@ type TileProps = {
   item: MatchItem;
   size: number;
   state: TileState;
-  /** Accent line color used for the matched check + active ring. */
+  /** Accent line color used for the active ring + matched fallback. */
   accentColor: string;
+  /** When matched, the specific connection color (overrides accentColor). */
+  lineColor?: string;
 };
 
 /** One row item: a big emoji or a solid color swatch, with match/active cues. */
-export function Tile({ item, size, state, accentColor }: TileProps) {
+export function Tile({ item, size, state, accentColor, lineColor }: TileProps) {
   const matched = state === 'matched';
   const active = state === 'active';
+  const matchColor = lineColor ?? accentColor;
   return (
     <View
       style={[
@@ -26,7 +29,7 @@ export function Tile({ item, size, state, accentColor }: TileProps) {
           height: size,
           borderRadius: BORDER_RADIUS.card,
           backgroundColor: item.kind === 'color' ? item.color : COLORS.surface,
-          borderColor: active ? accentColor : matched ? accentColor : COLORS.line2,
+          borderColor: active ? accentColor : matched ? matchColor : COLORS.line2,
           borderWidth: active ? 4 : matched ? 3 : 2,
           opacity: matched ? 0.92 : 1,
         },
@@ -46,7 +49,7 @@ export function Tile({ item, size, state, accentColor }: TileProps) {
         </View>
       ) : null}
       {matched ? (
-        <View style={[styles.check, { backgroundColor: accentColor }]}>
+        <View style={[styles.check, { backgroundColor: matchColor }]}>
           <Text style={styles.checkGlyph}>✓</Text>
         </View>
       ) : null}
