@@ -207,10 +207,9 @@ export function MatchBoard({
     }
     void play('wrong');
     onWrong?.();
-    const origin =
-      // anchor of the top tile is the more stable end to flash from
-      anchorFor('top', topIdx) ?? flashTo;
-    setWrongLine({ from: origin, to: flashTo });
+    const fromP = anchorFor('top', topIdx) ?? flashTo;
+    const toP = anchorFor('bottom', botIdx) ?? flashTo;
+    setWrongLine({ from: fromP, to: toP });
     clearTimeout(wrongTimer.current);
     wrongTimer.current = setTimeout(() => setWrongLine(null), 380);
   };
