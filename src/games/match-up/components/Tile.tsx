@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { BORDER_RADIUS, COLORS, EmojiImage, SHADOWS } from '@/sdk';
+import { BORDER_RADIUS, COLORS, EmojiImage, FONTS, SHADOWS } from '@/sdk';
 import type { MatchItem } from '../types';
 
 export type TileState = 'idle' | 'active' | 'matched';
@@ -34,6 +34,16 @@ export function Tile({ item, size, state, accentColor }: TileProps) {
     >
       {item.kind === 'emoji' ? (
         <EmojiImage emoji={item.emoji} size={size * 0.62} />
+      ) : item.kind === 'number' ? (
+        <Text style={[styles.numeral, { fontSize: size * 0.5, color: COLORS.ink }]}>
+          {item.n}
+        </Text>
+      ) : item.kind === 'group' ? (
+        <View style={[styles.group, { maxWidth: size * 0.86 }]}>
+          {Array.from({ length: item.n }).map((_, i) => (
+            <EmojiImage key={i} emoji={item.emoji} size={size * 0.26} />
+          ))}
+        </View>
       ) : null}
       {matched ? (
         <View style={[styles.check, { backgroundColor: accentColor }]}>
@@ -46,6 +56,14 @@ export function Tile({ item, size, state, accentColor }: TileProps) {
 
 const styles = StyleSheet.create({
   frame: { alignItems: 'center', justifyContent: 'center' },
+  numeral: { fontFamily: FONTS.displayBold, fontWeight: '900' },
+  group: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2,
+  },
   check: {
     position: 'absolute',
     top: -8,
