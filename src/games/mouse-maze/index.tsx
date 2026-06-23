@@ -6,10 +6,9 @@ import {
   LayoutChangeEvent,
   PanResponder,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
-import { useSound, useLevels, levelsFromGenerator, ResumePrompt } from '@/sdk';
+import { useSound, useLevels, levelsFromGenerator, ResumePrompt, EmojiImage } from '@/sdk';
 import { Hud } from './components/Hud';
 import { MazeBoard } from './components/MazeBoard';
 import { WinOverlay } from './components/WinOverlay';
@@ -161,7 +160,7 @@ export default function MouseMazeGame() {
                 { width: cellSize, height: cellSize, transform: pan.getTranslateTransform() },
               ]}
             >
-              <Text style={{ fontSize: cellSize * 0.66 }}>{EMOJI.mouse}</Text>
+              <EmojiImage emoji={EMOJI.mouse} size={cellSize * 0.66} />
             </Animated.View>
           </View>
         </View>

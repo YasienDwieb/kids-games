@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { EmojiImage } from '@/sdk';
 import { EMOJI, MAZE_COLORS, WALL_WIDTH } from '../constants';
 import type { Grid, Pos } from '../types';
 
@@ -45,8 +46,8 @@ export function MazeBoard({ grid, cellSize, goal, stars, trail, hintCells }: Maz
                 {trail.has(k) && !hintCells.has(k) && !isGoal && (
                   <View style={[styles.trail, { width: cellSize * 0.28, height: cellSize * 0.28 }]} />
                 )}
-                {stars.has(k) && <Text style={{ fontSize: emojiSize }}>{EMOJI.star}</Text>}
-                {isGoal && <Text style={{ fontSize: emojiSize }}>{EMOJI.goal}</Text>}
+                {stars.has(k) && <EmojiImage emoji={EMOJI.star} size={emojiSize} />}
+                {isGoal && <EmojiImage emoji={EMOJI.goal} size={emojiSize} />}
               </View>
             );
           })}

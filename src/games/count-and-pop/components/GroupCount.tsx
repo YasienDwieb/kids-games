@@ -37,6 +37,7 @@ import {
   ACCENTS,
   BORDER_RADIUS,
   COLORS,
+  EmojiImage,
   FONT_SIZES,
   FONTS,
   SHADOWS,
@@ -89,7 +90,7 @@ function SwimmingEmoji({
 
   return (
     <Animated.View style={{ transform: [{ translateY: swimAnim }] }}>
-      <Text style={emojiStyles.emoji}>{emoji}</Text>
+      <EmojiImage emoji={emoji} size={36} />
     </Animated.View>
   );
 }

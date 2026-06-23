@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { ACCENTS, BORDER_RADIUS, COLORS, SHADOWS } from '@/sdk';
+import { BORDER_RADIUS, COLORS, EmojiImage, SHADOWS } from '@/sdk';
 import type { MatchItem } from '../types';
 
 export type TileState = 'idle' | 'active' | 'matched';
@@ -33,7 +33,7 @@ export function Tile({ item, size, state, accentColor }: TileProps) {
       ]}
     >
       {item.kind === 'emoji' ? (
-        <Text style={{ fontSize: size * 0.5 }}>{item.emoji}</Text>
+        <EmojiImage emoji={item.emoji} size={size * 0.62} />
       ) : null}
       {matched ? (
         <View style={[styles.check, { backgroundColor: accentColor }]}>
