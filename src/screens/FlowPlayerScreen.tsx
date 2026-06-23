@@ -55,7 +55,8 @@ export function FlowPlayerScreen({ navigation }: Props) {
     () => selectedAdapters(settings.flowGameIds),
     [settings.flowGameIds],
   );
-  const { status, unit, advance } = useFlow({ adapters });
+  const { status, unit, advance, step, total } = useFlow({ adapters });
+  const progress = total > 0 ? step / total : 0;
 
   // Smooth cross-fade on the shared backdrop when the unit changes.
   const fade = useRef(new Animated.Value(0)).current;
@@ -81,7 +82,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
 
   return (
     <View style={styles.root}>
-      <SceneCanvas>
+      <SceneCanvas progress={progress}>
         {status === 'playing' && unit ? (
           <Animated.View key={orientKey} style={[styles.fill, contentPad, { opacity: fade }]}>
             {unit.render(handleComplete)}
