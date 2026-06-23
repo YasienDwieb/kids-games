@@ -1,4 +1,3 @@
-// src/sdk/flow/__tests__/SceneCanvas.test.tsx
 import { act, create } from 'react-test-renderer';
 import { Text } from 'react-native';
 import { SceneCanvas } from '../SceneCanvas';

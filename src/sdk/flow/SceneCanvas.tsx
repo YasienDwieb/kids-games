@@ -1,9 +1,7 @@
-// src/sdk/flow/SceneCanvas.tsx
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { COLORS } from '@/constants';
-import ParallaxBackground from './backdrop/ParallaxBackground';
-import { BACKDROP } from './backdrop/config';
+import { ParallaxBackground, BACKDROP } from './backdrop';
 
 /**
  * Persistent backdrop host for the guided journey: a continuous, gently-drifting

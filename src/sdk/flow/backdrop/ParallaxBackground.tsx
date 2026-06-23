@@ -21,7 +21,7 @@ function Layer({ layer, animate }: { layer: BackdropLayer; animate: boolean }) {
     return () => loop.stop();
   }, [animate, layer.stripWidth, layer.driftDurationMs, x]);
 
-  const Strip = (key: string, offset: number) => (
+  const renderStrip = (key: string, offset: number) => (
     <View key={key} style={[styles.strip, { width: layer.stripWidth, left: offset }]}>
       {layer.elements.map((el, i) => (
         <Image
@@ -35,13 +35,11 @@ function Layer({ layer, animate }: { layer: BackdropLayer; animate: boolean }) {
   );
 
   // Two side-by-side copies translated together; wraps invisibly at -stripWidth.
+  // (Touch pass-through is handled by the root's pointerEvents="none".)
   return (
-    <Animated.View
-      style={[styles.layer, { opacity: layer.opacity, transform: [{ translateX: x }] }]}
-      pointerEvents="none"
-    >
-      {Strip('a', 0)}
-      {Strip('b', layer.stripWidth)}
+    <Animated.View style={[styles.layer, { opacity: layer.opacity, transform: [{ translateX: x }] }]}>
+      {renderStrip('a', 0)}
+      {renderStrip('b', layer.stripWidth)}
     </Animated.View>
   );
 }
