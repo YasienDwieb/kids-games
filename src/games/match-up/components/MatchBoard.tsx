@@ -31,7 +31,8 @@ import {
   type AccentName,
 } from '@/sdk';
 import { Tile, type TileState } from './Tile';
-import { TILE_SIZE, LINE_THICKNESS } from '../constants';
+import { TILE_SIZE, LINE_THICKNESS, SNAP_RADIUS, TAP_THRESHOLD } from '../constants';
+import { nearestLooseIndex } from '../utils/board';
 import type { RoundData } from '../types';
 
 type Point = { x: number; y: number };
@@ -107,13 +108,17 @@ export function MatchBoard({
   const [connections, setConnections] = useState<Connection[]>([]);
   const [drag, setDrag] = useState<{ from: Point; to: Point } | null>(null);
   const [wrongLine, setWrongLine] = useState<{ from: Point; to: Point } | null>(null);
+  const [selected, setSelected] = useState<{ row: Row; idx: number } | null>(null);
 
   const connectionsRef = useRef<Connection[]>([]);
   connectionsRef.current = connections;
+  const selectedRef = useRef<{ row: Row; idx: number } | null>(null);
+  selectedRef.current = selected;
   const wrongTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const dragOrigin = useRef<{ row: Row; idx: number; anchor: Point } | null>(null);
 
   useEffect(() => () => clearTimeout(wrongTimer.current), []);
+  useEffect(() => setSelected(null), [round]);
 
   const measure = (row: Row, idx: number) => {
     const ref = row === 'top' ? topRefs.current[idx] : botRefs.current[idx];
@@ -148,9 +153,32 @@ export function MatchBoard({
     end: (_x: number, _y: number) => {},
   });
 
+  const tryConnect = (topIdx: number, botIdx: number, flashTo: Point) => {
+    setSelected(null);
+    if (round.solution[topIdx] === botIdx) {
+      const next = [...connectionsRef.current, { topIdx, botIdx }];
+      setConnections(next);
+      void play('pop');
+      onCorrect?.();
+      if (next.length === round.top.length) {
+        void play('win');
+        onSolved();
+      }
+      return;
+    }
+    void play('wrong');
+    onWrong?.();
+    const origin =
+      // anchor of the top tile is the more stable end to flash from
+      anchorFor('top', topIdx) ?? flashTo;
+    setWrongLine({ from: origin, to: flashTo });
+    clearTimeout(wrongTimer.current);
+    wrongTimer.current = setTimeout(() => setWrongLine(null), 380);
+  };
+
   handlers.current = {
     begin: (x, y) => {
-      // Only loose tiles can start a drag.
+      // Only loose tiles can start an interaction.
       const looseTop = topRects.current.map((r, i) => (isTopMatched(i) ? null : r));
       const looseBot = botRects.current.map((r, i) => (isBotMatched(i) ? null : r));
       let row: Row = 'top';
@@ -159,11 +187,14 @@ export function MatchBoard({
         idx = hitTest(looseBot, x, y);
         row = 'bottom';
       }
-      if (idx === -1) return;
+      if (idx === -1) {
+        dragOrigin.current = null;
+        return;
+      }
       const anchor = (row === 'top' ? topAnchors : botAnchors)[idx];
       if (!anchor) return;
       dragOrigin.current = { row, idx, anchor };
-      setDrag({ from: anchor, to: { x, y } });
+      // No drag line on touch-down — only once the finger actually moves (update).
     },
     update: (x, y) => {
       if (!dragOrigin.current) return;
@@ -175,43 +206,42 @@ export function MatchBoard({
       setDrag(null);
       if (!origin) return;
 
-      // Hit-test the OPPOSITE row's loose tiles.
+      const moved = Math.hypot(x - origin.anchor.x, y - origin.anchor.y);
       const targetRow: Row = origin.row === 'top' ? 'bottom' : 'top';
-      const rects = (targetRow === 'top' ? topRects : botRects).current.map((r, i) =>
-        (targetRow === 'top' ? isTopMatched(i) : isBotMatched(i)) ? null : r,
-      );
-      const targetIdx = hitTest(rects, x, y);
 
-      const topIdx = origin.row === 'top' ? origin.idx : targetIdx;
-      const botIdx = origin.row === 'top' ? targetIdx : origin.idx;
-
-      if (targetIdx !== -1 && round.solution[topIdx] === botIdx) {
-        const next = [...connectionsRef.current, { topIdx, botIdx }];
-        setConnections(next);
-        void play('pop');
-        onCorrect?.();
-        if (next.length === round.top.length) {
-          void play('win');
-          onSolved();
+      if (moved >= TAP_THRESHOLD) {
+        // DRAG: snap to the nearest loose tile in the opposite row within range.
+        const rects = (targetRow === 'top' ? topRects : botRects).current.map((r, i) =>
+          (targetRow === 'top' ? isTopMatched(i) : isBotMatched(i)) ? null : r,
+        );
+        const targetIdx = nearestLooseIndex(rects, { x, y }, SNAP_RADIUS);
+        if (targetIdx === -1) {
+          setSelected(null);
+          return; // released in empty space — no-op, no punishment
         }
+        const topIdx = origin.row === 'top' ? origin.idx : targetIdx;
+        const botIdx = origin.row === 'top' ? targetIdx : origin.idx;
+        const flashTo = anchorFor(targetRow, targetIdx) ?? { x, y };
+        tryConnect(topIdx, botIdx, flashTo);
         return;
       }
 
-      // A tap-in-place (no opposite-row target, finger barely moved) is a no-op:
-      // don't punish a child for just touching a tile.
-      const moved = Math.hypot(x - origin.anchor.x, y - origin.anchor.y);
-      if (targetIdx === -1 && moved < TILE_SIZE) return;
-
-      // Wrong (or released on empty space): flash a red line to the finger.
-      void play('wrong');
-      onWrong?.();
-      const targetAnchor =
-        targetIdx !== -1 ? anchorFor(targetRow, targetIdx) : { x, y };
-      if (targetAnchor) {
-        setWrongLine({ from: origin.anchor, to: targetAnchor });
-        clearTimeout(wrongTimer.current);
-        wrongTimer.current = setTimeout(() => setWrongLine(null), 380);
+      // TAP: drive selection.
+      const sel = selectedRef.current;
+      if (!sel) {
+        setSelected({ row: origin.row, idx: origin.idx });
+        return;
       }
+      if (sel.row === origin.row) {
+        // Same row: toggle off if same tile, else move selection.
+        setSelected(sel.idx === origin.idx ? null : { row: origin.row, idx: origin.idx });
+        return;
+      }
+      // Opposite rows: attempt a connection between the selected and tapped tiles.
+      const topIdx = sel.row === 'top' ? sel.idx : origin.idx;
+      const botIdx = sel.row === 'top' ? origin.idx : sel.idx;
+      const flashTo = anchorFor(origin.row, origin.idx) ?? { x, y };
+      tryConnect(topIdx, botIdx, flashTo);
     },
   };
 
@@ -229,6 +259,7 @@ export function MatchBoard({
   const tileState = (row: Row, i: number): TileState => {
     if (row === 'top' ? isTopMatched(i) : isBotMatched(i)) return 'matched';
     if (dragOrigin.current?.row === row && dragOrigin.current?.idx === i) return 'active';
+    if (selected?.row === row && selected?.idx === i) return 'active';
     return 'idle';
   };
 
