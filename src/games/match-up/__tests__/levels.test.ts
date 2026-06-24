@@ -7,12 +7,25 @@ import { THEMES } from '../content';
 import { TOTAL_LEVELS, pairCountForLevel } from '../constants';
 import type { MatchItem } from '../types';
 
-const keyOf = (it: MatchItem): string =>
-  it.kind === 'emoji' ? `e:${it.emoji}` : `c:${it.color}`;
+const keyOf = (it: MatchItem): string => {
+  switch (it.kind) {
+    case 'emoji':
+      return `e:${it.emoji}`;
+    case 'color':
+      return `c:${it.color}`;
+    case 'number':
+      return `n:${it.n}`;
+    case 'group':
+      return `g:${it.n}`;
+  }
+};
 
 // Is (top, bottom) a real pair in the given theme?
 function isRealPair(themeId: string, top: MatchItem, bottom: MatchItem): boolean {
   const theme = THEMES.find((th) => th.id === themeId)!;
+  if (theme.kind === 'count') {
+    return top.kind === 'number' && bottom.kind === 'group' && top.n === bottom.n;
+  }
   return theme.pairs.some(
     (p) => keyOf(p.top) === keyOf(top) && keyOf(p.bottom) === keyOf(bottom),
   );
@@ -76,5 +89,34 @@ describe('buildLevel', () => {
     for (let lvl = 1; lvl <= TOTAL_LEVELS; lvl++) {
       expect(ids.has(buildLevel(lvl, 0).themeId)).toBe(true);
     }
+  });
+
+  it('count theme: distinct 1-5 numerals on top, groups on bottom, matched by count', () => {
+    let sawCount = false;
+    for (let lvl = 1; lvl <= TOTAL_LEVELS; lvl++) {
+      const r = buildLevel(lvl, 5);
+      const theme = THEMES.find((t) => t.id === r.themeId)!;
+      if (theme.kind !== 'count') continue;
+      sawCount = true;
+
+      const nums = r.top.map((it) => {
+        expect(it.kind).toBe('number');
+        return (it as Extract<MatchItem, { kind: 'number' }>).n;
+      });
+      nums.forEach((n) => {
+        expect(n).toBeGreaterThanOrEqual(1);
+        expect(n).toBeLessThanOrEqual(5);
+      });
+      expect(new Set(nums).size).toBe(nums.length);
+
+      r.bottom.forEach((it) => expect(it.kind).toBe('group'));
+      r.top.forEach((top, i) => {
+        const partner = r.bottom[r.solution[i]];
+        expect((top as Extract<MatchItem, { kind: 'number' }>).n).toBe(
+          (partner as Extract<MatchItem, { kind: 'group' }>).n,
+        );
+      });
+    }
+    expect(sawCount).toBe(true); // count theme must appear within levels 1..8
   });
 });

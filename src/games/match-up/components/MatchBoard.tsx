@@ -31,13 +31,23 @@ import {
   type AccentName,
 } from '@/sdk';
 import { Tile, type TileState } from './Tile';
-import { TILE_SIZE, LINE_THICKNESS } from '../constants';
+import { TILE_SIZE, LINE_THICKNESS, SNAP_RADIUS, TAP_THRESHOLD } from '../constants';
+import { nearestLooseIndex, lineColorFor } from '../utils/board';
 import type { RoundData } from '../types';
 
 type Point = { x: number; y: number };
 type Rect = { x: number; y: number; width: number; height: number };
 type Row = 'top' | 'bottom';
 type Connection = { topIdx: number; botIdx: number };
+
+// Per-connection colors (coral reserved for the wrong-flash).
+const LINE_PALETTE = [
+  ACCENTS.green.base,
+  ACCENTS.orange.base,
+  ACCENTS.blue.base,
+  ACCENTS.purple.base,
+  ACCENTS.pink.base,
+];
 
 type MatchBoardProps = {
   round: RoundData;
@@ -59,26 +69,56 @@ const hitTest = (rects: (Rect | null)[], x: number, y: number): number => {
 };
 
 /** A straight line between two surface-local points, drawn as a rotated View. */
-function ConnectLine({ from, to, color }: { from: Point; to: Point; color: string }) {
+function ConnectLine({
+  from,
+  to,
+  color,
+  dots = false,
+}: {
+  from: Point;
+  to: Point;
+  color: string;
+  dots?: boolean;
+}) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   const length = Math.hypot(dx, dy);
   const angle = Math.atan2(dy, dx);
+  const DOT = LINE_THICKNESS + 4;
   return (
-    <View
-      pointerEvents="none"
-      style={[
-        styles.line,
-        {
-          left: (from.x + to.x) / 2 - length / 2,
-          top: (from.y + to.y) / 2 - LINE_THICKNESS / 2,
-          width: length,
-          height: LINE_THICKNESS,
-          backgroundColor: color,
-          transform: [{ rotate: `${angle}rad` }],
-        },
-      ]}
-    />
+    <>
+      <View
+        pointerEvents="none"
+        style={[
+          styles.line,
+          {
+            left: (from.x + to.x) / 2 - length / 2,
+            top: (from.y + to.y) / 2 - LINE_THICKNESS / 2,
+            width: length,
+            height: LINE_THICKNESS,
+            backgroundColor: color,
+            transform: [{ rotate: `${angle}rad` }],
+          },
+        ]}
+      />
+      {dots
+        ? [from, to].map((p, i) => (
+            <View
+              key={i}
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: p.x - DOT / 2,
+                top: p.y - DOT / 2,
+                width: DOT,
+                height: DOT,
+                borderRadius: DOT / 2,
+                backgroundColor: color,
+              }}
+            />
+          ))
+        : null}
+    </>
   );
 }
 
@@ -107,13 +147,17 @@ export function MatchBoard({
   const [connections, setConnections] = useState<Connection[]>([]);
   const [drag, setDrag] = useState<{ from: Point; to: Point } | null>(null);
   const [wrongLine, setWrongLine] = useState<{ from: Point; to: Point } | null>(null);
+  const [selected, setSelected] = useState<{ row: Row; idx: number } | null>(null);
 
   const connectionsRef = useRef<Connection[]>([]);
   connectionsRef.current = connections;
+  const selectedRef = useRef<{ row: Row; idx: number } | null>(null);
+  selectedRef.current = selected;
   const wrongTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const dragOrigin = useRef<{ row: Row; idx: number; anchor: Point } | null>(null);
+  const dragOrigin = useRef<{ row: Row; idx: number; anchor: Point; start: Point } | null>(null);
 
   useEffect(() => () => clearTimeout(wrongTimer.current), []);
+  useEffect(() => setSelected(null), [round]);
 
   const measure = (row: Row, idx: number) => {
     const ref = row === 'top' ? topRefs.current[idx] : botRefs.current[idx];
@@ -148,9 +192,31 @@ export function MatchBoard({
     end: (_x: number, _y: number) => {},
   });
 
+  const tryConnect = (topIdx: number, botIdx: number, flashTo: Point) => {
+    setSelected(null);
+    if (round.solution[topIdx] === botIdx) {
+      const next = [...connectionsRef.current, { topIdx, botIdx }];
+      setConnections(next);
+      void play('pop');
+      onCorrect?.();
+      if (next.length === round.top.length) {
+        void play('win');
+        onSolved();
+      }
+      return;
+    }
+    void play('wrong');
+    onWrong?.();
+    const fromP = anchorFor('top', topIdx) ?? flashTo;
+    const toP = anchorFor('bottom', botIdx) ?? flashTo;
+    setWrongLine({ from: fromP, to: toP });
+    clearTimeout(wrongTimer.current);
+    wrongTimer.current = setTimeout(() => setWrongLine(null), 380);
+  };
+
   handlers.current = {
     begin: (x, y) => {
-      // Only loose tiles can start a drag.
+      // Only loose tiles can start an interaction.
       const looseTop = topRects.current.map((r, i) => (isTopMatched(i) ? null : r));
       const looseBot = botRects.current.map((r, i) => (isBotMatched(i) ? null : r));
       let row: Row = 'top';
@@ -159,11 +225,16 @@ export function MatchBoard({
         idx = hitTest(looseBot, x, y);
         row = 'bottom';
       }
-      if (idx === -1) return;
+      if (idx === -1) {
+        dragOrigin.current = null;
+        return;
+      }
       const anchor = (row === 'top' ? topAnchors : botAnchors)[idx];
       if (!anchor) return;
-      dragOrigin.current = { row, idx, anchor };
-      setDrag({ from: anchor, to: { x, y } });
+      // Remember the real touch-down point — tap-vs-drag is classified by how far
+      // the finger actually travels, NOT distance to the tile's edge-anchor.
+      dragOrigin.current = { row, idx, anchor, start: { x, y } };
+      // No drag line on touch-down — only once the finger actually moves (update).
     },
     update: (x, y) => {
       if (!dragOrigin.current) return;
@@ -175,43 +246,39 @@ export function MatchBoard({
       setDrag(null);
       if (!origin) return;
 
-      // Hit-test the OPPOSITE row's loose tiles.
+      const moved = Math.hypot(x - origin.start.x, y - origin.start.y);
       const targetRow: Row = origin.row === 'top' ? 'bottom' : 'top';
-      const rects = (targetRow === 'top' ? topRects : botRects).current.map((r, i) =>
-        (targetRow === 'top' ? isTopMatched(i) : isBotMatched(i)) ? null : r,
-      );
-      const targetIdx = hitTest(rects, x, y);
 
-      const topIdx = origin.row === 'top' ? origin.idx : targetIdx;
-      const botIdx = origin.row === 'top' ? targetIdx : origin.idx;
-
-      if (targetIdx !== -1 && round.solution[topIdx] === botIdx) {
-        const next = [...connectionsRef.current, { topIdx, botIdx }];
-        setConnections(next);
-        void play('pop');
-        onCorrect?.();
-        if (next.length === round.top.length) {
-          void play('win');
-          onSolved();
-        }
+      if (moved >= TAP_THRESHOLD) {
+        // DRAG: snap to the nearest loose tile in the opposite row within range.
+        const rects = (targetRow === 'top' ? topRects : botRects).current.map((r, i) =>
+          (targetRow === 'top' ? isTopMatched(i) : isBotMatched(i)) ? null : r,
+        );
+        const targetIdx = nearestLooseIndex(rects, { x, y }, SNAP_RADIUS);
+        if (targetIdx === -1) return; // released in empty space — no-op, keeps prior tap-selection
+        const topIdx = origin.row === 'top' ? origin.idx : targetIdx;
+        const botIdx = origin.row === 'top' ? targetIdx : origin.idx;
+        const flashTo = anchorFor(targetRow, targetIdx) ?? { x, y };
+        tryConnect(topIdx, botIdx, flashTo);
         return;
       }
 
-      // A tap-in-place (no opposite-row target, finger barely moved) is a no-op:
-      // don't punish a child for just touching a tile.
-      const moved = Math.hypot(x - origin.anchor.x, y - origin.anchor.y);
-      if (targetIdx === -1 && moved < TILE_SIZE) return;
-
-      // Wrong (or released on empty space): flash a red line to the finger.
-      void play('wrong');
-      onWrong?.();
-      const targetAnchor =
-        targetIdx !== -1 ? anchorFor(targetRow, targetIdx) : { x, y };
-      if (targetAnchor) {
-        setWrongLine({ from: origin.anchor, to: targetAnchor });
-        clearTimeout(wrongTimer.current);
-        wrongTimer.current = setTimeout(() => setWrongLine(null), 380);
+      // TAP: drive selection.
+      const sel = selectedRef.current;
+      if (!sel) {
+        setSelected({ row: origin.row, idx: origin.idx });
+        return;
       }
+      if (sel.row === origin.row) {
+        // Same row: toggle off if same tile, else move selection.
+        setSelected(sel.idx === origin.idx ? null : { row: origin.row, idx: origin.idx });
+        return;
+      }
+      // Opposite rows: attempt a connection between the selected and tapped tiles.
+      const topIdx = sel.row === 'top' ? sel.idx : origin.idx;
+      const botIdx = sel.row === 'top' ? origin.idx : sel.idx;
+      const flashTo = anchorFor(origin.row, origin.idx) ?? { x, y };
+      tryConnect(topIdx, botIdx, flashTo);
     },
   };
 
@@ -229,7 +296,13 @@ export function MatchBoard({
   const tileState = (row: Row, i: number): TileState => {
     if (row === 'top' ? isTopMatched(i) : isBotMatched(i)) return 'matched';
     if (dragOrigin.current?.row === row && dragOrigin.current?.idx === i) return 'active';
+    if (selected?.row === row && selected?.idx === i) return 'active';
     return 'idle';
+  };
+
+  const lineColorForTile = (row: Row, i: number): string | undefined => {
+    const idx = connections.findIndex((c) => (row === 'top' ? c.topIdx === i : c.botIdx === i));
+    return idx === -1 ? undefined : lineColorFor(idx, LINE_PALETTE);
   };
 
   return (
@@ -249,7 +322,13 @@ export function MatchBoard({
               }}
               onLayout={() => measure('top', i)}
             >
-              <Tile item={item} size={TILE_SIZE} state={tileState('top', i)} accentColor={accentColor} />
+              <Tile
+                item={item}
+                size={TILE_SIZE}
+                state={tileState('top', i)}
+                accentColor={accentColor}
+                lineColor={lineColorForTile('top', i)}
+              />
             </View>
           ))}
         </View>
@@ -265,21 +344,33 @@ export function MatchBoard({
               }}
               onLayout={() => measure('bottom', i)}
             >
-              <Tile item={item} size={TILE_SIZE} state={tileState('bottom', i)} accentColor={accentColor} />
+              <Tile
+                item={item}
+                size={TILE_SIZE}
+                state={tileState('bottom', i)}
+                accentColor={accentColor}
+                lineColor={lineColorForTile('bottom', i)}
+              />
             </View>
           ))}
         </View>
 
         {/* Line overlay — surface-local coords, non-interactive. */}
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          {connections.map((c) => {
+          {connections.map((c, i) => {
             const from = topAnchors[c.topIdx];
             const to = botAnchors[c.botIdx];
             return from && to ? (
-              <ConnectLine key={`${c.topIdx}-${c.botIdx}`} from={from} to={to} color={accentColor} />
+              <ConnectLine
+                key={`${c.topIdx}-${c.botIdx}`}
+                from={from}
+                to={to}
+                color={lineColorFor(i, LINE_PALETTE)}
+                dots
+              />
             ) : null;
           })}
-          {drag ? <ConnectLine from={drag.from} to={drag.to} color={accentColor} /> : null}
+          {drag ? <ConnectLine from={drag.from} to={drag.to} color={COLORS.inkFaint} /> : null}
           {wrongLine ? (
             <ConnectLine from={wrongLine.from} to={wrongLine.to} color={ACCENTS.coral.base} />
           ) : null}

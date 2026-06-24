@@ -193,6 +193,7 @@ const KEYS: string[] = [
   'match-up:prompts.animalHome',
   'match-up:prompts.colorFruit',
   'match-up:prompts.babyAnimal',
+  'match-up:prompts.numberCount',
   // flow (guided journey)
   'core:flow.title',
   'core:flow.continue',
