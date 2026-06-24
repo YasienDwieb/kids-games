@@ -72,13 +72,13 @@ export const THEMES: readonly MatchTheme[] = [
     promptKey: 'prompts.animalHome',
     pairs: [
       pair(e('🐦'), e('🪺')),
-      pair(e('🐶'), e('🏠')),
+      pair(e('🐶'), e('🏡')),
       pair(e('🐴'), e('🛖')),
-      pair(e('🐟'), e('🐚')),
+      pair(e('🐟'), e('🌊')),
       pair(e('🐝'), e('🌻')),
       pair(e('🕷️'), e('🕸️')),
       pair(e('🐻'), e('🏔️')),
-      pair(e('🐌'), e('🍄')),
+      pair(e('🐌'), e('🐚')),
     ],
   },
   {

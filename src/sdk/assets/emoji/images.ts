@@ -15,6 +15,7 @@
 import type { ImageSourcePropType } from "react-native";
 
 export const EMOJI_IMAGES: Record<string, ImageSourcePropType> = {
+  "🌊": require("./png/1F30A.png"),
   "🌰": require("./png/1F330.png"),
   "🌻": require("./png/1F33B.png"),
   "🍄": require("./png/1F344.png"),
@@ -30,6 +31,7 @@ export const EMOJI_IMAGES: Record<string, ImageSourcePropType> = {
   "🎋": require("./png/1F38B.png"),
   "🏔": require("./png/1F3D4.png"),
   "🏠": require("./png/1F3E0.png"),
+  "🏡": require("./png/1F3E1.png"),
   "🐄": require("./png/1F404.png"),
   "🐇": require("./png/1F407.png"),
   "🐈": require("./png/1F408.png"),
