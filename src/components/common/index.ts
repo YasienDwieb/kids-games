@@ -10,3 +10,4 @@ export { HudPill, hudTextStyle } from './HudPill';
 export { EmojiFrame } from './EmojiFrame';
 export { EmojiImage } from './EmojiImage';
 export { Star } from './Star';
+export { HoldToConfirm } from './HoldToConfirm';

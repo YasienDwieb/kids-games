@@ -13,8 +13,6 @@ import {
   eligibleGameIds,
   getGame,
   gameName,
-  createFlowProgressStore,
-  DEFAULT_FLOW_PROGRESS,
   type LanguageCode,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
@@ -71,10 +69,6 @@ export function SettingsScreen({ navigation }: Props) {
     update({ flowGameIds: next.length === flowGames.length ? null : next });
   };
 
-  const resetJourney = () => {
-    createFlowProgressStore().set({ ...DEFAULT_FLOW_PROGRESS, updatedAt: Date.now() });
-  };
-
   const onPickLanguage = async (code: LanguageCode) => {
     if (code === language) return;
     const { needsReload } = await changeLanguage(code);
@@ -115,35 +109,16 @@ export function SettingsScreen({ navigation }: Props) {
           />
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionLabel}>{t('settings.guided.section')}</Text>
-          <ToggleRow
-            icon="🧭"
-            label={t('settings.guided.mode')}
-            value={settings.mode === 'guided'}
-            onChange={(v) => update({ mode: v ? 'guided' : 'free' })}
-          />
-          {settings.mode === 'guided' ? (
-            <>
-              <Text style={styles.sectionLabel}>{t('settings.guided.games')}</Text>
-              <View style={styles.topicRow}>
-                {flowGames.map((id) => (
-                  <Chip
-                    key={id}
-                    label={labelForGame(id)}
-                    active={isGameOn(id)}
-                    onPress={() => toggleGame(id)}
-                  />
-                ))}
-              </View>
-              <ToggleRow
-                icon="🏁"
-                label={t('settings.guided.reset')}
-                value={false}
-                onChange={() => resetJourney()}
-              />
-            </>
-          ) : null}
+        <Text style={styles.section}>{t('settings.guided.games')}</Text>
+        <View style={styles.bands}>
+          {flowGames.map((id) => (
+            <Chip
+              key={id}
+              label={labelForGame(id)}
+              active={isGameOn(id)}
+              onPress={() => toggleGame(id)}
+            />
+          ))}
         </View>
 
         <Text style={styles.section}>{t('settings.language')}</Text>
@@ -212,13 +187,6 @@ const styles = StyleSheet.create({
     marginBottom: -SPACING.sm,
   },
   bands: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
-  sectionLabel: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 13,
-    color: COLORS.inkSoft,
-    marginBottom: SPACING.sm,
-  },
-  topicRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginBottom: SPACING.md },
   version: {
     fontFamily: FONTS.bodySemi,
     fontSize: 13,

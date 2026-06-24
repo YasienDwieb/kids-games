@@ -29,10 +29,7 @@ export const en = {
     version: 'Kids Games · v1.0',
     switching: 'Switching language…',
     guided: {
-      section: 'Guided mode',
-      mode: 'Guided journey',
       games: 'Games in the journey',
-      reset: 'Reset journey progress',
     },
   },
   player: {
@@ -51,9 +48,15 @@ export const en = {
   },
   flow: {
     title: 'Your journey',
+    start: 'Start your journey',
     continue: 'Continue your journey',
     allCaughtUp: "You're all caught up 🌟",
     exit: 'Done',
+    switchJourney: 'Journey',
+    switchGames: 'Games',
+    includedGames: 'In this journey:',
+    holdToReset: 'Hold to start over',
+    empty: 'Add games in Settings',
   },
 } as const;
 

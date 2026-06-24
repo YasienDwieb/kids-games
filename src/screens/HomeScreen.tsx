@@ -1,19 +1,25 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
-import { GameCard, Chip, IconButton } from '../components/common';
-import { COLORS, FONTS, SPACING } from '../constants';
+import { GameCard, Chip, IconButton, HoldToConfirm } from '../components/common';
+import { COLORS, FONTS, SPACING, BORDER_RADIUS } from '../constants';
 import type { AccentName } from '../constants';
 import {
   useSettings,
   gamesForBand,
+  getGame,
   getAllGames,
   AGE_BANDS,
   bandsForGame,
   useTranslation,
   gameName,
   PressableButton,
+  selectedAdapters,
+  sequenceLength,
+  createFlowProgressStore,
 } from '@/sdk';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -35,6 +41,38 @@ export function HomeScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const games = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
 
+  const adapters = selectedAdapters(settings.flowGameIds);
+  const journeyTotal = sequenceLength(adapters);
+  const includedIcons = adapters
+    .map((a) => getGame(a.gameId)?.icon)
+    .filter((icon): icon is string => Boolean(icon));
+
+  const [savedStep, setSavedStep] = useState(0);
+  const flowStore = useMemo(() => createFlowProgressStore(), []);
+  // Re-read the checkpoint each time Home regains focus so the card reflects
+  // progress made (or completion) inside the journey before returning here.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      flowStore
+        .get()
+        .then((p) => {
+          if (active) setSavedStep(p.step);
+        });
+      return () => {
+        active = false;
+      };
+    }, [flowStore]),
+  );
+
+  const journeyDone = journeyTotal > 0 && savedStep >= journeyTotal;
+
+  const resetJourney = () => {
+    flowStore
+      .set({ step: 0, seed: 0, updatedAt: Date.now() })
+      .then(() => setSavedStep(0));
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -51,7 +89,35 @@ export function HomeScreen({ navigation }: Props) {
           />
         </View>
 
-        {/* category chips — hidden in guided mode */}
+        {/* Journey / Games mode switch */}
+        <View style={styles.switchRow}>
+          <Pressable
+            onPress={() => update({ mode: 'guided' })}
+            style={[styles.segment, settings.mode === 'guided' && styles.segmentOn]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: settings.mode === 'guided' }}
+          >
+            <Text
+              style={[styles.segmentText, settings.mode === 'guided' && styles.segmentTextOn]}
+            >
+              {t('flow.switchJourney')}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => update({ mode: 'free' })}
+            style={[styles.segment, settings.mode === 'free' && styles.segmentOn]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: settings.mode === 'free' }}
+          >
+            <Text
+              style={[styles.segmentText, settings.mode === 'free' && styles.segmentTextOn]}
+            >
+              {t('flow.switchGames')}
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Free-play age chips (only in games mode) */}
         {settings.mode !== 'guided' && (
           <ScrollView
             horizontal
@@ -74,15 +140,54 @@ export function HomeScreen({ navigation }: Props) {
           </ScrollView>
         )}
 
-        {/* grid or guided journey */}
+        {/* Journey card or game grid */}
         {settings.mode === 'guided' ? (
           <View style={styles.journey}>
             <Text style={styles.journeyTitle}>{t('flow.title')}</Text>
-            <PressableButton
-              label={t('flow.continue')}
-              accent="purple"
-              onPress={() => navigation.navigate('FlowPlayer')}
-            />
+            {journeyTotal === 0 ? (
+              <Pressable
+                onPress={() => navigation.navigate('Settings')}
+                accessibilityRole="button"
+                accessibilityLabel={t('flow.empty')}
+              >
+                <Text style={styles.journeyEmpty}>{t('flow.empty')}</Text>
+              </Pressable>
+            ) : (
+              <>
+                {journeyDone ? (
+                  <Text style={styles.journeyDone}>{t('flow.allCaughtUp')}</Text>
+                ) : (
+                  <PressableButton
+                    label={savedStep > 0 ? t('flow.continue') : t('flow.start')}
+                    accent="purple"
+                    onPress={() => navigation.navigate('FlowPlayer')}
+                  />
+                )}
+                {includedIcons.length > 0 && (
+                  <Pressable
+                    style={styles.strip}
+                    onPress={() => navigation.navigate('Settings')}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('flow.includedGames')}
+                  >
+                    <Text style={styles.stripLabel}>{t('flow.includedGames')}</Text>
+                    <View style={styles.stripIcons}>
+                      {includedIcons.map((icon, i) => (
+                        <Text key={`${icon}-${i}`} style={styles.stripIcon}>
+                          {icon}
+                        </Text>
+                      ))}
+                    </View>
+                  </Pressable>
+                )}
+                <HoldToConfirm
+                  label={t('flow.holdToReset')}
+                  accent="coral"
+                  onConfirm={resetJourney}
+                  style={styles.reset}
+                />
+              </>
+            )}
           </View>
         ) : games.length === 0 ? (
           <Text style={styles.empty}>{t('home.empty')}</Text>
@@ -164,4 +269,41 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: COLORS.ink,
   },
+  switchRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginHorizontal: 22,
+    marginTop: 16,
+    padding: 4,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.pill,
+  },
+  segment: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: BORDER_RADIUS.pill,
+    alignItems: 'center',
+  },
+  segmentOn: { backgroundColor: COLORS.brand },
+  segmentText: { fontFamily: FONTS.bodySemi, fontSize: 15, color: COLORS.inkSoft },
+  segmentTextOn: { color: COLORS.surface },
+  journeyEmpty: {
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    color: COLORS.inkSoft,
+    textAlign: 'center',
+    paddingVertical: 24,
+  },
+  journeyDone: {
+    fontFamily: FONTS.displayBold,
+    fontSize: 18,
+    color: COLORS.ink,
+    textAlign: 'center',
+    paddingVertical: 12,
+  },
+  strip: { alignItems: 'center', gap: SPACING.xs, marginTop: SPACING.sm },
+  stripLabel: { fontFamily: FONTS.body, fontSize: 13, color: COLORS.inkSoft },
+  stripIcons: { flexDirection: 'row', gap: SPACING.sm },
+  stripIcon: { fontSize: 28 },
+  reset: { marginTop: SPACING.sm, alignSelf: 'stretch' },
 });

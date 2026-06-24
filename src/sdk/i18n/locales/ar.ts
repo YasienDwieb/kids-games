@@ -30,10 +30,7 @@ export const ar: CoreTranslations = {
     version: 'ألعاب الأطفال · الإصدار 1.0',
     switching: 'جارٍ تغيير اللغة…',
     guided: {
-      section: 'الوضع الموجّه',
-      mode: 'الرحلة الموجّهة',
       games: 'الألعاب في الرحلة',
-      reset: 'إعادة تقدّم الرحلة',
     },
   },
   player: {
@@ -52,8 +49,14 @@ export const ar: CoreTranslations = {
   },
   flow: {
     title: 'رحلتك',
+    start: 'ابدأ رحلتك',
     continue: 'تابع رحلتك',
     allCaughtUp: 'أحسنت! أنهيت كل شيء 🌟',
     exit: 'تم',
+    switchJourney: 'الرحلة',
+    switchGames: 'الألعاب',
+    includedGames: 'في هذه الرحلة:',
+    holdToReset: 'استمر بالضغط للبدء من جديد',
+    empty: 'أضف ألعابًا من الإعدادات',
   },
 };
