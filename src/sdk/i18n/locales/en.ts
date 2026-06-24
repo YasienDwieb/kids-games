@@ -48,6 +48,7 @@ export const en = {
   },
   flow: {
     title: 'Your journey',
+    start: 'Start your journey',
     continue: 'Continue your journey',
     allCaughtUp: "You're all caught up 🌟",
     exit: 'Done',

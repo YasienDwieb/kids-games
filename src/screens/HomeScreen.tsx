@@ -158,7 +158,7 @@ export function HomeScreen({ navigation }: Props) {
                   <Text style={styles.journeyDone}>{t('flow.allCaughtUp')}</Text>
                 ) : (
                   <PressableButton
-                    label={t('flow.continue')}
+                    label={savedStep > 0 ? t('flow.continue') : t('flow.start')}
                     accent="purple"
                     onPress={() => navigation.navigate('FlowPlayer')}
                   />

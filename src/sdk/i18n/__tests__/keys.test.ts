@@ -201,6 +201,7 @@ const KEYS: string[] = [
   'core:flow.exit',
   'core:flow.switchJourney',
   'core:flow.switchGames',
+  'core:flow.start',
   'core:flow.includedGames',
   'core:flow.holdToReset',
   'core:flow.empty',

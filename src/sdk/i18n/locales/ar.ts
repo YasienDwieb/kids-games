@@ -49,6 +49,7 @@ export const ar: CoreTranslations = {
   },
   flow: {
     title: 'رحلتك',
+    start: 'ابدأ رحلتك',
     continue: 'تابع رحلتك',
     allCaughtUp: 'أحسنت! أنهيت كل شيء 🌟',
     exit: 'تم',
