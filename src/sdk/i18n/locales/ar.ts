@@ -30,8 +30,6 @@ export const ar: CoreTranslations = {
     version: 'ألعاب الأطفال · الإصدار 1.0',
     switching: 'جارٍ تغيير اللغة…',
     guided: {
-      section: 'الوضع الموجّه',
-      mode: 'الرحلة الموجّهة',
       games: 'الألعاب في الرحلة',
     },
   },

@@ -29,8 +29,6 @@ export const en = {
     version: 'Kids Games · v1.0',
     switching: 'Switching language…',
     guided: {
-      section: 'Guided mode',
-      mode: 'Guided journey',
       games: 'Games in the journey',
     },
   },

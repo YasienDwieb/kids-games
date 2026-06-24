@@ -204,8 +204,6 @@ const KEYS: string[] = [
   'core:flow.includedGames',
   'core:flow.holdToReset',
   'core:flow.empty',
-  'core:settings.guided.section',
-  'core:settings.guided.mode',
   'core:settings.guided.games',
 ];
 
