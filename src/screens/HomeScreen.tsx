@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -48,12 +48,13 @@ export function HomeScreen({ navigation }: Props) {
     .filter((icon): icon is string => Boolean(icon));
 
   const [savedStep, setSavedStep] = useState(0);
+  const flowStore = useMemo(() => createFlowProgressStore(), []);
   // Re-read the checkpoint each time Home regains focus so the card reflects
   // progress made (or completion) inside the journey before returning here.
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      createFlowProgressStore()
+      flowStore
         .get()
         .then((p) => {
           if (active) setSavedStep(p.step);
@@ -61,13 +62,13 @@ export function HomeScreen({ navigation }: Props) {
       return () => {
         active = false;
       };
-    }, []),
+    }, [flowStore]),
   );
 
   const journeyDone = journeyTotal > 0 && savedStep >= journeyTotal;
 
   const resetJourney = () => {
-    createFlowProgressStore()
+    flowStore
       .set({ step: 0, seed: 0, updatedAt: Date.now() })
       .then(() => setSavedStep(0));
   };
@@ -93,6 +94,8 @@ export function HomeScreen({ navigation }: Props) {
           <Pressable
             onPress={() => update({ mode: 'guided' })}
             style={[styles.segment, settings.mode === 'guided' && styles.segmentOn]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: settings.mode === 'guided' }}
           >
             <Text
               style={[styles.segmentText, settings.mode === 'guided' && styles.segmentTextOn]}
@@ -103,6 +106,8 @@ export function HomeScreen({ navigation }: Props) {
           <Pressable
             onPress={() => update({ mode: 'free' })}
             style={[styles.segment, settings.mode === 'free' && styles.segmentOn]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: settings.mode === 'free' }}
           >
             <Text
               style={[styles.segmentText, settings.mode === 'free' && styles.segmentTextOn]}
@@ -140,7 +145,11 @@ export function HomeScreen({ navigation }: Props) {
           <View style={styles.journey}>
             <Text style={styles.journeyTitle}>{t('flow.title')}</Text>
             {journeyTotal === 0 ? (
-              <Pressable onPress={() => navigation.navigate('Settings')}>
+              <Pressable
+                onPress={() => navigation.navigate('Settings')}
+                accessibilityRole="button"
+                accessibilityLabel={t('flow.empty')}
+              >
                 <Text style={styles.journeyEmpty}>{t('flow.empty')}</Text>
               </Pressable>
             ) : (
@@ -158,11 +167,13 @@ export function HomeScreen({ navigation }: Props) {
                   <Pressable
                     style={styles.strip}
                     onPress={() => navigation.navigate('Settings')}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('flow.includedGames')}
                   >
                     <Text style={styles.stripLabel}>{t('flow.includedGames')}</Text>
                     <View style={styles.stripIcons}>
                       {includedIcons.map((icon, i) => (
-                        <Text key={i} style={styles.stripIcon}>
+                        <Text key={`${icon}-${i}`} style={styles.stripIcon}>
                           {icon}
                         </Text>
                       ))}
