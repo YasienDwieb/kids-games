@@ -154,7 +154,7 @@ export function MatchBoard({
   const selectedRef = useRef<{ row: Row; idx: number } | null>(null);
   selectedRef.current = selected;
   const wrongTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const dragOrigin = useRef<{ row: Row; idx: number; anchor: Point } | null>(null);
+  const dragOrigin = useRef<{ row: Row; idx: number; anchor: Point; start: Point } | null>(null);
 
   useEffect(() => () => clearTimeout(wrongTimer.current), []);
   useEffect(() => setSelected(null), [round]);
@@ -231,7 +231,9 @@ export function MatchBoard({
       }
       const anchor = (row === 'top' ? topAnchors : botAnchors)[idx];
       if (!anchor) return;
-      dragOrigin.current = { row, idx, anchor };
+      // Remember the real touch-down point — tap-vs-drag is classified by how far
+      // the finger actually travels, NOT distance to the tile's edge-anchor.
+      dragOrigin.current = { row, idx, anchor, start: { x, y } };
       // No drag line on touch-down — only once the finger actually moves (update).
     },
     update: (x, y) => {
@@ -244,7 +246,7 @@ export function MatchBoard({
       setDrag(null);
       if (!origin) return;
 
-      const moved = Math.hypot(x - origin.anchor.x, y - origin.anchor.y);
+      const moved = Math.hypot(x - origin.start.x, y - origin.start.y);
       const targetRow: Row = origin.row === 'top' ? 'bottom' : 'top';
 
       if (moved >= TAP_THRESHOLD) {
