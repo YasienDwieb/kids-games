@@ -7,7 +7,8 @@ jest.useFakeTimers();
 // type — jest-expo's Pressable can't be matched by reference via findByType.
 function holdProps(tree: ReturnType<typeof create>) {
   const nodes = tree.root.findAll(
-    (n) => Boolean(n.props) && typeof (n.props as { onPressIn?: unknown }).onPressIn === 'function',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (n: any) => Boolean(n.props) && typeof n.props.onPressIn === 'function',
   );
   return nodes[0].props as { onPressIn: () => void; onPressOut: () => void };
 }
