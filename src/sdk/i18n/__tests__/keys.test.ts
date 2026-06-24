@@ -199,10 +199,14 @@ const KEYS: string[] = [
   'core:flow.continue',
   'core:flow.allCaughtUp',
   'core:flow.exit',
+  'core:flow.switchJourney',
+  'core:flow.switchGames',
+  'core:flow.includedGames',
+  'core:flow.holdToReset',
+  'core:flow.empty',
   'core:settings.guided.section',
   'core:settings.guided.mode',
   'core:settings.guided.games',
-  'core:settings.guided.reset',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {

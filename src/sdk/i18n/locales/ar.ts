@@ -33,7 +33,6 @@ export const ar: CoreTranslations = {
       section: 'الوضع الموجّه',
       mode: 'الرحلة الموجّهة',
       games: 'الألعاب في الرحلة',
-      reset: 'إعادة تقدّم الرحلة',
     },
   },
   player: {
@@ -55,5 +54,10 @@ export const ar: CoreTranslations = {
     continue: 'تابع رحلتك',
     allCaughtUp: 'أحسنت! أنهيت كل شيء 🌟',
     exit: 'تم',
+    switchJourney: 'الرحلة',
+    switchGames: 'الألعاب',
+    includedGames: 'في هذه الرحلة:',
+    holdToReset: 'استمر بالضغط للبدء من جديد',
+    empty: 'أضف ألعابًا من الإعدادات',
   },
 };

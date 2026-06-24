@@ -32,7 +32,6 @@ export const en = {
       section: 'Guided mode',
       mode: 'Guided journey',
       games: 'Games in the journey',
-      reset: 'Reset journey progress',
     },
   },
   player: {
@@ -54,6 +53,11 @@ export const en = {
     continue: 'Continue your journey',
     allCaughtUp: "You're all caught up 🌟",
     exit: 'Done',
+    switchJourney: 'Journey',
+    switchGames: 'Games',
+    includedGames: 'In this journey:',
+    holdToReset: 'Hold to start over',
+    empty: 'Add games in Settings',
   },
 } as const;
 
