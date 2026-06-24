@@ -13,8 +13,6 @@ import {
   eligibleGameIds,
   getGame,
   gameName,
-  createFlowProgressStore,
-  DEFAULT_FLOW_PROGRESS,
   type LanguageCode,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
@@ -69,10 +67,6 @@ export function SettingsScreen({ navigation }: Props) {
     const next = current.includes(id) ? current.filter((x) => x !== id) : [...current, id];
     // All selected → store null (means "all"); else store the explicit list.
     update({ flowGameIds: next.length === flowGames.length ? null : next });
-  };
-
-  const resetJourney = () => {
-    createFlowProgressStore().set({ ...DEFAULT_FLOW_PROGRESS, updatedAt: Date.now() });
   };
 
   const onPickLanguage = async (code: LanguageCode) => {
@@ -136,12 +130,6 @@ export function SettingsScreen({ navigation }: Props) {
                   />
                 ))}
               </View>
-              <ToggleRow
-                icon="🏁"
-                label={t('settings.guided.reset')}
-                value={false}
-                onChange={() => resetJourney()}
-              />
             </>
           ) : null}
         </View>
