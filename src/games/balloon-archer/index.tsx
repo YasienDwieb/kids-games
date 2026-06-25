@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import { useSound, useLevels, levelsFromGenerator, ResumePrompt } from '@/sdk';
 import { Archer } from './components/Archer';
 import { Balloon } from './components/Balloon';
@@ -24,14 +23,6 @@ export default function BalloonArcherGame() {
   const [overlay, setOverlay] = useState<{ variant: 'cleared' | 'failed'; stars: number } | null>(
     null,
   );
-
-  // This game plays in landscape; restore portrait on the way out.
-  useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => {});
-    return () => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
-    };
-  }, []);
 
   const onPop = useCallback(() => play('explosion'), [play]);
   const onCleared = useCallback(

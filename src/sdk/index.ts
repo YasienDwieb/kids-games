@@ -50,7 +50,6 @@ export { useLoopSound } from './audio/useLoopSound';
 
 // Motion & orientation
 export { useTilt } from './motion/useTilt';
-export { useFreeOrientation } from './orientation/useFreeOrientation';
 
 // Layout
 export { GameShell } from './layout/GameShell';
