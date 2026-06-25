@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   COLORS as TOKENS,
@@ -33,6 +33,8 @@ export default function ColorMixerGame() {
   const insets = useSafeAreaInsets();
   const { play } = useSound();
   const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   // Lifted-ghost overlay for dragging a saved color up into the mixing zone.
   // Rendered at the root (outside the palette's clipping ScrollView) so it isn't cut off.
@@ -205,93 +207,125 @@ export default function ColorMixerGame() {
     );
   }
 
+  // Shared inner content blocks — used in both portrait and landscape layouts.
+  const headerBlock = (
+    <View style={[styles.header, { paddingTop: insets.top + SPACING.xs }]}>
+      {/* reserves room for the floating BackButton */}
+      <View style={styles.headerSide} />
+      <Text style={styles.title}>{t('color-mixer:title')}</Text>
+      <View style={styles.headerSide}>
+        <IconButton
+          glyph="📚"
+          onPress={() => setShowCollection(true)}
+          accessibilityLabel={t('color-mixer:header.myColors')}
+        />
+      </View>
+    </View>
+  );
+
+  const modeToggleBlock = (
+    <View style={styles.modeToggle}>
+      <Chip
+        label={t('color-mixer:mode.freeplay')}
+        active={mode === 'freeplay'}
+        onPress={() => handleSwitchMode('freeplay')}
+      />
+      <Chip
+        label={t('color-mixer:mode.challenges')}
+        active={mode === 'challenge'}
+        onPress={() => handleSwitchMode('challenge')}
+      />
+    </View>
+  );
+
+  const challengeBlock = mode === 'challenge' && challenge.currentChallenge ? (
+    <ChallengeMode
+      currentChallenge={challenge.currentChallenge}
+      currentMixHex={mixer.currentMixHex}
+      onChallengeComplete={handleChallengeComplete}
+      onBack={() => setShowChallengePicker(true)}
+    />
+  ) : null;
+
+  const mixingZoneBlock = (
+    <View style={styles.playArea}>
+      <MixingZone
+        size={DIMENSIONS.MIXING_ZONE_SIZE}
+        currentMixHex={mixer.currentMixHex}
+        onLayout={handleZoneLayout}
+        onResultDragEnd={handleResultDragEnd}
+      />
+    </View>
+  );
+
+  const actionsBlock = (
+    <View style={styles.actions}>
+      {mixer.canUndo && (
+        <PressableButton label={t('color-mixer:actions.undo')} variant="ghost" onPress={mixer.undoLastMix} />
+      )}
+      {mixer.currentMixHex && (
+        <PressableButton
+          label={t('color-mixer:actions.clear')}
+          variant="ghost"
+          onPress={mixer.clearContinuousMix}
+        />
+      )}
+      {mixer.currentMixHex && (
+        <PressableButton
+          label={t('color-mixer:actions.save')}
+          accent="blue"
+          onPress={() => setSaveDialogOpen(true)}
+        />
+      )}
+    </View>
+  );
+
+  const paletteBlock = (
+    <ColorPalette
+      availableColors={mixer.unlockedColors}
+      onColorDragStart={handleDragStart}
+      onColorDragMove={handleDragMove}
+      onColorDragEnd={handleDragEnd}
+      savedColors={mixer.savedColors}
+      onSavedTap={handleSavedTap}
+      onSavedLiftStart={handleSavedLiftStart}
+      onSavedLiftMove={handleSavedLiftMove}
+      onSavedLiftEnd={handleSavedLiftEnd}
+      paletteItemPositions={palettePositions}
+      landscape={landscape}
+    />
+  );
+
   return (
     <View style={styles.root}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top + SPACING.xs }]}>
-          {/* reserves room for the floating BackButton */}
-          <View style={styles.headerSide} />
-          <Text style={styles.title}>{t('color-mixer:title')}</Text>
-          <View style={styles.headerSide}>
-            <IconButton
-              glyph="📚"
-              onPress={() => setShowCollection(true)}
-              accessibilityLabel={t('color-mixer:header.myColors')}
-            />
-          </View>
-        </View>
-
-        {/* Mode toggle */}
-        <View style={styles.modeToggle}>
-          <Chip
-            label={t('color-mixer:mode.freeplay')}
-            active={mode === 'freeplay'}
-            onPress={() => handleSwitchMode('freeplay')}
-          />
-          <Chip
-            label={t('color-mixer:mode.challenges')}
-            active={mode === 'challenge'}
-            onPress={() => handleSwitchMode('challenge')}
-          />
-        </View>
-
-        {/* Challenge target */}
-        {mode === 'challenge' && challenge.currentChallenge && (
-          <ChallengeMode
-            currentChallenge={challenge.currentChallenge}
-            currentMixHex={mixer.currentMixHex}
-            onChallengeComplete={handleChallengeComplete}
-            onBack={() => setShowChallengePicker(true)}
-          />
+      <View style={[styles.container, landscape && styles.containerLandscape]}>
+        {landscape ? (
+          /* ── Landscape: left = mixing zone, right = palette ── */
+          <>
+            <View style={styles.leftPanel}>
+              {headerBlock}
+              {modeToggleBlock}
+              {challengeBlock}
+              {mixingZoneBlock}
+              {actionsBlock}
+            </View>
+            <View style={styles.rightPanel}>
+              {paletteBlock}
+            </View>
+          </>
+        ) : (
+          /* ── Portrait: stacked ── */
+          <>
+            {headerBlock}
+            {modeToggleBlock}
+            {challengeBlock}
+            {mixingZoneBlock}
+            {actionsBlock}
+            <View style={styles.paletteContainer}>
+              {paletteBlock}
+            </View>
+          </>
         )}
-
-        {/* Play area */}
-        <View style={styles.playArea}>
-          <MixingZone
-            size={DIMENSIONS.MIXING_ZONE_SIZE}
-            currentMixHex={mixer.currentMixHex}
-            onLayout={handleZoneLayout}
-            onResultDragEnd={handleResultDragEnd}
-          />
-        </View>
-
-        {/* Action buttons */}
-        <View style={styles.actions}>
-          {mixer.canUndo && (
-            <PressableButton label={t('color-mixer:actions.undo')} variant="ghost" onPress={mixer.undoLastMix} />
-          )}
-          {mixer.currentMixHex && (
-            <PressableButton
-              label={t('color-mixer:actions.clear')}
-              variant="ghost"
-              onPress={mixer.clearContinuousMix}
-            />
-          )}
-          {mixer.currentMixHex && (
-            <PressableButton
-              label={t('color-mixer:actions.save')}
-              accent="blue"
-              onPress={() => setSaveDialogOpen(true)}
-            />
-          )}
-        </View>
-
-        {/* Palette */}
-        <View style={styles.paletteContainer}>
-          <ColorPalette
-            availableColors={mixer.unlockedColors}
-            onColorDragStart={handleDragStart}
-            onColorDragMove={handleDragMove}
-            onColorDragEnd={handleDragEnd}
-            savedColors={mixer.savedColors}
-            onSavedTap={handleSavedTap}
-            onSavedLiftStart={handleSavedLiftStart}
-            onSavedLiftMove={handleSavedLiftMove}
-            onSavedLiftEnd={handleSavedLiftEnd}
-            paletteItemPositions={palettePositions}
-          />
-        </View>
       </View>
 
       {liftedHex && (
@@ -338,6 +372,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: TOKENS.canvas,
+  },
+  // Landscape: side-by-side row; left = mixing area, right = palette panel
+  containerLandscape: {
+    flexDirection: 'row',
+  },
+  // Left panel: header + mode toggle + optional challenge + mixing zone + actions
+  leftPanel: {
+    flex: 1,
+    overflow: 'visible',
+  },
+  // Right panel: palette — fixed width so the mixing zone gets the remaining space
+  rightPanel: {
+    width: '40%',
+    justifyContent: 'center',
+    zIndex: 10,
+    overflow: 'visible',
   },
   header: {
     flexDirection: 'row',
