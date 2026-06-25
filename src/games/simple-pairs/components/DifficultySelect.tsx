@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Difficulty } from '../types';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from '../constants';
@@ -22,13 +22,29 @@ const LEVELS: { difficulty: Difficulty; emoji: string; accent: AccentName }[] = 
 export function DifficultySelect({ onSelect }: DifficultySelectProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top + SPACING.xxl }]}>
-      <Text style={styles.title}>{t('simple-pairs:difficulty.select.title')}</Text>
-      <Text style={styles.subtitle}>{t('simple-pairs:difficulty.select.subtitle')}</Text>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: landscape
+            ? insets.top + SPACING.sm
+            : insets.top + SPACING.xxl,
+        },
+      ]}
+    >
+      <Text style={[styles.title, landscape && styles.titleLandscape]}>
+        {t('simple-pairs:difficulty.select.title')}
+      </Text>
+      {!landscape && (
+        <Text style={styles.subtitle}>{t('simple-pairs:difficulty.select.subtitle')}</Text>
+      )}
 
       <ScrollView
-        contentContainerStyle={styles.options}
+        contentContainerStyle={[styles.options, landscape && styles.optionsLandscape]}
         showsVerticalScrollIndicator={false}
       >
         {LEVELS.map(({ difficulty, emoji, accent }) => {
@@ -40,17 +56,17 @@ export function DifficultySelect({ onSelect }: DifficultySelectProps) {
               accent={accent}
               align="flex-start"
               onPress={() => onSelect(difficulty)}
-              style={styles.button}
+              style={landscape ? styles.buttonLandscape : styles.button}
             >
               <EmojiFrame
                 emoji={emoji}
-                size={52}
-                fontSize={30}
+                size={landscape ? 40 : 52}
+                fontSize={landscape ? 24 : 30}
                 radius={14}
                 tint="rgba(255,255,255,0.25)"
               />
               <View style={styles.labelCol}>
-                <Text style={styles.levelName}>
+                <Text style={[styles.levelName, landscape && styles.levelNameLandscape]}>
                   {t(`simple-pairs:difficulty.${difficulty}`)}
                 </Text>
                 <Text style={styles.levelMeta}>
@@ -77,6 +93,10 @@ const styles = StyleSheet.create({
     color: COLORS.ink,
     textAlign: 'center',
   },
+  titleLandscape: {
+    fontSize: 22,
+    marginBottom: SPACING.xs,
+  },
   subtitle: {
     fontFamily: FONTS.body,
     fontSize: 16,
@@ -89,12 +109,24 @@ const styles = StyleSheet.create({
     gap: 14,
     paddingBottom: SPACING.xl,
   },
+  // Landscape: 2-column grid so all 4 difficulty buttons fit without scrolling.
+  optionsLandscape: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'space-evenly',
+  },
   button: { width: '100%' },
+  // Landscape: each button takes ~48% of the width so 2 fit per row.
+  buttonLandscape: { width: '47%' },
   labelCol: { gap: 2 },
   levelName: {
     fontFamily: FONTS.display,
     fontSize: 20,
     color: COLORS.surface,
+  },
+  levelNameLandscape: {
+    fontSize: 16,
   },
   levelMeta: {
     fontFamily: FONTS.body,

@@ -14,18 +14,25 @@ type GameBoardProps = {
 
 const BOARD_PADDING = SPACING.lg;
 
-const HEADER_HEIGHT = 80;
+// Approximate header height — compact in landscape (single row), taller in portrait.
+const HEADER_HEIGHT_PORTRAIT = 80;
+const HEADER_HEIGHT_LANDSCAPE = 52;
 
 export function GameBoard({ cards, onCardPress, disabled, columns }: GameBoardProps) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const landscape = screenWidth > screenHeight;
 
+  const headerHeight = landscape ? HEADER_HEIGHT_LANDSCAPE : HEADER_HEIGHT_PORTRAIT;
   const rowCount = Math.ceil(cards.length / columns);
   const availableWidth = screenWidth - BOARD_PADDING * 2;
-  const availableHeight = screenHeight - HEADER_HEIGHT - BOARD_PADDING * 2;
+  const availableHeight = screenHeight - headerHeight - BOARD_PADDING * 2;
 
   const widthSize = Math.floor(availableWidth / columns - LAYOUT.CARD_GAP);
   const heightSize = Math.floor(availableHeight / rowCount - LAYOUT.CARD_GAP);
-  const cardSize = Math.min(widthSize, heightSize, LAYOUT.CARD_SIZE);
+  // In landscape, size from width so cards fill the wider axis; cap at portrait max.
+  const cardSize = landscape
+    ? Math.min(widthSize, heightSize, LAYOUT.CARD_SIZE)
+    : Math.min(widthSize, heightSize, LAYOUT.CARD_SIZE);
 
   const rows: CardType[][] = [];
   for (let i = 0; i < cards.length; i += columns) {
@@ -33,10 +40,10 @@ export function GameBoard({ cards, onCardPress, disabled, columns }: GameBoardPr
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.board}>
+    <View style={[styles.container, landscape && styles.containerLandscape]}>
+      <View style={[styles.board, landscape && styles.boardLandscape]}>
         {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.row}>
+          <View key={rowIndex} style={[styles.row, landscape && styles.rowLandscape]}>
             {row.map((card) => (
               <View key={card.id} style={{ marginHorizontal: LAYOUT.CARD_GAP / 2 }}>
                 <Card
@@ -61,11 +68,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: BOARD_PADDING,
   },
+  containerLandscape: {
+    justifyContent: 'space-evenly',
+    paddingVertical: SPACING.xs,
+  },
   board: {
     alignItems: 'center',
     gap: LAYOUT.CARD_GAP,
   },
+  boardLandscape: {
+    gap: LAYOUT.CARD_GAP,
+    width: '100%',
+    alignItems: 'center',
+  },
   row: {
     flexDirection: 'row',
+  },
+  rowLandscape: {
+    justifyContent: 'space-evenly',
+    width: '100%',
   },
 });

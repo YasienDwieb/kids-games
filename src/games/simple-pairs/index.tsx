@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { DifficultySelect, GameBoard, GameHeader, MatchCelebration, WinScreen } from './components';
 import { useSimplePairs } from './hooks';
 import { useSound, useScreenBack } from '@/sdk';
@@ -16,6 +16,8 @@ function starsFor(moves: number, pairs: number): number {
 function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: () => void }) {
   const { gameState, flipCard, resetGame } = useSimplePairs(difficulty);
   const { play } = useSound();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
   const [showCelebration, setShowCelebration] = useState(false);
   const prevMatchedPairs = useRef(0);
   const prevMoves = useRef(0);
@@ -61,7 +63,7 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
         cards={gameState.cards}
         onCardPress={handleCardPress}
         disabled={gameState.isLocked}
-        columns={DIFFICULTY_CONFIG[difficulty].columns}
+        columns={landscape ? DIFFICULTY_CONFIG[difficulty].landscapeColumns : DIFFICULTY_CONFIG[difficulty].columns}
       />
 
       <MatchCelebration
