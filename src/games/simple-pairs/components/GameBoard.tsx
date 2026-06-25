@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import React, { useState } from 'react';
+import { LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Card as CardType } from '../types';
 import { LAYOUT } from '../constants';
 import { SPACING } from '../../../constants';
@@ -14,25 +14,32 @@ type GameBoardProps = {
 
 const BOARD_PADDING = SPACING.lg;
 
-// Approximate header height — compact in landscape (single row), taller in portrait.
-const HEADER_HEIGHT_PORTRAIT = 80;
-const HEADER_HEIGHT_LANDSCAPE = 52;
-
 export function GameBoard({ cards, onCardPress, disabled, columns }: GameBoardProps) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const landscape = screenWidth > screenHeight;
 
-  const headerHeight = landscape ? HEADER_HEIGHT_LANDSCAPE : HEADER_HEIGHT_PORTRAIT;
+  // Measure the real available height of the board area (the View below the header)
+  // via onLayout instead of estimating header/inset heights — device-agnostic, so
+  // notched-landscape devices size cards from actual space, never a fixed budget.
+  const [boardH, setBoardH] = useState(0);
+  const onLayout = (e: LayoutChangeEvent) => {
+    const h = e.nativeEvent.layout.height;
+    if (h > 0 && h !== boardH) setBoardH(h);
+  };
+
   const rowCount = Math.ceil(cards.length / columns);
   const availableWidth = screenWidth - BOARD_PADDING * 2;
-  const availableHeight = screenHeight - headerHeight - BOARD_PADDING * 2;
 
   const widthSize = Math.floor(availableWidth / columns - LAYOUT.CARD_GAP);
-  const heightSize = Math.floor(availableHeight / rowCount - LAYOUT.CARD_GAP);
-  // In landscape, size from width so cards fill the wider axis; cap at portrait max.
-  const cardSize = landscape
-    ? Math.min(widthSize, heightSize, LAYOUT.CARD_SIZE)
-    : Math.min(widthSize, heightSize, LAYOUT.CARD_SIZE);
+  // The measured height already excludes the header; subtract our own vertical
+  // padding (tighter in landscape, see containerLandscape).
+  // Until measured (boardH === 0), fall back to width-based sizing so there's no flash.
+  const verticalPadding = (landscape ? SPACING.xs : BOARD_PADDING) * 2;
+  const heightSize =
+    boardH > 0
+      ? Math.floor((boardH - verticalPadding) / rowCount - LAYOUT.CARD_GAP)
+      : widthSize;
+  const cardSize = Math.min(widthSize, heightSize, LAYOUT.CARD_SIZE);
 
   const rows: CardType[][] = [];
   for (let i = 0; i < cards.length; i += columns) {
@@ -40,7 +47,10 @@ export function GameBoard({ cards, onCardPress, disabled, columns }: GameBoardPr
   }
 
   return (
-    <View style={[styles.container, landscape && styles.containerLandscape]}>
+    <View
+      style={[styles.container, landscape && styles.containerLandscape]}
+      onLayout={onLayout}
+    >
       <View style={[styles.board, landscape && styles.boardLandscape]}>
         {rows.map((row, rowIndex) => (
           <View key={rowIndex} style={[styles.row, landscape && styles.rowLandscape]}>
