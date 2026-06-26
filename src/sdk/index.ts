@@ -48,6 +48,10 @@ export { useSound } from './audio/useSound';
 export type { PlayOptions } from './audio/useSound';
 export { useLoopSound } from './audio/useLoopSound';
 
+// Speech
+export { useSpeech } from './speech/useSpeech';
+export type { SpeakOptions } from './speech/useSpeech';
+
 // Motion & orientation
 export { useTilt } from './motion/useTilt';
 export { useFreeOrientation } from './orientation/useFreeOrientation';

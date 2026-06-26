@@ -9,3 +9,4 @@ import './turbo-road/config';
 import './count-and-pop/config';
 import './shape-detective/config';
 import './match-up/config';
+import './letter-land/config';

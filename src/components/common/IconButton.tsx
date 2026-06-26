@@ -8,6 +8,8 @@ type IconButtonProps = {
   size?: number;
   glyphSize?: number;
   style?: ViewStyle;
+  /** When true, ignores presses and dims the control. */
+  disabled?: boolean;
 };
 
 // The canonical circular surface control — back / restart / action.
@@ -19,18 +21,22 @@ export function IconButton({
   size = 48,
   glyphSize = FONT_SIZES.md,
   style,
+  disabled = false,
 }: IconButtonProps) {
   return (
     <Pressable
-      onPress={onPress}
+      onPress={disabled ? undefined : onPress}
+      disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled }}
       hitSlop={8}
       style={({ pressed }) => [
         styles.button,
         { width: size, height: size, borderRadius: size / 2 },
         SHADOWS.sm,
         pressed && styles.pressed,
+        disabled && styles.disabled,
         style,
       ]}
     >
@@ -48,6 +54,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pressed: { transform: [{ scale: 0.92 }] },
+  disabled: { opacity: 0.5 },
   glyph: {
     color: COLORS.ink,
     fontWeight: '600',
