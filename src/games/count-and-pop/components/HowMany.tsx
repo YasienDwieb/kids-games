@@ -51,6 +51,7 @@ import {
 } from '@/sdk';
 import { NumberChoice } from './NumberChoice';
 import { GroupCount } from './GroupCount';
+import { FitColumn } from './FitColumn';
 import type { NumberChoiceState } from './NumberChoice';
 import type {
   HowManyRound,
@@ -177,39 +178,49 @@ export function HowMany({
   const howManyCount = mode === 'howMany' ? round.count : 0;
   const swimDelays = Array.from({ length: howManyCount }, (_, i) => i * 300);
 
+  // howMany object grid (shared by both orientations).
+  const howManyGrid = (
+    <View style={[styles.groupInner, SHADOWS.sm]}>
+      <View style={styles.emojiGrid}>
+        {swimDelays.map((delay, i) => (
+          <SwimmingEmoji key={i} emoji={objectEmoji} delayMs={delay} />
+        ))}
+      </View>
+    </View>
+  );
+
   // Mode-specific object visual.
+  //  - Portrait howMany scrolls for large counts (tall column).
+  //  - Landscape howMany shows the full grid; FitColumn scales the whole unit
+  //    to fit, so no scroll / height cap is needed.
   const objectVisual =
     mode === 'howMany' ? (
-      /* Flat emoji grid for howMany — scrollable for large counts */
-      <ScrollView
-        scrollEnabled={howManyCount > 9 || landscape}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.groupCardContent}
-        style={[styles.groupCard, landscape && styles.wideLandscape]}
-      >
-        <View style={[styles.groupInner, SHADOWS.sm]}>
-          <View style={styles.emojiGrid}>
-            {swimDelays.map((delay, i) => (
-              <SwimmingEmoji key={i} emoji={objectEmoji} delayMs={delay} />
-            ))}
-          </View>
-        </View>
-      </ScrollView>
+      landscape ? (
+        <View style={styles.wideLandscape}>{howManyGrid}</View>
+      ) : (
+        <ScrollView
+          scrollEnabled={howManyCount > 9}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.groupCardContent}
+          style={styles.groupCard}
+        >
+          {howManyGrid}
+        </ScrollView>
+      )
     ) : (
       /* Two-group visual for makeN / addition */
       <GroupCount round={round as MakeNRound | AdditionRound} />
     );
 
-  return (
-    <View style={[styles.root, landscape && styles.rootLandscape]}>
+  const body = (
+    <>
       {/* Prompt card */}
       <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
         <Text style={styles.promptTitle}>{promptTitle}</Text>
         <Text style={styles.promptInstruction}>{promptInstruction}</Text>
       </View>
 
-      {/* Object display. Compact in landscape (small one-row tiles), so the
-          column fits naturally and the choice row stays on-screen. */}
+      {/* Object display */}
       {objectVisual}
 
       {/* Choice row — no direction pin: equal-option buttons, safe to mirror in RTL */}
@@ -235,8 +246,15 @@ export function HowMany({
           );
         })}
       </View>
-    </View>
+    </>
   );
+
+  // Landscape: scale the whole unit to the available height so the choice row
+  // is never pushed off-screen. Portrait keeps its natural scrolling column.
+  if (landscape) {
+    return <FitColumn contentStyle={styles.unitLandscape}>{body}</FitColumn>;
+  }
+  return <View style={styles.root}>{body}</View>;
 }
 
 // ---------------------------------------------------------------------------
@@ -253,17 +271,16 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
-  // Landscape: distribute prompt / visual / choices evenly across the available
-  // height (no top blank, even gaps, last row never clipped) — device-agnostic,
-  // no pixel budgets. Visuals stay compact by using width (one row), not height.
-  rootLandscape: {
-    justifyContent: 'space-evenly',
-    gap: 0,
+  // Landscape unit: natural-height centered column (prompt / visual / choices).
+  // FitColumn measures this and scales it down uniformly to fit the available
+  // height — device-agnostic, ratio-preserving, no clipping, no pixel budgets.
+  unitLandscape: {
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
-    backgroundColor: 'transparent',
   },
   // Landscape: let prompt / objects use the available width; trim prompt height.
-  wideLandscape: { maxWidth: 720 },
+  wideLandscape: { width: '100%', maxWidth: 720, alignItems: 'center' },
   promptCardLandscape: { maxWidth: 720, paddingVertical: SPACING.xs },
   // Landscape: choice row uses the width; natural height in the centered column.
   choiceRowLandscape: { maxWidth: 720, flexGrow: 0, flexShrink: 0 },
