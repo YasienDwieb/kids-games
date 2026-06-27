@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
@@ -36,10 +36,17 @@ function ageBandIdForGame(game: GameConfig): string | undefined {
   return AGE_BANDS.find((b) => ids.includes(b.id))?.id;
 }
 
+// Landscape rail layout tokens.
+const SIDEBAR_W = 208;
+const GRID_PAD_V = 14;
+const GRID_PAD_H = 12;
+const CELL_GAP = 12;
+
 export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const landscape = width > height;
-  const columns = landscape ? 4 : 2;
+  const columns = 2; // portrait grid columns
   const { settings, update } = useSettings();
   const { t } = useTranslation();
   const games = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
@@ -76,6 +83,218 @@ export function HomeScreen({ navigation }: Props) {
       .then(() => setSavedStep(0));
   };
 
+  const settingsButton = (
+    <IconButton
+      glyph="⚙️"
+      onPress={() => navigation.navigate('Settings')}
+      accessibilityLabel={t('settings.title')}
+    />
+  );
+
+  const modeSwitch = (style?: object) => (
+    <View style={[styles.switchRow, style]}>
+      <Pressable
+        onPress={() => update({ mode: 'guided' })}
+        style={[styles.segment, settings.mode === 'guided' && styles.segmentOn]}
+        accessibilityRole="button"
+        accessibilityState={{ selected: settings.mode === 'guided' }}
+      >
+        <Text style={[styles.segmentText, settings.mode === 'guided' && styles.segmentTextOn]}>
+          {t('flow.switchJourney')}
+        </Text>
+      </Pressable>
+      <Pressable
+        onPress={() => update({ mode: 'free' })}
+        style={[styles.segment, settings.mode === 'free' && styles.segmentOn]}
+        accessibilityRole="button"
+        accessibilityState={{ selected: settings.mode === 'free' }}
+      >
+        <Text style={[styles.segmentText, settings.mode === 'free' && styles.segmentTextOn]}>
+          {t('flow.switchGames')}
+        </Text>
+      </Pressable>
+    </View>
+  );
+
+  // Age chips: a horizontal scroller in portrait, a wrapping cluster in the sidebar.
+  const ageChips = settings.mode !== 'guided' && (
+    <>
+      <Chip
+        label={t('home.all')}
+        active={settings.ageBand === null}
+        onPress={() => update({ ageBand: null })}
+      />
+      {AGE_BANDS.map((band) => (
+        <Chip
+          key={band.id}
+          label={t(`ageBands.${band.id}`)}
+          active={settings.ageBand === band.id}
+          onPress={() => update({ ageBand: band.id })}
+        />
+      ))}
+    </>
+  );
+
+  const journeyPane = (
+    <View style={[styles.journey, landscape && styles.journeyLandscape]}>
+      <Text style={styles.journeyTitle}>{t('flow.title')}</Text>
+      {journeyTotal === 0 ? (
+        <Pressable
+          onPress={() => navigation.navigate('Settings')}
+          accessibilityRole="button"
+          accessibilityLabel={t('flow.empty')}
+        >
+          <Text style={styles.journeyEmpty}>{t('flow.empty')}</Text>
+        </Pressable>
+      ) : (
+        <>
+          {journeyDone ? (
+            <Text style={styles.journeyDone}>{t('flow.allCaughtUp')}</Text>
+          ) : (
+            <PressableButton
+              label={savedStep > 0 ? t('flow.continue') : t('flow.start')}
+              accent="purple"
+              onPress={() => navigation.navigate('FlowPlayer')}
+            />
+          )}
+          {includedIcons.length > 0 && (
+            <Pressable
+              style={styles.strip}
+              onPress={() => navigation.navigate('Settings')}
+              accessibilityRole="button"
+              accessibilityLabel={t('flow.includedGames')}
+            >
+              <Text style={styles.stripLabel}>{t('flow.includedGames')}</Text>
+              <View style={styles.stripIcons}>
+                {includedIcons.map((icon, i) => (
+                  <Text key={`${icon}-${i}`} style={styles.stripIcon}>
+                    {icon}
+                  </Text>
+                ))}
+              </View>
+            </Pressable>
+          )}
+          <HoldToConfirm
+            label={t('flow.holdToReset')}
+            accent="coral"
+            onConfirm={resetJourney}
+            style={styles.reset}
+          />
+        </>
+      )}
+    </View>
+  );
+
+  const gamesGrid =
+    games.length === 0 ? (
+      <Text style={styles.empty}>{t('home.empty')}</Text>
+    ) : (
+      <View style={styles.grid}>
+        {games.map((game, i) => {
+          const bandId = ageBandIdForGame(game);
+          return (
+            <View key={game.id} style={[styles.cell, { width: `${100 / columns}%` }]}>
+              <GameCard
+                icon={game.icon}
+                name={gameName(game)}
+                accent={accentForGame(game, i)}
+                ageLabel={bandId ? t(`ageBands.${bandId}`) : undefined}
+                onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
+              />
+            </View>
+          );
+        })}
+      </View>
+    );
+
+  const mainPane = settings.mode === 'guided' ? journeyPane : gamesGrid;
+
+  // Landscape rail metrics: pick a row count that fills the available height,
+  // size cells to it, and pack games column-major so overflow flows into new
+  // columns reached by HORIZONTAL scroll (never vertical).
+  const railUsableH = height - insets.top - insets.bottom - GRID_PAD_V * 2;
+  const railRows = Math.max(1, Math.min(3, Math.round(railUsableH / 200)));
+  const railCardH = Math.floor(railUsableH / railRows) - CELL_GAP;
+  const railCardW = Math.max(116, Math.min(160, Math.round(railCardH * 0.82)));
+  const railEmoji = Math.max(30, Math.min(54, Math.round(railCardH * 0.3)));
+
+  const gamesRail =
+    games.length === 0 ? (
+      <View style={[styles.mainPane, styles.mainPaneContent]}>
+        <Text style={styles.empty}>{t('home.empty')}</Text>
+      </View>
+    ) : (
+      <ScrollView
+        horizontal
+        style={styles.mainPane}
+        contentContainerStyle={styles.rail}
+        showsHorizontalScrollIndicator={false}
+      >
+        <View style={[styles.railGrid, { height: railUsableH }]}>
+          {games.map((game, i) => {
+            const bandId = ageBandIdForGame(game);
+            return (
+              <View
+                key={game.id}
+                style={{ width: railCardW, height: railCardH, margin: CELL_GAP / 2 }}
+              >
+                <GameCard
+                  fill
+                  emojiSize={railEmoji}
+                  icon={game.icon}
+                  name={gameName(game)}
+                  accent={accentForGame(game, i)}
+                  ageLabel={bandId ? t(`ageBands.${bandId}`) : undefined}
+                  onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
+                />
+              </View>
+            );
+          })}
+        </View>
+      </ScrollView>
+    );
+
+  // Landscape: a fixed-width sidebar (greeting + controls) beside a games rail
+  // that fills the height — so the layout uses the wide-but-short viewport
+  // instead of stacking the portrait column and scrolling it vertically.
+  if (landscape) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+        <View style={styles.twoPane}>
+          <View style={styles.sidebar}>
+            <View style={styles.sidebarHeader}>
+              <View style={styles.flexShrink}>
+                <Text style={styles.hello}>{t('home.greeting')}</Text>
+                <Text style={[styles.title, styles.titleSidebar]}>{t('home.title')}</Text>
+              </View>
+              {settingsButton}
+            </View>
+            {modeSwitch()}
+            {settings.mode !== 'guided' && (
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.sidebarChips}
+              >
+                {ageChips}
+              </ScrollView>
+            )}
+          </View>
+          {settings.mode === 'guided' ? (
+            <ScrollView
+              style={styles.mainPane}
+              contentContainerStyle={styles.mainPaneContent}
+              showsVerticalScrollIndicator={false}
+            >
+              {journeyPane}
+            </ScrollView>
+          ) : (
+            gamesRail
+          )}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -85,40 +304,11 @@ export function HomeScreen({ navigation }: Props) {
             <Text style={styles.hello}>{t('home.greeting')}</Text>
             <Text style={styles.title}>{t('home.title')}</Text>
           </View>
-          <IconButton
-            glyph="⚙️"
-            onPress={() => navigation.navigate('Settings')}
-            accessibilityLabel={t('settings.title')}
-          />
+          {settingsButton}
         </View>
 
         {/* Journey / Games mode switch */}
-        <View style={[styles.switchRow, landscape && styles.switchRowLandscape]}>
-          <Pressable
-            onPress={() => update({ mode: 'guided' })}
-            style={[styles.segment, settings.mode === 'guided' && styles.segmentOn]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: settings.mode === 'guided' }}
-          >
-            <Text
-              style={[styles.segmentText, settings.mode === 'guided' && styles.segmentTextOn]}
-            >
-              {t('flow.switchJourney')}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => update({ mode: 'free' })}
-            style={[styles.segment, settings.mode === 'free' && styles.segmentOn]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: settings.mode === 'free' }}
-          >
-            <Text
-              style={[styles.segmentText, settings.mode === 'free' && styles.segmentTextOn]}
-            >
-              {t('flow.switchGames')}
-            </Text>
-          </Pressable>
-        </View>
+        {modeSwitch(styles.switchRowPortrait)}
 
         {/* Free-play age chips (only in games mode) */}
         {settings.mode !== 'guided' && (
@@ -127,91 +317,12 @@ export function HomeScreen({ navigation }: Props) {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chips}
           >
-            <Chip
-              label={t('home.all')}
-              active={settings.ageBand === null}
-              onPress={() => update({ ageBand: null })}
-            />
-            {AGE_BANDS.map((band) => (
-              <Chip
-                key={band.id}
-                label={t(`ageBands.${band.id}`)}
-                active={settings.ageBand === band.id}
-                onPress={() => update({ ageBand: band.id })}
-              />
-            ))}
+            {ageChips}
           </ScrollView>
         )}
 
         {/* Journey card or game grid */}
-        {settings.mode === 'guided' ? (
-          <View style={[styles.journey, landscape && styles.journeyLandscape]}>
-            <Text style={styles.journeyTitle}>{t('flow.title')}</Text>
-            {journeyTotal === 0 ? (
-              <Pressable
-                onPress={() => navigation.navigate('Settings')}
-                accessibilityRole="button"
-                accessibilityLabel={t('flow.empty')}
-              >
-                <Text style={styles.journeyEmpty}>{t('flow.empty')}</Text>
-              </Pressable>
-            ) : (
-              <>
-                {journeyDone ? (
-                  <Text style={styles.journeyDone}>{t('flow.allCaughtUp')}</Text>
-                ) : (
-                  <PressableButton
-                    label={savedStep > 0 ? t('flow.continue') : t('flow.start')}
-                    accent="purple"
-                    onPress={() => navigation.navigate('FlowPlayer')}
-                  />
-                )}
-                {includedIcons.length > 0 && (
-                  <Pressable
-                    style={styles.strip}
-                    onPress={() => navigation.navigate('Settings')}
-                    accessibilityRole="button"
-                    accessibilityLabel={t('flow.includedGames')}
-                  >
-                    <Text style={styles.stripLabel}>{t('flow.includedGames')}</Text>
-                    <View style={styles.stripIcons}>
-                      {includedIcons.map((icon, i) => (
-                        <Text key={`${icon}-${i}`} style={styles.stripIcon}>
-                          {icon}
-                        </Text>
-                      ))}
-                    </View>
-                  </Pressable>
-                )}
-                <HoldToConfirm
-                  label={t('flow.holdToReset')}
-                  accent="coral"
-                  onConfirm={resetJourney}
-                  style={styles.reset}
-                />
-              </>
-            )}
-          </View>
-        ) : games.length === 0 ? (
-          <Text style={styles.empty}>{t('home.empty')}</Text>
-        ) : (
-          <View style={styles.grid}>
-            {games.map((game, i) => {
-              const bandId = ageBandIdForGame(game);
-              return (
-                <View key={game.id} style={[styles.cell, { width: `${100 / columns}%` }]}>
-                  <GameCard
-                    icon={game.icon}
-                    name={gameName(game)}
-                    accent={accentForGame(game, i)}
-                    ageLabel={bandId ? t(`ageBands.${bandId}`) : undefined}
-                    onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
-                  />
-                </View>
-              );
-            })}
-          </View>
-        )}
+        {mainPane}
       </ScrollView>
     </SafeAreaView>
   );
@@ -274,11 +385,13 @@ const styles = StyleSheet.create({
   switchRow: {
     flexDirection: 'row',
     gap: 6,
-    marginHorizontal: 22,
-    marginTop: 16,
     padding: 4,
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.pill,
+  },
+  switchRowPortrait: {
+    marginHorizontal: 22,
+    marginTop: 16,
   },
   segment: {
     flex: 1,
@@ -308,12 +421,58 @@ const styles = StyleSheet.create({
   stripIcons: { flexDirection: 'row', gap: SPACING.sm },
   stripIcon: { fontSize: 28 },
   reset: { marginTop: SPACING.sm, alignSelf: 'stretch' },
-  switchRowLandscape: {
-    maxWidth: 480,
-    alignSelf: 'center',
-  },
   journeyLandscape: {
     maxWidth: 480,
     alignSelf: 'center',
+  },
+  // --- Landscape two-pane ---
+  twoPane: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  sidebar: {
+    width: SIDEBAR_W,
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: SPACING.md,
+    gap: SPACING.md,
+  },
+  sidebarHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: SPACING.sm,
+  },
+  flexShrink: { flexShrink: 1 },
+  titleSidebar: {
+    fontSize: 26,
+  },
+  sidebarChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 9,
+    paddingBottom: SPACING.xs,
+  },
+  mainPane: {
+    flex: 1,
+  },
+  mainPaneContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xs,
+  },
+  // Horizontal games rail: a column-major grid that fills the height.
+  rail: {
+    paddingHorizontal: GRID_PAD_H,
+    alignItems: 'center',
+    flexGrow: 1,
+  },
+  railGrid: {
+    flexDirection: 'column',
+    flexWrap: 'wrap',
+    alignContent: 'flex-start',
+    justifyContent: 'flex-start',
   },
 });

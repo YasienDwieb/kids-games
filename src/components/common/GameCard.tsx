@@ -12,6 +12,10 @@ type GameCardProps = {
   progress?: number; // 0..1, shown as a percent when > 0
   onPress: () => void;
   style?: ViewStyle;
+  // Fill mode: stretch to fill a fixed-size cell (landscape rail) — the emoji
+  // frame flexes to absorb leftover height so cards stay a uniform size.
+  fill?: boolean;
+  emojiSize?: number;
 };
 
 // Game tile for the home grid. Mirrors GameTile in design/home.jsx.
@@ -24,6 +28,8 @@ export function GameCard({
   progress = 0,
   onPress,
   style,
+  fill = false,
+  emojiSize,
 }: GameCardProps) {
   const a = ACCENTS[accent];
   return (
@@ -31,6 +37,7 @@ export function GameCard({
       onPress={onPress}
       style={({ pressed }) => [
         styles.card,
+        fill && styles.cardFill,
         SHADOWS.md,
         pressed && styles.pressed,
         style,
@@ -42,7 +49,12 @@ export function GameCard({
         </View>
       ) : null}
 
-      <EmojiFrame emoji={icon} tint={a.tint} style={styles.emoji} fontSize={52} />
+      <EmojiFrame
+        emoji={icon}
+        tint={a.tint}
+        style={[styles.emoji, fill && styles.emojiFill]}
+        fontSize={emojiSize ?? 52}
+      />
 
       <View style={styles.meta}>
         <Text style={styles.name} numberOfLines={2}>
@@ -73,6 +85,11 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
+  cardFill: {
+    height: '100%',
+    padding: 12,
+    gap: 8,
+  },
   pressed: { transform: [{ scale: 0.97 }] },
   tag: {
     position: 'absolute',
@@ -93,6 +110,13 @@ const styles = StyleSheet.create({
     width: '100%',
     aspectRatio: 1.35,
     height: undefined,
+  },
+  // Fill mode: drop the fixed aspect so the frame flexes to fill leftover height.
+  emojiFill: {
+    aspectRatio: undefined,
+    height: undefined,
+    flex: 1,
+    minHeight: 44,
   },
   meta: { gap: 8, paddingHorizontal: 4 },
   name: {
