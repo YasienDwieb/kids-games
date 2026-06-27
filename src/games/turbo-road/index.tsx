@@ -13,7 +13,6 @@ import {
   levelsFromGenerator,
   ResumePrompt,
   SafeContainer,
-  useFreeOrientation,
   useLevels,
   useLoopSound,
   useScreenBack,
@@ -139,9 +138,6 @@ function Race({
 }
 
 export default function TurboRoadGame() {
-  // Car games want landscape too — unlock rotation while the game is open.
-  useFreeOrientation();
-
   const { play } = useSound();
   const source = useMemo(() => levelsFromGenerator(generateLevel), []);
   const { status, data, level, score, start, startOver, advance } = useLevels({

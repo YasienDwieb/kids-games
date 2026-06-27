@@ -6,6 +6,7 @@ import {
   LayoutChangeEvent,
   PanResponder,
   StyleSheet,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useSound, useLevels, levelsFromGenerator, ResumePrompt, EmojiImage } from '@/sdk';
@@ -27,6 +28,9 @@ export default function MouseMazeGame() {
   });
   const { state, tryStep, hintPath } = useMaze(data);
 
+  const { width: winW, height: winH } = useWindowDimensions();
+  const landscape = winW > winH;
+
   const [area, setArea] = useState({ width: 0, height: 0 });
   const [showWin, setShowWin] = useState(false);
   const [hintCells, setHintCells] = useState<Set<string>>(new Set());
@@ -37,6 +41,8 @@ export default function MouseMazeGame() {
 
   const cellSize = useMemo(() => {
     if (!area.width || !area.height) return 0;
+    // Cap by the smaller dimension so the board stays square; in landscape the
+    // measured area is already just the maze column (not the full screen width).
     const usable = Math.min(area.width, area.height) * 0.9;
     return Math.floor(usable / state.cols);
   }, [area, state.cols]);
@@ -129,40 +135,73 @@ export default function MouseMazeGame() {
     );
   }
 
+  const mazeBoard = cellSize > 0 ? (
+    <>
+      {/* direction:'ltr' pins the play area so grid columns, the mouse
+          position (absolute + translateX), and locationX touch coords all
+          share physical-left origin — spatial puzzles must not mirror. */}
+      <View
+        style={[{ width: boardSize, height: boardSize }, I18nManager.isRTL && styles.ltrBoard]}
+        {...responder.panHandlers}
+      >
+        {/* pointerEvents none so the board View stays the touch target and
+            locationX/Y are relative to the board origin. */}
+        <View pointerEvents="none">
+          <MazeBoard
+            grid={state.grid}
+            cellSize={cellSize}
+            goal={state.goal}
+            stars={state.stars}
+            trail={state.trail}
+            hintCells={hintCells}
+          />
+        </View>
+        <Animated.View
+          key={state.level}
+          pointerEvents="none"
+          style={[
+            styles.mouse,
+            { width: cellSize, height: cellSize, transform: pan.getTranslateTransform() },
+          ]}
+        >
+          <EmojiImage emoji={EMOJI.mouse} size={cellSize * 0.66} />
+        </Animated.View>
+      </View>
+    </>
+  ) : null;
+
+  if (landscape) {
+    // Landscape: row layout — square maze on the left, HUD panel on the right.
+    // onLayout measures the maze column so cellSize is derived from its height
+    // (the shorter dimension), keeping the board square.
+    return (
+      <View style={styles.rootRow}>
+        <View style={styles.mazeColumn} onLayout={onLayout}>
+          <View style={styles.center} pointerEvents="box-none">
+            {mazeBoard}
+          </View>
+        </View>
+        <View style={styles.sidePanel} pointerEvents="box-none">
+          <Hud
+            level={state.level}
+            collected={state.collected}
+            total={state.total}
+            onHint={handleHint}
+            landscape
+          />
+        </View>
+        {showWin && (
+          <WinOverlay collected={state.collected} total={state.total} onNext={handleNext} />
+        )}
+      </View>
+    );
+  }
+
   return (
     <View style={styles.root} onLayout={onLayout}>
       {cellSize > 0 && (
         <View style={styles.center} pointerEvents="box-none">
-          {/* direction:'ltr' pins the play area so grid columns, the mouse
-              position (absolute + translateX), and locationX touch coords all
-              share physical-left origin — spatial puzzles must not mirror. */}
-          <View
-            style={[{ width: boardSize, height: boardSize }, I18nManager.isRTL && styles.ltrBoard]}
-            {...responder.panHandlers}
-          >
-            {/* pointerEvents none so the board View stays the touch target and
-                locationX/Y are relative to the board origin. */}
-            <View pointerEvents="none">
-              <MazeBoard
-                grid={state.grid}
-                cellSize={cellSize}
-                goal={state.goal}
-                stars={state.stars}
-                trail={state.trail}
-                hintCells={hintCells}
-              />
-            </View>
-            <Animated.View
-              key={state.level}
-              pointerEvents="none"
-              style={[
-                styles.mouse,
-                { width: cellSize, height: cellSize, transform: pan.getTranslateTransform() },
-              ]}
-            >
-              <EmojiImage emoji={EMOJI.mouse} size={cellSize * 0.66} />
-            </Animated.View>
-          </View>
+          {mazeBoard}
         </View>
       )}
 
@@ -182,6 +221,13 @@ export default function MouseMazeGame() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: MAZE_COLORS.background },
+  // Landscape root: row — maze column + side panel.
+  rootRow: { flex: 1, flexDirection: 'row', backgroundColor: MAZE_COLORS.background },
+  // Maze occupies a square region; flex:1 lets it take remaining horizontal space
+  // after the side panel. onLayout gives the real h so cellSize is height-capped.
+  mazeColumn: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  // Side panel: fixed enough to hold the HUD controls; grows no wider than needed.
+  sidePanel: { justifyContent: 'center', alignItems: 'center' },
   center: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   mouse: { position: 'absolute', top: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
   // Applied to the play area when RTL is active so the maze, mouse, and touch

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -37,6 +37,9 @@ function ageBandIdForGame(game: GameConfig): string | undefined {
 }
 
 export function HomeScreen({ navigation }: Props) {
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
+  const columns = landscape ? 4 : 2;
   const { settings, update } = useSettings();
   const { t } = useTranslation();
   const games = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
@@ -90,7 +93,7 @@ export function HomeScreen({ navigation }: Props) {
         </View>
 
         {/* Journey / Games mode switch */}
-        <View style={styles.switchRow}>
+        <View style={[styles.switchRow, landscape && styles.switchRowLandscape]}>
           <Pressable
             onPress={() => update({ mode: 'guided' })}
             style={[styles.segment, settings.mode === 'guided' && styles.segmentOn]}
@@ -142,7 +145,7 @@ export function HomeScreen({ navigation }: Props) {
 
         {/* Journey card or game grid */}
         {settings.mode === 'guided' ? (
-          <View style={styles.journey}>
+          <View style={[styles.journey, landscape && styles.journeyLandscape]}>
             <Text style={styles.journeyTitle}>{t('flow.title')}</Text>
             {journeyTotal === 0 ? (
               <Pressable
@@ -196,7 +199,7 @@ export function HomeScreen({ navigation }: Props) {
             {games.map((game, i) => {
               const bandId = ageBandIdForGame(game);
               return (
-                <View key={game.id} style={styles.cell}>
+                <View key={game.id} style={[styles.cell, { width: `${100 / columns}%` }]}>
                   <GameCard
                     icon={game.icon}
                     name={gameName(game)}
@@ -248,7 +251,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   cell: {
-    width: '50%',
     padding: 7,
   },
   empty: {
@@ -306,4 +308,12 @@ const styles = StyleSheet.create({
   stripIcons: { flexDirection: 'row', gap: SPACING.sm },
   stripIcon: { fontSize: 28 },
   reset: { marginTop: SPACING.sm, alignSelf: 'stretch' },
+  switchRowLandscape: {
+    maxWidth: 480,
+    alignSelf: 'center',
+  },
+  journeyLandscape: {
+    maxWidth: 480,
+    alignSelf: 'center',
+  },
 });

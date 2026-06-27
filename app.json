@@ -3,7 +3,7 @@
     "name": "Kids Zone",
     "slug": "kids-zone",
     "version": "1.1.1",
-    "orientation": "portrait",
+    "orientation": "landscape",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,

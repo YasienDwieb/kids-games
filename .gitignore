@@ -53,3 +53,6 @@ fastlane/test_output
 
 # Playwright MCP screenshots/logs (local UI verification)
 .playwright-mcp/
+
+# Local device/web screenshots from dev verification
+.device-shots/
