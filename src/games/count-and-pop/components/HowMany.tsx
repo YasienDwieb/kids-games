@@ -271,13 +271,12 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
-  // Landscape unit: natural-height centered column (prompt / visual / choices).
-  // FitColumn measures this and scales it down uniformly to fit the available
-  // height — device-agnostic, ratio-preserving, no clipping, no pixel budgets.
+  // Landscape unit (prompt / visual / choices). FitColumn distributes these
+  // across the available height (space-evenly) and scales the whole unit down
+  // if needed. The small gap is a floor for the tight/scaled case.
   unitLandscape: {
-    gap: SPACING.md,
+    gap: SPACING.sm,
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
   },
   // Landscape: let prompt / objects use the available width; trim prompt height.
   wideLandscape: { width: '100%', maxWidth: 720, alignItems: 'center' },

@@ -321,11 +321,11 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
-  // Landscape unit: natural-height centered column scaled to fit by FitColumn.
+  // Landscape unit: FitColumn distributes these (space-evenly) across the
+  // available height and scales the whole unit down if needed.
   unitLandscape: {
-    gap: SPACING.md,
+    gap: SPACING.sm,
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
   },
   promptCardLandscape: { maxWidth: 560 },
   gridLandscape: { maxWidth: 760 },
