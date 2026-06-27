@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { COLORS, BORDER_RADIUS } from '../../constants';
 
 type EmojiFrameProps = {
@@ -7,7 +7,7 @@ type EmojiFrameProps = {
   fontSize?: number;
   tint?: string;
   radius?: number;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 };
 
 // Consistent tinted rounded frame around an emoji. Mirrors `.emoji-frame`.
