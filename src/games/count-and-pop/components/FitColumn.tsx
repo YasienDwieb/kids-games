@@ -1,22 +1,19 @@
 /**
- * FitColumn — distributes a sub-mode's sections across the available height and
- * scales the whole unit down only when they can't all fit.
+ * FitColumn — fits a sub-mode's content to the available height on any device.
  *
- * Behaviour:
- *  - There's room → the inner column is stretched to the available height
- *    (minHeight) and uses `space-evenly`, so prompt / visual / choices are
- *    spread out with balanced gaps (no big void under the title, bottom row not
- *    jammed against the edge).
- *  - It's too tall → the natural content exceeds the available height, so a
- *    single uniform `scale` transform shrinks the whole unit to fit. Ratio is
- *    preserved and nothing clips.
+ * It measures the REAL available height and the content's NATURAL height, then
+ * applies a single uniform `scale` transform so the whole unit shrinks to fit
+ * when it's too tall. Ratio is preserved and nothing clips. When the content
+ * already fits, scale stays 1 and it's centered with a small top/bottom margin.
  *
- * A small vertical padding keeps a consistent margin top and bottom in BOTH
- * cases, so the bottom row never touches the screen edge.
+ * Deliberately does NOT force the column to a measured height (no minHeight):
+ * forcing a height is fragile when the available-height measurement isn't
+ * pixel-perfect (system bars / insets on a real device) and can push the bottom
+ * row off-screen. Measuring the content's natural height and scaling it is
+ * robust — the content never claims more room than it actually needs.
  *
  * Why a transform: RN transforms don't affect layout, so the content's onLayout
  * always reports its real (unscaled) height — no measure/scale feedback loop.
- * Device-agnostic: it reads the real area, no per-device pixel budgets.
  */
 
 import { useState } from 'react';
@@ -34,7 +31,7 @@ const PAD = SPACING.sm;
 
 type FitColumnProps = {
   children: React.ReactNode;
-  /** Style for the inner (measured, distributed, scaled) content column. */
+  /** Style for the inner (measured, scaled) content column. */
   contentStyle?: StyleProp<ViewStyle>;
 };
 
@@ -59,14 +56,7 @@ export function FitColumn({ children, contentStyle }: FitColumnProps): React.JSX
   return (
     <View style={styles.fill} onLayout={onAvail}>
       <View
-        style={[
-          styles.content,
-          contentStyle,
-          // minHeight stretches the column to the usable height when content is
-          // short (so space-evenly has room to distribute); when content is
-          // taller it grows past this and `scale` shrinks it.
-          { minHeight: avail, transform: [{ scale }] },
-        ]}
+        style={[styles.content, contentStyle, { transform: [{ scale }] }]}
         onLayout={onContent}
       >
         {children}
@@ -86,6 +76,5 @@ const styles = StyleSheet.create({
   content: {
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'space-evenly',
   },
 });

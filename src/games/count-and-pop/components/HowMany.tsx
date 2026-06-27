@@ -271,11 +271,11 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
-  // Landscape unit (prompt / visual / choices). FitColumn distributes these
-  // across the available height (space-evenly) and scales the whole unit down
-  // if needed. The small gap is a floor for the tight/scaled case.
+  // Landscape unit (prompt / visual / choices). FitColumn centers this and
+  // scales it down to fit when needed. The gap gives the sections breathing
+  // room; it scales together with everything else, so it never causes overflow.
   unitLandscape: {
-    gap: SPACING.sm,
+    gap: SPACING.lg,
     paddingHorizontal: SPACING.md,
   },
   // Landscape: let prompt / objects use the available width; trim prompt height.
