@@ -30,15 +30,15 @@ export type ListenFindLevel = {
 const SOLVE_DELAY = 700;
 const WRONG_RESET_DELAY = 700;
 
-export function useListenFind(opts: {
+export function useListenFind<L extends ListenFindLevel>(opts: {
   gameId: string;
-  source: LevelSource<ListenFindLevel>;
+  source: LevelSource<L>;
   speakTarget: () => void;
   renderSolved: (isLast: boolean, onNext: () => void) => React.ReactNode;
 }) {
   const { play } = useSound();
   const shell = useGameShell();
-  const levels = useLevels({ gameId: opts.gameId, source: opts.source });
+  const levels = useLevels<L>({ gameId: opts.gameId, source: opts.source });
   const { status, data, level, score, isLast, advance, startOver, addScore } = levels;
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);

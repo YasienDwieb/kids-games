@@ -1,21 +1,20 @@
 /**
  * Letter Land — host screen.
  *
- * Single round mode: hearAndFind — the target letter is spoken (name + example
- * word) and the child taps the matching letter. Every level is hear-and-find.
+ * Listen & find: the target letter is spoken (name + example word) and the
+ * child taps the matching letter. Built on the shared listen-and-find engine —
+ * the standalone host logic lives in useListenFind; this screen wires the
+ * letter inventory, the word-picture hero, and the spoken prompt.
  *
- * Flow (mirrors shape-detective):
- *   loading   → loading view
- *   resumable → ResumePrompt (continue / start over)
- *   playing   → current round + score HUD via GameShell
+ * Flow:
+ *   loading   → loading view (also while the order seed loads)
+ *   resumable → ResumePrompt (continue / start over → reshuffle)
+ *   playing   → ListenFindBoard + score HUD via GameShell
  *
- * Letter set switches by LANGUAGE here at the host: Latin when LTR/English,
- * Arabic when RTL. The chosen LevelSource is a module-const (stable identity),
- * picked once via useMemo so useLevels' data memo stays valid.
- *
- * Determinism: the domain uses a fixed seed (level × 7919) — no Math.random /
- * Date.now / timers in generation. The only timers here are short UI cooldowns,
- * tracked in a single ref and cleared on unmount.
+ * Letter set switches by LANGUAGE: Arabic under RTL, Latin otherwise. The walk
+ * order is a per-run shuffle from a persisted seed (random, not alphabetical);
+ * Start Over reshuffles. Generation is deterministic (level × 7919); the only
+ * Math.random is the order seed, kept in makeOrderSeed.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -26,133 +25,31 @@ import {
   FONT_SIZES,
   ResumePrompt,
   SPACING,
-  useGameShell,
-  useLevels,
-  useSound,
   useSpeech,
   useTranslation,
 } from '@/sdk';
-import { HearAndFind } from './components/HearAndFind';
+import { ListenFindBoard, useListenFind, makeOrderSeed } from '@/games/_shared/listen-find';
+import { LetterHero } from './components/LetterHero';
 import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
-import { LATIN_LEVELS, ARABIC_LEVELS } from './utils/levels';
+import { LATIN_LETTERS, ARABIC_LETTERS } from './constants';
+import { makeLetterLandLevels } from './utils/levels';
 import type { Letter } from './types';
 
-// Short post-answer cooldowns (ms) before advancing / clearing a wrong pick.
-const SOLVE_DELAY_HEAR = 700;
-const WRONG_RESET_DELAY = 700;
-
 export default function LetterLand(): React.JSX.Element {
-  const { play } = useSound();
-  const shell = useGameShell();
   const { t } = useTranslation();
-  const { speak } = useSpeech();
+  const orderApi = useMemo(() => makeOrderSeed('letter-land'), []);
+  const [seed, setSeed] = useState<number | null>(null);
 
-  // Letter set by language: Arabic under RTL, Latin otherwise. Module-const
-  // sources → stable identity; useMemo keeps it constant across re-renders.
-  const source = useMemo(() => (I18nManager.isRTL ? ARABIC_LEVELS : LATIN_LEVELS), []);
-
-  const { status, data, level, score, isLast, start, startOver, advance, addScore } = useLevels({
-    gameId: 'letter-land',
-    source,
-  });
-
-  // Which choice the player tapped this round (null = unanswered).
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  // Set once a level is solved; prevents double-advance.
-  const [solved, setSolved] = useState(false);
-
-  // Single timer ref — cleared before reassign and on unmount.
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const setTimer = useCallback((fn: () => void, ms: number) => {
-    if (timerRef.current !== null) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(fn, ms);
-  }, []);
-
-  // Build + speak the spoken prompt for the active hearAndFind target.
-  // Speak the localized letter NAME (not the bare glyph) so TTS says the
-  // letter's name reliably — the glyph alone makes the voice guess a phoneme
-  // (wrong for Arabic, e.g. ع, and fragile for English). Then the example word.
-  const speakTarget = useCallback(() => {
-    if (status !== 'playing') return;
-    const target: Letter = data.round.target;
-    const name = t('letter-land:names.' + target.id);
-    const word = t('letter-land:words.' + target.word);
-    void speak(`${name}. ${word}`);
-  }, [status, data, t, speak]);
-
-  // Stable handle to the latest speakTarget so the level-change effect can fire
-  // it without listing speakTarget (whose identity churns when t/data change)
-  // as a dep — that previously re-spoke mid-level on react-i18next t churn.
-  const speakTargetRef = useRef(speakTarget);
-  speakTargetRef.current = speakTarget;
-
-  // Stable handle to the shell so the [level]-only effect can hide the overlay
-  // without listing shell as a dep.
-  const shellRef = useRef(shell);
-  shellRef.current = shell;
-
-  // Keep the shell HUD score in sync.
+  // Load the persisted order seed once (gates the playing host below).
   useEffect(() => {
-    shell.setScore(score);
-  }, [score, shell]);
+    void orderApi.read().then(setSeed);
+  }, [orderApi]);
 
-  // On level change ONLY: clear any lingering win overlay, reset
-  // selection/solved, and speak the new target (hearAndFind). Triggered by
-  // [level] alone — depending on shell/speakTarget would re-run on identity
-  // churn (react-i18next can hand back a new t), re-speaking mid-level. We read
-  // the latest speakTarget via a ref so it stays out of the dep list.
-  useEffect(() => {
-    shellRef.current.hideOverlay('win');
-    setSelectedIndex(null);
-    setSolved(false);
-    speakTargetRef.current();
-  }, [level]);
+  const reshuffle = useCallback(() => {
+    void orderApi.reroll().then(setSeed);
+  }, [orderApi]);
 
-  // Clear any pending timer on unmount.
-  useEffect(() => {
-    return () => {
-      if (timerRef.current !== null) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  // handleNext reads isLast at call time (live closure).
-  const handleNext = useCallback(() => {
-    shell.hideOverlay('win');
-    if (isLast) {
-      startOver();
-    } else {
-      advance();
-    }
-  }, [isLast, advance, startOver, shell]);
-
-  const handlePick = useCallback(
-    (idx: number) => {
-      if (selectedIndex !== null || solved) return;
-      if (status !== 'playing') return;
-      setSelectedIndex(idx);
-      if (idx === data.round.correctIndex) {
-        // The last level is a hearAndFind round too, so the final correct pick
-        // should play the win sound; every other correct pick plays success.
-        void play(isLast ? 'win' : 'success');
-        addScore(10);
-        setSolved(true);
-        setTimer(() => {
-          shell.showOverlay('win', <LevelSolvedOverlay isLast={isLast} onNext={handleNext} />);
-        }, SOLVE_DELAY_HEAR);
-      } else {
-        void play('wrong');
-        setTimer(() => setSelectedIndex(null), WRONG_RESET_DELAY);
-      }
-    },
-    [selectedIndex, solved, status, data, isLast, play, addScore, setTimer, shell, handleNext],
-  );
-
-  // -------------------------------------------------------------------------
-  // Status gating
-  // -------------------------------------------------------------------------
-
-  if (status === 'loading') {
+  if (seed == null) {
     return (
       <View style={styles.center}>
         <Text style={styles.loading}>{t('letter-land:loading')}</Text>
@@ -160,21 +57,80 @@ export default function LetterLand(): React.JSX.Element {
     );
   }
 
-  if (status === 'resumable') {
-    return <ResumePrompt level={level} onContinue={start} onStartOver={startOver} />;
+  return <LetterLandRun seed={seed} onReshuffle={reshuffle} />;
+}
+
+// ---------------------------------------------------------------------------
+// Playing host — mounted once the order seed is known.
+// ---------------------------------------------------------------------------
+
+function LetterLandRun({
+  seed,
+  onReshuffle,
+}: {
+  seed: number;
+  onReshuffle: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  const { speak } = useSpeech();
+
+  // Letter set by language: Arabic under RTL, Latin otherwise.
+  const set = useMemo(() => (I18nManager.isRTL ? ARABIC_LETTERS : LATIN_LETTERS), []);
+  const source = useMemo(() => makeLetterLandLevels(set, seed), [set, seed]);
+
+  // The hook fires speakTarget on level-change via its own ref (after render),
+  // so reading the latest target from a ref avoids a hook ↔ speak cycle.
+  const targetRef = useRef<Letter | null>(null);
+  const speakTarget = useCallback(() => {
+    const target = targetRef.current;
+    if (!target) return;
+    const name = t('letter-land:names.' + target.id);
+    const word = t('letter-land:words.' + target.word);
+    void speak(`${name}. ${word}`);
+  }, [t, speak]);
+
+  const lf = useListenFind({
+    gameId: 'letter-land',
+    source,
+    speakTarget,
+    renderSolved: (isLast, onNext) => <LevelSolvedOverlay isLast={isLast} onNext={onNext} />,
+  });
+
+  // Keep the latest target available to speakTarget.
+  if (lf.status === 'playing') targetRef.current = lf.data.round.target;
+
+  const handleStartOver = useCallback(() => {
+    onReshuffle();
+    lf.startOver();
+  }, [onReshuffle, lf]);
+
+  if (lf.status === 'loading') {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.loading}>{t('letter-land:loading')}</Text>
+      </View>
+    );
   }
 
-  // status === 'playing' — data is defined. Every round is hearAndFind.
-  const round = data.round;
+  if (lf.status === 'resumable') {
+    return <ResumePrompt level={lf.level} onContinue={lf.start} onStartOver={handleStartOver} />;
+  }
+
+  const round = lf.data.round;
 
   return (
     <View style={styles.root}>
-      <HearAndFind
-        round={round}
+      <ListenFindBoard
+        hero={<LetterHero letter={round.target} />}
+        instruction={t('letter-land:hearFind.which')}
+        choices={round.choices}
+        correctIndex={round.correctIndex}
+        selectedIndex={lf.selectedIndex}
+        onPick={(i) => lf.handlePick(i, round.correctIndex)}
         onReplay={speakTarget}
-        onPick={handlePick}
-        selectedIndex={selectedIndex}
-        disabled={solved}
+        disabled={lf.solved}
+        accent="blue"
+        choiceLabel={(glyph) => t('letter-land:a11y.choiceTile', { glyph })}
       />
     </View>
   );
