@@ -4,7 +4,7 @@ export {
   registerFlowAdapter, eligibleGameIds, selectedAdapters,
 } from './adapter';
 export { type FlowProgress, DEFAULT_FLOW_PROGRESS, createFlowProgressStore } from './progress';
-export { sequenceLength } from './sequence';
+export { sequenceLength, buildSequence, type SeqStep } from './sequence';
 export { useFlow, type UseFlowResult } from './useFlow';
 export { useFlowRound } from './useFlowRound';
 export { SceneCanvas } from './SceneCanvas';

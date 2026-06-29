@@ -19,6 +19,7 @@ const KEYS: string[] = [
   // core
   'core:home.greeting',
   'core:home.title',
+  'core:home.allGames',
   'core:settings.title',
   'core:settings.language',
   'core:player.notFound',
@@ -202,10 +203,15 @@ const KEYS: string[] = [
   'core:flow.switchJourney',
   'core:flow.switchGames',
   'core:flow.start',
+  'core:flow.startShort',
+  'core:flow.continueShort',
+  'core:flow.startOver',
+  'core:flow.upNext',
   'core:flow.includedGames',
   'core:flow.holdToReset',
   'core:flow.empty',
   'core:settings.guided.games',
+  'core:settings.guided.reset',
   // letter-land
   'letter-land:loading',
   'letter-land:hearFind.listen',

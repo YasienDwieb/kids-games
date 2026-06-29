@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
-import { AppBar, Chip } from '../components/common';
+import { AppBar, Chip, HoldToConfirm } from '../components/common';
 import {
   AGE_BANDS,
   useSettings,
@@ -21,6 +21,7 @@ import {
   eligibleGameIds,
   getGame,
   gameName,
+  createFlowProgressStore,
   type LanguageCode,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
@@ -79,6 +80,11 @@ export function SettingsScreen({ navigation }: Props) {
     update({ flowGameIds: next.length === flowGames.length ? null : next });
   };
 
+  const flowStore = useMemo(() => createFlowProgressStore(), []);
+  const resetJourney = () => {
+    flowStore.set({ step: 0, seed: 0, updatedAt: Date.now() });
+  };
+
   const onPickLanguage = async (code: LanguageCode) => {
     if (code === language) return;
     const { needsReload } = await changeLanguage(code);
@@ -133,6 +139,13 @@ export function SettingsScreen({ navigation }: Props) {
                 />
               ))}
             </View>
+
+            <Text style={styles.section}>{t('settings.guided.reset')}</Text>
+            <HoldToConfirm
+              label={t('flow.holdToReset')}
+              accent="coral"
+              onConfirm={resetJourney}
+            />
           </View>
 
           {/* Right column: language + age band */}
