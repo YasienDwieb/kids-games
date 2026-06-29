@@ -15,6 +15,11 @@ export const ar: GameTranslations = {
     tapAgain: 'اضغط لتسمعه مرة أخرى',
     which: 'أي حرف هذا؟',
   },
+  // «حرف» before the (voweled) letter name makes device TTS say the name as a
+  // word, then the example word — natural, not a bare-letter Tashkeel guess.
+  speak: {
+    carrier: 'حَرف {{name}}. {{word}}',
+  },
   a11y: {
     replay: 'اسمع الحرف مرة أخرى',
     choiceTile: 'حرف {{glyph}}',

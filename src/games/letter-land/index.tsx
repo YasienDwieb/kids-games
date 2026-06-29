@@ -86,7 +86,7 @@ function LetterLandRun({
     if (!target) return;
     const name = t('letter-land:names.' + target.id);
     const word = t('letter-land:words.' + target.word);
-    void speak(`${name}. ${word}`);
+    void speak(t('letter-land:speak.carrier', { name, word }));
   }, [t, speak]);
 
   const lf = useListenFind({

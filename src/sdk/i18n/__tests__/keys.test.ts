@@ -211,6 +211,7 @@ const KEYS: string[] = [
   'letter-land:hearFind.listen',
   'letter-land:hearFind.tapAgain',
   'letter-land:hearFind.which',
+  'letter-land:speak.carrier',
   'letter-land:a11y.replay',
   'letter-land:a11y.choiceTile',
   'letter-land:levelSolved.title',

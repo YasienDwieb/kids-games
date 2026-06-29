@@ -17,6 +17,12 @@ export const en = {
     tapAgain: 'Tap to hear it again',
     which: 'Which letter is it?',
   },
+  // The spoken prompt template. Kept as a key so each language phrases it
+  // naturally — Arabic wraps the letter name in a carrier word so device TTS
+  // reads it as a name (not a bare phoneme/Tashkeel guess).
+  speak: {
+    carrier: '{{name}}. {{word}}',
+  },
   a11y: {
     replay: 'Hear the letter again',
     choiceTile: 'Letter {{glyph}}',
