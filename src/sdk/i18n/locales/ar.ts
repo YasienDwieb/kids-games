@@ -18,6 +18,7 @@ export const ar: CoreTranslations = {
     greeting: 'أهلاً يا بطل 👋',
     title: 'يلّا نلعب!',
     all: 'الكل',
+    allGames: 'كل الألعاب',
     empty: 'ألعاب جديدة في الطريق! 🎈',
   },
   settings: {
@@ -31,6 +32,7 @@ export const ar: CoreTranslations = {
     switching: 'جارٍ تغيير اللغة…',
     guided: {
       games: 'الألعاب في الرحلة',
+      reset: 'إعادة الرحلة',
     },
   },
   player: {
@@ -51,6 +53,10 @@ export const ar: CoreTranslations = {
     title: 'رحلتك',
     start: 'ابدأ رحلتك',
     continue: 'تابع رحلتك',
+    startShort: 'ابدأ',
+    continueShort: 'أكمل',
+    startOver: 'من جديد',
+    upNext: 'التالي',
     allCaughtUp: 'أحسنت! أنهيت كل شيء 🌟',
     exit: 'تم',
     switchJourney: 'الرحلة',

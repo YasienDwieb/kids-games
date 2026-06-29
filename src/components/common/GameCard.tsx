@@ -7,7 +7,6 @@ type GameCardProps = {
   icon: string;
   name: string;
   accent?: AccentName;
-  ageLabel?: string;
   tag?: string; // e.g. "NEW"
   progress?: number; // 0..1, shown as a percent when > 0
   onPress: () => void;
@@ -23,7 +22,6 @@ export function GameCard({
   icon,
   name,
   accent = 'blue',
-  ageLabel,
   tag,
   progress = 0,
   onPress,
@@ -60,19 +58,14 @@ export function GameCard({
         <Text style={styles.name} numberOfLines={2}>
           {name}
         </Text>
-        <View style={styles.row}>
-          {ageLabel ? (
-            <View style={[styles.agePill, { backgroundColor: a.tint }]}>
-              <Text style={[styles.ageText, { color: a.deep }]}>{ageLabel}</Text>
-            </View>
-          ) : null}
-          {progress > 0 ? (
+        {progress > 0 ? (
+          <View style={styles.row}>
             <View style={styles.progress}>
               <Star size={13} />
               <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
             </View>
-          ) : null}
-        </View>
+          </View>
+        ) : null}
       </View>
     </Pressable>
   );
@@ -126,15 +119,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  agePill: {
-    paddingVertical: 3,
-    paddingHorizontal: 9,
-    borderRadius: BORDER_RADIUS.pill,
-  },
-  ageText: {
-    fontFamily: FONTS.bodyExtra,
-    fontSize: 12,
-  },
   progress: { flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 'auto' },
   progressText: {
     fontFamily: FONTS.display,
