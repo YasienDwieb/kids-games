@@ -329,6 +329,27 @@ const KEYS: string[] = [
   'letter-land:words.hatif',
   'letter-land:words.warda',
   'letter-land:words.yad',
+  // numbers-land
+  'numbers-land:meta.name',
+  'numbers-land:meta.description',
+  'numbers-land:loading',
+  'numbers-land:hearFind.which',
+  'numbers-land:speak.carrier',
+  'numbers-land:a11y.replay',
+  'numbers-land:a11y.choiceTile',
+  'numbers-land:levelSolved.title',
+  'numbers-land:levelSolved.next',
+  'numbers-land:levelSolved.finish',
+  'numbers-land:names.1',
+  'numbers-land:names.2',
+  'numbers-land:names.3',
+  'numbers-land:names.4',
+  'numbers-land:names.5',
+  'numbers-land:names.6',
+  'numbers-land:names.7',
+  'numbers-land:names.8',
+  'numbers-land:names.9',
+  'numbers-land:names.10',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {
