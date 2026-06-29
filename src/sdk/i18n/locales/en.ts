@@ -17,6 +17,7 @@ export const en = {
     greeting: 'Hello there 👋',
     title: "Let's Play!",
     all: 'All',
+    allGames: 'All games',
     empty: 'More games coming soon! 🎈',
   },
   settings: {
@@ -30,6 +31,7 @@ export const en = {
     switching: 'Switching language…',
     guided: {
       games: 'Games in the journey',
+      reset: 'Reset journey',
     },
   },
   player: {
@@ -50,6 +52,10 @@ export const en = {
     title: 'Your journey',
     start: 'Start your journey',
     continue: 'Continue your journey',
+    startShort: 'Start',
+    continueShort: 'Continue',
+    startOver: 'Start over',
+    upNext: 'Up next',
     allCaughtUp: "You're all caught up 🌟",
     exit: 'Done',
     switchJourney: 'Journey',
