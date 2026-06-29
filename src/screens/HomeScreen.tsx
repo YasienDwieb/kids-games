@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   I18nManager,
   ScrollView,
@@ -18,6 +18,7 @@ import {
   useSettings,
   getGame,
   getAllGames,
+  gamesForBand,
   useTranslation,
   gameName,
   selectedAdapters,
@@ -47,16 +48,12 @@ export function HomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const landscape = width > height;
   const columns = 2; // portrait grid columns
-  const { settings, update } = useSettings();
+  const { settings } = useSettings();
   const { t } = useTranslation();
-  const games = getAllGames();
-
-  // One-shot: clear any age band persisted by the old kid-facing chip filter so
-  // Home isn't left silently filtered now that the chips are gone. (Seam: a future
-  // child-profile feature drives game filtering from here instead.)
-  useEffect(() => {
-    if (settings.ageBand !== null) update({ ageBand: null });
-  }, [settings.ageBand, update]);
+  // Games shown on Home are filtered by the parent-set age band ("Show games for"
+  // in Settings); null = all. The old kid-facing age chips were removed from Home,
+  // so this is now driven solely from Settings.
+  const games = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
 
   // --- Guided journey state (persistent card beside the games) ---
   const adapters = selectedAdapters(settings.flowGameIds);
