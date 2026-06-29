@@ -65,13 +65,16 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
     shell.setScore(score);
   }, [score, shell]);
 
-  // On level change ONLY: clear any win overlay, reset selection/solved, speak.
+  // Speak + reset whenever a round becomes active: on every level change AND on
+  // the first entry into 'playing' (first open, or Continue from a resume —
+  // where the level doesn't change, so a [level]-only effect would stay silent).
   useEffect(() => {
+    if (status !== 'playing') return;
     shellRef.current.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
     speakRef.current();
-  }, [level]);
+  }, [level, status]);
 
   // Clear any pending timer on unmount.
   useEffect(() => {
