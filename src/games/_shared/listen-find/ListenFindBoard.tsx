@@ -56,6 +56,8 @@ export type ListenFindBoardProps = {
   disabled?: boolean;
   /** Accent family for the hero surface + speaker badge. */
   accent?: AccentName;
+  /** Root background; pass 'transparent' in guided mode so the backdrop shows. */
+  background?: string;
   /** a11y label for a choice tile, given its glyph. */
   choiceLabel: (glyph: string) => string;
 };
@@ -167,6 +169,7 @@ export function ListenFindBoard({
   onReplay,
   disabled = false,
   accent = 'blue',
+  background = COLORS.canvas,
   choiceLabel,
 }: ListenFindBoardProps): React.JSX.Element {
   const answered = selectedIndex !== null;
@@ -179,7 +182,7 @@ export function ListenFindBoard({
   };
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: background }]}>
       {/* Left column — tappable hero picture + speaker badge (the replay). */}
       <View style={styles.heroCol}>
         <Pressable
