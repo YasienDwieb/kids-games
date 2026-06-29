@@ -18,6 +18,7 @@ type ColorPaletteProps = {
   onSavedLiftMove?: (x: number, y: number) => void;
   onSavedLiftEnd?: (x: number, y: number) => void;
   paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
+  landscape?: boolean;
 };
 
 export function ColorPalette({
@@ -31,13 +32,15 @@ export function ColorPalette({
   onSavedLiftMove,
   onSavedLiftEnd,
   paletteItemPositions,
+  landscape = false,
 }: ColorPaletteProps) {
   const { t } = useTranslation();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.paletteEdge} />
-      <View style={styles.palette}>
+    <View style={[styles.container, landscape && styles.containerLandscape]}>
+      {/* Portrait-only decorative edge bar */}
+      {!landscape && <View style={styles.paletteEdge} />}
+      <View style={[styles.palette, landscape && styles.paletteLandscape]}>
         <Text style={styles.title}>{t('color-mixer:palette.colorsTitle')}</Text>
         <View style={styles.slotsRow}>
           {availableColors.map((colorId) => (
@@ -279,6 +282,11 @@ const styles = StyleSheet.create({
     width: '100%',
     overflow: 'visible',
   },
+  // Landscape: fill the full right panel height with a left-bordered card look
+  containerLandscape: {
+    flex: 1,
+    width: undefined,
+  },
   paletteEdge: {
     height: 4,
     backgroundColor: TOKENS.line2,
@@ -295,6 +303,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     ...SHADOWS.sm,
     overflow: 'visible',
+  },
+  // Landscape: remove top-sheet rounding; use a left border separator instead
+  paletteLandscape: {
+    flex: 1,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderTopEndRadius: 0,
+    borderTopStartRadius: 0,
+    borderStartWidth: 2,
+    borderStartColor: TOKENS.line2,
+    justifyContent: 'center',
   },
   title: {
     fontFamily: FONTS.body,

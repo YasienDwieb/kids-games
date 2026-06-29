@@ -1,8 +1,7 @@
 // src/screens/FlowPlayerScreen.tsx
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
@@ -31,25 +30,6 @@ export function FlowPlayerScreen({ navigation }: Props) {
     paddingStart: startInset + SPACING.md + TOUCH_TARGET.recommended,
     paddingEnd: endInset + SPACING.md,
   };
-
-  // Landscape lock for guided mode only; restore portrait on exit.
-  useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => {});
-    return () => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
-    };
-  }, []);
-
-  // The lock→landscape rotation is async; on a cold entry useWindowDimensions
-  // can latch stale portrait dims (content squished to one side). Remount the
-  // unit subtree when orientation settles so it re-reads the real dimensions.
-  const [orientKey, setOrientKey] = useState(0);
-  useEffect(() => {
-    const sub = ScreenOrientation.addOrientationChangeListener(() =>
-      setOrientKey((k) => k + 1),
-    );
-    return () => ScreenOrientation.removeOrientationChangeListener(sub);
-  }, []);
 
   const adapters = useMemo(
     () => selectedAdapters(settings.flowGameIds),
@@ -84,7 +64,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
     <View style={styles.root}>
       <SceneCanvas progress={progress}>
         {status === 'playing' && unit ? (
-          <Animated.View key={orientKey} style={[styles.fill, contentPad, { opacity: fade }]}>
+          <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>
             {unit.render(handleComplete)}
           </Animated.View>
         ) : null}
