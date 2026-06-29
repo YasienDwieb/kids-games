@@ -9,7 +9,6 @@
 import { StyleSheet, View } from 'react-native';
 import { SPACING } from '@/sdk';
 import { EmojiImage } from '@/components/common';
-import { HERO_EMOJI } from '../constants';
 import type { NumberItem } from '../types';
 
 export function NumberHero({ item }: { item: NumberItem }): React.JSX.Element {
@@ -19,7 +18,7 @@ export function NumberHero({ item }: { item: NumberItem }): React.JSX.Element {
   return (
     <View style={styles.root}>
       {Array.from({ length: item.count }, (_, i) => (
-        <EmojiImage key={i} emoji={HERO_EMOJI} size={size} />
+        <EmojiImage key={i} emoji={item.emoji} size={size} />
       ))}
     </View>
   );

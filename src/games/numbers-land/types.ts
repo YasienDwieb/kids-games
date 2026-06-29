@@ -9,6 +9,8 @@ import type { FindItem, FindRound } from '@/games/_shared/listen-find';
 export type NumberItem = FindItem & {
   /** How many hero objects represent this number (the count cluster). */
   readonly count: number;
+  /** The object repeated `count` times in the hero (varies per number). */
+  readonly emoji: string;
 };
 
 /** Everything needed to render and evaluate one game level. */
