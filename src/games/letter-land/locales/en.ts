@@ -1,0 +1,161 @@
+// Every user-facing string this game renders. `meta.name`/`meta.description`
+// localize the home tile + header (config.ts keeps the English fallback).
+//
+// `words.*` are the example words spoken/shown per letter. They are keyed by
+// the `word` suffix authored in constants.ts (`Letter.word`). The Latin set
+// uses English example words; the Arabic set uses Arabic example words (only
+// ever resolved while the app language is Arabic). Letter GLYPHS are authored
+// DATA in constants.ts — never translated.
+export const en = {
+  meta: {
+    name: 'Letter Land',
+    description: 'Listen and find your letters!',
+  },
+  loading: 'Getting your letters ready…',
+  hearFind: {
+    listen: 'LISTEN…',
+    tapAgain: 'Tap to hear it again',
+    which: 'Which letter is it?',
+  },
+  // The spoken prompt template. Kept as a key so each language phrases it
+  // naturally — Arabic wraps the letter name in a carrier word so device TTS
+  // reads it as a name (not a bare phoneme/Tashkeel guess).
+  speak: {
+    carrier: '{{name}}. {{word}}',
+  },
+  a11y: {
+    replay: 'Hear the letter again',
+    choiceTile: 'Letter {{glyph}}',
+  },
+  levelSolved: {
+    title: 'You got it!',
+    next: 'Next Letter',
+    finish: 'All Done!',
+  },
+  // Spoken letter NAME per letter id (so TTS says the letter's name, not a
+  // guessed phoneme). Keyed by Letter.id from constants.ts. Latin values are
+  // phonetic spellings an en-US voice reads as the letter name. Arabic ids are
+  // never spoken under EN (Arabic set runs under RTL/ar) but are kept here for
+  // structural parity — values are transliterated Arabic letter names.
+  names: {
+    // Latin (A–Z) — phonetic letter names for an en-US voice.
+    A: 'ay',
+    B: 'bee',
+    C: 'see',
+    D: 'dee',
+    E: 'ee',
+    F: 'eff',
+    G: 'jee',
+    H: 'aitch',
+    I: 'eye',
+    J: 'jay',
+    K: 'kay',
+    L: 'ell',
+    M: 'em',
+    N: 'en',
+    O: 'oh',
+    P: 'pee',
+    Q: 'cue',
+    R: 'arr',
+    S: 'ess',
+    T: 'tee',
+    U: 'you',
+    V: 'vee',
+    W: 'double you',
+    X: 'eks',
+    Y: 'why',
+    Z: 'zee',
+    // Arabic ids (parity only; spoken under ar, not en) — transliterated names.
+    alef: 'alif',
+    baa: 'baa',
+    taa: 'taa',
+    thaa: 'thaa',
+    jeem: 'jeem',
+    haa: 'haa',
+    khaa: 'khaa',
+    dal: 'dal',
+    thal: 'thal',
+    raa: 'raa',
+    zay: 'zay',
+    seen: 'seen',
+    sheen: 'sheen',
+    sad: 'sad',
+    dad: 'dad',
+    taa_heavy: 'taa',
+    thaa_heavy: 'thaa',
+    ayn: 'ayn',
+    ghayn: 'ghayn',
+    faa: 'faa',
+    qaf: 'qaf',
+    kaf: 'kaf',
+    lam: 'lam',
+    meem: 'meem',
+    noon: 'noon',
+    haa_soft: 'haa',
+    waw: 'waw',
+    yaa: 'yaa',
+  },
+  // Example words, keyed by Letter.word suffix.
+  words: {
+    // Latin (A–Z)
+    apple: 'apple',
+    ball: 'ball',
+    cat: 'cat',
+    dog: 'dog',
+    egg: 'egg',
+    fish: 'fish',
+    goat: 'goat',
+    hat: 'hat',
+    icecream: 'ice cream',
+    juice: 'juice',
+    kite: 'kite',
+    lion: 'lion',
+    moon: 'moon',
+    nose: 'nose',
+    orange: 'orange',
+    panda: 'panda',
+    queen: 'queen',
+    rabbit: 'rabbit',
+    sun: 'sun',
+    tree: 'tree',
+    umbrella: 'umbrella',
+    van: 'van',
+    whale: 'whale',
+    xylophone: 'xylophone',
+    yarn: 'yarn',
+    zebra: 'zebra',
+    // Arabic example words (resolved only when language is Arabic).
+    asad: 'lion',
+    batta: 'duck',
+    tuffaha: 'apple',
+    thalab: 'fox',
+    jamal: 'camel',
+    hisan: 'horse',
+    kharoof: 'sheep',
+    dub: 'bear',
+    thubab: 'fly',
+    reesha: 'feather',
+    zarafa: 'giraffe',
+    samaka: 'fish',
+    shams: 'sun',
+    sarookh: 'rocket',
+    difdaa: 'frog',
+    tayra: 'plane',
+    zarf: 'envelope',
+    asfoor: 'bird',
+    ghazala: 'gazelle',
+    feel: 'elephant',
+    qittah: 'cat',
+    kura: 'ball',
+    laymoon: 'lemon',
+    mawza: 'banana',
+    najma: 'star',
+    hatif: 'phone',
+    warda: 'rose',
+    yad: 'hand',
+  },
+} as const;
+
+// Structural type: forces ar.ts to have the SAME keys without locking VALUES.
+type T<X> = { [K in keyof X]: X[K] extends string ? string : T<X[K]> };
+export type GameTranslations = T<typeof en>;

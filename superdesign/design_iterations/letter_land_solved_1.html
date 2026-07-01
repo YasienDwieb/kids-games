@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Letter Land — Level solved</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --canvas: #FBF3E6; --canvas2: #F6EAD7; --surface: #FFFFFF;
+    --ink: #3B3026; --ink-soft: #8C8073; --line2: rgba(59, 48, 38, 0.14);
+    --blue: #5CB8E4; --blue-deep: #3A9FD1; --blue-tint: #E0F2FB;
+    --gold: #F6C747; --green: #6FC27B; --green-deep: #54A862;
+    --shadow: rgba(74, 52, 28, 0.16);
+    --display: 'Fredoka', sans-serif; --body: 'Nunito', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: var(--body); background: var(--canvas2); min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 40px 16px; color: var(--ink);
+  }
+  .phone {
+    position: relative; width: 390px; min-height: 760px; background: var(--canvas);
+    border-radius: 44px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(74, 52, 28, 0.28), 0 4px 0 #fff inset;
+    display: flex; flex-direction: column;
+    background-image: radial-gradient(circle at 1px 1px, rgba(59,48,38,0.04) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  /* dim scrim over the (blurred) game */
+  .scrim { position: absolute; inset: 0; background: rgba(59,48,38,0.34); display: grid; place-items: center; }
+  /* faint letters floating behind the card for atmosphere */
+  .bg-letters { position: absolute; inset: 0; overflow: hidden; }
+  .bg-letters span {
+    position: absolute; font-family: var(--display); font-weight: 700; color: rgba(255,255,255,0.12); font-size: 90px;
+  }
+  .bg-letters span:nth-child(1){ top: 8%; left: 10%; transform: rotate(-12deg); }
+  .bg-letters span:nth-child(2){ top: 22%; right: 8%; transform: rotate(10deg); font-size: 64px; }
+  .bg-letters span:nth-child(3){ bottom: 14%; left: 14%; transform: rotate(8deg); font-size: 72px; }
+  .bg-letters span:nth-child(4){ bottom: 24%; right: 12%; transform: rotate(-8deg); }
+
+  .card {
+    position: relative; width: 318px; background: var(--surface); border-radius: 36px;
+    padding: 34px 28px 30px; text-align: center; border: 3px solid #fff;
+    box-shadow: 0 24px 60px rgba(74,52,28,0.4); animation: pop 0.5s cubic-bezier(.2,1.4,.4,1) both;
+  }
+  @keyframes pop { 0%{ transform: scale(0.6); opacity: 0;} 100%{ transform: scale(1); opacity: 1;} }
+
+  /* EmojiFrame — tinted rounded trophy */
+  .frame {
+    width: 110px; height: 110px; margin: 0 auto 6px; border-radius: 32px;
+    background: var(--blue-tint); display: grid; place-items: center; font-size: 60px;
+    box-shadow: inset 0 0 0 3px #fff; animation: bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob { 0%,100%{ transform: translateY(0) rotate(-3deg);} 50%{ transform: translateY(-6px) rotate(3deg);} }
+
+  .stars { display: flex; justify-content: center; gap: 10px; margin: 14px 0 10px; }
+  .stars .s { font-size: 46px; color: var(--gold); filter: drop-shadow(0 4px 6px rgba(246,199,71,0.5)); animation: star 0.5s ease both; }
+  .stars .s:nth-child(1){ animation-delay: 0.25s; }
+  .stars .s:nth-child(2){ animation-delay: 0.4s; transform: translateY(-8px); }
+  .stars .s:nth-child(3){ animation-delay: 0.55s; }
+  .stars .s.empty { color: var(--line2); filter: none; }
+  @keyframes star { 0%{ transform: scale(0) rotate(-40deg);} 100%{ transform: scale(1); } }
+
+  .title { font-family: var(--display); font-weight: 700; font-size: 30px; color: var(--ink); margin-bottom: 4px; }
+  .sub { font-family: var(--body); font-weight: 700; font-size: 15px; color: var(--ink-soft); margin-bottom: 8px; }
+  .letter-done {
+    display: inline-block; font-family: var(--display); font-weight: 700; font-size: 18px;
+    color: var(--blue-deep); background: var(--blue-tint); padding: 6px 16px; border-radius: 999px; margin-bottom: 20px;
+  }
+
+  /* chunky PressableButton */
+  .btn {
+    width: 100%; border: none; cursor: pointer; border-radius: 20px;
+    background: var(--blue-deep); padding-bottom: 5px;
+    box-shadow: 0 6px 14px var(--shadow);
+  }
+  .btn .face {
+    background: var(--blue); border-radius: 20px; min-height: 60px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-family: var(--display); font-weight: 600; font-size: 20px; color: #fff;
+  }
+  .btn:active .face { transform: translateY(5px); }
+  .ghost-btn {
+    margin-top: 12px; width: 100%; border: none; cursor: pointer; border-radius: 20px;
+    background: var(--surface); min-height: 52px; box-shadow: 0 3px 0 var(--line2), 0 6px 14px var(--shadow);
+    font-family: var(--display); font-weight: 600; font-size: 17px; color: var(--ink);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="scrim">
+      <div class="bg-letters"><span>A</span><span>b</span><span>C</span><span>d</span></div>
+      <div class="card">
+        <div class="frame">🏆</div>
+        <div class="stars">
+          <span class="s">★</span>
+          <span class="s">★</span>
+          <span class="s">★</span>
+        </div>
+        <div class="title">You did it!</div>
+        <div class="sub">Letter learned</div>
+        <div class="letter-done">✏️ Traced “C”</div>
+        <button class="btn"><span class="face">Next letter →</span></button>
+        <button class="ghost-btn">Back to games</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

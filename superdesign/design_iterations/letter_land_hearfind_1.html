@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Letter Land — Hear &amp; Find (grid)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --canvas: #FBF3E6;
+    --canvas2: #F6EAD7;
+    --surface: #FFFFFF;
+    --ink: #3B3026;
+    --ink-soft: #8C8073;
+    --line: rgba(59, 48, 38, 0.08);
+    --line2: rgba(59, 48, 38, 0.14);
+    --blue: #5CB8E4;
+    --blue-deep: #3A9FD1;
+    --blue-tint: #E0F2FB;
+    --gold: #F6C747;
+    --green: #6FC27B;
+    --green-deep: #54A862;
+    --coral: #F47C6E;
+    --shadow: rgba(74, 52, 28, 0.16);
+    --display: 'Fredoka', sans-serif;
+    --body: 'Nunito', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: var(--body);
+    background: var(--canvas2);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 16px; color: var(--ink);
+  }
+  .phone {
+    position: relative;
+    width: 390px; min-height: 760px;
+    background: var(--canvas);
+    border-radius: 44px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(74, 52, 28, 0.28), 0 4px 0 #fff inset;
+    display: flex; flex-direction: column;
+    background-image: radial-gradient(circle at 1px 1px, rgba(59,48,38,0.04) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  /* HUD */
+  .hud { display: flex; align-items: center; justify-content: space-between; padding: 22px 20px 8px; }
+  .hud-btn {
+    width: 46px; height: 46px; border-radius: 16px;
+    background: var(--surface); border: none; display: grid; place-items: center;
+    font-size: 22px; color: var(--ink);
+    box-shadow: 0 3px 0 var(--line2), 0 6px 14px var(--shadow); cursor: pointer;
+  }
+  .hud-title { font-family: var(--display); font-weight: 600; font-size: 19px; }
+  .score-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface); padding: 9px 15px; border-radius: 20px;
+    box-shadow: 0 3px 0 var(--line2), 0 6px 14px var(--shadow);
+    font-family: var(--display); font-weight: 600; font-size: 16px;
+  }
+  .score-pill .star { color: var(--gold); font-size: 15px; }
+
+  /* prompt card */
+  .prompt {
+    margin: 16px 20px 4px;
+    background: linear-gradient(160deg, #fff, var(--blue-tint));
+    border-radius: 28px; padding: 20px 22px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: 0 6px 0 var(--blue-tint), 0 14px 26px rgba(58, 159, 209, 0.18);
+    border: 2px solid #fff;
+  }
+  .prompt-text { flex: 1; }
+  .prompt-text small {
+    display: block; font-family: var(--body); font-weight: 800; font-size: 12px;
+    color: var(--ink-soft); letter-spacing: 0.6px; margin-bottom: 4px;
+  }
+  .prompt-text .big { font-family: var(--display); font-weight: 600; font-size: 22px; }
+  /* speaker button — the "hear it again" affordance */
+  .speaker {
+    width: 78px; height: 78px; border-radius: 24px;
+    background: var(--blue); color: #fff;
+    display: grid; place-items: center; font-size: 36px; cursor: pointer;
+    box-shadow: 0 6px 0 var(--blue-deep), 0 12px 22px rgba(58, 159, 209, 0.4);
+    position: relative; border: none;
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.06);} }
+  /* sound waves radiating from speaker */
+  .speaker::before, .speaker::after {
+    content: ''; position: absolute; inset: -6px;
+    border-radius: 28px; border: 4px solid var(--blue);
+    opacity: 0; animation: wave 2.2s ease-out infinite;
+  }
+  .speaker::after { animation-delay: 1.1s; }
+  @keyframes wave { 0%{ transform: scale(0.85); opacity: 0.7;} 100%{ transform: scale(1.5); opacity: 0;} }
+
+  .hint {
+    text-align: center; margin: 14px 20px 2px;
+    font-family: var(--display); font-weight: 500; font-size: 15px; color: var(--ink-soft);
+  }
+
+  /* letter choice grid 2x2 */
+  .grid {
+    flex: 1; display: grid;
+    grid-template-columns: repeat(2, 1fr); gap: 18px;
+    padding: 14px 24px 34px; align-content: center;
+  }
+  .letter {
+    aspect-ratio: 1; border-radius: 30px;
+    background: var(--surface); display: grid; place-items: center;
+    font-family: var(--display); font-weight: 700; font-size: 86px; color: var(--ink);
+    border: 3px solid #fff;
+    box-shadow: 0 6px 0 var(--line2), 0 12px 22px var(--shadow);
+    cursor: pointer; position: relative; transition: transform 0.12s ease;
+  }
+  .letter:active { transform: translateY(4px) scale(0.97); }
+  /* the correct one (selected, illustrative) */
+  .letter.correct {
+    background: var(--green); color: #fff; border-color: #fff;
+    box-shadow: 0 6px 0 var(--green-deep), 0 14px 26px rgba(84,168,98,0.45);
+  }
+  .letter.correct::after {
+    content: '✓'; position: absolute; top: -12px; right: -10px;
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--gold); color: #fff; display: grid; place-items: center;
+    font-size: 22px; box-shadow: 0 4px 10px var(--shadow);
+  }
+  .caption {
+    position: absolute; bottom: 16px; left: 0; right: 0; text-align: center;
+    font-family: var(--display); font-weight: 600; font-size: 13px;
+    color: var(--ink-soft); letter-spacing: 0.4px;
+  }
+</style>
+</head>
+<body>
+  <div class="phone">
+    <div class="hud">
+      <button class="hud-btn" aria-label="Back">‹</button>
+      <div class="hud-title">Letter Land</div>
+      <div class="score-pill"><span class="star">★</span> 60</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-text">
+        <small>TAP THE LETTER YOU HEAR</small>
+        <span class="big">Find the letter <b>“B”</b></span>
+      </div>
+      <button class="speaker" aria-label="Hear again">🔊</button>
+    </div>
+
+    <div class="hint">Tap 🔊 to hear it again</div>
+
+    <div class="grid">
+      <div class="letter">A</div>
+      <div class="letter correct">B</div>
+      <div class="letter">D</div>
+      <div class="letter">P</div>
+    </div>
+
+    <div class="caption">HEAR &amp; FIND · 2×2 grid · correct = B</div>
+  </div>
+</body>
+</html>
