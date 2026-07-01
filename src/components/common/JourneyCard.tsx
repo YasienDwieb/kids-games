@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS, type AccentName } from '../../constants';
-import { useTranslation } from '@/sdk';
+import { useTranslation } from 'react-i18next';
 import { EmojiFrame } from './EmojiFrame';
 import { PressableButton } from './PressableButton';
 
