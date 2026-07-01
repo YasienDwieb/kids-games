@@ -4,18 +4,20 @@
 
 # Kids Games
 
-A multi-game Expo React Native app for young children (ages 2–12). Each game is a self-contained module that plugs into a shared **SDK** providing navigation, a kid-friendly design system, sound, storage, levels/progress, settings, and age bands.
+A multi-game Expo React Native app for young children (ages 2–12). Each game is a self-contained module that plugs into a shared **SDK** providing navigation, a kid-friendly design system, sound, storage, levels/progress, settings, English + Arabic (full RTL), and age bands. The app runs **landscape-only**.
 
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/home.jpeg" alt="Home — Let's Play! game grid" width="200" />
-  <img src="docs/screenshots/simple-pairs.jpeg" alt="Simple Pairs gameplay" width="200" />
-  <img src="docs/screenshots/color-mixer.jpeg" alt="Color Mixer" width="200" />
-  <img src="docs/screenshots/mouse-maze.jpeg" alt="Mouse Maze" width="200" />
+  <img src="docs/screenshots/home-landscape.jpg" alt="Home — Your Journey + All games grid" width="640" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/balloon-archer.jpeg" alt="Balloon Archer gameplay" width="500" />
+  <img src="docs/screenshots/letter-land.jpg" alt="Letter Land — which letter is it?" width="320" />
+  <img src="docs/screenshots/numbers-land.jpg" alt="Numbers Land — which number is it?" width="320" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/count-and-pop.jpg" alt="Count & Pop — match each number to how many" width="320" />
+  <img src="docs/screenshots/match-up.jpg" alt="Match Up — match each animal to its food" width="320" />
 </p>
 
 ## Try it (Android APK)
@@ -40,7 +42,7 @@ npm install   # if peer-dep conflicts appear, use: npm install --legacy-peer-dep
 npx expo start
 ```
 
-Then open in Expo Go on your device, or press `a` for Android emulator / `i` for iOS simulator.
+Then open in Expo Go on your device, or press `a` for Android emulator / `i` for iOS simulator / `w` for web (or `npm run web`). The app runs on **Android, iOS, and the web** (React Native Web).
 
 For full setup, testing on a phone via Expo Go, and local/EAS cloud builds across platforms, see **[docs/SETUP.md](docs/SETUP.md)**.
 
@@ -49,8 +51,9 @@ For full setup, testing on a phone via Expo Go, and local/EAS cloud builds acros
 - Expo SDK 54, React 19, React Native 0.81
 - TypeScript (strict mode)
 - React Navigation (native-stack)
-- `react-native-safe-area-context`, `react-native-gesture-handler`, `expo-av`, `expo-haptics`
-- Fonts: Fredoka (display) + Nunito (body) via `@expo-google-fonts/*`
+- `react-native-safe-area-context`, `react-native-gesture-handler`, `expo-audio`, `expo-haptics`, `expo-speech`, `expo-screen-orientation`
+- i18n: `i18next` + `react-i18next` + `expo-localization` — English + Arabic with full RTL
+- Fonts: Fredoka (display) + Nunito (body), IBM Plex Sans Arabic (RTL) via `@expo-google-fonts/*`
 
 ## Architecture
 
@@ -65,8 +68,9 @@ src/
 │   ├── audio/              # useSound (play SFX by intent)
 │   ├── storage/            # createStore (AsyncStorage-backed)
 │   ├── progress/           # levels & resume: useLevels, ResumePrompt
-│   ├── settings/           # useSettings (sound / haptics / age band)
+│   ├── settings/           # useSettings (sound / haptics / age band / language)
 │   ├── age/                # AGE_BANDS, gamesForBand, bandsForGame
+│   ├── i18n/               # useTranslation, registerTranslations, useLanguage (en + ar, RTL)
 │   └── assets/             # shared 8-bit SFX manifest
 ├── components/common/      # Design-system primitives (see below)
 ├── constants/              # Design tokens: COLORS, ACCENTS, SPACING, BORDER_RADIUS, FONT_SIZES, FONTS, SHADOWS, TOUCH_TARGET
@@ -78,7 +82,11 @@ src/
 │   ├── mouse-maze/         # Swipe-to-solve maze with levels
 │   ├── balloon-archer/     # Aim-and-pop balloon arcade game
 │   ├── shape-detective/    # Shape pattern & logic puzzles
-│   └── turbo-road/         # Steer-and-dodge road-trip racing
+│   ├── turbo-road/         # Steer-and-dodge road-trip racing
+│   ├── count-and-pop/      # Count objects and pop the number
+│   ├── match-up/           # Draw a line from each thing to its match
+│   ├── letter-land/        # Listen-and-find letters (phonics)
+│   └── numbers-land/       # Listen-and-find numbers
 ├── types/                  # RootStackParamList, shared types
 ├── hooks/                  # Shared hooks
 └── utils/                  # Shared helpers
@@ -96,6 +104,7 @@ Games import **only** from `@/sdk` — never from another game or deep `src/` pa
 - **Storage** — `createStore(namespace, defaultValue)`
 - **Progress & levels** — `useLevels`, `levelsFromList`/`levelsFromGenerator`, `ResumePrompt`
 - **Settings / Age** — `useSettings`, `AGE_BANDS`, `gamesForBand`
+- **i18n** — `useTranslation().t`, `registerTranslations`, `useLanguage` (English + Arabic, full RTL; per-game locale bundles)
 - **Assets** — `ASSETS`, `findAssets`, `pickAsset`
 
 ## Design system
@@ -117,6 +126,10 @@ See `CLAUDE.md` (Design-system adherence) and the `kids-games-dev` skill for the
 | **Balloon Archer** | 5–8 | Aim & arcade | Aim your bow and pop the balloons across levels, with limited arrows |
 | **Shape Detective** | 3–10 | Patterns & logic | Spot the next shape, find the odd one out, and sort shapes into groups |
 | **Turbo Road** | 4–12 | Racing | Steer, dodge, and collect along sunny roads; win cups and unlock cars in the garage |
+| **Count & Pop** | 3–7 | Counting | Count the objects and pop the right number |
+| **Match Up** | 3–7 | Matching | Draw a line from each thing to its match (animals→food, helpers→tools, and more) |
+| **Letter Land** | 3–7 | Literacy & phonics | Listen and find the letter — with spoken prompts and word-picture heroes |
+| **Numbers Land** | 3–7 | Numbers | Listen and find the number, with spoken prompts |
 
 ## Adding a New Game
 
