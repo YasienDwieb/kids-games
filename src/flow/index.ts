@@ -5,3 +5,4 @@ import '@/games/shape-detective/flow';
 import '@/games/match-up/flow';
 import '@/games/letter-land/flow';
 import '@/games/numbers-land/flow';
+import '@/games/animal-safari/flow';

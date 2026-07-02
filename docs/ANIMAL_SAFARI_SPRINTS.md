@@ -26,7 +26,34 @@ Nunito (AR IBM Plex Sans Arabic), chunky tiles + soft shadows, **orange** accent
 
 ---
 
-## Sprint 0 — Scaffold & registration ⬜
+## ✅ BUILT — status summary (all sprints complete; device test pending)
+
+Built via orchestrated workflows on branch `feature/animal-safari` (off `feature/letter-land`,
+so `useSpeech()` is available). **Interaction agreed up front** (the Letter Land lesson): the
+proven listen→tap pattern, no novel gesture — two round modes alternate by level:
+- **hearName** (odd levels) — animal NAME spoken via `useSpeech()` → tap the matching animal (3 choices).
+- **whichSound** (even levels) — real animal SFX played via `useSound()` → tap the animal that makes it.
+
+**Audio:** 11 **CC0/PD** animal clips fetched from Wikimedia Commons (license + content verified,
+trimmed to short SFX, provenance in `src/sdk/assets/audio/animals/CREDITS.md`), wired as
+`animal.<id>` manifest entries. **Cow has no CC0 moo → it appears only in hearName rounds, never in
+a sound round** (enforced in the domain layer + asserted by tests). `.ogg` mocked for jest.
+
+**Final shape:** 12 animals (lion/elephant/cow/dog/cat/frog/horse/sheep/rooster/duck/bird/bee),
+finite 12-level ladder, accent `orange`, shell layout, EN + AR.
+
+**Verified (independently re-run):** `tsc` exit 0; full `jest` **1330/1330, 38 suites** (incl. a new
+manifest tag-uniqueness guard locking the `play('<id>')`→clip resolution). Adversarial review: **pass,
+0 blockers**; post-review cleanup deduped the shared `AnimalTile` (~256 dup lines removed) and added
+the tag guard. **Device run EN + AR pending** (the one thing tests can't confirm: real audio playback,
+TTS, on-screen feel).
+
+> Build/verify note: the build workflow's final gate aborted on a telemetry (StructuredOutput) error
+> *after* the code landed; the gate + adversarial review were re-run separately and passed.
+
+---
+
+## Sprint 0 — Scaffold & registration ✅ (see status summary above)
 
 Goal: an empty-but-registered game that appears on Home and launches (shell layout).
 
