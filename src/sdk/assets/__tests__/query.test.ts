@@ -1,4 +1,5 @@
 import { getAsset, findAssets, pickAsset, pickModule } from '../query';
+import { ASSETS } from '../manifest';
 
 describe('asset query', () => {
   it('getAsset returns an entry by id', () => {
@@ -38,5 +39,20 @@ describe('asset query', () => {
 
   it('pickModule returns undefined for an unknown intent', () => {
     expect(pickModule('nope-nothing')).toBeUndefined();
+  });
+
+  // Locks the intent->asset invariant: pickAsset/findAssets resolve an intent by
+  // tag, so a tag shared by two entries would make resolution ambiguous (e.g.
+  // Animal Safari's play('lion') must hit exactly the 'animal.lion' entry). Every
+  // tag across ALL entries must therefore appear in exactly one entry.
+  it('no two ASSETS entries share a tag (tags are globally unique)', () => {
+    const counts = new Map<string, number>();
+    for (const entry of Object.values(ASSETS)) {
+      for (const tag of entry.tags) {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+    const collisions = [...counts.entries()].filter(([, n]) => n > 1);
+    expect(collisions).toEqual([]);
   });
 });

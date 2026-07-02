@@ -132,6 +132,64 @@ export const ASSETS = {
     type: 'audio',
     tags: ['engine', 'motor', 'drive', 'road'],
   },
+  // Real CC0/PD animal sounds (see audio/animals/CREDITS.md). One specific clip
+  // each — played by id via useSound().play('animal.<id>') in Animal Safari's
+  // "whichSound" rounds. (Cow has no clip, so there is no 'animal.cow' entry.)
+  'animal.lion': {
+    modules: [require('./audio/animals/lion.ogg')],
+    type: 'audio',
+    tags: ['lion'],
+  },
+  'animal.elephant': {
+    modules: [require('./audio/animals/elephant.ogg')],
+    type: 'audio',
+    tags: ['elephant'],
+  },
+  'animal.dog': {
+    modules: [require('./audio/animals/dog.ogg')],
+    type: 'audio',
+    tags: ['dog'],
+  },
+  'animal.cat': {
+    modules: [require('./audio/animals/cat.ogg')],
+    type: 'audio',
+    tags: ['cat'],
+  },
+  'animal.frog': {
+    modules: [require('./audio/animals/frog.ogg')],
+    type: 'audio',
+    tags: ['frog'],
+  },
+  'animal.horse': {
+    modules: [require('./audio/animals/horse.ogg')],
+    type: 'audio',
+    tags: ['horse'],
+  },
+  'animal.sheep': {
+    modules: [require('./audio/animals/sheep.ogg')],
+    type: 'audio',
+    tags: ['sheep'],
+  },
+  'animal.rooster': {
+    modules: [require('./audio/animals/rooster.ogg')],
+    type: 'audio',
+    tags: ['rooster'],
+  },
+  'animal.duck': {
+    modules: [require('./audio/animals/duck.ogg')],
+    type: 'audio',
+    tags: ['duck'],
+  },
+  'animal.bird': {
+    modules: [require('./audio/animals/bird.ogg')],
+    type: 'audio',
+    tags: ['bird'],
+  },
+  'animal.bee': {
+    modules: [require('./audio/animals/bee.ogg')],
+    type: 'audio',
+    tags: ['bee'],
+  },
 } as const satisfies Record<string, AssetEntry>;
 
 export type AssetId = keyof typeof ASSETS;
