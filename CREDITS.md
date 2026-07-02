@@ -18,11 +18,9 @@ license. Add an entry **before** importing any new third-party asset.
 ### Sound Effects Mini Pack 1.5 — 8-bit SFX
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/`), via `useSound()`.
-- **Source:** "Sound Effects Mini Pack 1.5" by Swiss Arcade Game Entertainment
-  (phoenix1291) — https://phoenix1291.itch.io/sound-effects-mini-pack1-5
-  (listed as "name your own price").
-- **License:** ⚠️ **To be verified.** No explicit license terms are stated on the
-  itch.io listing (no documented commercial-use, redistribution, or attribution
-  terms). Confirm the terms directly with the author (itch.io / Patreon) and
-  record them here **before the next store release**; do not assume redistribution
-  is permitted until confirmed.
+- **Source:** "Sound effects Mini Pack 1.5" by phoenix1291
+  (Swiss Arcade Game Entertainment) — https://opengameart.org/content/sound-effects-mini-pack15
+- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
+- **Terms honored:** commercial use and redistribution permitted; no attribution
+  required. The author appreciates optional credit to "phoenix1291" /
+  "SwissArcadeGameEntertainment" — given here as a courtesy.
