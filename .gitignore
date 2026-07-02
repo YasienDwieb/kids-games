@@ -53,3 +53,6 @@ fastlane/test_output
 
 # Playwright MCP screenshots/logs (local UI verification)
 .playwright-mcp/
+
+# Serena MCP local project config (coding-assistant tooling, not app code)
+.serena/
