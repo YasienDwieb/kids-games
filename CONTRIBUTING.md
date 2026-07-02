@@ -65,3 +65,11 @@ Use `play('pop')` (from `useSound`) rather than referencing asset ids directly. 
 ## AI-assisted development
 
 A Claude Code skill is included at `.claude/skills/kids-games-dev/SKILL.md`. It covers scaffolding, SDK usage, asset selection, layout modes, age bands, and the config schema. If you are using Claude Code on this repo the skill triggers automatically for game-related tasks.
+
+## License of contributions
+
+This project is licensed under the [Apache License 2.0](LICENSE). Unless you state
+otherwise, any contribution you submit for inclusion (a game, code, or docs) is
+provided under the same Apache-2.0 terms (see Section 5 of the license). Please
+don't submit assets or code you don't have the rights to; log any third-party
+asset in [CREDITS.md](CREDITS.md) before importing it.

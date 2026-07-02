@@ -151,3 +151,16 @@ npx tsc --noEmit                 # type check (strict)
 CI=1 npx jest --watchAll=false   # unit tests (pure logic)
 npx expo export --platform ios   # validate the bundle resolves
 ```
+
+## License
+
+The **code** is licensed under the [Apache License 2.0](LICENSE). You're welcome
+to build your own games on top of it, fork it, and publish — including for your
+own kids. Per the [`NOTICE`](NOTICE) file, derivative works must keep the
+attribution ("Based on the Kids Games project").
+
+The **"Kids Games" name, logo, and app icon are reserved** and are *not* covered
+by the code license (Apache-2.0 §6). Please use a different name and branding for
+your own published builds.
+
+Bundled third-party assets keep their own licenses — see [CREDITS.md](CREDITS.md).

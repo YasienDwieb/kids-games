@@ -19,3 +19,6 @@ license. Add an entry **before** importing any new third-party asset.
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/`), via `useSound()`.
 - **Source:** "Sound Effects Mini Pack 1.5".
+- **License:** ⚠️ **To be verified.** The original source URL and license terms are
+  not yet recorded. Confirm the pack's license (author, URL, redistribution/
+  commercial terms) and complete this entry **before the next store release**.
