@@ -21,7 +21,7 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   ACCENTS,
   BORDER_RADIUS,
@@ -58,8 +58,12 @@ export type ListenFindBoardProps = {
   accent?: AccentName;
   /** Root background; pass 'transparent' in guided mode so the backdrop shows. */
   background?: string;
-  /** a11y label for a choice tile, given its glyph. */
-  choiceLabel: (glyph: string) => string;
+  /**
+   * a11y label for a choice tile, given the whole choice item. Glyph games read
+   * `item.glyph`; image games (which have no glyph) derive the label from
+   * `item.id` or keep it generic.
+   */
+  choiceLabel: (item: FindItem) => string;
 };
 
 type TileState = 'default' | 'correct' | 'wrong';
@@ -71,14 +75,14 @@ const EDGE = 6; // depth of the 3D bottom edge
 // ---------------------------------------------------------------------------
 
 function ChoiceTile({
-  glyph,
+  item,
   state,
   onPress,
   disabled,
   accessibilityLabel,
   accessibilityState,
 }: {
-  glyph: string;
+  item: FindItem;
   state: TileState;
   onPress: () => void;
   disabled: boolean;
@@ -141,7 +145,19 @@ function ChoiceTile({
         <Animated.View
           style={[styles.face, { backgroundColor: faceColor, transform: [{ translateY: pressTranslate }] }]}
         >
-          <Text style={[styles.glyph, { color: glyphColor }]}>{glyph}</Text>
+          {/* Image face (animal art) when the choice carries an image; otherwise
+              the literal glyph. Decorative within the labeled Pressable, so the
+              image opts out of a11y to avoid a double announcement. */}
+          {item.image !== undefined ? (
+            <Image
+              source={item.image}
+              style={styles.image}
+              resizeMode="contain"
+              accessible={false}
+            />
+          ) : (
+            <Text style={[styles.glyph, { color: glyphColor }]}>{item.glyph}</Text>
+          )}
           {isCorrect && (
             <Animated.View style={[styles.badge, { transform: [{ scale: badgeScale }] }]}>
               <View style={styles.badgeCircle}>
@@ -207,11 +223,11 @@ export function ListenFindBoard({
             return (
               <ChoiceTile
                 key={choice.id}
-                glyph={choice.glyph}
+                item={choice}
                 state={state}
                 onPress={() => onPick(idx)}
                 disabled={disabled || answered}
-                accessibilityLabel={choiceLabel(choice.glyph)}
+                accessibilityLabel={choiceLabel(choice)}
                 accessibilityState={{ disabled: disabled || answered, selected: state === 'correct' }}
               />
             );
@@ -297,6 +313,8 @@ const styles = StyleSheet.create({
     lineHeight: 70,
     textAlign: 'center',
   },
+  // Image face (animal art) — same footprint as a glyph so the row stays uniform.
+  image: { width: 64, height: 64 },
   badge: { position: 'absolute', top: -12, end: -8 },
   badgeCircle: {
     width: 36,

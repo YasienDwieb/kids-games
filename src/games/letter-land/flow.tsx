@@ -58,7 +58,7 @@ function LetterFlowRound({
         disabled={solved}
         accent="blue"
         background="transparent"
-        choiceLabel={(glyph) => t('letter-land:a11y.choiceTile', { glyph })}
+        choiceLabel={(item) => t('letter-land:a11y.choiceTile', { glyph: item.glyph ?? '' })}
       />
     </View>
   );

@@ -113,7 +113,7 @@ function NumbersLandRun({
         onReplay={speakTarget}
         disabled={lf.solved}
         accent="orange"
-        choiceLabel={(glyph) => t('numbers-land:a11y.choiceTile', { glyph })}
+        choiceLabel={(item) => t('numbers-land:a11y.choiceTile', { glyph: item.glyph ?? '' })}
       />
     </View>
   );
