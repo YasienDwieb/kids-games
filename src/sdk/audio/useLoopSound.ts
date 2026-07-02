@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Audio } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { pickModule } from '@/sdk/assets/query';
 import { useSettings } from '@/sdk/settings/useSettings';
 
@@ -7,8 +7,8 @@ import { useSettings } from '@/sdk/settings/useSettings';
  * Looping ambient sound (engine rumble, wind, …) tied to component lifecycle.
  *
  * While `active` and the soundEnabled setting are both true, a sound resolved
- * via pickModule(intent) plays with isLooping. Toggling `active` (or the
- * setting) pauses/resumes the same loaded sound; it is unloaded on unmount.
+ * via pickModule(intent) plays with looping. Toggling `active` (or the
+ * setting) pauses/resumes the same loaded player; it is removed on unmount.
  * Unknown intents are a silent no-op (mirrors useSound).
  */
 export function useLoopSound(
@@ -19,7 +19,7 @@ export function useLoopSound(
   const { settings } = useSettings();
   const shouldPlay = active && settings.soundEnabled;
 
-  const soundRef = useRef<Audio.Sound | null>(null);
+  const playerRef = useRef<AudioPlayer | null>(null);
   const loadedIntentRef = useRef<string | null>(null);
   const creatingRef = useRef(false);
   const mountedRef = useRef(true);
@@ -34,21 +34,29 @@ export function useLoopSound(
   // Play / pause / lazy-create.
   useEffect(() => {
     const sync = async () => {
-      // Intent changed under a loaded sound → drop it and recreate below.
-      if (soundRef.current && loadedIntentRef.current !== intent) {
-        soundRef.current.unloadAsync().catch(() => {});
-        soundRef.current = null;
+      // Intent changed under a loaded player → drop it and recreate below.
+      if (playerRef.current && loadedIntentRef.current !== intent) {
+        try {
+          playerRef.current.remove();
+        } catch {
+          // already released — ignore
+        }
+        playerRef.current = null;
         loadedIntentRef.current = null;
       }
 
       if (!shouldPlay) {
-        soundRef.current?.pauseAsync().catch(() => {});
+        try {
+          playerRef.current?.pause();
+        } catch {
+          // graceful degradation — game works without sound
+        }
         return;
       }
 
-      if (soundRef.current) {
+      if (playerRef.current) {
         try {
-          await soundRef.current.playAsync();
+          playerRef.current.play();
         } catch {
           // graceful degradation — game works without sound
         }
@@ -61,27 +69,29 @@ export function useLoopSound(
 
       creatingRef.current = true;
       try {
-        await Audio.setAudioModeAsync({ playsInSilentModeIOS: true }).catch(() => {});
-        const { sound } = await Audio.Sound.createAsync(module, {
-          isLooping: true,
-          shouldPlay: true,
-          volume: volumeRef.current,
-        });
+        await setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
+        const player = createAudioPlayer(module);
         if (!mountedRef.current) {
-          // Unmounted while createAsync was in flight.
-          sound.unloadAsync().catch(() => {});
+          // Unmounted while the effect was in flight.
+          try {
+            player.remove();
+          } catch {
+            // already released — ignore
+          }
           return;
         }
-        soundRef.current = sound;
+        player.loop = true;
+        player.volume = volumeRef.current;
+        playerRef.current = player;
         loadedIntentRef.current = intent;
         if (rateRef.current !== 1) {
           try {
-            await sound.setRateAsync(rateRef.current, false);
+            player.setPlaybackRate(rateRef.current);
           } catch {
             // rate unsupported on some platforms — degrade silently
           }
         }
-        if (!shouldPlayRef.current) sound.pauseAsync().catch(() => {});
+        if (shouldPlayRef.current) player.play();
       } catch {
         // graceful degradation — game works without sound
       } finally {
@@ -91,22 +101,26 @@ export function useLoopSound(
     sync();
   }, [shouldPlay, intent]);
 
-  // Volume changes on the live sound.
+  // Volume changes on the live player.
   useEffect(() => {
-    soundRef.current?.setVolumeAsync(volume).catch(() => {});
+    const player = playerRef.current;
+    if (!player) return;
+    try {
+      player.volume = volume;
+    } catch {
+      // graceful degradation — game works without sound
+    }
   }, [volume]);
 
   // Rate changes — no pitch correction; unsupported platforms degrade silently.
   useEffect(() => {
-    const sound = soundRef.current;
-    if (!sound) return;
-    (async () => {
-      try {
-        await sound.setRateAsync(rate, false);
-      } catch {
-        // rate unsupported on some platforms — degrade silently
-      }
-    })();
+    const player = playerRef.current;
+    if (!player) return;
+    try {
+      player.setPlaybackRate(rate);
+    } catch {
+      // rate unsupported on some platforms — degrade silently
+    }
   }, [rate]);
 
   // Unmount cleanup.
@@ -114,8 +128,12 @@ export function useLoopSound(
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      soundRef.current?.unloadAsync().catch(() => {});
-      soundRef.current = null;
+      try {
+        playerRef.current?.remove();
+      } catch {
+        // already released — ignore
+      }
+      playerRef.current = null;
       loadedIntentRef.current = null;
     };
   }, []);

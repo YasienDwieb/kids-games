@@ -39,6 +39,7 @@ import {
   useTranslation,
 } from '@/sdk';
 import { CountObject } from './CountObject';
+import { FitColumn } from './FitColumn';
 import type { CountThisManyRound } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -236,8 +237,8 @@ export function CountThisMany({
     return () => loop.stop();
   }, [bobAnim]);
 
-  return (
-    <View style={[styles.root, landscape && styles.rootLandscape]}>
+  const body = (
+    <>
       {/* Prompt card */}
       <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
         <Text style={styles.promptTitle}>
@@ -295,8 +296,15 @@ export function CountThisMany({
           );
         })}
       </View>
-    </View>
+    </>
   );
+
+  // Landscape: scale the whole unit to the available height so no tile row is
+  // clipped. Portrait keeps its natural centered column.
+  if (landscape) {
+    return <FitColumn contentStyle={styles.unitLandscape}>{body}</FitColumn>;
+  }
+  return <View style={styles.root}>{body}</View>;
 }
 
 // ---------------------------------------------------------------------------
@@ -313,12 +321,11 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
-  // Landscape: distribute sections evenly across the height (device-agnostic).
-  rootLandscape: {
-    justifyContent: 'space-evenly',
-    gap: 0,
-    paddingVertical: SPACING.xs,
-    backgroundColor: 'transparent',
+  // Landscape unit: FitColumn centers this and scales it down to fit when
+  // needed. The gap gives the sections breathing room and scales with them.
+  unitLandscape: {
+    gap: SPACING.lg,
+    paddingHorizontal: SPACING.md,
   },
   promptCardLandscape: { maxWidth: 560 },
   gridLandscape: { maxWidth: 760 },

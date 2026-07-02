@@ -2,42 +2,43 @@
 //
 // Two letter inventories (Latin + Arabic) authored as `Letter` data. `glyph`
 // is rendered literally; `word` is an i18n KEY SUFFIX (resolved as
-// `letter-land:words.<word>`) so the example word localizes per language.
+// `letter-land:words.<word>`) and `emoji` is that word's picture. Every word
+// has bundled emoji art — words without a clean glyph were swapped for a
+// same-initial word that does (e.g. P pig→panda, igloo→ice cream).
 
-import type { Letter, RoundMode } from './types';
+import type { Letter } from './types';
 
 // ---------------------------------------------------------------------------
-// Latin inventory — A–Z uppercase (26). id === glyph; `word` is a kid-friendly
-// example-word key suffix.
+// Latin inventory — A–Z uppercase (26). id === glyph.
 // ---------------------------------------------------------------------------
 
 export const LATIN_LETTERS: readonly Letter[] = [
-  { id: 'A', glyph: 'A', word: 'apple' },
-  { id: 'B', glyph: 'B', word: 'ball' },
-  { id: 'C', glyph: 'C', word: 'cat' },
-  { id: 'D', glyph: 'D', word: 'dog' },
-  { id: 'E', glyph: 'E', word: 'egg' },
-  { id: 'F', glyph: 'F', word: 'fish' },
-  { id: 'G', glyph: 'G', word: 'goat' },
-  { id: 'H', glyph: 'H', word: 'hat' },
-  { id: 'I', glyph: 'I', word: 'igloo' },
-  { id: 'J', glyph: 'J', word: 'jam' },
-  { id: 'K', glyph: 'K', word: 'kite' },
-  { id: 'L', glyph: 'L', word: 'lion' },
-  { id: 'M', glyph: 'M', word: 'moon' },
-  { id: 'N', glyph: 'N', word: 'nest' },
-  { id: 'O', glyph: 'O', word: 'orange' },
-  { id: 'P', glyph: 'P', word: 'pig' },
-  { id: 'Q', glyph: 'Q', word: 'queen' },
-  { id: 'R', glyph: 'R', word: 'rabbit' },
-  { id: 'S', glyph: 'S', word: 'sun' },
-  { id: 'T', glyph: 'T', word: 'tree' },
-  { id: 'U', glyph: 'U', word: 'umbrella' },
-  { id: 'V', glyph: 'V', word: 'van' },
-  { id: 'W', glyph: 'W', word: 'whale' },
-  { id: 'X', glyph: 'X', word: 'xylophone' },
-  { id: 'Y', glyph: 'Y', word: 'yoyo' },
-  { id: 'Z', glyph: 'Z', word: 'zebra' },
+  { id: 'A', glyph: 'A', word: 'apple', emoji: '🍎' },
+  { id: 'B', glyph: 'B', word: 'ball', emoji: '⚽' },
+  { id: 'C', glyph: 'C', word: 'cat', emoji: '🐱' },
+  { id: 'D', glyph: 'D', word: 'dog', emoji: '🐶' },
+  { id: 'E', glyph: 'E', word: 'egg', emoji: '🥚' },
+  { id: 'F', glyph: 'F', word: 'fish', emoji: '🐟' },
+  { id: 'G', glyph: 'G', word: 'goat', emoji: '🐐' },
+  { id: 'H', glyph: 'H', word: 'hat', emoji: '🎩' },
+  { id: 'I', glyph: 'I', word: 'icecream', emoji: '🍦' }, // igloo → ice cream (has art)
+  { id: 'J', glyph: 'J', word: 'juice', emoji: '🧃' }, // jam → juice (has art)
+  { id: 'K', glyph: 'K', word: 'kite', emoji: '🪁' },
+  { id: 'L', glyph: 'L', word: 'lion', emoji: '🦁' },
+  { id: 'M', glyph: 'M', word: 'moon', emoji: '🌙' },
+  { id: 'N', glyph: 'N', word: 'nose', emoji: '👃' }, // nest → nose (has art)
+  { id: 'O', glyph: 'O', word: 'orange', emoji: '🍊' },
+  { id: 'P', glyph: 'P', word: 'panda', emoji: '🐼' }, // pig → panda (content rule)
+  { id: 'Q', glyph: 'Q', word: 'queen', emoji: '👑' },
+  { id: 'R', glyph: 'R', word: 'rabbit', emoji: '🐰' },
+  { id: 'S', glyph: 'S', word: 'sun', emoji: '☀️' },
+  { id: 'T', glyph: 'T', word: 'tree', emoji: '🌳' },
+  { id: 'U', glyph: 'U', word: 'umbrella', emoji: '🌂' },
+  { id: 'V', glyph: 'V', word: 'van', emoji: '🚐' },
+  { id: 'W', glyph: 'W', word: 'whale', emoji: '🐋' },
+  { id: 'X', glyph: 'X', word: 'xylophone', emoji: '🎹' },
+  { id: 'Y', glyph: 'Y', word: 'yarn', emoji: '🧶' }, // yo-yo → yarn (has art)
+  { id: 'Z', glyph: 'Z', word: 'zebra', emoji: '🦓' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -47,47 +48,39 @@ export const LATIN_LETTERS: readonly Letter[] = [
 // ---------------------------------------------------------------------------
 
 export const ARABIC_LETTERS: readonly Letter[] = [
-  { id: 'alef', glyph: 'ا', word: 'asad' }, // أسد (lion)
-  { id: 'baa', glyph: 'ب', word: 'batta' }, // بطة (duck)
-  { id: 'taa', glyph: 'ت', word: 'tuffaha' }, // تفاحة (apple)
-  { id: 'thaa', glyph: 'ث', word: 'thalab' }, // ثعلب (fox)
-  { id: 'jeem', glyph: 'ج', word: 'jamal' }, // جمل (camel)
-  { id: 'haa', glyph: 'ح', word: 'hisan' }, // حصان (horse)
-  { id: 'khaa', glyph: 'خ', word: 'kharoof' }, // خروف (sheep)
-  { id: 'dal', glyph: 'د', word: 'dub' }, // دب (bear)
-  { id: 'thal', glyph: 'ذ', word: 'thubab' }, // ذباب (fly)
-  { id: 'raa', glyph: 'ر', word: 'rummana' }, // رمانة (pomegranate)
-  { id: 'zay', glyph: 'ز', word: 'zarafa' }, // زرافة (giraffe)
-  { id: 'seen', glyph: 'س', word: 'samaka' }, // سمكة (fish)
-  { id: 'sheen', glyph: 'ش', word: 'shams' }, // شمس (sun)
-  { id: 'sad', glyph: 'ص', word: 'saqr' }, // صقر (falcon)
-  { id: 'dad', glyph: 'ض', word: 'difdaa' }, // ضفدع (frog)
-  { id: 'taa_heavy', glyph: 'ط', word: 'tayra' }, // طائرة (plane)
-  { id: 'thaa_heavy', glyph: 'ظ', word: 'zarf' }, // ظرف (envelope)
-  { id: 'ayn', glyph: 'ع', word: 'asfoor' }, // عصفور (bird)
-  { id: 'ghayn', glyph: 'غ', word: 'ghazala' }, // غزالة (gazelle)
-  { id: 'faa', glyph: 'ف', word: 'feel' }, // فيل (elephant)
-  { id: 'qaf', glyph: 'ق', word: 'qittah' }, // قطة (cat)
-  { id: 'kaf', glyph: 'ك', word: 'kura' }, // كرة (ball)
-  { id: 'lam', glyph: 'ل', word: 'laymoon' }, // ليمون (lemon)
-  { id: 'meem', glyph: 'م', word: 'mawza' }, // موزة (banana)
-  { id: 'noon', glyph: 'ن', word: 'najma' }, // نجمة (star)
-  { id: 'haa_soft', glyph: 'ه', word: 'hudhud' }, // هدهد (hoopoe)
-  { id: 'waw', glyph: 'و', word: 'warda' }, // وردة (rose)
-  { id: 'yaa', glyph: 'ي', word: 'yad' }, // يد (hand)
+  { id: 'alef', glyph: 'ا', word: 'asad', emoji: '🦁' }, // أسد (lion)
+  { id: 'baa', glyph: 'ب', word: 'batta', emoji: '🦆' }, // بطة (duck)
+  { id: 'taa', glyph: 'ت', word: 'tuffaha', emoji: '🍎' }, // تفاحة (apple)
+  { id: 'thaa', glyph: 'ث', word: 'thalab', emoji: '🦊' }, // ثعلب (fox)
+  { id: 'jeem', glyph: 'ج', word: 'jamal', emoji: '🐪' }, // جمل (camel)
+  { id: 'haa', glyph: 'ح', word: 'hisan', emoji: '🐴' }, // حصان (horse)
+  { id: 'khaa', glyph: 'خ', word: 'kharoof', emoji: '🐑' }, // خروف (sheep)
+  { id: 'dal', glyph: 'د', word: 'dub', emoji: '🐻' }, // دب (bear)
+  { id: 'thal', glyph: 'ذ', word: 'thubab', emoji: '🪰' }, // ذباب (fly)
+  { id: 'raa', glyph: 'ر', word: 'reesha', emoji: '🪶' }, // ريشة (feather) — was رمانة (no art)
+  { id: 'zay', glyph: 'ز', word: 'zarafa', emoji: '🦒' }, // زرافة (giraffe)
+  { id: 'seen', glyph: 'س', word: 'samaka', emoji: '🐟' }, // سمكة (fish)
+  { id: 'sheen', glyph: 'ش', word: 'shams', emoji: '☀️' }, // شمس (sun)
+  { id: 'sad', glyph: 'ص', word: 'sarookh', emoji: '🚀' }, // صاروخ (rocket) — was صقر (no art)
+  { id: 'dad', glyph: 'ض', word: 'difdaa', emoji: '🐸' }, // ضفدع (frog)
+  { id: 'taa_heavy', glyph: 'ط', word: 'tayra', emoji: '✈️' }, // طائرة (plane)
+  { id: 'thaa_heavy', glyph: 'ظ', word: 'zarf', emoji: '✉️' }, // ظرف (envelope)
+  { id: 'ayn', glyph: 'ع', word: 'asfoor', emoji: '🐦' }, // عصفور (bird)
+  { id: 'ghayn', glyph: 'غ', word: 'ghazala', emoji: '🦌' }, // غزالة (gazelle)
+  { id: 'faa', glyph: 'ف', word: 'feel', emoji: '🐘' }, // فيل (elephant)
+  { id: 'qaf', glyph: 'ق', word: 'qittah', emoji: '🐱' }, // قطة (cat)
+  { id: 'kaf', glyph: 'ك', word: 'kura', emoji: '⚽' }, // كرة (ball)
+  { id: 'lam', glyph: 'ل', word: 'laymoon', emoji: '🍋' }, // ليمون (lemon)
+  { id: 'meem', glyph: 'م', word: 'mawza', emoji: '🍌' }, // موزة (banana)
+  { id: 'noon', glyph: 'ن', word: 'najma', emoji: '⭐' }, // نجمة (star)
+  { id: 'haa_soft', glyph: 'ه', word: 'hatif', emoji: '📱' }, // هاتف (phone) — was هدهد (no art)
+  { id: 'waw', glyph: 'و', word: 'warda', emoji: '🌹' }, // وردة (rose)
+  { id: 'yaa', glyph: 'ي', word: 'yad', emoji: '✋' }, // يد (hand)
 ];
 
 // ---------------------------------------------------------------------------
 // Round configuration
 // ---------------------------------------------------------------------------
 
-/** Number of letter choices shown in a `hearAndFind` round. */
+/** Number of letter choices shown in a round. */
 export const CHOICES_PER_ROUND = 3;
-
-/**
- * Round mode by 1-based level. Every level is `hearAndFind` — kept as a
- * function so existing callers/tests resolve without churn.
- */
-export function modeForLevel(_level: number): RoundMode {
-  return 'hearAndFind';
-}

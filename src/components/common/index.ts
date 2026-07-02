@@ -11,3 +11,4 @@ export { EmojiFrame } from './EmojiFrame';
 export { EmojiImage } from './EmojiImage';
 export { Star } from './Star';
 export { HoldToConfirm } from './HoldToConfirm';
+export { JourneyCard } from './JourneyCard';

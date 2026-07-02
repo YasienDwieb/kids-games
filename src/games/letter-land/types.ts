@@ -1,63 +1,30 @@
 // Letter Land — core domain types (no UI, no React imports).
+//
+// Built on the shared listen-and-find engine: a Letter is a FindItem (id +
+// glyph) enriched with the example-word key + its picture.
 
-// ---------------------------------------------------------------------------
-// Letter
-// ---------------------------------------------------------------------------
+import type { FindItem, FindRound } from '@/games/_shared/listen-find';
 
 /**
  * One letter in an alphabet inventory.
  *
  * `glyph` is authored DATA, rendered literally (never translated).
- * `word` is the i18n KEY SUFFIX for the example word (e.g. 'apple' for the
- * key `letter-land:words.apple`) — NOT the literal word itself, so the
- * example word localizes per language at the call site.
+ * `word` is the i18n KEY SUFFIX for the example word (e.g. 'apple' for the key
+ * `letter-land:words.apple`) — NOT the literal word — so the example word
+ * localizes per language at the call site.
+ * `emoji` is the example word's picture (bundled via EmojiImage).
  */
-export type Letter = {
-  /** Stable id, also the choice key. Latin: the uppercase letter ('A'..'Z'). Arabic: a latin-ish name ('alef', 'baa', …). */
-  readonly id: string;
-  /** The character to render on screen (literal, not translated). */
-  readonly glyph: string;
+export type Letter = FindItem & {
   /** i18n key suffix for the example word, resolved as `words.<word>`. */
   readonly word: string;
+  /** Example-word picture glyph (rendered via EmojiImage). */
+  readonly emoji: string;
 };
-
-// ---------------------------------------------------------------------------
-// Round mode
-// ---------------------------------------------------------------------------
-
-/** The single round variant. Kept as a named type so callers don't churn. */
-export type RoundMode = 'hearAndFind';
-
-// ---------------------------------------------------------------------------
-// Round
-// ---------------------------------------------------------------------------
-
-/**
- * hearAndFind — the target letter is spoken (name + sound + example word);
- * the child taps the matching letter among `choices`. This is the only round
- * variant: every level is hear-and-find.
- */
-export type HearAndFindRound = {
-  readonly mode: 'hearAndFind';
-  /** The letter the child must find. */
-  readonly target: Letter;
-  /** The letters shown as choices (includes `target`). */
-  readonly choices: readonly Letter[];
-  /** 0-based index into `choices` that is `target`. */
-  readonly correctIndex: number;
-};
-
-/** The round to play. Always a hear-and-find round. */
-export type Round = HearAndFindRound;
-
-// ---------------------------------------------------------------------------
-// Level data
-// ---------------------------------------------------------------------------
 
 /** Everything needed to render and evaluate one game level. */
 export type LevelData = {
   /** 1-based level number. */
   readonly level: number;
-  /** The round to play (carries its own `mode` discriminator). */
-  readonly round: Round;
+  /** The round to play: choices + correctIndex + the target letter. */
+  readonly round: FindRound & { readonly target: Letter };
 };

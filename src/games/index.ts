@@ -10,4 +10,5 @@ import './count-and-pop/config';
 import './shape-detective/config';
 import './match-up/config';
 import './letter-land/config';
+import './numbers-land/config';
 import './animal-safari/config';

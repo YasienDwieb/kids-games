@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Audio } from 'expo-av';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 import { pickModule } from '@/sdk/assets/query';
 import { settingsStore } from '@/sdk/settings/store';
@@ -7,13 +7,19 @@ import { settingsStore } from '@/sdk/settings/store';
 export type PlayOptions = { haptic?: boolean };
 
 export function useSound() {
-  const loaded = useRef<Record<string, Audio.Sound>>({});
+  const loaded = useRef<Record<string, AudioPlayer>>({});
 
   useEffect(() => {
-    Audio.setAudioModeAsync({ playsInSilentModeIOS: true }).catch(() => {});
+    setAudioModeAsync({ playsInSilentMode: true }).catch(() => {});
     const cache = loaded.current;
     return () => {
-      Object.values(cache).forEach((s) => s.unloadAsync().catch(() => {}));
+      Object.values(cache).forEach((p) => {
+        try {
+          p.remove();
+        } catch {
+          // already released — ignore
+        }
+      });
       loaded.current = {};
     };
   }, []);
@@ -32,12 +38,15 @@ export function useSound() {
 
     const key = String(module);
     try {
-      if (loaded.current[key]) {
-        await loaded.current[key].replayAsync();
+      const existing = loaded.current[key];
+      if (existing) {
+        existing.seekTo(0); // expo-audio doesn't auto-rewind on finish
+        existing.play();
         return;
       }
-      const { sound } = await Audio.Sound.createAsync(module, { shouldPlay: true });
-      loaded.current[key] = sound;
+      const player = createAudioPlayer(module);
+      loaded.current[key] = player;
+      player.play();
     } catch {
       // graceful degradation — game works without sound
     }

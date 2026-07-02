@@ -14,11 +14,11 @@ export const LAYOUT = {
   CARD_BORDER_RADIUS: 14,
 };
 
-export const DIFFICULTY_CONFIG: Record<Difficulty, { pairs: number; columns: number }> = {
-  easy: { pairs: 2, columns: 2 },
-  medium: { pairs: 3, columns: 3 },
-  hard: { pairs: 4, columns: 3 },
-  expert: { pairs: 9, columns: 3 },
+export const DIFFICULTY_CONFIG: Record<Difficulty, { pairs: number; columns: number; landscapeColumns: number }> = {
+  easy: { pairs: 2, columns: 2, landscapeColumns: 4 },
+  medium: { pairs: 3, columns: 3, landscapeColumns: 6 },
+  hard: { pairs: 4, columns: 4, landscapeColumns: 4 },
+  expert: { pairs: 9, columns: 3, landscapeColumns: 6 },
 };
 
 // Aligned to the design system green accent.

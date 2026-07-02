@@ -56,3 +56,6 @@ fastlane/test_output
 
 # Serena MCP local project config (coding-assistant tooling, not app code)
 .serena/
+
+# Local device/web screenshots from dev verification
+.device-shots/

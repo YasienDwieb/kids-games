@@ -12,7 +12,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import {
   ACCENTS,
   BORDER_RADIUS,
@@ -38,24 +37,6 @@ const ACCENT = 'purple' as const;
 export default function MatchUpGame(): React.JSX.Element {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-
-  // Lock landscape on entry; restore portrait on exit (mirrors balloon-archer).
-  useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => {});
-    return () => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
-    };
-  }, []);
-
-  // Cold entry can latch stale portrait dims; remount the board once the async
-  // landscape rotation settles so it re-measures at real size (see FlowPlayerScreen).
-  const [orientKey, setOrientKey] = useState(0);
-  useEffect(() => {
-    const sub = ScreenOrientation.addOrientationChangeListener(() =>
-      setOrientKey((k) => k + 1),
-    );
-    return () => ScreenOrientation.removeOrientationChangeListener(sub);
-  }, []);
 
   // Per-session seed — the only Math.random call site (kept out of the pure layer).
   const initialSeed = useMemo(() => Math.floor(Math.random() * 0x7fffffff), []);
@@ -116,7 +97,7 @@ export default function MatchUpGame(): React.JSX.Element {
       </View>
 
       <MatchBoard
-        key={`${level}-${orientKey}`}
+        key={level}
         round={data}
         accent={ACCENT}
         onCorrect={() => addScore(POINTS_PER_MATCH)}

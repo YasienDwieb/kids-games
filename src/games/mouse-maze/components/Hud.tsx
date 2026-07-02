@@ -8,12 +8,41 @@ interface HudProps {
   collected: number;
   total: number;
   onHint: () => void;
+  /** When true, renders as a vertical side panel (landscape mode). */
+  landscape?: boolean;
 }
 
-/** Top bar: back-space · level (centred) · star tally + hint, on one row. */
-export function Hud({ level, collected, total, onHint }: HudProps) {
+/** Top bar (portrait) or side panel (landscape): level · star tally · hint. */
+export function Hud({ level, collected, total, onHint, landscape = false }: HudProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+
+  if (landscape) {
+    // Vertical side panel: items stacked, respects end-side safe-area inset.
+    return (
+      <View
+        style={[styles.panel, { paddingEnd: insets.right + SPACING.sm, paddingTop: insets.top + SPACING.sm }]}
+        pointerEvents="box-none"
+      >
+        <HudPill>
+          <Text style={hudTextStyle}>{t('mouse-maze:hud.level', { level })}</Text>
+        </HudPill>
+        <HudPill>
+          <Text style={styles.icon}>{EMOJI.star}</Text>
+          {/* Pin tally to LTR so digits never bidi-reorder in Arabic */}
+          <Text style={[hudTextStyle, styles.tally]}>
+            {collected}/{total}
+          </Text>
+        </HudPill>
+        <IconButton
+          glyph="💡"
+          onPress={onHint}
+          accessibilityLabel={t('mouse-maze:hud.hintLabel')}
+        />
+      </View>
+    );
+  }
+
   return (
     <View
       style={[styles.bar, { paddingTop: insets.top + SPACING.xs }]}
@@ -57,6 +86,15 @@ const styles = StyleSheet.create({
     minHeight: TOUCH_TARGET.recommended,
     paddingHorizontal: SPACING.md,
     gap: SPACING.sm,
+  },
+  // Landscape side panel: vertical stack, not absolutely positioned.
+  panel: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    minWidth: TOUCH_TARGET.recommended * 2,
   },
   backSpace: { width: TOUCH_TARGET.recommended },
   center: { flex: 1, alignItems: 'center' },
