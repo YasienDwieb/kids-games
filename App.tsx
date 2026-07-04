@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import {
   useFonts,
   Fredoka_500Medium,
@@ -39,6 +40,16 @@ export default function App() {
     IBMPlexSansArabic_600SemiBold,
     IBMPlexSansArabic_700Bold,
   });
+
+  // Lock to *sensor* landscape so the app stays landscape in both directions
+  // (rotating the device flips between left/right). app.json's "landscape"
+  // maps to a single fixed landscape on Android; this allows both.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(
+      (e) => console.warn('Failed to lock orientation to landscape', e)
+    );
+  }, []);
 
   // Sync language + RTL with persisted settings before first paint. If the
   // native RTL direction disagrees with the chosen language we must reload once
