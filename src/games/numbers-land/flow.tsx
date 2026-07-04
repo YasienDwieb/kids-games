@@ -54,7 +54,7 @@ function NumberFlowRound({
         disabled={solved}
         accent="orange"
         background="transparent"
-        choiceLabel={(glyph) => t('numbers-land:a11y.choiceTile', { glyph })}
+        choiceLabel={(item) => t('numbers-land:a11y.choiceTile', { glyph: item.glyph ?? '' })}
       />
     </View>
   );

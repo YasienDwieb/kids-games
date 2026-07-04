@@ -130,7 +130,7 @@ function LetterLandRun({
         onReplay={speakTarget}
         disabled={lf.solved}
         accent="blue"
-        choiceLabel={(glyph) => t('letter-land:a11y.choiceTile', { glyph })}
+        choiceLabel={(item) => t('letter-land:a11y.choiceTile', { glyph: item.glyph ?? '' })}
       />
     </View>
   );
