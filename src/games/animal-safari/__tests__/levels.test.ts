@@ -1,8 +1,8 @@
 /**
  * Animal Safari — levels.ts unit tests.
  *
- * Pure domain; deterministic (seed = level × 7919). No UI, no React, no timers,
- * no Math.random.
+ * Pure domain; deterministic (seed = seedForLevel(level)). No UI, no React, no
+ * timers, no Math.random.
  *
  * Coverage:
  *   1. count === 12 (finite source)
@@ -13,13 +13,14 @@
  *   6. Determinism: repeated get(n) is identical (stateless source)
  *   7. get(out-of-range) contract — levelsFromGenerator(count) does NOT
  *      range-check get(); it returns a valid round with the target wrapped by
- *      the per-mode pool length, without throwing.
+ *      the per-mode TARGET pool length, without throwing.
  *   8. Parity with buildRound(level, level*7919) for every level.
+ *   9. roundForUnit — guided flow threads its per-journey seed through.
  */
 
-import { animalSafariLevels, LEVEL_COUNT } from '../utils/levels';
+import { animalSafariLevels, LEVEL_COUNT, roundForUnit } from '../utils/levels';
 import { ANIMALS, CHOICES_PER_ROUND, modeForLevel } from '../constants';
-import { buildRound, SOUND_ANIMALS } from '../utils/generate';
+import { buildRound, HEAR_TARGETS, SOUND_ANIMALS, SOUND_TARGETS } from '../utils/generate';
 import type { Animal, LevelData } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -33,8 +34,11 @@ function assertLevelValid(data: LevelData): void {
   expect(data.round.mode).toBe(modeForLevel(data.level));
   const pool: readonly Animal[] = data.round.mode === 'whichSound' ? SOUND_ANIMALS : ANIMALS;
 
-  // Target is the in-order (wrapping) animal for this level, from the pool.
-  const expectedTarget = pool[(((data.level - 1) % pool.length) + pool.length) % pool.length];
+  // Target walks this mode's disjoint target pool by round ordinal (wrapping).
+  const targets: readonly Animal[] =
+    data.round.mode === 'whichSound' ? SOUND_TARGETS : HEAR_TARGETS;
+  const ordinal = Math.floor((data.level - 1) / 2);
+  const expectedTarget = targets[((ordinal % targets.length) + targets.length) % targets.length];
   expect(data.round.target.id).toBe(expectedTarget.id);
   expect(pool.some((p) => p.id === data.round.target.id)).toBe(true);
 
@@ -171,8 +175,10 @@ describe('get(out-of-range) does not throw (generator source contract)', () => {
     for (const lvl of [count + 1, count + 2, 1000]) {
       const data = animalSafariLevels.get(lvl);
       const pool = data.round.mode === 'whichSound' ? SOUND_ANIMALS : ANIMALS;
-      const idx = (((lvl - 1) % pool.length) + pool.length) % pool.length;
-      expect(data.round.target.id).toBe(pool[idx].id);
+      const targets = data.round.mode === 'whichSound' ? SOUND_TARGETS : HEAR_TARGETS;
+      const ordinal = Math.floor((lvl - 1) / 2);
+      const idx = ((ordinal % targets.length) + targets.length) % targets.length;
+      expect(data.round.target.id).toBe(targets[idx].id);
       expect(pool.some((p) => p.id === data.round.target.id)).toBe(true);
     }
   });
@@ -183,6 +189,60 @@ describe('get(out-of-range) does not throw (generator source contract)', () => {
         level: lvl,
         round: buildRound(lvl, lvl * 7919),
       });
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// roundForUnit — the guided-flow entry point (0-based unit index + session seed)
+// ---------------------------------------------------------------------------
+//
+// The flow adapter is handed a per-journey `seed` (reshuffled by `reset()`).
+// It must thread that seed through, or a journey reset replays byte-identical
+// rounds: same distractors, same correct-tile position.
+
+describe('roundForUnit (guided flow)', () => {
+  it('unit i corresponds to level i+1', () => {
+    for (let i = 0; i < LEVEL_COUNT; i++) {
+      expect(roundForUnit(i, 0).target.id).toBe(animalSafariLevels.get(i + 1).round.target.id);
+    }
+  });
+
+  it('with seed 0 it matches the standalone ladder exactly', () => {
+    for (let i = 0; i < LEVEL_COUNT; i++) {
+      expect(roundForUnit(i, 0)).toEqual(animalSafariLevels.get(i + 1).round);
+    }
+  });
+
+  it('a different session seed reshuffles the layout (probabilistically)', () => {
+    const layouts = [0, 1, 2, 3, 4, 5, 6, 7].map((s) =>
+      roundForUnit(0, s).choices.map((a) => a.id).join(','),
+    );
+    expect(new Set(layouts).size).toBeGreaterThan(1);
+  });
+
+  it('the session seed never changes which animal is the target', () => {
+    for (let i = 0; i < LEVEL_COUNT; i++) {
+      const ids = [0, 1, 99, 40415].map((s) => roundForUnit(i, s).target.id);
+      expect(new Set(ids).size).toBe(1);
+    }
+  });
+
+  it('is deterministic for the same (unit, seed)', () => {
+    expect(roundForUnit(3, 555)).toEqual(roundForUnit(3, 555));
+  });
+
+  it('keeps the mode alternation across units', () => {
+    for (let i = 0; i < LEVEL_COUNT; i++) {
+      expect(roundForUnit(i, 7).mode).toBe(i % 2 === 0 ? 'hearName' : 'whichSound');
+    }
+  });
+
+  it('never targets the same animal on consecutive units, for any session seed', () => {
+    for (const seed of [0, 1, 42, 40415]) {
+      const targets = Array.from({ length: LEVEL_COUNT }, (_, i) => roundForUnit(i, seed).target.id);
+      for (let i = 1; i < targets.length; i++) expect(targets[i]).not.toBe(targets[i - 1]);
+      expect(new Set(targets).size).toBe(LEVEL_COUNT);
     }
   });
 });

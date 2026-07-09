@@ -27,8 +27,7 @@ import {
 } from '@/sdk';
 import { ListenFindBoard, type FindItem } from '@/games/_shared/listen-find';
 import { ANIMAL_IMAGES } from './animalImages';
-import { buildRound } from './utils/generate';
-import { LEVEL_COUNT } from './utils/levels';
+import { LEVEL_COUNT, roundForUnit } from './utils/levels';
 import type { Animal, Round } from './types';
 
 function toFindItem(animal: Animal): FindItem {
@@ -99,10 +98,10 @@ registerFlowAdapter({
   gameId: 'animal-safari',
   count: LEVEL_COUNT,
   unitAt: (i, seed) => {
-    // The host walks 1-based levels seeded by `level * 7919`; mirror that here
-    // so guided rounds match the standalone game's mode-by-parity + content.
-    const level = i + 1;
-    const round = buildRound(level, level * 7919);
+    // Unit i === level i+1, so guided rounds match the standalone game's
+    // mode-by-parity + target ladder. The journey seed varies only the choice
+    // layout, so reset() reshuffles instead of replaying identical rounds.
+    const round = roundForUnit(i, seed);
     return {
       key: `animal-safari-${i}`,
       // Key by unit so React remounts (and per-round state + the present-on-

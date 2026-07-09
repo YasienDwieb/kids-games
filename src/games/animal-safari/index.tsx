@@ -53,7 +53,7 @@ import {
 } from '@/games/_shared/listen-find';
 import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
 import { ANIMAL_IMAGES } from './animalImages';
-import { buildRound } from './utils/generate';
+import { buildRound, seedForLevel } from './utils/generate';
 import { LEVEL_COUNT } from './utils/levels';
 import type { Animal, Round, RoundMode } from './types';
 
@@ -88,9 +88,9 @@ function toFindRound(round: Round): AnimalFindLevel['round'] {
 }
 
 // Module-const source → stable identity. Re-generates via the domain's
-// deterministic buildRound (level × 7919), then maps animals → board items.
+// deterministic buildRound, then maps animals → board items.
 const boardSource: LevelSource<AnimalFindLevel> = levelsFromGenerator(
-  (level): AnimalFindLevel => ({ level, round: toFindRound(buildRound(level, level * 7919)) }),
+  (level): AnimalFindLevel => ({ level, round: toFindRound(buildRound(level, seedForLevel(level))) }),
   { count: LEVEL_COUNT },
 );
 
