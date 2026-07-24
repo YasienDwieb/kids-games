@@ -1,0 +1,95 @@
+topics:
+  - slug: concepts
+    title: Concepts
+    description: Core vocabulary and mental models for this codebase
+    parents: []
+
+  - slug: architecture
+    title: Architecture
+    description: System areas — ownership, entrypoints, flow, and invariants
+    parents: []
+
+  - slug: guides
+    title: Guides
+    description: Task-oriented walkthroughs for recurring maintainer work
+    parents: []
+
+  - slug: decisions
+    title: Decisions
+    description: Recorded architectural and operational choices and their consequences
+    parents: []
+
+  - slug: reference
+    title: Reference
+    description: Exact schemas, tables, and lookup material
+    parents: []
+
+  - slug: games
+    title: Games
+    description: The per-game module pattern — folder shape, registration, config schema, and the catalog of registered games
+    parents: []
+
+  - slug: sdk
+    title: SDK
+    description: The shared @/sdk platform core every game imports from, and the single-barrel boundary that isolates games from each other
+    parents: []
+
+  - slug: flow
+    title: Flow
+    description: The guided, scoreless cross-game journey engine, parallel to the ordinary per-game registry and progress system
+    parents: [games, sdk]
+
+  - slug: i18n
+    title: i18n
+    description: The shared i18next instance, per-game translation namespaces, and the key-resolution guard test
+    parents: [sdk]
+
+  - slug: rtl
+    title: RTL
+    description: Right-to-left layout, native RTL state, and the font-selection consequence of switching languages
+    parents: [i18n]
+
+  - slug: assets
+    title: Assets
+    description: The tagged asset manifest and bundled emoji/sound files games draw from by intent, not by file path
+    parents: [sdk]
+
+  - slug: audio
+    title: Audio
+    description: Sound-effect playback and text-to-speech, both gated by settings and resolved through the asset manifest
+    parents: [assets]
+
+  - slug: storage
+    title: Storage
+    description: The single AsyncStorage-backed persistence primitive and the systems built on it
+    parents: [sdk]
+
+  - slug: settings
+    title: Settings
+    description: The one persisted app-wide preferences record and what each field controls
+    parents: [storage]
+
+  - slug: navigation
+    title: Navigation
+    description: App boot order, screen routing, and the shell/back-button interception every game gets
+    parents: [architecture]
+
+  - slug: design-system
+    title: Design System
+    description: The shared color, spacing, typography, and component-primitive tokens every screen and game builds from
+    parents: [architecture]
+
+  - slug: release
+    title: Release
+    description: Building, versioning, and shipping the app to testers and the Google Play Store
+    parents: []
+
+  - slug: testing
+    title: Testing
+    description: What the automated test suite covers, what it does not, and manual device verification
+    parents: []
+
+  - slug: licensing
+    title: Licensing
+    description: The code license, trademark reservation, and third-party asset attribution terms
+    parents: []
