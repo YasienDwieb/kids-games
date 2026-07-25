@@ -34,6 +34,10 @@ export const ar: CoreTranslations = {
       games: 'الألعاب في الرحلة',
       reset: 'إعادة الرحلة',
     },
+    gate: {
+      title: 'اسأل شخصاً كبيراً',
+      wrong: 'ليست صحيحة، حاول مرة أخرى',
+    },
   },
   player: {
     notFound: 'لم نجد هذه اللعبة',

@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
-import { AppBar, Chip, HoldToConfirm } from '../components/common';
+import { AppBar, Chip, HoldToConfirm, ParentGate } from '../components/common';
 import {
   AGE_BANDS,
   useSettings,
@@ -60,6 +60,9 @@ export function SettingsScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
   const [switching, setSwitching] = useState(false);
+  // Everything behind this screen (language, age filter, journey reset) breaks
+  // the child's experience, so a grown-up has to get in first.
+  const [unlocked, setUnlocked] = useState(false);
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
@@ -94,6 +97,15 @@ export function SettingsScreen({ navigation }: Props) {
       setTimeout(() => reloadApp(), 600);
     }
   };
+
+  if (!unlocked) {
+    return (
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+        <AppBar title={t('settings.title')} onBack={() => navigation.goBack()} />
+        <ParentGate onPass={() => setUnlocked(true)} />
+      </SafeAreaView>
+    );
+  }
 
   if (switching) {
     return (

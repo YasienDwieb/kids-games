@@ -33,6 +33,10 @@ export const en = {
       games: 'Games in the journey',
       reset: 'Reset journey',
     },
+    gate: {
+      title: 'Ask a grown-up',
+      wrong: 'Not quite — try again',
+    },
   },
   player: {
     notFound: 'Game not found',
