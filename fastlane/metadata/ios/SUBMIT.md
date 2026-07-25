@@ -8,7 +8,7 @@ present locally (gitignored).
 
 - Support URL & marketing URL: TermsFeed contact page.
 - Privacy policy URL: TermsFeed privacy page.
-- Support email: `ahmedhdeawy@gmail.com`.
+- Support email: `developer@waybeyond.dev`.
 
 No placeholders remain in `store.config.json`.
 
