@@ -1,6 +1,7 @@
 export const en = {
   meta: {
     name: 'Simple Pairs',
+    shortName: 'Pairs',
     description: 'Find matching pairs of cards',
   },
   difficulty: {

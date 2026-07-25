@@ -5,6 +5,7 @@
 export const en = {
   meta: {
     name: 'Shape Detective',
+    shortName: 'Shapes',
     description: 'Spot the pattern and crack the case!',
   },
   loading: 'Getting your case ready…',

@@ -21,6 +21,7 @@ import {
   gamesForBand,
   useTranslation,
   gameName,
+  gameShortName,
   selectedAdapters,
   sequenceLength,
   buildSequence,
@@ -172,7 +173,8 @@ export function HomeScreen({ navigation }: Props) {
                 fill
                 emojiSize={railEmoji}
                 icon={game.icon}
-                name={gameName(game)}
+                name={gameShortName(game)}
+                accessibilityLabel={gameName(game)}
                 accent={accentForGame(game, i)}
                 onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
               />

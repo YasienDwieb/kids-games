@@ -1,6 +1,7 @@
 export const en = {
   meta: {
     name: 'Balloon Archer',
+    shortName: 'Archer',
     description: 'Aim your bow and pop the balloons!',
   },
   hud: {

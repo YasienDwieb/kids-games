@@ -5,6 +5,7 @@ import type { GameTranslations } from './en';
 export const ar: GameTranslations = {
   meta: {
     name: 'المحقق الصغير',
+    shortName: 'أشكال',
     description: 'اكتشف النمط وحل اللغز!',
   },
   loading: 'نجهّز لك اللغز…',

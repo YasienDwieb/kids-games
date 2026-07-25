@@ -3,6 +3,7 @@ import type { GameTranslations } from './en';
 export const ar: GameTranslations = {
   meta: {
     name: 'سباق السيارات',
+    shortName: 'سباق',
     description: 'سباق رحلة مشمسة — انعطف وتفادَ العقبات واجمع العملات!',
   },
   start: {

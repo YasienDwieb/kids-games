@@ -10,6 +10,7 @@
 export const en = {
   meta: {
     name: 'Animal Safari',
+    shortName: 'Safari',
     description: 'Listen and find the animals!',
   },
   loading: 'Getting the animals ready…',
