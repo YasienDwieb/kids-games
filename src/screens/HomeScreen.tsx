@@ -47,7 +47,8 @@ export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const landscape = width > height;
-  const columns = 2; // portrait grid columns
+  // Portrait grid columns: 2 on phones, 3–4 on tablets so it isn't two giant columns.
+  const columns = isTablet(width, height) ? (width > 900 ? 4 : 3) : 2;
   const { settings } = useSettings();
   const { t } = useTranslation();
   // Games shown on Home are filtered by the parent-set age band ("Show games for"
