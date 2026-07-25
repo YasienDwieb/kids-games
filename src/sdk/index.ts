@@ -7,7 +7,7 @@ export { registerGame, getGame, getAllGames, getGamesForAge } from './config/reg
 export { validateGameConfig } from './config/validate';
 
 // Design tokens (re-exported so games have one surface)
-export { COLORS, ACCENTS, type AccentName } from '@/constants/colors';
+export { COLORS, ACCENTS, bestTextOn, contrastRatio, type AccentName } from '@/constants/colors';
 export { SPACING, BORDER_RADIUS, TOUCH_TARGET, FONT_SIZES, SHADOWS } from '@/constants/dimensions';
 export { FONTS } from '@/constants/typography';
 

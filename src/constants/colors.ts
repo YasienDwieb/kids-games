@@ -26,8 +26,10 @@ export const COLORS = {
   surface2: '#FFFAF1',
 
   // --- ink (warm dark brown, never pure black) ---
+  // inkSoft carries secondary labels at 12-13px, so it must clear WCAG AA (4.5:1)
+  // on both surface and canvas: 5.86:1 on #FFFFFF, 5.32:1 on the cream canvas.
   ink: '#3B3026',
-  inkSoft: '#8C8073',
+  inkSoft: '#6E6357',
   inkFaint: '#B7AD9F',
   line: 'rgba(59, 48, 38, 0.08)',
   line2: 'rgba(59, 48, 38, 0.14)',
@@ -65,7 +67,7 @@ export const COLORS = {
 
   text: {
     primary: '#3B3026', // ink
-    secondary: '#8C8073', // inkSoft
+    secondary: '#6E6357', // inkSoft
     light: '#B7AD9F', // inkFaint
     inverse: '#FFFFFF',
   },
@@ -80,3 +82,37 @@ export const COLORS = {
   overlay: 'rgba(59, 48, 38, 0.34)',
   shadow: 'rgba(74, 52, 28, 0.16)',
 } as const;
+
+/* ------------------------------------------------------------------
+   Contrast helpers
+
+   Games pass arbitrary fills to buttons (`color` / `accent`), so the
+   label colour cannot be hardcoded: white on our L~0.74 accents only
+   reaches ~2.2-2.8:1. Pick whichever of ink/white actually wins on the
+   given fill instead, which keeps every CTA at or above WCAG AA.
+   ------------------------------------------------------------------ */
+
+function relativeLuminance(hex: string): number {
+  const h = hex.replace('#', '');
+  const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
+  const chan = [0, 2, 4].map((i) => {
+    const v = parseInt(full.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * chan[0] + 0.7152 * chan[1] + 0.0722 * chan[2];
+}
+
+export function contrastRatio(a: string, b: string): number {
+  const [la, lb] = [relativeLuminance(a), relativeLuminance(b)];
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+// Best-contrast label colour for a given background. Non-hex fills
+// (rgba/named) fall back to ink, which is correct for our light surfaces.
+export function bestTextOn(background: string): string {
+  if (!background?.startsWith('#')) return COLORS.ink;
+  return contrastRatio(COLORS.ink, background) >= contrastRatio(COLORS.surface, background)
+    ? COLORS.ink
+    : COLORS.surface;
+}

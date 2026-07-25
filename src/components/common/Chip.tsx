@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { COLORS, FONTS, SHADOWS, BORDER_RADIUS } from '../../constants';
+import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS } from '../../constants';
 
 type ChipProps = {
   label: string;
@@ -27,7 +27,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
   chipActive: {
-    backgroundColor: COLORS.brand,
+    // Same reasoning as PressableButton: COLORS.brand cannot carry legible text
+    // in either direction, the purple accent reads 4.62:1 with ink.
+    backgroundColor: ACCENTS.purple.base,
     shadowColor: COLORS.brandDeep,
     shadowOpacity: 0.35,
     shadowRadius: 12,
@@ -38,5 +40,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.inkSoft,
   },
-  textActive: { color: COLORS.surface },
+  textActive: { color: COLORS.ink },
 });
