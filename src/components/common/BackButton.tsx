@@ -8,7 +8,10 @@ type BackButtonProps = {
 };
 
 // Back chevron points toward the reading origin — left in LTR, right in RTL.
-const BACK_GLYPH = I18nManager.isRTL ? '›' : '‹';
+// Read at render, never at module scope: `I18nManager.isRTL` is still false when
+// modules are first evaluated and only becomes true later, so a captured
+// constant renders the LTR glyph for the whole Arabic session.
+const backGlyph = () => (I18nManager.isRTL ? '›' : '‹');
 
 // Floating circular back control (top-left), used by bare-mode games and the
 // game player. Sits just below the status bar (safe-area inset) so it lines up
@@ -32,7 +35,7 @@ export function BackButton({ onPress }: BackButtonProps) {
         pressed && styles.pressed,
       ]}
     >
-      <Text style={styles.text}>{BACK_GLYPH}</Text>
+      <Text style={styles.text}>{backGlyph()}</Text>
     </Pressable>
   );
 }

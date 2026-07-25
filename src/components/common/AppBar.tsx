@@ -5,7 +5,9 @@ import { COLORS, FONTS, SPACING } from '../../constants';
 import { IconButton } from './IconButton';
 
 // Back chevron points toward the reading origin — left in LTR, right in RTL.
-const BACK_GLYPH = I18nManager.isRTL ? '›' : '‹';
+// Read at render: `I18nManager.isRTL` is false at module-evaluation time, so a
+// captured constant keeps the LTR glyph for the whole Arabic session.
+const backGlyph = () => (I18nManager.isRTL ? '›' : '‹');
 
 type AppBarProps = {
   title?: string;
@@ -24,7 +26,7 @@ export function AppBar({ title, onBack, right, left }: AppBarProps) {
           left
         ) : onBack ? (
           <IconButton
-            glyph={BACK_GLYPH}
+            glyph={backGlyph()}
             glyphSize={32}
             onPress={onBack}
             accessibilityLabel={t('common.back')}
