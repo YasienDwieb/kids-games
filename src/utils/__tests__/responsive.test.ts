@@ -40,3 +40,34 @@ describe('computeHomeGrid — phone (locked behavior)', () => {
     expect(g.scroll).toBe(true);
   });
 });
+
+describe('computeHomeGrid — tablet (fit-all)', () => {
+  const ipadLandscape: HomeGridInput = {
+    width: 1366, height: 1024, count: 11, insetsTop: 24, insetsBottom: 20,
+  };
+
+  it('fits all games without scrolling on iPad landscape', () => {
+    const g = computeHomeGrid(ipadLandscape);
+    expect(g.scroll).toBe(false);
+    expect(g.rows * g.cols).toBeGreaterThanOrEqual(11);
+  });
+
+  it('scales cards larger than the phone cap', () => {
+    const g = computeHomeGrid(ipadLandscape);
+    expect(g.cardW).toBeGreaterThan(160); // bigger than phone max
+    expect(g.cardW).toBeLessThanOrEqual(260); // but bounded
+    expect(g.emojiSize).toBeGreaterThan(54);
+  });
+
+  it('android tablet takes the same path as iPad', () => {
+    const g = computeHomeGrid({ width: 1280, height: 800, count: 11, insetsTop: 0, insetsBottom: 0 });
+    expect(g.scroll).toBe(false);
+    expect(g.cardW).toBeGreaterThan(160);
+  });
+
+  it('falls back to scroll when games cannot fit even at min size', () => {
+    // Small tablet-class canvas with an absurd count → cannot fit → scroll.
+    const g = computeHomeGrid({ width: 768, height: 1024, count: 200, insetsTop: 0, insetsBottom: 0 });
+    expect(g.scroll).toBe(true);
+  });
+});
