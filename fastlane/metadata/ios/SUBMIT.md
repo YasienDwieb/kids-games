@@ -4,11 +4,13 @@ Prereqs (all done): Apple team J98M86H34Z, bundle `dev.waybeyond.kidszone`
 registered, ASC app 6793942277 created, ASC API key `AuthKey_FJS3Y8R9KM.p8`
 present locally (gitignored).
 
-## Before you publish — REPLACE placeholders
+## URLs (already set)
 
-`store.config.json` has `https://REPLACE-ME-support-url.example.com` in
-`supportUrl` and `marketingUrl` (both locales). Replace with a real support
-page URL (an https page, not a mailto). Support email is `ahmedhdeawy@gmail.com`.
+- Support URL & marketing URL: TermsFeed contact page.
+- Privacy policy URL: TermsFeed privacy page.
+- Support email: `ahmedhdeawy@gmail.com`.
+
+No placeholders remain in `store.config.json`.
 
 ## 1. Build the IPA (interactive first run for signing)
 
