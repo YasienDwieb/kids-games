@@ -38,7 +38,7 @@ function accentForGame(game: GameConfig, index: number): AccentName {
 
 // Layout tokens.
 const JOURNEY_W = 244; // landscape journey rail width
-const GAMES_HEADER_H = 56; // height reserved for the "All games" header above the rail
+const GAMES_HEADER_H = 56; // height reserved for the settings control above the rail
 const GRID_PAD_V = 14;
 const GRID_PAD_H = 12;
 const CELL_GAP = 12;
@@ -58,10 +58,6 @@ export function HomeScreen({ navigation }: Props) {
   // --- Guided journey state (persistent card beside the games) ---
   const adapters = selectedAdapters(settings.flowGameIds);
   const journeyTotal = sequenceLength(adapters);
-  const includedIcons = adapters
-    .map((a) => getGame(a.gameId)?.icon)
-    .filter((icon): icon is string => Boolean(icon));
-
   const railRef = useRef<ScrollView>(null);
   const [savedStep, setSavedStep] = useState(0);
   const flowStore = useMemo(() => createFlowProgressStore(), []);
@@ -98,7 +94,6 @@ export function HomeScreen({ navigation }: Props) {
       nextIcon={nextGame?.icon}
       nextName={nextGame ? gameName(nextGame) : undefined}
       nextAccent={nextGame?.accent}
-      includedIcons={includedIcons}
       onContinue={() => navigation.navigate('FlowPlayer')}
       onStartOver={startOver}
       onSetup={() => navigation.navigate('Settings')}
@@ -115,12 +110,9 @@ export function HomeScreen({ navigation }: Props) {
     />
   );
 
-  const gamesHeader = (
-    <View style={styles.gamesHeader}>
-      <Text style={styles.gamesTitle}>{t('home.allGames')}</Text>
-      {settingsButton}
-    </View>
-  );
+  // No "All games" title: they are self-evidently games, and the heading cost a
+  // full text row that a pre-reader gets nothing from.
+  const gamesHeader = <View style={styles.gamesHeader}>{settingsButton}</View>;
 
   const gamesGrid =
     games.length === 0 ? (
@@ -144,7 +136,10 @@ export function HomeScreen({ navigation }: Props) {
   // header, size cells to it, and pack games column-major so overflow flows into
   // new columns reached by HORIZONTAL scroll (never vertical).
   const railUsableH = height - insets.top - insets.bottom - GRID_PAD_V * 2 - GAMES_HEADER_H;
-  const railRows = Math.max(1, Math.min(3, Math.round(railUsableH / 200)));
+  // Target ~2 rows on a landscape phone. At the old 200 divisor a 393dp-tall
+  // screen resolved to a single row of ~3 tiles, so 8 of 11 games were offscreen
+  // with no affordance saying so. Tiles stay far above the 44dp touch minimum.
+  const railRows = Math.max(1, Math.min(3, Math.round(railUsableH / 140)));
   const railCardH = Math.floor(railUsableH / railRows) - CELL_GAP;
   const railCardW = Math.max(116, Math.min(160, Math.round(railCardH * 0.82)));
   const railEmoji = Math.max(30, Math.min(54, Math.round(railCardH * 0.3)));
@@ -223,13 +218,8 @@ const styles = StyleSheet.create({
     height: GAMES_HEADER_H,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     paddingHorizontal: 16,
-  },
-  gamesTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 24,
-    color: COLORS.ink,
   },
 
   grid: {
