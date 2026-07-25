@@ -11,5 +11,6 @@ registerGame({
   component: SimplePairsGame,
   backgroundColor: '#FBF3E6',
   accent: 'green',
+  order: 60,
   layout: { mode: 'bare' },
 });

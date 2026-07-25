@@ -11,6 +11,7 @@ registerGame({
   component: LetterLand,
   backgroundColor: ACCENTS.blue.tint,
   accent: 'blue',
+  order: 100,
   tags: ['letters', 'literacy', 'phonics', 'tracing', 'educational'],
   layout: { mode: 'shell' },
   version: '1.0.0',

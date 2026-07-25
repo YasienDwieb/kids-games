@@ -16,13 +16,28 @@ export function getGame(id: string): GameConfig | undefined {
   return registry[id];
 }
 
+// Ascending `order`; games without one keep registration order behind those
+// that have it. Stable, so equal weights never shuffle between renders.
+function byOrder(games: GameConfig[]): GameConfig[] {
+  return games
+    .map((game, i) => ({ game, i }))
+    .sort((a, b) => {
+      const wa = a.game.order ?? Number.MAX_SAFE_INTEGER;
+      const wb = b.game.order ?? Number.MAX_SAFE_INTEGER;
+      return wa === wb ? a.i - b.i : wa - wb;
+    })
+    .map(({ game }) => game);
+}
+
 export function getAllGames(): GameConfig[] {
-  return Object.values(registry);
+  return byOrder(Object.values(registry));
 }
 
 export function getGamesForAge(age: number): GameConfig[] {
-  return Object.values(registry).filter(
-    (game) => age >= game.ageRange.min && age <= game.ageRange.max
+  return byOrder(
+    Object.values(registry).filter(
+      (game) => age >= game.ageRange.min && age <= game.ageRange.max
+    )
   );
 }
 

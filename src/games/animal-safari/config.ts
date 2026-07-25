@@ -11,6 +11,7 @@ registerGame({
   component: AnimalSafari,
   backgroundColor: ACCENTS.orange.tint,
   accent: 'orange',
+  order: 10,
   tags: ['animals', 'vocabulary', 'listening', 'educational'],
   layout: { mode: 'shell' },
   version: '1.0.0',

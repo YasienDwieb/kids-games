@@ -11,6 +11,7 @@ registerGame({
   component: NumbersLand,
   backgroundColor: ACCENTS.orange.tint,
   accent: 'orange',
+  order: 110,
   tags: ['numbers', 'counting', 'educational'],
   layout: { mode: 'shell' },
   version: '1.0.0',

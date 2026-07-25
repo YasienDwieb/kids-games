@@ -11,6 +11,7 @@ registerGame({
   component: MatchUpGame,
   backgroundColor: '#F1ECFB', // soft violet (ACCENTS.purple.tint)
   accent: 'purple',
+  order: 70,
   tags: ['matching', 'logic', 'educational'],
   layout: { mode: 'bare' },
   version: '1.0.0',

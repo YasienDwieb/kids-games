@@ -11,6 +11,7 @@ registerGame({
   component: ShapeDetectiveGame,
   backgroundColor: '#F3EDFB', // soft violet (ACCENTS.purple.tint)
   accent: 'purple',
+  order: 80,
   tags: ['shapes', 'logic', 'patterns', 'educational'],
   layout: { mode: 'shell' },
   version: '1.0.0',

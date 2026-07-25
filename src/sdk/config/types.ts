@@ -21,6 +21,13 @@ export type GameConfig = {
   // Optional, backward-compatible enrichment:
   /** Design-system accent for the home tile (falls back to a derived accent). */
   accent?: AccentName;
+  /**
+   * Home-screen sort weight, ascending. Only ~3 tiles are visible at once on a
+   * landscape phone, so the first few decide the app's first impression. Without
+   * this the order is whatever `src/games/index.ts` happens to import first.
+   * Games with no `order` sort last, in registration order.
+   */
+  order?: number;
   tags?: string[];
   layout?: GameLayoutOptions;
   bands?: string[];
