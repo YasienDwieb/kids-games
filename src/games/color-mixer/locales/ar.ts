@@ -3,7 +3,7 @@ import type { GameTranslations } from './en';
 export const ar: GameTranslations = {
   meta: {
     name: 'خلّاط الألوان',
-    shortName: 'ألوان',
+    shortName: 'الألوان',
     description: 'امزج الألوان واكتشف ألواناً جديدة!',
   },
 

@@ -5,7 +5,7 @@ import type { GameTranslations } from './en';
 export const ar: GameTranslations = {
   meta: {
     name: 'رحلة الحيوانات',
-    shortName: 'حيوانات',
+    shortName: 'الحيوانات',
     description: 'اسمع وابحث عن الحيوانات!',
   },
   loading: 'نُجهّز الحيوانات…',

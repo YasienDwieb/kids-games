@@ -10,7 +10,7 @@ import type { GameTranslations } from './en';
 export const ar: GameTranslations = {
   meta: {
     name: 'الذاكرة الممتعة',
-    shortName: 'ذاكرة',
+    shortName: 'الذاكرة',
     description: 'اقلب البطاقات وابحث عن المتطابقة',
   },
   difficulty: {
