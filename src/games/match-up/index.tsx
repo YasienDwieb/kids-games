@@ -11,6 +11,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { I18nManager } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ACCENTS,
@@ -89,7 +90,19 @@ export default function MatchUpGame(): React.JSX.Element {
 
   return (
     <View style={[styles.root, pad]}>
-      <View style={styles.hud} pointerEvents="none">
+      {/* Absolute children position from the parent's padding EDGE, so the
+          root's safe-area padding does not push this down — the inset has to be
+          applied here or the pill renders half under the status bar. */}
+      <View
+        style={[
+          styles.hud,
+          {
+            top: insets.top + SPACING.xs,
+            end: (I18nManager.isRTL ? insets.left : insets.right) + SPACING.md,
+          },
+        ]}
+        pointerEvents="none"
+      >
         <HudPill>
           <Star size={18} filled />
           <Text style={hudTextStyle}>{t('match-up:score', { n: score })}</Text>
@@ -140,8 +153,6 @@ const styles = StyleSheet.create({
   },
   hud: {
     position: 'absolute',
-    top: SPACING.sm,
-    end: SPACING.md,
     zIndex: 5,
   },
   overlay: {

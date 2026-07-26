@@ -6,6 +6,7 @@
 export const en = {
   meta: {
     name: 'Numbers Land',
+    shortName: 'Numbers',
     description: 'Listen and find your numbers!',
   },
   loading: 'Getting your numbers ready…',

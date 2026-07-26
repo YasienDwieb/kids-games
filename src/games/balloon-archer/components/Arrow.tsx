@@ -8,7 +8,9 @@ type Props = { x: number; y: number; angle: number };
 // but NOT the border-triangle head, leaving it pointing backward. Mirror the
 // whole arrow with scaleX:-1 (outermost transform) so head + flight align. World
 // coordinates/physics are unchanged — this only flips the rendered glyph facing.
-const ARROW_FLIP = I18nManager.isRTL ? -1 : 1;
+// Read at render, not module scope: `I18nManager.isRTL` is false when modules
+// are first evaluated, which would leave the sprite facing LTR in Arabic.
+const arrowFlip = () => (I18nManager.isRTL ? -1 : 1);
 
 // (x, y) is the arrow tip; the shaft is drawn behind it along the flight angle.
 export function Arrow({ x, y, angle }: Props) {
@@ -24,7 +26,7 @@ export function Arrow({ x, y, angle }: Props) {
           left: cx - len / 2,
           top: cy - 4,
           width: len,
-          transform: [{ scaleX: ARROW_FLIP }, { rotate: `${angle}rad` }],
+          transform: [{ scaleX: arrowFlip() }, { rotate: `${angle}rad` }],
         },
       ]}
     >

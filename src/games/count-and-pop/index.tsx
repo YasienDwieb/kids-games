@@ -184,8 +184,9 @@ export default function CountAndPopGame(): React.JSX.Element {
 
   // Keep the GameShell HUD score display in sync.
   useEffect(() => {
-    shell.setScore(score);
-  }, [score, shell]);
+    // Only while playing — see shape-detective.
+    shell.setScore(status === 'playing' ? score : null);
+  }, [score, shell, status]);
 
   // When the level advances, dismiss the win overlay and reset selection/solved.
   useEffect(() => {

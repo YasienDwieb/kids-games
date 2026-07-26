@@ -11,6 +11,7 @@ registerGame({
   component: TurboRoad,
   backgroundColor: '#FCE5E1',
   accent: 'coral',
+  order: 40,
   tags: ['racing', 'cars', 'action', 'reflexes'],
   version: '1.0.0',
   author: 'Kids Games',

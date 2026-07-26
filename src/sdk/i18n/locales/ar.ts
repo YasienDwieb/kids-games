@@ -5,6 +5,7 @@ import type { CoreTranslations } from './en';
 export const ar: CoreTranslations = {
   common: {
     back: 'رجوع',
+    score: 'النقاط: {{n}}',
     pause: 'إيقاف مؤقت',
     settings: 'الإعدادات',
     done: 'تمّ',
@@ -20,10 +21,15 @@ export const ar: CoreTranslations = {
     all: 'الكل',
     allGames: 'كل الألعاب',
     empty: 'ألعاب جديدة في الطريق! 🎈',
+    muteOn: 'إيقاف الأصوات',
+    muteOff: 'تشغيل الأصوات',
+    changeLanguage: 'تغيير اللغة',
+    switchTitle: 'تغيير اللغة؟',
+    switchBody: 'سيُعاد تشغيل التطبيق.',
   },
   settings: {
     title: 'الإعدادات',
-    sound: 'الأصوات',
+    sound: 'المؤثرات الصوتية',
     haptics: 'الاهتزاز',
     showGamesFor: 'ألعاب مناسبة لعمر',
     all: 'الكل',
@@ -33,6 +39,14 @@ export const ar: CoreTranslations = {
     guided: {
       games: 'الألعاب في الرحلة',
       reset: 'إعادة الرحلة',
+    },
+    tabs: {
+      general: 'عام',
+      journey: 'الرحلة',
+    },
+    gate: {
+      title: 'اسأل شخصاً كبيراً',
+      wrong: 'ليست صحيحة، حاول مرة أخرى',
     },
   },
   player: {

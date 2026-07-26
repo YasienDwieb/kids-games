@@ -12,6 +12,17 @@ export function gameName(game: GameConfig): string {
   return i18n.exists(key) ? i18n.t(key) : game.name;
 }
 
+/**
+ * Short label for the home tile, which is ~116dp wide and holds one line. Games
+ * whose full name fits (Match Up, Mouse Maze) simply omit `meta.shortName` and
+ * fall back to it, so only the long ones carry a second string. The full name is
+ * still what `accessibilityLabel` and the in-game header use.
+ */
+export function gameShortName(game: GameConfig): string {
+  const key = `${game.id}:meta.shortName`;
+  return i18n.exists(key) ? i18n.t(key) : gameName(game);
+}
+
 export function gameDescription(game: GameConfig): string {
   const key = `${game.id}:meta.description`;
   return i18n.exists(key) ? i18n.t(key) : game.description;

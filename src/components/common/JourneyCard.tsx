@@ -10,7 +10,6 @@ type JourneyCardProps = {
   nextIcon?: string;
   nextName?: string;
   nextAccent?: AccentName;
-  includedIcons: string[];
   onContinue: () => void;
   onStartOver: () => void;
   onSetup: () => void;
@@ -28,7 +27,6 @@ export function JourneyCard({
   nextIcon,
   nextName,
   nextAccent = 'purple',
-  includedIcons,
   onContinue,
   onStartOver,
   onSetup,
@@ -37,8 +35,6 @@ export function JourneyCard({
 }: JourneyCardProps) {
   const { t } = useTranslation();
   const accent = ACCENTS[nextAccent];
-
-  const kicker = <Text style={styles.kicker}>{t('flow.title')}</Text>;
 
   // --- Empty: prompt to set up a journey in Settings ---
   if (total === 0) {
@@ -55,7 +51,6 @@ export function JourneyCard({
           style,
         ]}
       >
-        {kicker}
         <View style={styles.emptyBody}>
           <Text style={styles.emptyPlus}>＋</Text>
           <Text style={styles.emptyText}>{t('flow.empty')}</Text>
@@ -71,7 +66,6 @@ export function JourneyCard({
   if (done) {
     return (
       <View style={[styles.card, compact && styles.cardCompact, SHADOWS.md, style]}>
-        {kicker}
         <View style={styles.doneBody}>
           <Text style={styles.doneEmoji}>🌟</Text>
           <Text style={styles.doneText}>{t('flow.allCaughtUp')}</Text>
@@ -87,14 +81,13 @@ export function JourneyCard({
   }
 
   // --- Active: next-up game + progress + continue ---
+  // Bar only, no "14/80" fraction: a step count is a parent metric that means
+  // nothing to a pre-reader. The filled bar carries the same signal wordlessly.
   const progress = (
     <View style={styles.progressWrap}>
       <View style={styles.track}>
         <View style={[styles.fill, { width: `${pct * 100}%` }]} />
       </View>
-      <Text style={styles.count}>
-        {savedStep}/{total}
-      </Text>
     </View>
   );
 
@@ -115,7 +108,6 @@ export function JourneyCard({
             <EmojiFrame emoji={nextIcon} tint={accent.tint} size={56} fontSize={30} />
           ) : null}
           <View style={styles.compactMid}>
-            {kicker}
             {nextName ? (
               <Text style={styles.upNextName} numberOfLines={1}>
                 {nextName}
@@ -131,21 +123,21 @@ export function JourneyCard({
 
   return (
     <View style={[styles.card, SHADOWS.md, style]}>
-      {kicker}
       {/* Flexible middle: centers when it fits and scrolls when it doesn't, so the
-          kicker stays pinned top and the CTA never gets pushed off — and nothing is
-          clipped on short screens or in Arabic, whose text runs taller than Latin. */}
+          CTA never gets pushed off — and nothing is clipped on short screens or in
+          Arabic, whose text runs taller than Latin. */}
       <ScrollView
         style={styles.middle}
         contentContainerStyle={styles.middleContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Emoji beside the text (not stacked) — compact and height-deterministic
-            so the card fits without scrolling in both English and the taller-lined
-            Arabic. */}
+        {/* Emoji beside the text (not stacked) so the card stays height-deterministic
+            in both English and the taller-lined Arabic. Sized up from the compact
+            variant: with the kicker, step count and game strip gone, the next-up
+            game is the card's only subject. */}
         <View style={styles.hero}>
           {nextIcon ? (
-            <EmojiFrame emoji={nextIcon} tint={accent.tint} size={50} fontSize={28} />
+            <EmojiFrame emoji={nextIcon} tint={accent.tint} size={72} fontSize={40} />
           ) : null}
           <View style={styles.heroText}>
             <Text style={styles.upNextLabel}>{t('flow.upNext')}</Text>
@@ -157,18 +149,6 @@ export function JourneyCard({
           </View>
         </View>
         {progress}
-        {includedIcons.length > 0 ? (
-          <View style={styles.included}>
-            <Text style={styles.includedLabel}>{t('flow.includedGames')}</Text>
-            <View style={styles.includedIcons}>
-              {includedIcons.map((icon, i) => (
-                <Text key={`${icon}-${i}`} style={styles.includedIcon}>
-                  {icon}
-                </Text>
-              ))}
-            </View>
-          </View>
-        ) : null}
       </ScrollView>
       {cta}
     </View>
@@ -187,14 +167,6 @@ const styles = StyleSheet.create({
   cardCompact: { flex: 0, padding: 14, gap: 10 },
   pressed: { transform: [{ scale: 0.98 }] },
 
-  kicker: {
-    fontFamily: FONTS.bodyExtra,
-    fontSize: 12,
-    letterSpacing: 1.2,
-    color: COLORS.brandDeep,
-    textTransform: 'uppercase',
-  },
-
   // Flexible, height-bounded middle (active, full): keeps the CTA pinned on short
   // landscape screens. Scrolls (never clips) if content is taller than the space —
   // e.g. Arabic, whose line metrics run taller than Latin.
@@ -211,7 +183,7 @@ const styles = StyleSheet.create({
   },
   upNextName: {
     fontFamily: FONTS.display,
-    fontSize: 19,
+    fontSize: 22,
     color: COLORS.ink,
   },
 
@@ -225,13 +197,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   fill: { height: '100%', borderRadius: 6, backgroundColor: COLORS.brand },
-  count: { fontFamily: FONTS.bodySemi, fontSize: 12, color: COLORS.inkSoft },
-
-  // included games
-  included: { gap: 6 },
-  includedLabel: { fontFamily: FONTS.body, fontSize: 12, color: COLORS.inkSoft },
-  includedIcons: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  includedIcon: { fontSize: 22 },
 
   // CTA spans the card width; the flexible middle above keeps it pinned low.
   cta: { alignSelf: 'stretch' },

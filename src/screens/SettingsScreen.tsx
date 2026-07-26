@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Switch,
@@ -11,20 +10,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
-import { AppBar, Chip, HoldToConfirm } from '../components/common';
+import { AppBar, Chip, HoldToConfirm, ParentGate } from '../components/common';
 import {
   AGE_BANDS,
   useSettings,
   useTranslation,
-  useLanguage,
-  LANGUAGES,
   eligibleGameIds,
   getGame,
   gameName,
   createFlowProgressStore,
-  type LanguageCode,
 } from '@/sdk';
-import { reloadApp } from '@/sdk/i18n/reload';
 import { COLORS, FONTS, SPACING } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
@@ -58,8 +53,13 @@ function ToggleRow({
 export function SettingsScreen({ navigation }: Props) {
   const { settings, update } = useSettings();
   const { t } = useTranslation();
-  const { language, changeLanguage } = useLanguage();
-  const [switching, setSwitching] = useState(false);
+  // Everything behind this screen (language, age filter, journey reset) breaks
+  // the child's experience, so a grown-up has to get in first.
+  const [unlocked, setUnlocked] = useState(false);
+  // Tabs, not one scrolling page: the journey-games list grows with the
+  // catalogue, so a single screen overflows again every few games. Tabs stay
+  // bounded no matter how many games ship.
+  const [tab, setTab] = useState<'general' | 'journey'>('general');
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
@@ -85,22 +85,11 @@ export function SettingsScreen({ navigation }: Props) {
     flowStore.set({ step: 0, seed: 0, updatedAt: Date.now() });
   };
 
-  const onPickLanguage = async (code: LanguageCode) => {
-    if (code === language) return;
-    const { needsReload } = await changeLanguage(code);
-    if (needsReload) {
-      // Show the "Switching…" notice, then auto-reload to flip RTL direction.
-      setSwitching(true);
-      setTimeout(() => reloadApp(), 600);
-    }
-  };
-
-  if (switching) {
+  if (!unlocked) {
     return (
-      <SafeAreaView style={[styles.safe, styles.switchScreen]} edges={['top', 'bottom']}>
-        <Text style={styles.switchEmoji}>🌍</Text>
-        <ActivityIndicator size="large" color={COLORS.brand} />
-        <Text style={styles.switchText}>{t('settings.switching')}</Text>
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+        <AppBar title={t('settings.title')} onBack={() => navigation.goBack()} />
+        <ParentGate onPass={() => setUnlocked(true)} />
       </SafeAreaView>
     );
   }
@@ -108,99 +97,101 @@ export function SettingsScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <AppBar title={t('settings.title')} onBack={() => navigation.goBack()} />
+
+      <View style={styles.tabs}>
+        <Chip
+          label={t('settings.tabs.general')}
+          active={tab === 'general'}
+          onPress={() => setTab('general')}
+        />
+        <Chip
+          label={t('settings.tabs.journey')}
+          active={tab === 'journey'}
+          onPress={() => setTab('journey')}
+        />
+      </View>
+
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.columns, landscape && styles.columnsLandscape]}>
-          {/* Left column: sound/haptics toggles + guided journey game selection */}
-          <View style={[styles.column, landscape && styles.columnLandscape]}>
-            <View style={styles.card}>
-              <ToggleRow
-                icon="🔊"
-                label={t('settings.sound')}
-                value={settings.soundEnabled}
-                onChange={(v) => update({ soundEnabled: v })}
-              />
-              <View style={styles.divider} />
-              <ToggleRow
-                icon="📳"
-                label={t('settings.haptics')}
-                value={settings.hapticsEnabled}
-                onChange={(v) => update({ hapticsEnabled: v })}
-              />
+        {tab === 'general' ? (
+          <View style={[styles.columns, landscape && styles.columnsLandscape]}>
+            <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <View style={styles.card}>
+                <ToggleRow
+                  icon="📳"
+                  label={t('settings.haptics')}
+                  value={settings.hapticsEnabled}
+                  onChange={(v) => update({ hapticsEnabled: v })}
+                />
+              </View>
             </View>
 
-            <Text style={styles.section}>{t('settings.guided.games')}</Text>
-            <View style={styles.bands}>
-              {flowGames.map((id) => (
+            <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <Text style={styles.section}>{t('settings.showGamesFor')}</Text>
+              <View style={styles.bands}>
                 <Chip
-                  key={id}
-                  label={labelForGame(id)}
-                  active={isGameOn(id)}
-                  onPress={() => toggleGame(id)}
+                  label={t('settings.all')}
+                  active={settings.ageBand === null}
+                  onPress={() => update({ ageBand: null })}
                 />
-              ))}
-            </View>
-
-            <Text style={styles.section}>{t('settings.guided.reset')}</Text>
-            <HoldToConfirm
-              label={t('flow.holdToReset')}
-              accent="coral"
-              onConfirm={resetJourney}
-            />
-          </View>
-
-          {/* Right column: language + age band */}
-          <View style={[styles.column, landscape && styles.columnLandscape]}>
-            <Text style={styles.section}>{t('settings.language')}</Text>
-            <View style={styles.bands}>
-              {LANGUAGES.map((lang) => (
-                <Chip
-                  key={lang.code}
-                  label={lang.label}
-                  active={language === lang.code}
-                  onPress={() => onPickLanguage(lang.code)}
-                />
-              ))}
-            </View>
-
-            <Text style={styles.section}>{t('settings.showGamesFor')}</Text>
-            <View style={styles.bands}>
-              <Chip
-                label={t('settings.all')}
-                active={settings.ageBand === null}
-                onPress={() => update({ ageBand: null })}
-              />
-              {AGE_BANDS.map((band) => (
-                <Chip
-                  key={band.id}
-                  label={t(`ageBands.${band.id}`)}
-                  active={settings.ageBand === band.id}
-                  onPress={() => update({ ageBand: band.id })}
-                />
-              ))}
+                {AGE_BANDS.map((band) => (
+                  <Chip
+                    key={band.id}
+                    label={t(`ageBands.${band.id}`)}
+                    active={settings.ageBand === band.id}
+                    onPress={() => update({ ageBand: band.id })}
+                  />
+                ))}
+              </View>
             </View>
           </View>
-        </View>
+        ) : (
+          <View style={[styles.columns, landscape && styles.columnsLandscape]}>
+            <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <Text style={styles.section}>{t('settings.guided.games')}</Text>
+              <View style={styles.bands}>
+                {flowGames.map((id) => (
+                  <Chip
+                    key={id}
+                    label={labelForGame(id)}
+                    active={isGameOn(id)}
+                    onPress={() => toggleGame(id)}
+                  />
+                ))}
+              </View>
+            </View>
 
-        <Text style={styles.version}>{t('settings.version')}</Text>
+            <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <Text style={styles.section}>{t('settings.guided.reset')}</Text>
+              <HoldToConfirm
+                label={t('flow.holdToReset')}
+                accent="coral"
+                onConfirm={resetJourney}
+              />
+            </View>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Pinned, not in the scroll body: it used to sit below the fold where
+          nobody could read it out for a support conversation. */}
+      <Text style={styles.version}>{t('settings.version')}</Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.canvas },
-  switchScreen: { alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
-  switchEmoji: { fontSize: 56 },
-  switchText: {
-    fontFamily: FONTS.display,
-    fontSize: 18,
-    color: COLORS.ink,
+  tabs: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
-  content: { padding: SPACING.lg, gap: SPACING.lg },
+  content: { padding: SPACING.md, gap: SPACING.md },
   // Portrait: single column; landscape: row of two equal columns
-  columns: { flexDirection: 'column', gap: SPACING.lg },
+  columns: { flexDirection: 'column', gap: SPACING.md },
   columnsLandscape: { flexDirection: 'row', alignItems: 'flex-start', gap: SPACING.xl },
-  column: { gap: SPACING.lg },
+  column: { gap: SPACING.md },
   columnLandscape: { flex: 1 },
   card: {
     backgroundColor: COLORS.surface,
@@ -211,7 +202,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    paddingVertical: 14,
+    paddingVertical: 10,
   },
   rowIcon: { fontSize: 24 },
   rowLabel: { flex: 1, fontFamily: FONTS.body, fontSize: 16, color: COLORS.ink },
@@ -228,6 +219,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.inkFaint,
     textAlign: 'center',
-    marginTop: SPACING.md,
+    paddingVertical: SPACING.sm,
   },
 });

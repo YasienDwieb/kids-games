@@ -4,6 +4,7 @@ import type { GameTranslations } from './en';
 export const ar: GameTranslations = {
   meta: {
     name: 'رامي البالونات',
+    shortName: 'الرماية',
     description: 'صوّب قوسك وفقّع البالونات!',
   },
   hud: {

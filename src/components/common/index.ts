@@ -11,4 +11,5 @@ export { EmojiFrame } from './EmojiFrame';
 export { EmojiImage } from './EmojiImage';
 export { Star } from './Star';
 export { HoldToConfirm } from './HoldToConfirm';
+export { ParentGate, makeChallenge, type Challenge } from './ParentGate';
 export { JourneyCard } from './JourneyCard';

@@ -15,6 +15,8 @@ type GameCardProps = {
   // frame flexes to absorb leftover height so cards stay a uniform size.
   fill?: boolean;
   emojiSize?: number;
+  /** Full game name for screen readers when `name` is an abbreviated tile label. */
+  accessibilityLabel?: string;
 };
 
 // Game tile for the home grid. Mirrors GameTile in design/home.jsx.
@@ -28,11 +30,14 @@ export function GameCard({
   style,
   fill = false,
   emojiSize,
+  accessibilityLabel,
 }: GameCardProps) {
   const a = ACCENTS[accent];
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       style={({ pressed }) => [
         styles.card,
         fill && styles.cardFill,
@@ -55,7 +60,13 @@ export function GameCard({
       />
 
       <View style={styles.meta}>
-        <Text style={styles.name} numberOfLines={2}>
+        {/* One line in the landscape rail: two wrapped lines ate 33% of the tile
+            height, and the emoji frame (flex: 1) reclaims every point the label
+            gives back. The portrait grid keeps two lines, where there is room. */}
+        <Text
+          style={[styles.name, fill && styles.nameFill]}
+          numberOfLines={fill ? 1 : 2}
+        >
           {name}
         </Text>
         {progress > 0 ? (
@@ -117,6 +128,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: COLORS.ink,
     lineHeight: 21,
+  },
+  // Rail tiles are ~116dp wide, so the label has to come down a step to hold a
+  // full name on one line. Still well above the 12dp caption floor.
+  nameFill: {
+    fontSize: 14,
+    lineHeight: 17,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   progress: { flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 'auto' },

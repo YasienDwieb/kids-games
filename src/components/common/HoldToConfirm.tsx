@@ -47,7 +47,13 @@ export function HoldToConfirm({
   const width = fill.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
 
   return (
-    <Pressable onPressIn={start} onPressOut={cancel} style={[styles.btn, style]}>
+    <Pressable
+      onPressIn={start}
+      onPressOut={cancel}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={[styles.btn, style]}
+    >
       <Animated.View
         pointerEvents="none"
         style={[styles.fillBar, { width, backgroundColor: family.tint }]}

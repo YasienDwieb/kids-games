@@ -145,8 +145,10 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
 
   // Keep the shell score display in sync
   useEffect(() => {
-    shell.setScore(score);
-  }, [score, shell]);
+    // Only while playing: on the resume screen the number is stale context
+    // the child has no use for.
+    shell.setScore(status === 'playing' ? score : null);
+  }, [score, shell, status]);
 
   // Hide any win overlay when we advance to a new level; reset solved flag.
   useEffect(() => {

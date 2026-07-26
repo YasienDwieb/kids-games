@@ -11,7 +11,8 @@ const BOW_AIM_ROTATION = '45deg';
 // toward the balloons (visual-left) instead of off the screen edge. The
 // underlying physics/coordinates are unchanged — this is purely the glyph's
 // facing direction.
-const BOW_FLIP = I18nManager.isRTL ? -1 : 1;
+// Read at render, not module scope (see Arrow.tsx).
+const bowFlip = () => (I18nManager.isRTL ? -1 : 1);
 
 // The bow sits at the current lane height and pops slightly when drawn.
 export function Archer({ x, y, drawing }: Props) {
@@ -24,7 +25,7 @@ export function Archer({ x, y, drawing }: Props) {
         { left: x - size / 2, top: y - size / 2, width: size, height: size },
         {
           transform: [
-            { scaleX: BOW_FLIP },
+            { scaleX: bowFlip() },
             { rotate: BOW_AIM_ROTATION },
             { scale: drawing ? 1.12 : 1 },
           ],

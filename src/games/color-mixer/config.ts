@@ -11,5 +11,6 @@ registerGame({
   component: ColorMixerGame,
   backgroundColor: '#FBF3E6',
   accent: 'blue',
+  order: 30,
   layout: { mode: 'bare' },
 });

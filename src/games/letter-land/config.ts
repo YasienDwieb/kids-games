@@ -1,5 +1,5 @@
 import './i18n'; // side-effect: registers this game's en/ar translation bundles
-import { registerGame, ACCENTS } from '@/sdk';
+import { registerGame, ACCENTS, COLORS } from '@/sdk';
 import LetterLand from './index';
 
 registerGame({
@@ -9,8 +9,9 @@ registerGame({
   icon: '🔤',
   ageRange: { min: 3, max: 7 },
   component: LetterLand,
-  backgroundColor: ACCENTS.blue.tint,
+  backgroundColor: COLORS.canvas,
   accent: 'blue',
+  order: 100,
   tags: ['letters', 'literacy', 'phonics', 'tracing', 'educational'],
   layout: { mode: 'shell' },
   version: '1.0.0',

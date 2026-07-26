@@ -7,7 +7,15 @@ import {
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
-import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS, type AccentName } from '../../constants';
+import {
+  ACCENTS,
+  COLORS,
+  FONTS,
+  SHADOWS,
+  BORDER_RADIUS,
+  bestTextOn,
+  type AccentName,
+} from '../../constants';
 
 const EDGE = 5; // depth of the solid bottom edge that compresses on press
 
@@ -57,12 +65,17 @@ export function PressableButton({
   const translate = useRef(new Animated.Value(0)).current;
 
   const isGhost = variant === 'ghost';
+  // Default fill is the purple accent, not COLORS.brand: brand (#8B7CF0) sits in
+  // the contrast dead zone where neither ink (3.81:1) nor white (3.37:1) clears
+  // AA. The purple accent is the same violet family and reads 4.62:1 with ink.
   const base = isGhost
     ? COLORS.surface
-    : color ?? (accent ? ACCENTS[accent].base : COLORS.brand);
+    : color ?? ACCENTS[accent ?? 'purple'].base;
   const deep = isGhost
     ? COLORS.line2
-    : colorDeep ?? (color ? darken(color) : accent ? ACCENTS[accent].deep : COLORS.brandDeep);
+    : colorDeep ?? (color ? darken(color) : ACCENTS[accent ?? 'purple'].deep);
+  // Label colour follows the fill so game-supplied colors stay legible.
+  const labelColor = isGhost ? COLORS.ink : bestTextOn(base);
 
   const press = (to: number) =>
     Animated.spring(translate, {
@@ -78,6 +91,8 @@ export function PressableButton({
       onPressIn={() => !disabled && press(EDGE)}
       onPressOut={() => press(0)}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
       style={[
         styles.socket,
         SHADOWS.sm,
@@ -93,7 +108,7 @@ export function PressableButton({
         ]}
       >
         {children ?? (
-          <Text style={[styles.label, isGhost && styles.labelGhost, textStyle]}>{label}</Text>
+          <Text style={[styles.label, { color: labelColor }, textStyle]}>{label}</Text>
         )}
       </Animated.View>
     </Pressable>
@@ -117,8 +132,6 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: FONTS.display,
     fontSize: 19,
-    color: COLORS.surface,
     textAlign: 'center',
   },
-  labelGhost: { color: COLORS.ink },
 });

@@ -6,6 +6,7 @@ import type { GameTranslations } from './en';
 export const ar: GameTranslations = {
   meta: {
     name: 'أرض الأرقام',
+    shortName: 'الأرقام',
     description: 'اسمع الرقم واعثر عليه!',
   },
   loading: 'نحضّر أرقامك…',

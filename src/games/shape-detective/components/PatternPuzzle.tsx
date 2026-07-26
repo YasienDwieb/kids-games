@@ -170,13 +170,21 @@ export function PatternPuzzle({
               <PressableButton
                 onPress={() => onPick(idx)}
                 disabled={disabled || selectedIndex !== null}
+                // Same tile colour as the sequence row above. Children in this
+                // band match on total appearance, not abstracted form, so a
+                // shape shown on a different background than the one it has to
+                // match reads as a different thing. `color` (not the `style`
+                // background) because PressableButton paints its own face.
+                color={COLORS.canvas2}
                 style={{
                   ...styles.optionButton,
                   borderColor,
                   borderWidth,
                 }}
               >
-                <ShapeView shape={shape} />
+                <View style={styles.optionSlot}>
+                  <ShapeView shape={shape} />
+                </View>
               </PressableButton>
             </View>
           );
@@ -271,10 +279,18 @@ const styles = StyleSheet.create({
   optionButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.sm,
+    // No padding here: this style lands on PressableButton's outer socket, and
+    // padding makes the darker edge shade ring the face on all four sides
+    // instead of showing only as the intended bottom lip.
     borderRadius: BORDER_RADIUS.card,
-    backgroundColor: COLORS.surface,
-    minWidth: SHAPE_SIZE_PX.large + SPACING.md * 2,
-    minHeight: SHAPE_SIZE_PX.large + SPACING.md * 2,
+  },
+  // Fixed slot so every tile is the same size whatever the shape's own size is.
+  // It lives inside the button face: sizing the socket instead let the face
+  // shrink to a small shape and leak the edge shade around it as a nested box.
+  optionSlot: {
+    width: SHAPE_SIZE_PX.large,
+    height: SHAPE_SIZE_PX.large,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

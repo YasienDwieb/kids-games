@@ -7,7 +7,6 @@ import {
   GameShell,
   ScreenBackContext,
   useTranslation,
-  gameName,
   type BackInterceptor,
 } from '@/sdk';
 import { BackButton } from '../components/common';
@@ -62,7 +61,6 @@ export function GamePlayerScreen({ route, navigation }: Props) {
         </View>
       ) : (
         <GameShell
-          title={layout.title ?? gameName(game)}
           background={game.backgroundColor}
           showBack={layout.showBack ?? true}
           onBack={handleBack}

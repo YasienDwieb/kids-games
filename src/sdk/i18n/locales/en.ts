@@ -4,6 +4,7 @@
 export const en = {
   common: {
     back: 'Back',
+    score: 'Score: {{n}}',
     pause: 'Pause',
     settings: 'Settings',
     done: 'Done',
@@ -19,6 +20,11 @@ export const en = {
     all: 'All',
     allGames: 'All games',
     empty: 'More games coming soon! 🎈',
+    muteOn: 'Turn sounds off',
+    muteOff: 'Turn sounds on',
+    changeLanguage: 'Change language',
+    switchTitle: 'Change language?',
+    switchBody: 'The app will restart.',
   },
   settings: {
     title: 'Settings',
@@ -32,6 +38,14 @@ export const en = {
     guided: {
       games: 'Games in the journey',
       reset: 'Reset journey',
+    },
+    tabs: {
+      general: 'General',
+      journey: 'Journey',
+    },
+    gate: {
+      title: 'Ask a grown-up',
+      wrong: 'Not quite — try again',
     },
   },
   player: {

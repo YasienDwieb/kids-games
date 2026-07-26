@@ -62,8 +62,9 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
 
   // Keep the shell HUD score in sync.
   useEffect(() => {
-    shell.setScore(score);
-  }, [score, shell]);
+    // Only while playing — see shape-detective.
+    shell.setScore(status === 'playing' ? score : null);
+  }, [score, shell, status]);
 
   // Speak + reset whenever a round becomes active: on every level change AND on
   // the first entry into 'playing' (first open, or Continue from a resume —

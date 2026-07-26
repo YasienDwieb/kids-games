@@ -1,6 +1,7 @@
 export const en = {
   meta: {
     name: 'Turbo Road',
+    shortName: 'Racing',
     description: 'A sunny road-trip race — steer, dodge and collect!',
   },
   start: {

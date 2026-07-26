@@ -250,7 +250,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     gap: SPACING.lg,
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    // Extra top room: the shell floats the back button and score pill over the
+    // playfield rather than reserving a header row, and the hero picture is
+    // tappable — without this its corner sits under the back button and a child
+    // aiming for it leaves the game instead.
+    paddingTop: SPACING.xxl + SPACING.md,
+    paddingBottom: SPACING.md,
     backgroundColor: COLORS.canvas,
   },
 

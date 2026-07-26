@@ -1,6 +1,7 @@
 export const en = {
   meta: {
     name: 'Color Mixer',
+    shortName: 'Colors',
     description: 'Mix colors and discover new ones!',
   },
 
