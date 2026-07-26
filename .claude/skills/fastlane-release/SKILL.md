@@ -1,6 +1,6 @@
 ---
 name: fastlane-release
-description: Use when preparing a new Google Play release for this Kids Games repo — updating Fastlane release notes (changelogs), the store descriptions/short description/title, or screenshots, or running the fastlane supply lanes. Trigger whenever the user mentions a "new release", "release notes", "changelog", "what's new", "store listing", "Play Store metadata", "fastlane", "supply", or updating app descriptions/screenshots — even if they don't name fastlane explicitly. Covers the bilingual (en-US + ar) metadata layout, the per-field character limits, deriving "what's new" from the last release tag, using the real in-app game names, screenshot rules, and the Fastfile lanes.
+description: Use when preparing a new store release for this Kids Games repo on EITHER Google Play OR the Apple App Store — updating release notes/changelogs, store descriptions/subtitle/title/keywords, or screenshots, and running the release lanes (fastlane supply for Play, EAS build/submit/metadata for iOS). Trigger whenever the user mentions a "new release", "release notes", "changelog", "what's new", "store listing", "Play Store metadata", "App Store", "App Store Connect", "TestFlight", "eas submit", "eas metadata", "fastlane", "supply", "submit to the store/app store", or updating app descriptions/screenshots — even if they don't name the tool. Covers the bilingual metadata layout (Play uses `ar`, App Store uses `ar-SA`), per-field character limits, deriving "what's new" from the last release tag, real in-app game names, per-store screenshot rules, the Fastfile supply lanes, AND the full iOS App Store submission flow (§8: EAS credentials, store.config.json, eas metadata:push, ASC manual fields, simulator emoji gotcha).
 ---
 
 # fastlane-release
@@ -183,3 +183,121 @@ Exit code is non-zero on any hard failure, so it's safe to gate a commit on it.
   let the user decide the new version for the build.
 - **Both locales, every time.** A change in `en-US` with no matching `ar` edit is the
   most common defect here.
+
+---
+
+# 8. iOS App Store release (EAS Build + Submit)
+
+Everything above is **Google Play**. iOS ships through **EAS** (managed Expo workflow),
+not fastlane deliver. There is no native `ios/` dir — EAS handles signing in the cloud.
+
+## 8.1 Where iOS things live
+
+```
+app.json                       # expo.version (shared with Play), ios.bundleIdentifier,
+                               #   ios.config.usesNonExemptEncryption:false
+eas.json                       # submit.production.ios → ASC API key + team + ascAppId
+store.config.json              # App Store listing text (en-US + ar-SA) — eas metadata
+fastlane/metadata/ios/
+├── AuthKey_<KEYID>.p8         # ASC API key — GITIGNORED via *.p8, NEVER commit
+├── SUBMIT.md                  # step-by-step runbook
+└── screenshots/README.md      # required sizes + capture guide
+```
+
+## 8.2 Fixed identity facts (this app)
+
+- Apple Team ID: **J98M86H34Z** (an Individual team — NOT the `waybeyond` domain).
+- Bundle ID: **`dev.waybeyond.kidszone`** (registered under that team; bundle IDs don't
+  require domain ownership).
+- ASC app ID (`ascAppId`): **6793942277**.
+- ASC API key: `fastlane/metadata/ios/AuthKey_FJS3Y8R9KM.p8`, Key ID `FJS3Y8R9KM`,
+  Issuer ID `39271b7c-fb0c-4b41-91d1-377b65e44696`. **`.p8` is downloadable once — keep a
+  backup outside the repo. It is gitignored; never let it enter git history.**
+- EAS project owner is the **`waybeyond` Expo org** (`app.json` → `owner`,
+  `extra.eas.projectId`). To run any `eas` command against it you must be a MEMBER of the
+  `waybeyond` org (check `eas whoami` → Accounts list). Being logged in as a personal
+  account that isn't a member fails with `Entity not authorized: AppEntity[...]` — the
+  fix is an org invite, not switching accounts.
+
+## 8.3 store.config.json — the iOS listing (bilingual)
+
+`configVersion: 0`, localized text under `apple.info.<locale>`. **iOS locale codes differ
+from Play**: use `en-US` and **`ar-SA`** (NOT `ar` — that's Play's code; `eas metadata:lint`
+rejects `ar`). Field limits: `title` ≤30, `subtitle` ≤30, `promoText` ≤170,
+`description` ≤4000, `keywords` (comma-joined) ≤100. Adapt the Play `full_description` /
+`short_description` copy; verify Arabic **character** counts (multibyte) not bytes.
+
+EAS metadata pushes ONLY text: name/subtitle/promo/description/keywords/releaseNotes +
+support/marketing/privacy URLs. It does **NOT** push: category, age rating, privacy label,
+pricing, content rights, or screenshots — those are ASC-UI manual (§8.6).
+
+Always run before pushing: `npx eas metadata:lint` (validates schema + locale codes + limits).
+
+## 8.4 The iOS release flow (order matters)
+
+```bash
+# 0. Be a member of the waybeyond Expo org, then:
+npx eas whoami                                  # confirm access
+npx eas metadata:lint                           # validate store.config.json
+
+# 1. Build (first run is INTERACTIVE — Apple login to create signing)
+npx eas build -p ios --profile production
+#    Prompts "Generate a new Apple Distribution Certificate? / Provisioning Profile?"
+#    → answer Y to BOTH the first time (none exist yet; EAS-managed).
+
+# 2. Upload the build to ASC (non-interactive, uses the .p8)
+npx eas submit -p ios --profile production      # → appears in TestFlight, "Ready to Submit"
+
+# 3. Push listing text (en-US + ar-SA)
+npx eas metadata:push --profile production
+```
+
+The build/submit/push commands are outward, publishing actions — confirm with the user and
+prefer `metadata:lint` first. `metadata:push` needs the ASC app to exist (it does: 6793942277).
+
+## 8.5 Version
+
+`app.json` `expo.version` is shared with Play. iOS build number auto-increments remotely
+(`eas.json` cli.appVersionSource:remote + production.autoIncrement). Bump `version` for a
+real release; don't silently change it — flag to the user (same rule as Play).
+
+## 8.6 Manual finish in App Store Connect (not automatable)
+
+After metadata + build are up, in the ASC **Distribution / App Store** tab:
+
+- **Category:** Education. **Age rating:** run the questionnaire — Kids Zone answers
+  **NONE / NO to every content question** → **4+**. On the final page choose **Not
+  Applicable** (normal listing), NOT "Made for Kids" (we deliberately avoid the Kids
+  Category program). Leave Age Suitability URL blank.
+- **App Privacy:** "Data Not Collected" (no ads/tracking/accounts/network). Requires an
+  ASC **Admin** to confirm — a Developer role can set answers but may not finalize.
+- **Pricing:** set **Free** (USD 0.00) — required or submit is blocked.
+- **Content Rights:** App Information → confirm you have rights (emoji art is
+  Noto/OpenMoji Apache/CC + own art).
+- **Attach build** 1.2.0(N), set the version's Copyright (`<year> Waybeyond`), then
+  **Add for Review → Submit**.
+
+## 8.7 iOS gotchas (learned the hard way)
+
+- **`ar` vs `ar-SA`.** Play uses `ar`; App Store uses `ar-SA`. Wrong code → lint error.
+- **EAS metadata may leave version-level en-US fields EMPTY.** Symptom: after
+  `metadata:push`, Arabic shows but the English **Description/Keywords/Support URL on the
+  version page are blank** (push output said en-US "Created" vs ar-SA "Updated"). Fix:
+  paste the English fields by hand in ASC (pull exact values from `store.config.json`).
+  Don't fight EAS on this — hand-fill is faster.
+- **Simulator emoji `?`-boxes are an ENVIRONMENT bug, not the app.** The iOS **26.3**
+  simulator runtime renders every emoji (and emoji-based UI glyphs) as tofu `?` boxes,
+  system-wide (fails even in Safari). The **26.5** runtime is fine. Real devices are
+  always fine. NEVER screenshot from a broken runtime. Diagnose by opening any emoji page
+  in the sim's Safari; if it's `?`, switch to a 26.5 device (or a real device) — do NOT
+  "fix" app code. Consider deleting the bad runtime: `xcrun simctl runtime delete "iOS 26.3.1"`.
+- **Screenshot sizes.** App is **landscape-only** → capture landscape. The unified
+  **iPhone 6.9″** slot accepts 6.5″/6.7″/6.9″ sizes (incl. 2796×1290 from a real iPhone
+  14 Pro Max), and one 6.9″ set scales to all smaller iPhones. iPad **13″** set is
+  required because `supportsTablet:true` (2752×2064 landscape). ⌘S in the sim saves at
+  true device resolution.
+- **Support URL must be an `https` page, not a mailto.** Apple's support-email field is
+  separate. Privacy policy URL is also required (both hard blockers).
+- **Temp copy-paste helper files** (e.g. an `APP_STORE_EN_FIELDS.txt` for pasting into
+  ASC when the user can't copy from the terminal) are throwaway — write them at repo root,
+  don't commit, delete after.
