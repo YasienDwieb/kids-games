@@ -20,6 +20,7 @@ const KEYS: string[] = [
   'core:home.greeting',
   'core:home.title',
   'core:home.allGames',
+  'core:common.score',
   'core:settings.title',
   'core:settings.language',
   'core:player.notFound',

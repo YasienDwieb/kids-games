@@ -1,5 +1,5 @@
 import './i18n'; // side-effect: registers this game's en/ar translation bundles
-import { registerGame } from '@/sdk';
+import { registerGame, COLORS } from '@/sdk';
 import ShapeDetectiveGame from './index';
 
 registerGame({
@@ -9,7 +9,7 @@ registerGame({
   icon: '🔺',
   ageRange: { min: 3, max: 10 },
   component: ShapeDetectiveGame,
-  backgroundColor: '#F3EDFB', // soft violet (ACCENTS.purple.tint)
+  backgroundColor: COLORS.canvas, // soft violet (ACCENTS.purple.tint)
   accent: 'purple',
   order: 80,
   tags: ['shapes', 'logic', 'patterns', 'educational'],

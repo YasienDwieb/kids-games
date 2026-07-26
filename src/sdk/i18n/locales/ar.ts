@@ -5,6 +5,7 @@ import type { CoreTranslations } from './en';
 export const ar: CoreTranslations = {
   common: {
     back: 'رجوع',
+    score: 'النقاط: {{n}}',
     pause: 'إيقاف مؤقت',
     settings: 'الإعدادات',
     done: 'تمّ',

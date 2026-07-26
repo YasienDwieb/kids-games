@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { SafeContainer } from '@/components/common/SafeContainer';
 import { BackButton } from '@/components/common/BackButton';
 import { HudPill, hudTextStyle } from '@/components/common/HudPill';
+import { Star } from '@/components/common/Star';
 import { COLORS, FONT_SIZES, SPACING } from '@/constants';
 import { GameShellContext, type GameShellApi } from './GameShellContext';
 import { GameOverlay } from './GameOverlay';
@@ -81,7 +82,8 @@ export function GameShell({
             {header}
             {score != null ? (
               <HudPill>
-                <Text style={hudTextStyle}>{score}</Text>
+                <Star size={18} filled />
+                <Text style={hudTextStyle}>{t('common.score', { n: score })}</Text>
               </HudPill>
             ) : null}
             {onPause ? (

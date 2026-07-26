@@ -1,15 +1,15 @@
 import './i18n'; // side-effect: registers this game's en/ar translation bundles
-import { registerGame } from '@/sdk';
+import { registerGame, COLORS } from '@/sdk';
 import CountAndPopGame from './index';
 
 registerGame({
   id: 'count-and-pop',
   name: 'Count & Pop', // English fallback; localized via count-and-pop:meta.name
   description: 'Count, pop, and learn your numbers!',
-  icon: '🐞',
+  icon: '🧮',
   ageRange: { min: 3, max: 7 },
   component: CountAndPopGame,
-  backgroundColor: '#FCE5EF', // soft pink (ACCENTS.pink.tint)
+  backgroundColor: COLORS.canvas, // soft pink (ACCENTS.pink.tint)
   accent: 'pink',
   order: 90,
   tags: ['numbers', 'math', 'counting', 'educational'],

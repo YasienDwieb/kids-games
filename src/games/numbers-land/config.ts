@@ -1,5 +1,5 @@
 import './i18n'; // side-effect: registers this game's en/ar translation bundles
-import { registerGame, ACCENTS } from '@/sdk';
+import { registerGame, ACCENTS, COLORS } from '@/sdk';
 import NumbersLand from './index';
 
 registerGame({
@@ -9,7 +9,7 @@ registerGame({
   icon: '🔢',
   ageRange: { min: 3, max: 7 },
   component: NumbersLand,
-  backgroundColor: ACCENTS.orange.tint,
+  backgroundColor: COLORS.canvas,
   accent: 'orange',
   order: 110,
   tags: ['numbers', 'counting', 'educational'],

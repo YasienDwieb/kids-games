@@ -4,6 +4,7 @@
 export const en = {
   common: {
     back: 'Back',
+    score: 'Score: {{n}}',
     pause: 'Pause',
     settings: 'Settings',
     done: 'Done',
