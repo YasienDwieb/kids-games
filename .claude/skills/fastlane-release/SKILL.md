@@ -1,6 +1,6 @@
 ---
 name: fastlane-release
-description: Use when preparing a new store release for this Kids Games repo on EITHER Google Play OR the Apple App Store — updating release notes/changelogs, store descriptions/subtitle/title/keywords, or screenshots, and running the release lanes (fastlane supply for Play, EAS build/submit/metadata for iOS). Trigger whenever the user mentions a "new release", "release notes", "changelog", "what's new", "store listing", "Play Store metadata", "App Store", "App Store Connect", "TestFlight", "eas submit", "eas metadata", "fastlane", "supply", "submit to the store/app store", or updating app descriptions/screenshots — even if they don't name the tool. Covers the bilingual metadata layout (Play uses `ar`, App Store uses `ar-SA`), per-field character limits, deriving "what's new" from the last release tag, real in-app game names, per-store screenshot rules, the Fastfile supply lanes, AND the full iOS App Store submission flow (§8: EAS credentials, store.config.json, eas metadata:push, ASC manual fields, simulator emoji gotcha).
+description: Use when preparing a new store release for this Kids Games repo on EITHER Google Play OR the Apple App Store — updating release notes/changelogs, store descriptions/subtitle/title/keywords, or screenshots, and running the release lanes (fastlane supply for Play, EAS build/submit/metadata for iOS). Trigger whenever the user mentions a "new release", "release notes", "changelog", "what's new", "store listing", "Play Store metadata", "App Store", "App Store Connect", "TestFlight", "eas submit", "eas metadata", "fastlane", "supply", "submit to the store/app store", or updating app descriptions/screenshots — even if they don't name the tool. Covers the bilingual metadata layout (Play uses `ar`, App Store uses `ar-SA`), per-field character limits, deriving "what's new" from the last release tag, real in-app game names, per-store screenshot rules, the Fastfile supply lanes, AND the full iOS App Store submission flow (§8: EAS credentials, store.config.json, eas build/submit, eas metadata:push, and the ASC manual fields).
 ---
 
 # fastlane-release
@@ -215,9 +215,9 @@ fastlane/metadata/ios/
   backup outside the repo. It is gitignored; never let it enter git history.**
 - EAS project owner is the **`waybeyond` Expo org** (`app.json` → `owner`,
   `extra.eas.projectId`). To run any `eas` command against it you must be a MEMBER of the
-  `waybeyond` org (check `eas whoami` → Accounts list). Being logged in as a personal
-  account that isn't a member fails with `Entity not authorized: AppEntity[...]` — the
-  fix is an org invite, not switching accounts.
+  `waybeyond` org — check `eas whoami` (the Accounts list must include `waybeyond`). If a
+  command returns `Entity not authorized: AppEntity[...]`, the logged-in account isn't a
+  member; the fix is an org invite, not switching accounts.
 
 ## 8.3 store.config.json — the iOS listing (bilingual)
 
@@ -274,30 +274,28 @@ After metadata + build are up, in the ASC **Distribution / App Store** tab:
 - **Pricing:** set **Free** (USD 0.00) — required or submit is blocked.
 - **Content Rights:** App Information → confirm you have rights (emoji art is
   Noto/OpenMoji Apache/CC + own art).
-- **Attach build** 1.2.0(N), set the version's Copyright (`<year> Waybeyond`), then
-  **Add for Review → Submit**.
+- **Attach the build** for this version, set the version's Copyright (`<year> Waybeyond`),
+  then **Add for Review → Submit**.
 
-## 8.7 iOS gotchas (learned the hard way)
+## 8.7 iOS rules & things to watch
 
-- **`ar` vs `ar-SA`.** Play uses `ar`; App Store uses `ar-SA`. Wrong code → lint error.
-- **EAS metadata may leave version-level en-US fields EMPTY.** Symptom: after
-  `metadata:push`, Arabic shows but the English **Description/Keywords/Support URL on the
-  version page are blank** (push output said en-US "Created" vs ar-SA "Updated"). Fix:
-  paste the English fields by hand in ASC (pull exact values from `store.config.json`).
-  Don't fight EAS on this — hand-fill is faster.
-- **Simulator emoji `?`-boxes are an ENVIRONMENT bug, not the app.** The iOS **26.3**
-  simulator runtime renders every emoji (and emoji-based UI glyphs) as tofu `?` boxes,
-  system-wide (fails even in Safari). The **26.5** runtime is fine. Real devices are
-  always fine. NEVER screenshot from a broken runtime. Diagnose by opening any emoji page
-  in the sim's Safari; if it's `?`, switch to a 26.5 device (or a real device) — do NOT
-  "fix" app code. Consider deleting the bad runtime: `xcrun simctl runtime delete "iOS 26.3.1"`.
+- **`ar` vs `ar-SA`.** Play uses `ar`; App Store uses `ar-SA`. Using `ar` in
+  `store.config.json` fails `eas metadata:lint`. Always lint before pushing.
+- **Verify the English listing after `metadata:push`.** EAS metadata can occasionally
+  populate one locale on the version page but not the other. After pushing, open the ASC
+  version page and confirm the **en-US** Description/Keywords/Support URL are present; if a
+  field is blank, paste it from `store.config.json` (hand-filling is quicker than
+  re-pushing). To hand off exact values when the user can't copy from the terminal, write a
+  throwaway text file at repo root — don't commit it, delete it after.
 - **Screenshot sizes.** App is **landscape-only** → capture landscape. The unified
-  **iPhone 6.9″** slot accepts 6.5″/6.7″/6.9″ sizes (incl. 2796×1290 from a real iPhone
-  14 Pro Max), and one 6.9″ set scales to all smaller iPhones. iPad **13″** set is
-  required because `supportsTablet:true` (2752×2064 landscape). ⌘S in the sim saves at
-  true device resolution.
-- **Support URL must be an `https` page, not a mailto.** Apple's support-email field is
-  separate. Privacy policy URL is also required (both hard blockers).
-- **Temp copy-paste helper files** (e.g. an `APP_STORE_EN_FIELDS.txt` for pasting into
-  ASC when the user can't copy from the terminal) are throwaway — write them at repo root,
-  don't commit, delete after.
+  **iPhone 6.9″** slot accepts 6.5″/6.7″/6.9″ sizes (e.g. 2796×1290 from a 6.7″/6.9″
+  device), and one 6.9″ set scales to all smaller iPhones. An iPad **13″** set is required
+  because `supportsTablet:true` (2752×2064 landscape). In the simulator, ⌘S saves at true
+  device resolution.
+- **If the simulator shows emoji as `?`-boxes, it's the runtime, not the app.** Some iOS
+  simulator runtimes fail to render color emoji system-wide (it fails even in the sim's
+  Safari). Real devices always render emoji. Diagnose by opening any emoji page in the
+  sim's Safari; if it's tofu, switch to a different runtime version or a real device — never
+  "fix" app code for this, and never ship screenshots captured from such a runtime.
+- **Support URL must be an `https` page, not a `mailto:`.** Apple's support-email field is
+  separate. A privacy policy URL is also required — both are hard submission blockers.
