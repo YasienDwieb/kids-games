@@ -109,14 +109,20 @@ export function OddOneOutPuzzle({
               <PressableButton
                 onPress={() => onPick(idx)}
                 disabled={disabled || selectedIndex !== null}
+                // Passed as `color`, not a style background: PressableButton
+                // paints its own face, so a background in `style` only tints the
+                // 5px socket edge — which meant the green/coral reveal never
+                // actually showed.
+                color={backgroundColor}
                 style={{
                   ...styles.itemButton,
                   borderColor,
                   borderWidth,
-                  backgroundColor,
                 }}
               >
-                <ShapeView shape={shape} />
+                <View style={styles.itemSlot}>
+                  <ShapeView shape={shape} />
+                </View>
               </PressableButton>
             </View>
           );
@@ -159,14 +165,20 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     paddingHorizontal: SPACING.sm,
   },
+  // Fixed slot inside the button face — see PatternPuzzle.optionSlot.
+  itemSlot: {
+    width: SHAPE_SIZE_PX.large,
+    height: SHAPE_SIZE_PX.large,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   itemButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: SPACING.sm,
+    // No padding here: this style lands on PressableButton's outer socket, and
+    // padding makes the darker edge shade ring the face on all four sides
+    // instead of showing only as the intended bottom lip.
     borderRadius: BORDER_RADIUS.card,
-    // backgroundColor set inline above
-    minWidth: SHAPE_SIZE_PX.large + SPACING.md * 2,
-    minHeight: SHAPE_SIZE_PX.large + SPACING.md * 2,
     ...SHADOWS.sm,
   },
 });
