@@ -21,6 +21,13 @@
         "serviceAccountKeyPath": "./fastlane/play-store-key.json",
         "track": "internal",
         "releaseStatus": "draft"
+      },
+      "ios": {
+        "ascApiKeyPath": "./fastlane/metadata/ios/AuthKey_FJS3Y8R9KM.p8",
+        "ascApiKeyId": "FJS3Y8R9KM",
+        "ascApiKeyIssuerId": "39271b7c-fb0c-4b41-91d1-377b65e44696",
+        "appleTeamId": "J98M86H34Z",
+        "ascAppId": "6793942277"
       }
     }
   }

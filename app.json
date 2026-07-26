@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kids Zone",
     "slug": "kids-zone",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dev.waybeyond.kidszone"
+      "bundleIdentifier": "dev.waybeyond.kidszone",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
