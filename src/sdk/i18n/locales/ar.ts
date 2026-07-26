@@ -21,11 +21,15 @@ export const ar: CoreTranslations = {
     all: 'الكل',
     allGames: 'كل الألعاب',
     empty: 'ألعاب جديدة في الطريق! 🎈',
+    muteOn: 'إيقاف الأصوات',
+    muteOff: 'تشغيل الأصوات',
+    changeLanguage: 'تغيير اللغة',
+    switchTitle: 'تغيير اللغة؟',
+    switchBody: 'سيُعاد تشغيل التطبيق.',
   },
   settings: {
     title: 'الإعدادات',
     sound: 'المؤثرات الصوتية',
-    voice: 'النطق',
     haptics: 'الاهتزاز',
     showGamesFor: 'ألعاب مناسبة لعمر',
     all: 'الكل',
@@ -38,7 +42,6 @@ export const ar: CoreTranslations = {
     },
     tabs: {
       general: 'عام',
-      games: 'الألعاب',
       journey: 'الرحلة',
     },
     gate: {

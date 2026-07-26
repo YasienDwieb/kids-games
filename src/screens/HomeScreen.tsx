@@ -17,6 +17,8 @@ import { COLORS, FONTS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
 import {
   useSettings,
+  useLanguage,
+  LANGUAGES,
   getGame,
   getAllGames,
   gamesForBand,
@@ -28,6 +30,8 @@ import {
   buildSequence,
   createFlowProgressStore,
 } from '@/sdk';
+import { reloadApp } from '@/sdk/i18n/reload';
+import { PressableButton } from '../components/common';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -50,8 +54,14 @@ export function HomeScreen({ navigation }: Props) {
   const landscape = width > height;
   // Portrait grid columns: 2 on phones, 3–4 on tablets so it isn't two giant columns.
   const columns = isTablet(width, height) ? (width > 900 ? 4 : 3) : 2;
-  const { settings } = useSettings();
+  const { settings, update } = useSettings();
   const { t } = useTranslation();
+  const { language, changeLanguage } = useLanguage();
+  // Language switching restarts the app, so it asks first. That confirmation is
+  // also what keeps it safe to leave ungated: a parent passes it in one tap, a
+  // toddler tapping around does not.
+  const [pendingLang, setPendingLang] = useState<string | null>(null);
+  const [switching, setSwitching] = useState(false);
   // Games shown on Home are filtered by the parent-set age band ("Show games for"
   // in Settings); null = all. The old kid-facing age chips were removed from Home,
   // so this is now driven solely from Settings.
@@ -112,9 +122,37 @@ export function HomeScreen({ navigation }: Props) {
     />
   );
 
+  // Sound and language live here, not behind the parent gate: muting is the
+  // most urgent control in the app and both are trivially reversible, so making
+  // a parent solve arithmetic for them was the wrong trade.
+  const otherLang = LANGUAGES.find((l) => l.code !== language) ?? LANGUAGES[0];
+
+  const soundButton = (
+    <IconButton
+      glyph={settings.soundEnabled ? '🔊' : '🔇'}
+      onPress={() => update({ soundEnabled: !settings.soundEnabled })}
+      accessibilityLabel={t(settings.soundEnabled ? 'home.muteOn' : 'home.muteOff')}
+    />
+  );
+
+  const languageButton = (
+    <IconButton
+      glyph={otherLang.code === 'ar' ? 'ع' : 'EN'}
+      glyphSize={otherLang.code === 'ar' ? 24 : 16}
+      onPress={() => setPendingLang(otherLang.code)}
+      accessibilityLabel={t('home.changeLanguage')}
+    />
+  );
+
   // No "All games" title: they are self-evidently games, and the heading cost a
   // full text row that a pre-reader gets nothing from.
-  const gamesHeader = <View style={styles.gamesHeader}>{settingsButton}</View>;
+  const gamesHeader = (
+    <View style={styles.gamesHeader}>
+      {soundButton}
+      {languageButton}
+      {settingsButton}
+    </View>
+  );
 
   const gamesGrid =
     games.length === 0 ? (
@@ -193,6 +231,52 @@ export function HomeScreen({ navigation }: Props) {
       <View style={[styles.mainPane, styles.fitGrid]}>{gameCells}</View>
     );
 
+  const confirmLanguage = async () => {
+    if (!pendingLang) return;
+    const target = pendingLang;
+    setPendingLang(null);
+    setSwitching(true);
+    const { needsReload } = await changeLanguage(target as never);
+    if (needsReload) reloadApp();
+    else setSwitching(false);
+  };
+
+  // Rendered above everything so it reads as a decision, not a suggestion.
+  const languageDialog = pendingLang ? (
+    <View style={styles.dialogScrim}>
+      <View style={styles.dialog}>
+        <Text style={styles.dialogTitle}>{t('home.switchTitle')}</Text>
+        <Text style={styles.dialogBody}>{t('home.switchBody')}</Text>
+        <View style={styles.dialogRow}>
+          <PressableButton
+            label={t('common.cancel')}
+            variant="ghost"
+            onPress={() => setPendingLang(null)}
+            style={styles.dialogBtn}
+          />
+          {/* The button carries the target language rather than the title, so
+              the two scripts never share a sentence and bidi cannot reorder the
+              punctuation. It also states exactly what the tap produces. */}
+          <PressableButton
+            label={LANGUAGES.find((l) => l.code === pendingLang)?.label ?? String(pendingLang)}
+            accent="purple"
+            onPress={confirmLanguage}
+            style={styles.dialogBtn}
+          />
+        </View>
+      </View>
+    </View>
+  ) : null;
+
+  if (switching) {
+    return (
+      <SafeAreaView style={[styles.safe, styles.switchScreen]} edges={['top', 'bottom']}>
+        <Text style={styles.switchEmoji}>🌍</Text>
+        <Text style={styles.switchText}>{t('settings.switching')}</Text>
+      </SafeAreaView>
+    );
+  }
+
   // Landscape (primary): the journey rail and the games live side by side — no
   // mode toggle. The journey card fills its column; the games pane fills the rest.
   if (landscape) {
@@ -207,6 +291,7 @@ export function HomeScreen({ navigation }: Props) {
             {gamesRail}
           </View>
         </View>
+        {languageDialog}
       </SafeAreaView>
     );
   }
@@ -219,6 +304,7 @@ export function HomeScreen({ navigation }: Props) {
         {gamesHeader}
         {gamesGrid}
       </ScrollView>
+      {languageDialog}
     </SafeAreaView>
   );
 }
@@ -227,11 +313,44 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.canvas },
   scroll: { paddingTop: SPACING.sm, paddingBottom: SPACING.xl },
 
+  dialogScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: COLORS.overlay,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 20,
+  },
+  dialog: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 22,
+    padding: SPACING.lg,
+    gap: SPACING.md,
+    alignItems: 'center',
+    maxWidth: 420,
+  },
+  dialogTitle: {
+    fontFamily: FONTS.display,
+    fontSize: 20,
+    color: COLORS.ink,
+    textAlign: 'center',
+  },
+  dialogBody: {
+    fontFamily: FONTS.body,
+    fontSize: 15,
+    color: COLORS.inkSoft,
+    textAlign: 'center',
+  },
+  dialogRow: { flexDirection: 'row', gap: SPACING.sm },
+  dialogBtn: { minWidth: 130 },
+  switchScreen: { alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
+  switchEmoji: { fontSize: 56 },
+  switchText: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
   gamesHeader: {
     height: GAMES_HEADER_H,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
+    gap: SPACING.sm,
     paddingHorizontal: 16,
   },
 

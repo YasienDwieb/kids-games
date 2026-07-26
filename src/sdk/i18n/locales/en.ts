@@ -20,11 +20,15 @@ export const en = {
     all: 'All',
     allGames: 'All games',
     empty: 'More games coming soon! 🎈',
+    muteOn: 'Turn sounds off',
+    muteOff: 'Turn sounds on',
+    changeLanguage: 'Change language',
+    switchTitle: 'Change language?',
+    switchBody: 'The app will restart.',
   },
   settings: {
     title: 'Settings',
     sound: 'Sound effects',
-    voice: 'Talking',
     haptics: 'Haptics',
     showGamesFor: 'Show games for',
     all: 'All',
@@ -37,7 +41,6 @@ export const en = {
     },
     tabs: {
       general: 'General',
-      games: 'Games',
       journey: 'Journey',
     },
     gate: {

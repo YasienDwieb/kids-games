@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Switch,
@@ -16,15 +15,11 @@ import {
   AGE_BANDS,
   useSettings,
   useTranslation,
-  useLanguage,
-  LANGUAGES,
   eligibleGameIds,
   getGame,
   gameName,
   createFlowProgressStore,
-  type LanguageCode,
 } from '@/sdk';
-import { reloadApp } from '@/sdk/i18n/reload';
 import { COLORS, FONTS, SPACING } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
@@ -58,15 +53,13 @@ function ToggleRow({
 export function SettingsScreen({ navigation }: Props) {
   const { settings, update } = useSettings();
   const { t } = useTranslation();
-  const { language, changeLanguage } = useLanguage();
-  const [switching, setSwitching] = useState(false);
   // Everything behind this screen (language, age filter, journey reset) breaks
   // the child's experience, so a grown-up has to get in first.
   const [unlocked, setUnlocked] = useState(false);
   // Tabs, not one scrolling page: the journey-games list grows with the
   // catalogue, so a single screen overflows again every few games. Tabs stay
   // bounded no matter how many games ship.
-  const [tab, setTab] = useState<'general' | 'games' | 'journey'>('general');
+  const [tab, setTab] = useState<'general' | 'journey'>('general');
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
@@ -92,31 +85,11 @@ export function SettingsScreen({ navigation }: Props) {
     flowStore.set({ step: 0, seed: 0, updatedAt: Date.now() });
   };
 
-  const onPickLanguage = async (code: LanguageCode) => {
-    if (code === language) return;
-    const { needsReload } = await changeLanguage(code);
-    if (needsReload) {
-      // Show the "Switching…" notice, then auto-reload to flip RTL direction.
-      setSwitching(true);
-      setTimeout(() => reloadApp(), 600);
-    }
-  };
-
   if (!unlocked) {
     return (
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <AppBar title={t('settings.title')} onBack={() => navigation.goBack()} />
         <ParentGate onPass={() => setUnlocked(true)} />
-      </SafeAreaView>
-    );
-  }
-
-  if (switching) {
-    return (
-      <SafeAreaView style={[styles.safe, styles.switchScreen]} edges={['top', 'bottom']}>
-        <Text style={styles.switchEmoji}>🌍</Text>
-        <ActivityIndicator size="large" color={COLORS.brand} />
-        <Text style={styles.switchText}>{t('settings.switching')}</Text>
       </SafeAreaView>
     );
   }
@@ -132,11 +105,6 @@ export function SettingsScreen({ navigation }: Props) {
           onPress={() => setTab('general')}
         />
         <Chip
-          label={t('settings.tabs.games')}
-          active={tab === 'games'}
-          onPress={() => setTab('games')}
-        />
-        <Chip
           label={t('settings.tabs.journey')}
           active={tab === 'journey'}
           onPress={() => setTab('journey')}
@@ -149,23 +117,6 @@ export function SettingsScreen({ navigation }: Props) {
             <View style={[styles.column, landscape && styles.columnLandscape]}>
               <View style={styles.card}>
                 <ToggleRow
-                  icon="🔊"
-                  label={t('settings.sound')}
-                  value={settings.soundEnabled}
-                  onChange={(v) => update({ soundEnabled: v })}
-                />
-                <View style={styles.divider} />
-                {/* Separate from sound effects on purpose: the listen-and-find
-                    games ask their question out loud, so this must stay on for
-                    them to be playable. */}
-                <ToggleRow
-                  icon="🗣️"
-                  label={t('settings.voice')}
-                  value={settings.voiceEnabled}
-                  onChange={(v) => update({ voiceEnabled: v })}
-                />
-                <View style={styles.divider} />
-                <ToggleRow
                   icon="📳"
                   label={t('settings.haptics')}
                   value={settings.hapticsEnabled}
@@ -175,37 +126,22 @@ export function SettingsScreen({ navigation }: Props) {
             </View>
 
             <View style={[styles.column, landscape && styles.columnLandscape]}>
-              <Text style={styles.section}>{t('settings.language')}</Text>
+              <Text style={styles.section}>{t('settings.showGamesFor')}</Text>
               <View style={styles.bands}>
-                {LANGUAGES.map((lang) => (
+                <Chip
+                  label={t('settings.all')}
+                  active={settings.ageBand === null}
+                  onPress={() => update({ ageBand: null })}
+                />
+                {AGE_BANDS.map((band) => (
                   <Chip
-                    key={lang.code}
-                    label={lang.label}
-                    active={language === lang.code}
-                    onPress={() => onPickLanguage(lang.code)}
+                    key={band.id}
+                    label={t(`ageBands.${band.id}`)}
+                    active={settings.ageBand === band.id}
+                    onPress={() => update({ ageBand: band.id })}
                   />
                 ))}
               </View>
-
-            </View>
-          </View>
-        ) : tab === 'games' ? (
-          <View style={styles.column}>
-            <Text style={styles.section}>{t('settings.showGamesFor')}</Text>
-            <View style={styles.bands}>
-              <Chip
-                label={t('settings.all')}
-                active={settings.ageBand === null}
-                onPress={() => update({ ageBand: null })}
-              />
-              {AGE_BANDS.map((band) => (
-                <Chip
-                  key={band.id}
-                  label={t(`ageBands.${band.id}`)}
-                  active={settings.ageBand === band.id}
-                  onPress={() => update({ ageBand: band.id })}
-                />
-              ))}
             </View>
           </View>
         ) : (
@@ -245,13 +181,6 @@ export function SettingsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.canvas },
-  switchScreen: { alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
-  switchEmoji: { fontSize: 56 },
-  switchText: {
-    fontFamily: FONTS.display,
-    fontSize: 18,
-    color: COLORS.ink,
-  },
   tabs: {
     flexDirection: 'row',
     gap: SPACING.sm,
