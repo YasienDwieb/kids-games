@@ -12,6 +12,8 @@ export function Chip({ label, active = false, onPress }: ChipProps) {
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
       style={[styles.chip, SHADOWS.sm, active && styles.chipActive]}
     >
       <Text style={[styles.text, active && styles.textActive]}>{label}</Text>

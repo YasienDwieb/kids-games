@@ -36,6 +36,7 @@ export function GameCard({
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       style={({ pressed }) => [
         styles.card,

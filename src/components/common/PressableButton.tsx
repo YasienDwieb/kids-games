@@ -91,6 +91,8 @@ export function PressableButton({
       onPressIn={() => !disabled && press(EDGE)}
       onPressOut={() => press(0)}
       disabled={disabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
       style={[
         styles.socket,
         SHADOWS.sm,
