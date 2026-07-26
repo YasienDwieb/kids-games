@@ -12,6 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
 import { GameCard, IconButton, JourneyCard } from '../components/common';
+import { computeHomeGrid, isTablet, homeRailWidth } from '../utils/responsive';
 import { COLORS, FONTS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
 import {
@@ -37,7 +38,6 @@ function accentForGame(game: GameConfig, index: number): AccentName {
 }
 
 // Layout tokens.
-const JOURNEY_W = 244; // landscape journey rail width
 const GAMES_HEADER_H = 56; // height reserved for the "All games" header above the rail
 const GRID_PAD_V = 14;
 const GRID_PAD_H = 12;
@@ -47,7 +47,8 @@ export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const landscape = width > height;
-  const columns = 2; // portrait grid columns
+  // Portrait grid columns: 2 on phones, 3–4 on tablets so it isn't two giant columns.
+  const columns = isTablet(width, height) ? (width > 900 ? 4 : 3) : 2;
   const { settings } = useSettings();
   const { t } = useTranslation();
   // Games shown on Home are filtered by the parent-set age band ("Show games for"
@@ -144,17 +145,36 @@ export function HomeScreen({ navigation }: Props) {
   // header, size cells to it, and pack games column-major so overflow flows into
   // new columns reached by HORIZONTAL scroll (never vertical).
   const railUsableH = height - insets.top - insets.bottom - GRID_PAD_V * 2 - GAMES_HEADER_H;
-  const railRows = Math.max(1, Math.min(3, Math.round(railUsableH / 200)));
-  const railCardH = Math.floor(railUsableH / railRows) - CELL_GAP;
-  const railCardW = Math.max(116, Math.min(160, Math.round(railCardH * 0.82)));
-  const railEmoji = Math.max(30, Math.min(54, Math.round(railCardH * 0.3)));
+  const grid = computeHomeGrid({
+    width,
+    height,
+    count: games.length,
+    insetsTop: insets.top,
+    insetsBottom: insets.bottom,
+  });
+  const railCardW = grid.cardW;
+  const railCardH = grid.cardH;
+  const railEmoji = grid.emojiSize;
+
+  const gameCells = games.map((game, i) => (
+    <View key={game.id} style={{ width: railCardW, height: railCardH, margin: CELL_GAP / 2 }}>
+      <GameCard
+        fill
+        emojiSize={railEmoji}
+        icon={game.icon}
+        name={gameName(game)}
+        accent={accentForGame(game, i)}
+        onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
+      />
+    </View>
+  ));
 
   const gamesRail =
     games.length === 0 ? (
       <View style={[styles.mainPane, styles.mainPaneContent]}>
         <Text style={styles.empty}>{t('home.empty')}</Text>
       </View>
-    ) : (
+    ) : grid.scroll ? (
       <ScrollView
         ref={railRef}
         horizontal
@@ -170,21 +190,11 @@ export function HomeScreen({ navigation }: Props) {
           if (I18nManager.isRTL) railRef.current?.scrollTo({ x: w, animated: false });
         }}
       >
-        <View style={[styles.railGrid, { height: railUsableH }]}>
-          {games.map((game, i) => (
-            <View key={game.id} style={{ width: railCardW, height: railCardH, margin: CELL_GAP / 2 }}>
-              <GameCard
-                fill
-                emojiSize={railEmoji}
-                icon={game.icon}
-                name={gameName(game)}
-                accent={accentForGame(game, i)}
-                onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
-              />
-            </View>
-          ))}
-        </View>
+        <View style={[styles.railGrid, { height: railUsableH }]}>{gameCells}</View>
       </ScrollView>
+    ) : (
+      // Tablet fit-all: everything visible in a centered wrapping grid, no scroll.
+      <View style={[styles.mainPane, styles.fitGrid]}>{gameCells}</View>
     );
 
   // Landscape (primary): the journey rail and the games live side by side — no
@@ -193,7 +203,9 @@ export function HomeScreen({ navigation }: Props) {
     return (
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.twoPane}>
-          <View style={styles.journeyPaneLandscape}>{journeyCard(false)}</View>
+          <View style={[styles.journeyPaneLandscape, { width: homeRailWidth(width, height) }]}>
+            {journeyCard(false)}
+          </View>
           <View style={styles.gamesPane}>
             {gamesHeader}
             {gamesRail}
@@ -249,13 +261,22 @@ const styles = StyleSheet.create({
   // --- Landscape two-pane ---
   twoPane: { flex: 1, flexDirection: 'row' },
   journeyPaneLandscape: {
-    width: JOURNEY_W,
+    // width is applied inline via homeRailWidth(width, height) — 244 on phones,
+    // wider on tablets.
     paddingLeft: 16,
     paddingVertical: GRID_PAD_V,
   },
   journeyPortrait: { marginHorizontal: 16, marginTop: 4, marginBottom: SPACING.xs },
   gamesPane: { flex: 1 },
   mainPane: { flex: 1 },
+  // Tablet fit-all grid: center the wrapping cells in the games pane.
+  fitGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignContent: 'center',
+  },
   mainPaneContent: {
     flexGrow: 1,
     justifyContent: 'center',
