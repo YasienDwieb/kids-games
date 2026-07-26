@@ -23,6 +23,7 @@ export const en = {
   settings: {
     title: 'Settings',
     sound: 'Sound effects',
+    voice: 'Talking',
     haptics: 'Haptics',
     showGamesFor: 'Show games for',
     all: 'All',

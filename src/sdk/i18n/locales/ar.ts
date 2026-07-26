@@ -23,7 +23,8 @@ export const ar: CoreTranslations = {
   },
   settings: {
     title: 'الإعدادات',
-    sound: 'الأصوات',
+    sound: 'المؤثرات الصوتية',
+    voice: 'النطق',
     haptics: 'الاهتزاز',
     showGamesFor: 'ألعاب مناسبة لعمر',
     all: 'الكل',

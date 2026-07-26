@@ -17,7 +17,7 @@ const DEFAULT_RATE = 0.7;
 const DEFAULT_PITCH = 1.1;
 
 /**
- * Text-to-speech for games. Mirrors useSound: gates on settings.soundEnabled,
+ * Text-to-speech for games. Mirrors useSound but gates on settings.voiceEnabled,
  * degrades gracefully (no-op on throw), and cancels any in-flight utterance on
  * unmount. Each speak() replaces any in-flight/queued utterance (Speech.stop()
  * before Speech.speak()) so rapid calls don't stack. After awaiting settings,
@@ -43,7 +43,9 @@ export function useSpeech() {
   const speak = useCallback(async (text: string, options: SpeakOptions = {}) => {
     const settings = await settingsStore.get();
 
-    if (!settings.soundEnabled) return;
+    // Gated on voice, NOT soundEnabled: the spoken prompt is the question in
+    // the listen-and-find games, so muting effects must not silence it.
+    if (!settings.voiceEnabled) return;
     // Bail if we unmounted during the AsyncStorage await — otherwise the
     // unmount's Speech.stop() would race ahead and this would speak on the
     // next screen.

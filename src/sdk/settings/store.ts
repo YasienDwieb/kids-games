@@ -1,7 +1,15 @@
 import { createStore } from '@/sdk/storage/createStore';
 
 export type Settings = {
+  /**
+   * Sound EFFECTS only: pops, celebration, wrong-answer stings. Decoration.
+   * Deliberately separate from `voiceEnabled` — in the listen-and-find games
+   * (letter-land, numbers-land, animal-safari) the spoken prompt IS the
+   * question, so muting effects must not make those games unanswerable.
+   */
   soundEnabled: boolean;
+  /** Spoken instructions and letter/number names. Content, not decoration. */
+  voiceEnabled: boolean;
   hapticsEnabled: boolean;
   ageBand: string | null;
   /** Selected app language code (e.g. 'en', 'ar'). Null = follow device on first boot. */
@@ -14,6 +22,7 @@ export type Settings = {
 
 export const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
+  voiceEnabled: true,
   hapticsEnabled: true,
   ageBand: null,
   language: null,

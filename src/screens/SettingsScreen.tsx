@@ -132,6 +132,16 @@ export function SettingsScreen({ navigation }: Props) {
                 onChange={(v) => update({ soundEnabled: v })}
               />
               <View style={styles.divider} />
+              {/* Separate from sound effects on purpose: the listen-and-find
+                  games ask their question out loud, so this must stay on for
+                  them to be playable. */}
+              <ToggleRow
+                icon="🗣️"
+                label={t('settings.voice')}
+                value={settings.voiceEnabled}
+                onChange={(v) => update({ voiceEnabled: v })}
+              />
+              <View style={styles.divider} />
               <ToggleRow
                 icon="📳"
                 label={t('settings.haptics')}
