@@ -63,6 +63,10 @@ export function SettingsScreen({ navigation }: Props) {
   // Everything behind this screen (language, age filter, journey reset) breaks
   // the child's experience, so a grown-up has to get in first.
   const [unlocked, setUnlocked] = useState(false);
+  // Tabs, not one scrolling page: the journey-games list grows with the
+  // catalogue, so a single screen overflows again every few games. Tabs stay
+  // bounded no matter how many games ship.
+  const [tab, setTab] = useState<'general' | 'games' | 'journey'>('general');
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
@@ -120,70 +124,73 @@ export function SettingsScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <AppBar title={t('settings.title')} onBack={() => navigation.goBack()} />
+
+      <View style={styles.tabs}>
+        <Chip
+          label={t('settings.tabs.general')}
+          active={tab === 'general'}
+          onPress={() => setTab('general')}
+        />
+        <Chip
+          label={t('settings.tabs.games')}
+          active={tab === 'games'}
+          onPress={() => setTab('games')}
+        />
+        <Chip
+          label={t('settings.tabs.journey')}
+          active={tab === 'journey'}
+          onPress={() => setTab('journey')}
+        />
+      </View>
+
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.columns, landscape && styles.columnsLandscape]}>
-          {/* Left column: sound/haptics toggles + guided journey game selection */}
-          <View style={[styles.column, landscape && styles.columnLandscape]}>
-            <View style={styles.card}>
-              <ToggleRow
-                icon="🔊"
-                label={t('settings.sound')}
-                value={settings.soundEnabled}
-                onChange={(v) => update({ soundEnabled: v })}
-              />
-              <View style={styles.divider} />
-              {/* Separate from sound effects on purpose: the listen-and-find
-                  games ask their question out loud, so this must stay on for
-                  them to be playable. */}
-              <ToggleRow
-                icon="🗣️"
-                label={t('settings.voice')}
-                value={settings.voiceEnabled}
-                onChange={(v) => update({ voiceEnabled: v })}
-              />
-              <View style={styles.divider} />
-              <ToggleRow
-                icon="📳"
-                label={t('settings.haptics')}
-                value={settings.hapticsEnabled}
-                onChange={(v) => update({ hapticsEnabled: v })}
-              />
-            </View>
-
-            <Text style={styles.section}>{t('settings.guided.games')}</Text>
-            <View style={styles.bands}>
-              {flowGames.map((id) => (
-                <Chip
-                  key={id}
-                  label={labelForGame(id)}
-                  active={isGameOn(id)}
-                  onPress={() => toggleGame(id)}
+        {tab === 'general' ? (
+          <View style={[styles.columns, landscape && styles.columnsLandscape]}>
+            <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <View style={styles.card}>
+                <ToggleRow
+                  icon="🔊"
+                  label={t('settings.sound')}
+                  value={settings.soundEnabled}
+                  onChange={(v) => update({ soundEnabled: v })}
                 />
-              ))}
+                <View style={styles.divider} />
+                {/* Separate from sound effects on purpose: the listen-and-find
+                    games ask their question out loud, so this must stay on for
+                    them to be playable. */}
+                <ToggleRow
+                  icon="🗣️"
+                  label={t('settings.voice')}
+                  value={settings.voiceEnabled}
+                  onChange={(v) => update({ voiceEnabled: v })}
+                />
+                <View style={styles.divider} />
+                <ToggleRow
+                  icon="📳"
+                  label={t('settings.haptics')}
+                  value={settings.hapticsEnabled}
+                  onChange={(v) => update({ hapticsEnabled: v })}
+                />
+              </View>
             </View>
 
-            <Text style={styles.section}>{t('settings.guided.reset')}</Text>
-            <HoldToConfirm
-              label={t('flow.holdToReset')}
-              accent="coral"
-              onConfirm={resetJourney}
-            />
+            <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <Text style={styles.section}>{t('settings.language')}</Text>
+              <View style={styles.bands}>
+                {LANGUAGES.map((lang) => (
+                  <Chip
+                    key={lang.code}
+                    label={lang.label}
+                    active={language === lang.code}
+                    onPress={() => onPickLanguage(lang.code)}
+                  />
+                ))}
+              </View>
+
+            </View>
           </View>
-
-          {/* Right column: language + age band */}
-          <View style={[styles.column, landscape && styles.columnLandscape]}>
-            <Text style={styles.section}>{t('settings.language')}</Text>
-            <View style={styles.bands}>
-              {LANGUAGES.map((lang) => (
-                <Chip
-                  key={lang.code}
-                  label={lang.label}
-                  active={language === lang.code}
-                  onPress={() => onPickLanguage(lang.code)}
-                />
-              ))}
-            </View>
-
+        ) : tab === 'games' ? (
+          <View style={styles.column}>
             <Text style={styles.section}>{t('settings.showGamesFor')}</Text>
             <View style={styles.bands}>
               <Chip
@@ -201,10 +208,37 @@ export function SettingsScreen({ navigation }: Props) {
               ))}
             </View>
           </View>
-        </View>
+        ) : (
+          <View style={[styles.columns, landscape && styles.columnsLandscape]}>
+            <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <Text style={styles.section}>{t('settings.guided.games')}</Text>
+              <View style={styles.bands}>
+                {flowGames.map((id) => (
+                  <Chip
+                    key={id}
+                    label={labelForGame(id)}
+                    active={isGameOn(id)}
+                    onPress={() => toggleGame(id)}
+                  />
+                ))}
+              </View>
+            </View>
 
-        <Text style={styles.version}>{t('settings.version')}</Text>
+            <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <Text style={styles.section}>{t('settings.guided.reset')}</Text>
+              <HoldToConfirm
+                label={t('flow.holdToReset')}
+                accent="coral"
+                onConfirm={resetJourney}
+              />
+            </View>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Pinned, not in the scroll body: it used to sit below the fold where
+          nobody could read it out for a support conversation. */}
+      <Text style={styles.version}>{t('settings.version')}</Text>
     </SafeAreaView>
   );
 }
@@ -218,11 +252,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: COLORS.ink,
   },
-  content: { padding: SPACING.lg, gap: SPACING.lg },
+  tabs: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
+  },
+  content: { padding: SPACING.md, gap: SPACING.md },
   // Portrait: single column; landscape: row of two equal columns
-  columns: { flexDirection: 'column', gap: SPACING.lg },
+  columns: { flexDirection: 'column', gap: SPACING.md },
   columnsLandscape: { flexDirection: 'row', alignItems: 'flex-start', gap: SPACING.xl },
-  column: { gap: SPACING.lg },
+  column: { gap: SPACING.md },
   columnLandscape: { flex: 1 },
   card: {
     backgroundColor: COLORS.surface,
@@ -233,7 +273,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    paddingVertical: 14,
+    paddingVertical: 10,
   },
   rowIcon: { fontSize: 24 },
   rowLabel: { flex: 1, fontFamily: FONTS.body, fontSize: 16, color: COLORS.ink },
@@ -250,6 +290,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.inkFaint,
     textAlign: 'center',
-    marginTop: SPACING.md,
+    paddingVertical: SPACING.sm,
   },
 });

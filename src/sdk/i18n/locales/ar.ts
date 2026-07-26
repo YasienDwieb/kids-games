@@ -35,6 +35,11 @@ export const ar: CoreTranslations = {
       games: 'الألعاب في الرحلة',
       reset: 'إعادة الرحلة',
     },
+    tabs: {
+      general: 'عام',
+      games: 'الألعاب',
+      journey: 'الرحلة',
+    },
     gate: {
       title: 'اسأل شخصاً كبيراً',
       wrong: 'ليست صحيحة، حاول مرة أخرى',

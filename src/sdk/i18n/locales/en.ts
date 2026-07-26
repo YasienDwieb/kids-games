@@ -34,6 +34,11 @@ export const en = {
       games: 'Games in the journey',
       reset: 'Reset journey',
     },
+    tabs: {
+      general: 'General',
+      games: 'Games',
+      journey: 'Journey',
+    },
     gate: {
       title: 'Ask a grown-up',
       wrong: 'Not quite — try again',
