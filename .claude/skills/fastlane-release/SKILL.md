@@ -204,20 +204,15 @@ fastlane/metadata/ios/
 └── screenshots/README.md      # required sizes + capture guide
 ```
 
-## 8.2 Fixed identity facts (this app)
+## 8.2 Identity & access (reference)
 
-- Apple Team ID: **J98M86H34Z** (an Individual team — NOT the `waybeyond` domain).
-- Bundle ID: **`dev.waybeyond.kidszone`** (registered under that team; bundle IDs don't
-  require domain ownership).
-- ASC app ID (`ascAppId`): **6793942277**.
-- ASC API key: `fastlane/metadata/ios/AuthKey_FJS3Y8R9KM.p8`, Key ID `FJS3Y8R9KM`,
-  Issuer ID `39271b7c-fb0c-4b41-91d1-377b65e44696`. **`.p8` is downloadable once — keep a
-  backup outside the repo. It is gitignored; never let it enter git history.**
-- EAS project owner is the **`waybeyond` Expo org** (`app.json` → `owner`,
-  `extra.eas.projectId`). To run any `eas` command against it you must be a MEMBER of the
-  `waybeyond` org — check `eas whoami` (the Accounts list must include `waybeyond`). If a
-  command returns `Entity not authorized: AppEntity[...]`, the logged-in account isn't a
-  member; the fix is an org invite, not switching accounts.
+- Apple Team ID **J98M86H34Z**, Bundle ID **`dev.waybeyond.kidszone`**, ASC app ID
+  (`ascAppId`) **6793942277** — all wired into `eas.json` / `app.json` already.
+- ASC API key `fastlane/metadata/ios/AuthKey_FJS3Y8R9KM.p8` (gitignored via `*.p8`; keep a
+  backup outside the repo — Apple lets you download it once).
+- The EAS project is owned by the **`waybeyond` Expo org**. You must be a member to run
+  `eas` — check `eas whoami` (Accounts must list `waybeyond`). `Entity not authorized:
+  AppEntity[...]` means the logged-in account isn't a member → get an org invite.
 
 ## 8.3 store.config.json — the iOS listing (bilingual)
 
@@ -227,57 +222,39 @@ rejects `ar`). Field limits: `title` ≤30, `subtitle` ≤30, `promoText` ≤170
 `description` ≤4000, `keywords` (comma-joined) ≤100. Adapt the Play `full_description` /
 `short_description` copy; verify Arabic **character** counts (multibyte) not bytes.
 
-EAS metadata pushes ONLY text: name/subtitle/promo/description/keywords/releaseNotes +
-support/marketing/privacy URLs. It does **NOT** push: category, age rating, privacy label,
-pricing, content rights, or screenshots — those are ASC-UI manual (§8.6).
+`eas metadata:push` pushes ONLY text (name/subtitle/promo/description/keywords/releaseNotes
++ support/marketing/privacy URLs). It does **NOT** push screenshots, or the per-version
+finish in §8.5 — do those in the ASC UI.
 
-Always run before pushing: `npx eas metadata:lint` (validates schema + locale codes + limits).
-
-## 8.4 The iOS release flow (order matters)
+## 8.4 Ship a new iOS version — the recurring flow
 
 ```bash
-# 0. Be a member of the waybeyond Expo org, then:
-npx eas whoami                                  # confirm access
-npx eas metadata:lint                           # validate store.config.json
+npx eas whoami                                  # confirm waybeyond org access
+npx eas metadata:lint                           # validate store.config.json (run before every push)
 
-# 1. Build (first run is INTERACTIVE — Apple login to create signing)
-npx eas build -p ios --profile production
-#    Prompts "Generate a new Apple Distribution Certificate? / Provisioning Profile?"
-#    → answer Y to BOTH the first time (none exist yet; EAS-managed).
-
-# 2. Upload the build to ASC (non-interactive, uses the .p8)
-npx eas submit -p ios --profile production      # → appears in TestFlight, "Ready to Submit"
-
-# 3. Push listing text (en-US + ar-SA)
-npx eas metadata:push --profile production
+npx eas build   -p ios --profile production     # cloud build (signing is already set up)
+npx eas submit  -p ios --profile production      # upload to ASC → TestFlight → "Ready to Submit"
+npx eas metadata:push --profile production       # push en-US + ar-SA listing text
 ```
 
-The build/submit/push commands are outward, publishing actions — confirm with the user and
-prefer `metadata:lint` first. `metadata:push` needs the ASC app to exist (it does: 6793942277).
+These are outward, publishing actions — confirm with the user; run `metadata:lint` first.
+Bump `app.json` `expo.version` for the release (don't change it silently — flag to the
+user; same rule as Play). Build number auto-increments remotely.
 
-## 8.5 Version
+## 8.5 Per-version finish in App Store Connect (UI)
 
-`app.json` `expo.version` is shared with Play. iOS build number auto-increments remotely
-(`eas.json` cli.appVersionSource:remote + production.autoIncrement). Bump `version` for a
-real release; don't silently change it — flag to the user (same rule as Play).
+Screenshots and these steps happen in the ASC **Distribution / App Store** tab for the new
+version, then **Add for Review → Submit**:
 
-## 8.6 Manual finish in App Store Connect (not automatable)
+- **Attach the build** for this version; set **"What's New"** (release notes) and the
+  version **Copyright** (`<year> Waybeyond`).
+- **Screenshots:** upload the required sets (see §8.6 for sizes) if they changed.
+- **Category / Age rating / App Privacy** normally **carry over** from the previous version
+  — just confirm they're still set. (App is Education, 4+, "Data Not Collected", normal
+  listing — NOT the Kids Category. App Privacy may need an ASC **Admin** to confirm.)
+- **Pricing** is app-level (Free) — set once, carries over.
 
-After metadata + build are up, in the ASC **Distribution / App Store** tab:
-
-- **Category:** Education. **Age rating:** run the questionnaire — Kids Zone answers
-  **NONE / NO to every content question** → **4+**. On the final page choose **Not
-  Applicable** (normal listing), NOT "Made for Kids" (we deliberately avoid the Kids
-  Category program). Leave Age Suitability URL blank.
-- **App Privacy:** "Data Not Collected" (no ads/tracking/accounts/network). Requires an
-  ASC **Admin** to confirm — a Developer role can set answers but may not finalize.
-- **Pricing:** set **Free** (USD 0.00) — required or submit is blocked.
-- **Content Rights:** App Information → confirm you have rights (emoji art is
-  Noto/OpenMoji Apache/CC + own art).
-- **Attach the build** for this version, set the version's Copyright (`<year> Waybeyond`),
-  then **Add for Review → Submit**.
-
-## 8.7 iOS rules & things to watch
+## 8.6 iOS rules & things to watch
 
 - **`ar` vs `ar-SA`.** Play uses `ar`; App Store uses `ar-SA`. Using `ar` in
   `store.config.json` fails `eas metadata:lint`. Always lint before pushing.
