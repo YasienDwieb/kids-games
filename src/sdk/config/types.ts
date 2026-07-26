@@ -4,8 +4,6 @@ import type { AccentName } from '@/constants';
 export type GameLayoutOptions = {
   /** 'shell' (default) wraps the game in GameShell; 'bare' gives a raw safe-area canvas. */
   mode?: 'shell' | 'bare';
-  /** Override the header title (defaults to game name). */
-  title?: string;
   /** Hide the back button (default: shown). */
   showBack?: boolean;
 };
