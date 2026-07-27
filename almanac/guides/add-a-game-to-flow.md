@@ -18,6 +18,9 @@ sources:
   - id: settings-screen
     type: file
     path: src/screens/SettingsScreen.tsx
+  - id: animal-safari-levels
+    type: file
+    path: src/games/animal-safari/utils/levels.ts
 ---
 
 Use this guide when a game already exists and is registered on Home, and you
@@ -57,7 +60,18 @@ state from inside the adapter. `useFlowRound`'s `complete()` plays the
 `'success'` sound cue and calls `onComplete` after a short delay, and is
 idempotent against being triggered twice [@use-flow-round].
 
-**4. Add one side-effect import to `src/flow/index.ts`.** This file is the
+**4. Honor the `seed` argument — do not recompute your own.** `unitAt(i, seed)`
+is handed a per-journey seed that changes every time the player calls
+`reset()`; thread it into whatever PRNG state drives your round's layout
+only, and keep `i` alone as the thing that decides which content the unit
+teaches. `roundForUnit(i, sessionSeed)` in `animal-safari/utils/levels.ts` is
+the pattern to copy [@animal-safari-levels]. An earlier version of
+`animal-safari/flow.tsx` got this wrong by ignoring the incoming seed
+entirely; see the seed contract and that incident on the
+[Flow engine](../architecture/flow-engine) architecture page before writing
+your own `unitAt`.
+
+**5. Add one side-effect import to `src/flow/index.ts`.** This file is the
 flow equivalent of `src/games/index.ts` — the single place that imports every
 flow-enabled game's adapter module for its registration side effect
 [@flow-index]. Add `import '../games/<id>/flow';` alongside the existing

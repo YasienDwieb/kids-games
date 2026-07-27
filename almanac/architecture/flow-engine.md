@@ -27,6 +27,15 @@ sources:
   - id: settings-store
     type: file
     path: src/sdk/settings/store.ts
+  - id: animal-safari-generate
+    type: file
+    path: src/games/animal-safari/utils/generate.ts
+  - id: animal-safari-levels
+    type: file
+    path: src/games/animal-safari/utils/levels.ts
+  - id: animal-safari-flow
+    type: file
+    path: src/games/animal-safari/flow.tsx
 ---
 
 [Flow](../concepts/flow) — the guided, scoreless play mode — is built as its
@@ -66,6 +75,22 @@ finite, addressable slice of the game's own content become a `FlowUnit`
 without the game rewriting any of its actual gameplay: the unit's `render`
 function is typically the game's existing round component, wired to call
 `onComplete` on success instead of updating a score.
+
+The `seed` argument to `unitAt` is a contract, not a suggestion an adapter can
+ignore. `animal-safari/flow.tsx` originally dropped it and recomputed its own
+`level * 7919` internally — the same seed `useFlow` used for the standalone
+game's non-flow ladder — so every journey replayed byte-identical rounds no
+matter how many times `reset()` picked a fresh seed: same distractors, same
+correct-tile position [@animal-safari-flow]. The fix threads the incoming seed
+into the round's layout while keeping it out of content selection: `flow.tsx`
+now calls `roundForUnit(i, seed)`, which builds the round from
+`seedForLevel(level, sessionSeed)` — a seed that determines choice order and
+distractor pick but never which item is the target [@animal-safari-levels]
+[@animal-safari-generate]. An adapter author should follow the same split:
+mix the incoming seed into whatever PRNG state drives layout, but derive
+*which* content the unit teaches from the index alone, so a resumed session
+and a reset session always agree on content and only ever differ on
+presentation.
 
 ## Building the interleaved sequence
 
