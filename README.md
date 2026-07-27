@@ -61,7 +61,7 @@ For full setup, testing on a phone via Expo Go, and local/EAS cloud builds acros
 App.tsx                     # Entry: loads fonts, SafeAreaProvider, NavigationContainer, game registration
 src/
 ├── app/navigation/         # RootNavigator — screens: Home, GamePlayer, Settings
-├── screens/                # HomeScreen (game grid), GamePlayerScreen (loads game by id), SettingsScreen
+├── screens/                # HomeScreen (game grid), GamePlayerScreen (loads game by id), SettingsScreen (behind ParentGate)
 ├── sdk/                    # SDK platform core — the single import surface for games (@/sdk)
 │   ├── config/             # registerGame / getGame / getAllGames + GameConfig types
 │   ├── layout/             # GameShell, useGameShell, useScreenBack
@@ -77,6 +77,7 @@ src/
 ├── games/
 │   ├── index.ts            # Side-effect imports that register each game
 │   ├── _template/          # Copy this to start a new game
+│   ├── _shared/            # Cross-game building blocks (listen-find board & round generator)
 │   ├── simple-pairs/       # Memory matching card game
 │   ├── color-mixer/        # Color mixing & discovery game
 │   ├── mouse-maze/         # Swipe-to-solve maze with levels
@@ -86,7 +87,8 @@ src/
 │   ├── count-and-pop/      # Count objects and pop the number
 │   ├── match-up/           # Draw a line from each thing to its match
 │   ├── letter-land/        # Listen-and-find letters (phonics)
-│   └── numbers-land/       # Listen-and-find numbers
+│   ├── numbers-land/       # Listen-and-find numbers
+│   └── animal-safari/      # Listen-and-find animals (first words)
 ├── types/                  # RootStackParamList, shared types
 ├── hooks/                  # Shared hooks
 └── utils/                  # Shared helpers
@@ -130,6 +132,7 @@ See `CLAUDE.md` (Design-system adherence) and the `kids-games-dev` skill for the
 | **Match Up** | 3–7 | Matching | Draw a line from each thing to its match (animals→food, helpers→tools, and more) |
 | **Letter Land** | 3–7 | Literacy & phonics | Listen and find the letter — with spoken prompts and word-picture heroes |
 | **Numbers Land** | 3–7 | Numbers | Listen and find the number, with spoken prompts |
+| **Animal Safari** | 3–7 | First words | Listen and find the animal — by name or by the sound it makes |
 
 ## Adding a New Game
 
