@@ -1,13 +1,14 @@
 ---
 name: fastlane-release
-description: Use when preparing a new store release for this Kids Games repo on EITHER Google Play OR the Apple App Store — updating release notes/changelogs, store descriptions/subtitle/title/keywords, or screenshots, and running the release lanes (fastlane supply for Play, EAS build/submit/metadata for iOS). Trigger whenever the user mentions a "new release", "release notes", "changelog", "what's new", "store listing", "Play Store metadata", "App Store", "App Store Connect", "TestFlight", "eas submit", "eas metadata", "fastlane", "supply", "submit to the store/app store", or updating app descriptions/screenshots — even if they don't name the tool. Covers the bilingual metadata layout (Play uses `ar`, App Store uses `ar-SA`), per-field character limits, deriving "what's new" from the last release tag, real in-app game names, per-store screenshot rules, the Fastfile supply lanes, AND the full iOS App Store submission flow (§8: EAS credentials, store.config.json, eas build/submit, eas metadata:push, and the ASC manual fields).
+description: Use when preparing OR shipping a store release for this Kids Games repo on EITHER Google Play OR the Apple App Store — updating release notes/changelogs, store descriptions/subtitle/title/keywords, or screenshots, and running the release lanes (fastlane supply for Play, EAS build/submit/metadata for iOS). Trigger whenever the user mentions a "new release", "release notes", "changelog", "what's new", "store listing", "Play Store metadata", "App Store", "App Store Connect", "TestFlight", "eas submit", "eas metadata", "fastlane", "supply", "submit to the store/app store", or updating app descriptions/screenshots — even if they don't name the tool. ALSO trigger when a release CI run failed or half-finished and the user wants to resume, re-submit, or "ship without rebuilding" (§6.3 — reuse the finished EAS build, never rebuild; covers the `This Edit has been deleted` Play error). Covers the bilingual metadata layout (Play uses `ar`, App Store uses `ar-SA`), per-field character limits, deriving "what's new" from the last release tag, real in-app game names, per-store screenshot rules, the release-aab GitHub workflow and Fastfile supply lanes, AND the full iOS App Store submission flow (§8: EAS credentials, store.config.json, eas build/submit, eas metadata:push, and the ASC manual fields).
 ---
 
 # fastlane-release
 
-Prepare a new Google Play release for the Kids Zone app: refresh the Fastlane store
-metadata (release notes, descriptions, screenshots) so it accurately reflects what
-shipped, then commit it on its own branch and open a PR.
+Prepare and ship a new Google Play release for the Kids Zone app: refresh the Fastlane
+store metadata (release notes, descriptions, screenshots) so it accurately reflects what
+shipped, commit it on its own branch and open a PR, then get the binary and listing onto
+Play (§6) — including resuming a release whose CI run died part-way (§6.3).
 
 > **The store listing is bilingual: English (`en-US`) AND Arabic (`ar`).** Every text
 > change must be made in BOTH locales — `supply` uploads each locale independently and
@@ -142,23 +143,82 @@ Limits: full_description ≤ 4000, short_description ≤ 80, title ≤ 30.
 - en-US and ar may have different counts; both just need to be in 2–8.
 - Run the validator (§7) to catch duplicate indices and out-of-range counts.
 
-## 6. Pushing to Play (Fastfile lanes)
+**The README shares these screenshots.** `docs/screenshots/*.jpg` are byte-identical copies
+of the **en-US** phone set (`home-landscape.jpg` = `01.jpg`, and so on). When a phone
+screenshot changes, refresh its `docs/` twin in the same PR or the README goes stale —
+`md5sum docs/screenshots/*.jpg fastlane/metadata/android/en-US/images/phoneScreenshots/*.jpg`
+shows at a glance which ones drifted. Also add the new game to the README games table and
+the `src/games/` tree.
 
-`supply` uploads listing text + images + changelogs **per existing release version_code**
-— there is no binary upload in these lanes, so each one targets a release that already
-exists on the track. Look codes up first:
+## 6. Pushing to Play
+
+### 6.1 The normal path — the CI workflow
+
+`.github/workflows/release-aab.yml` (**`workflow_dispatch`**, run it from the Actions tab)
+is the whole release in one job, and it is the path to prefer:
+
+1. `eas build -p android --profile production` → AAB, capturing `BUILD_ID` + `VERSION_CODE`
+2. `eas submit --id "$BUILD_ID"` → Play **internal** track, **draft** (per `eas.json`
+   `submit.production.android`)
+3. `fastlane metadata  version_code:$VERSION_CODE track:internal`
+4. `fastlane changelog version_code:$VERSION_CODE track:internal`
+
+Division of labour: **EAS owns `versionCode`** (remote autoIncrement — never hand-edit it);
+`app.json` `expo.version` is the semver you bump. The workflow does not tag or bump semver.
+
+Because steps 3–4 run only if step 2 succeeds, a failed submit leaves the **binary uploaded
+but the listing untouched** — see §6.3.
+
+### 6.2 Running the lanes by hand
 
 ```bash
-bundle exec fastlane tracks                                  # list tracks + version codes
-bundle exec fastlane validate version_code:<vc> track:<t>    # dry-run, no changes
-bundle exec fastlane metadata  version_code:<vc> track:<t>   # listing text + images (no notes)
-bundle exec fastlane changelog version_code:<vc> track:<t>   # release notes only
-bundle exec fastlane pull                                    # pull live listing into metadata/
+fastlane tracks                                  # list tracks + version codes
+fastlane validate version_code:<vc> track:<t>    # dry-run, no changes
+fastlane metadata  version_code:<vc> track:<t>   # listing text + images (no notes)
+fastlane changelog version_code:<vc> track:<t>   # release notes only
+fastlane pull                                    # pull live listing into metadata/
 ```
 
-`track` defaults to `production`. The binary (AAB) is built/uploaded separately (EAS or
-manual); these lanes only refresh the store listing for that release. Running a lane is
-an outward, publishing action — confirm with the user and prefer `validate` first.
+**Plain `fastlane`, not `bundle exec fastlane` — this repo has no Gemfile** (`bundle exec`
+dies with "Could not locate Gemfile"). CI installs it with `gem install fastlane`.
+
+`supply` uploads listing text + images + changelogs **per existing release version_code**
+— there is no binary upload in these lanes, so each targets a release that already exists
+on the track. **Always run `tracks` first and target the version code of the release you
+mean.** `track` defaults to `production`, which is usually *wrong* here: release notes are
+per-version-code, so pushing next version's notes against the live production code stamps
+them onto the release users are already running. A new release normally lives as a
+`[draft]` on `internal` — target that.
+
+`fastlane tracks` is also the only honest answer to "what is actually live". A git tag or
+an `app.json` version proves nothing shipped: production sat on `vc=11 name="1.1.1"` while
+the repo had a `v1.1.2` tag and `app.json` said `1.2.0`.
+
+Running a lane is an outward, publishing action — confirm with the user and prefer
+`validate` first.
+
+### 6.3 Recovering from a failed submit — do NOT rebuild
+
+If the CI job fails at **Submit AAB to Play**, the EAS build already succeeded. Rebuilding
+wastes ~1h and burns a `versionCode`. Reuse the finished build:
+
+```bash
+gh run view <run-id> --log-failed | tail -40        # confirm which step died
+npx eas build:list --platform android --limit 5 --non-interactive --json \
+  | jq -r '.[] | "\(.id)  vc=\(.appBuildVersion)  ver=\(.appVersion)  \(.status)"'
+npx eas submit --platform android --profile production --id <BUILD_ID> --non-interactive
+fastlane tracks                                     # confirm the vc landed as [draft]
+fastlane metadata  version_code:<vc> track:internal
+fastlane changelog version_code:<vc> track:internal
+```
+
+**`Google Api Error: This edit has expired` / `This Edit has been deleted`** (retried 5×,
+then fatal) means the Play edit was invalidated *while the job was running* — classically
+because someone discarded that release in the Play Console. It is not a credentials or
+metadata fault; nothing is wrong with the repo. Just re-submit the existing build as above.
+
+After a manual recovery the listing you pushed may come from an unmerged
+`chore/release-metadata` branch — say so, and get the PR merged so Play and `master` agree.
 
 ## 7. Validate before committing
 
@@ -183,6 +243,13 @@ Exit code is non-zero on any hard failure, so it's safe to gate a commit on it.
   let the user decide the new version for the build.
 - **Both locales, every time.** A change in `en-US` with no matching `ar` edit is the
   most common defect here.
+- **Don't judge locale coverage from `tail`.** `supply` uploads the two locales on
+  concurrent threads, so the `ar` lines interleave unpredictably and a truncated tail can
+  look exactly like Arabic was skipped. Confirm with
+  `fastlane changelog … | grep -iE "language|Uploaded"` and check both `en-US` **and**
+  `ar` appear, rather than re-running blind.
+- **A tag is not a shipment.** Trust `fastlane tracks` over git tags and `app.json` for
+  what is actually on Play.
 
 ---
 
