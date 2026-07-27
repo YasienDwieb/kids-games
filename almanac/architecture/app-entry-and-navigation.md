@@ -1,7 +1,7 @@
 ---
 title: "App Entry and Navigation Architecture"
 summary: "Traces the boot sequence from index.ts through App.tsx's font, side-effect, orientation, and language gates into RootNavigator and its four screens."
-topics: [architecture, navigation, boot]
+topics: [architecture, navigation]
 sources:
   - id: index-ts
     type: file
@@ -24,6 +24,12 @@ sources:
   - id: app-json
     type: file
     path: app.json
+  - id: responsive-ts
+    type: file
+    path: src/utils/responsive.ts
+  - id: responsive-test
+    type: file
+    path: src/utils/__tests__/responsive.test.ts
 ---
 
 Kids Zone boots through a short, strict chain: `index.ts` hands the process to
@@ -104,26 +110,88 @@ is available to every screen beneath this point.
 `headerShown: false` set globally, and exactly four screens registered:
 `Home`, `GamePlayer`, `Settings`, and `FlowPlayer` [@root-navigator]. Turning
 off the native header everywhere is intentional — every screen in this app
-draws its own chrome (the [game shell](../architecture/game-shell-and-back-navigation)'s
-`AppBar`, or a floating back button), so a second, stock header would be
-either redundant or wrong for the landscape layout.
+draws its own chrome, most commonly the floating back button and HUD the
+[game shell](../architecture/game-shell-and-back-navigation) renders over the
+playfield, so a second, stock header would be either redundant or wrong for
+the landscape layout.
 
 ### `HomeScreen`
 
 `HomeScreen` is the app's landing screen and branches on device orientation
 rather than on a settings toggle: when `width > height` it renders a
-landscape two-pane layout — a fixed-width journey card on one side, a
-horizontal games rail on the other — and otherwise falls back to a portrait
-scroll view with a 2-column game grid [@home-screen]. The game list itself
-comes from the registry: `settings.ageBand ? gamesForBand(settings.ageBand) :
-getAllGames()`, so an age band chosen in Settings filters the Home tile set
-without touching how games are registered [@home-screen]. One RTL-specific
-detail is worth knowing if you touch this screen: the landscape games rail is
-a column-major grid inside a horizontal `ScrollView`, and because a native
-horizontal `ScrollView` always initializes scrolled to `x: 0` regardless of
-layout direction, `HomeScreen` manually snaps the scroll position to the
-content's far edge in `onContentSizeChange` when `I18nManager.isRTL` is true,
-so game 0 still lands flush at the visual start of the rail [@home-screen].
+landscape two-pane layout — a journey card on one side, a games rail on the
+other — and otherwise falls back to a portrait scroll view with a game grid
+[@home-screen]. The game list itself comes from the registry:
+`settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames()`, so an age
+band chosen in Settings filters the Home tile set without touching how games
+are registered [@home-screen]. One RTL-specific detail is worth knowing if you
+touch this screen: the landscape games rail can be a column-major grid inside
+a horizontal `ScrollView`, and because a native horizontal `ScrollView`
+always initializes scrolled to `x: 0` regardless of layout direction,
+`HomeScreen` manually snaps the scroll position to the content's far edge in
+`onContentSizeChange` when `I18nManager.isRTL` is true, so game 0 still lands
+flush at the visual start of the rail [@home-screen].
+
+Tiles on the rail are ordered by each game's `order` field (see
+[Game registry](../architecture/game-registry)) rather than by import order,
+and each tile's visible label is `gameShortName(game)` — a shortened,
+one-line label used because the rail's tiles are only ~116dp wide — while the
+full `gameName(game)` still reaches screen readers through the tile's
+`accessibilityLabel` [@home-screen]. `HomeScreen` is also the home of Kids
+Zone's only ungated controls: a sound-mute button and a language-switch
+button (with its own confirmation dialog) live directly on this screen,
+outside the parent gate that now blocks the rest of Settings — the
+[Parent gate for Settings](../decisions/parent-gate-for-settings) decision
+page explains why those two controls specifically were kept ungated
+[@home-screen].
+
+### Tablet-aware sizing, not just orientation
+
+Both the portrait and landscape branches are further sized by
+`src/utils/responsive.ts`, a pure, dimension-driven module deliberately keyed
+on `width`/`height` alone rather than `Platform.OS`, so an Android tablet and
+an iPad of the same size class get the same layout [@responsive-ts].
+`isTablet(width, height)` treats any screen whose *short* side is `>= 768`dp
+as a tablet [@responsive-ts]. Portrait columns go from a fixed 2 on phones to
+3 or 4 on tablets (`width > 900 ? 4 : 3`), so a tablet in portrait doesn't
+render two oversized columns [@home-screen]. In landscape, `homeRailWidth`
+widens the journey pane from the phone's 244dp to 300dp on tablets, and
+`computeHomeGrid` decides how the games rail itself is sized and whether it
+scrolls [@responsive-ts].
+
+`computeHomeGrid` has two code paths, chosen solely by `isTablet(width,
+height)` — the short-side threshold decides the path, so nothing about the
+header controls sharing that same row (the sound-mute, language, and
+settings buttons described above) can push a phone onto the tablet path or
+the reverse [@responsive-ts]. The phone path picks `rows = clamp(1, 3,
+round(usableHeight / 140))`, then derives `cardW`, `cardH`, and `emojiSize`
+from that row height and clamps them to phone-sized bounds; it always
+renders inside a horizontal `ScrollView` [@responsive-ts]. That `140`
+divisor is a tuned constant, not an arbitrary one: the code comment records
+that at the original `200` divisor, a typical 390dp-tall phone in landscape
+rounded down to a single row of about three 160dp-wide tiles, leaving eight
+of the app's eleven games off the right edge of the rail with no scroll
+affordance hinting they existed — the two-row target fixes that without
+changing anything about the tablet path [@responsive-ts].
+`src/utils/__tests__/responsive.test.ts` locks the current phone numbers
+(two rows, 116×130dp cards on a reference iPhone-landscape size) as a
+regression guard, and separately asserts the cards stay well above the
+44dp touch-target minimum, so a future change to the divisor or the header
+height will fail that test unless the change is deliberate
+[@responsive-test]. The tablet path instead searches row counts for the
+largest card size (bounded 150–260dp) that fits *every* game in the available
+width and height with no scrolling at all — a "fit-to-screen" grid rendered
+in a centered, wrapping `View` instead of a `ScrollView`
+[@responsive-ts] [@home-screen]. If no row count fits all games even at the
+minimum card size, the tablet path falls back to the same horizontal-scroll
+rendering as phones, sized with tablet-minimum cards, so an unusually large
+game count degrades to scrolling instead of clipping content
+[@responsive-ts] [@responsive-test]. Because the two paths share only the
+`usableHeight`/`gamesWidth` helpers and the `GAMES_HEADER_H`/`GRID_PAD_*`
+constants — never row-count logic — tuning the phone divisor cannot regress
+the tablet grid, and a tablet-path change cannot silently shift phone row
+counts either; the earlier one-row regression came from the phone divisor
+itself being wrong at ship time, not from cross-path interference.
 
 ### `GamePlayerScreen`
 

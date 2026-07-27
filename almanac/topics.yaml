@@ -81,8 +81,23 @@ topics:
 
   - slug: release
     title: Release
-    description: Building, versioning, and shipping the app to testers and the Google Play Store
+    description: Building, versioning, and shipping the app to testers, the Google Play Store, and the Apple App Store
     parents: []
+
+  - slug: android
+    title: Android
+    description: The Android-specific build, submit, and Google Play listing workflows
+    parents: [release]
+
+  - slug: ios
+    title: iOS
+    description: The iOS-specific EAS build, submit, and App Store Connect listing workflow
+    parents: [release]
+
+  - slug: play-store
+    title: Play Store
+    description: The Google Play listing itself — fastlane-managed text, screenshots, and changelogs, separate from the binary submit pipeline
+    parents: [release]
 
   - slug: testing
     title: Testing
@@ -92,4 +107,9 @@ topics:
   - slug: licensing
     title: Licensing
     description: The code license, trademark reservation, and third-party asset attribution terms
+    parents: []
+
+  - slug: getting-started
+    title: Getting Started
+    description: The wiki's front-door page — repo orientation and routing to common work areas
     parents: []

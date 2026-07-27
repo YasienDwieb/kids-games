@@ -1,7 +1,7 @@
 ---
 title: "Play Store Listing As Code"
 summary: "The Google Play listing text, screenshots, and changelogs are committed to the repo as fastlane metadata and managed separately from the EAS binary pipeline."
-topics: [decisions, release, fastlane]
+topics: [decisions, release, play-store]
 sources:
   - id: play-store-doc
     type: file
@@ -15,6 +15,9 @@ sources:
   - id: release-aab-workflow
     type: file
     path: .github/workflows/release-aab.yml
+  - id: store-config-json
+    type: file
+    path: store.config.json
 ---
 
 The project ships in two languages, English and Arabic, and Google Play asks
@@ -64,6 +67,13 @@ resulting `versionCode` back out of the build metadata, and then runs
 `fastlane metadata version_code:"$VERSION_CODE" track:internal` followed by
 `fastlane changelog version_code:"$VERSION_CODE" track:internal` against that
 same release [@release-aab-workflow].
+
+This decision covers Google Play only. iOS listing text is also
+version-controlled, in `store.config.json`, but pushed with `eas metadata:push`
+instead of a fastlane lane [@store-config-json] — a different mechanism with
+its own locale-code and field-limit rules, covered in
+[Release an iOS build](../guides/release-an-ios-build) rather than repeated
+here.
 
 ## Consequences
 

@@ -1,7 +1,7 @@
 ---
 title: "Build and Release Config Reference"
 summary: "The exact EAS build profiles, app.json manifest fields, and package.json scripts that govern building and releasing the app."
-topics: [reference, build, release]
+topics: [reference, release]
 sources:
   - id: eas-json
     type: file
@@ -12,6 +12,9 @@ sources:
   - id: package-json
     type: file
     path: package.json
+  - id: store-config-json
+    type: file
+    path: store.config.json
 ---
 
 Building and shipping this app is governed by three small config files —
@@ -45,16 +48,26 @@ page. The [Release an Android build](../guides/release-an-android-build)
 guide walks through choosing between the `preview` (APK) and `production`
 (AAB) paths.
 
+`submit.production.ios` holds the App Store Connect (ASC) credentials EAS
+needs to upload an iOS build non-interactively: an API key file
+(`ascApiKeyPath`, gitignored via `*.p8`), its `ascApiKeyId` and
+`ascApiKeyIssuerId`, the Apple `appleTeamId`, and the numeric `ascAppId`
+[@eas-json]. There is no equivalent of Android's `serviceAccountKeyPath` split
+between build and listing — the same key also authorizes `eas metadata:push`.
+The [Release an iOS build](../guides/release-an-ios-build) guide covers the
+full build/submit/metadata flow this profile feeds.
+
 ## app.json manifest fields
 
 | Field | Value |
 |---|---|
 | `expo.name` | `"Kids Zone"` |
 | `expo.slug` | `"kids-zone"` |
-| `expo.version` | `"1.1.1"` |
+| `expo.version` | `"1.2.0"` |
 | `expo.orientation` | `"landscape"` |
 | `expo.newArchEnabled` | `true` |
 | `expo.ios.bundleIdentifier` | `"dev.waybeyond.kidszone"` |
+| `expo.ios.config.usesNonExemptEncryption` | `false` |
 | `expo.android.package` | `"dev.waybeyond.kidszone"` |
 | `expo.android.edgeToEdgeEnabled` | `true` |
 | `expo.android.predictiveBackGestureEnabled` | `false` |
@@ -71,7 +84,27 @@ records why the two names diverge. The `orientation: "landscape"` field is
 the manifest half of the app's landscape-only lock; the runtime half is
 recorded on the
 [landscape orientation lock](../decisions/landscape-orientation-lock) decision
-page.
+page. `ios.config.usesNonExemptEncryption: false` declares no non-exempt
+encryption to Apple at submit time; App Store Connect blocks a build from
+going to review without this declaration answered [@app-json]. `expo.version`
+is shared between platforms — bumping it for an Android release also bumps
+the version iOS ships next, so the two release flows are not fully
+independent even though their build/submit tooling is.
+
+## store.config.json — the iOS listing
+
+`store.config.json` is the iOS counterpart to `fastlane/metadata/android/`: a
+single JSON file holding the App Store Connect listing text, read by
+`eas metadata:push` and `eas metadata:lint` [@store-config-json]. Localized
+content lives under `apple.info.<locale>`, and only two locales are
+populated: `en-US` and `ar-SA` [@store-config-json]. Each locale carries
+`title`, `subtitle`, `promoText`, `description`, `keywords` (an array, joined
+with commas for Apple's 100-character field), `releaseNotes`, `marketingUrl`,
+`supportUrl`, and `privacyPolicyUrl` [@store-config-json]. Unlike Android's
+per-file-per-field layout, editing the iOS listing means editing JSON string
+values in this one file. See
+[Release an iOS build](../guides/release-an-ios-build) for the push command
+and the locale-code gotcha (`ar-SA`, not Play's `ar`).
 
 ## package.json scripts
 

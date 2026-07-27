@@ -20,7 +20,9 @@ Play Store submission have different owners for versioning: the APK workflow
 owns semver and git tags, while the AAB workflow lets EAS auto-increment the
 Android version code remotely [@aab-workflow]. Which one to run depends on
 whether the goal is a build to hand someone for testing, or a real submission
-to the Play Console.
+to the Play Console. iOS has no equivalent GitHub Actions workflow; it ships
+through EAS commands run directly, covered in
+[Release an iOS build](../guides/release-an-ios-build).
 
 ## Branch A: I Just Need A Shareable Test APK
 

@@ -1,7 +1,7 @@
 ---
 title: "Decision: Landscape Orientation Lock, Manifest Plus Runtime"
 summary: "The app pins itself to landscape with two layered mechanisms — app.json's manifest orientation and a runtime expo-screen-orientation sensor-landscape lock in App.tsx — because the manifest setting alone only allows one fixed landscape direction on Android, and the runtime lock is skipped on web."
-topics: [decisions, orientation, layout]
+topics: [decisions, navigation]
 sources:
   - id: app-tsx
     type: file

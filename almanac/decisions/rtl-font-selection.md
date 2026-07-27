@@ -1,7 +1,7 @@
 ---
 title: "Decision: Key Font Selection off I18nManager.isRTL"
 summary: "FONTS resolves Latin versus Arabic font families by reading I18nManager.isRTL, not i18n.language, because RTL is synchronously correct at StyleSheet.create() time and a language switch always triggers a full app reload anyway."
-topics: [decisions, i18n, rtl, typography]
+topics: [decisions, i18n, rtl, design-system]
 sources:
   - id: typography
     type: file
@@ -33,9 +33,17 @@ an effect in `App.tsx` during boot. If font selection were keyed off
 immediately after a language switch — could capture the wrong font family, or
 never pick the right one at all if the read happened before i18next was ready.
 `I18nManager.isRTL`, on the other hand, is a native flag set by the platform
-itself and is readable synchronously from the first line of JS on every boot,
-because the native side already knows the app's layout direction before any
-JavaScript runs.
+itself and settles to the correct value early in boot, because the native
+side already knows the app's layout direction before most JavaScript runs.
+That guarantee is narrower than it first sounds, though: the flag is still
+`false` at the exact instant a module is first evaluated, and only becomes
+correct slightly later in the same boot. A read has to happen at that later
+moment — at property-access or render time, not at module-import time — to
+see the right value; the
+[module-scope trap](../architecture/i18n-and-rtl) on the i18n and RTL page
+documents this exact timing gap and the components (`AppBar`'s back chevron,
+`BackButton`, `balloon-archer`'s `Archer`/`Arrow`) that got it wrong by
+capturing the flag into a plain constant instead.
 
 ## Decision
 

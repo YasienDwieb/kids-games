@@ -53,8 +53,12 @@ game [@template-readme].
 
 **2. Fill in `config.ts`.** Set `id`, `name`, `description`, `icon`,
 `ageRange: {min, max}`, `backgroundColor`, and point `component` at your root
-component [@template-config]. Pick an `accent` for shared UI theming, and
-decide `layout.mode`: omit `layout` or set `{ mode: 'shell' }` to wrap the game
+component [@template-config]. Pick an `accent` for shared UI theming, and set
+an `order` — the ascending sort weight that decides where your game lands on
+the Home rail; omit it and the game sorts after every game that declares one
+(see [Game config schema](../reference/game-config-schema) for the exact
+`order` field, and [Game registry](../architecture/game-registry) for how it
+is enforced). Then decide `layout.mode`: omit `layout` or set `{ mode: 'shell' }` to wrap the game
 in `GameShell` chrome (title bar, back button, `setScore`/`showOverlay`
 overlay slots), or set `{ mode: 'bare' }` for a full-canvas game that only
 gets a floating back button and manages its own layout — see
@@ -71,7 +75,12 @@ both locales define exactly the same keys [@i18n-contract]. Write `i18n.ts`
 calling `registerTranslations('<id>', { en, ar })` [@i18n-contract]. Register
 `meta.name` and `meta.description` in both locales — the home tile and game
 header resolve those keys with the config's English strings as fallback
-[@i18n-contract]. See
+[@i18n-contract]. If your `name` doesn't fit on the landscape rail's
+~116dp-wide tile in one line, also add `meta.shortName` in both locales;
+games whose full name already fits (e.g. Match Up, Mouse Maze) simply omit
+it, and `gameShortName()` falls back to the full name. In Arabic, a
+`shortName` reads as the answer to "which game," so existing games give it
+the definite article rather than a bare noun. See
 [Add a translated string](../guides/add-a-translated-string) for the exact
 workflow of adding one more key later, rather than repeating it here.
 

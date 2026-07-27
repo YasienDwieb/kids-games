@@ -126,8 +126,11 @@ model that groups games for Home filtering and Settings [@sdk-barrel].
 games do not need a second i18n dependency [@sdk-barrel]. Alongside them:
 `registerTranslations`, `currentLanguage`, `LANGUAGES`, `DEFAULT_LANGUAGE`,
 `languageMeta`, `isRTL`, `LanguageCode`, `LanguageMeta`, `useLanguage`,
-`applyLanguage`, `bootstrapLanguage`, and `gameName`/`gameDescription` (which
-resolve a game's localized name/description with a config fallback). See
+`applyLanguage`, `bootstrapLanguage`, and `gameName`/`gameDescription`/
+`gameShortName` — resolving a game's localized name, description, and short
+Home-tile label, each falling back to the config's own English string, with
+`gameShortName` falling back one step further to `gameName` when a game has
+no `meta.shortName` key at all. See
 [i18n and RTL](../architecture/i18n-and-rtl) for how the per-game
 `registerTranslations` namespace pattern uses these.
 

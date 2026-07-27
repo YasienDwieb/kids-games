@@ -1,7 +1,7 @@
 ---
 title: "Game Registry Architecture"
 summary: "The in-memory registry that validates and stores every GameConfig, and the single wiring file, src/games/index.ts, that imports each game's config for its registration side effect."
-topics: [architecture, games, registry]
+topics: [architecture, games]
 sources:
   - id: registry-ts
     type: file
@@ -18,6 +18,9 @@ sources:
   - id: bands-ts
     type: file
     path: src/sdk/age/bands.ts
+  - id: order-test
+    type: file
+    path: src/sdk/config/__tests__/order.test.ts
 ---
 
 The game registry is the single source of truth for "which games exist in
@@ -36,9 +39,21 @@ exist for the rest of the session.
 `registry.ts` declares `const registry: GameRegistry = {}` — a plain
 `Record<string, GameConfig>` closed over by the module's exported functions,
 with no external way to reach the object directly [@registry-ts]. `getGame(id)`
-returns `registry[id]` or `undefined`; `getAllGames()` returns
-`Object.values(registry)`; `getGamesForAge(age)` filters those values down to
-games whose `ageRange` brackets the given age [@registry-ts]. A fourth
+returns `registry[id]` or `undefined`; `getAllGames()` and `getGamesForAge(age)`
+both run their `Object.values(registry)` result through a shared `byOrder()`
+sort before returning it — `getGamesForAge` filters to games whose `ageRange`
+brackets the given age first, then applies the same ordering [@registry-ts].
+`byOrder()` sorts ascending by each game's optional `order` field, treats a
+missing `order` as `Number.MAX_SAFE_INTEGER` so unordered games sort behind
+every ordered one, and breaks ties (including between two unordered games) by
+original registration order, so the result is stable across repeated calls
+[@registry-ts]. `src/sdk/config/__tests__/order.test.ts` pins all four of
+these behaviors directly against `getAllGames()` [@order-test]. This exists
+because only two or three tiles are visible at once on a landscape phone's
+games rail — see [App entry and navigation](../architecture/app-entry-and-navigation)
+— so the first few games in registration order used to decide the app's first
+impression by accident, as a side effect of which `import` line in
+`src/games/index.ts` happened to run first, rather than by design. A fourth
 function, `_resetRegistry()`, deletes every key — its own comment marks it
 "Test-only," and it exists purely so test suites can reset registry state
 between runs rather than accumulate every test's game across a whole process
@@ -72,8 +87,11 @@ to re-validate what they read back out.
 
 The shape being validated is `GameConfig`: required fields `id`, `name`,
 `description`, `icon`, `ageRange: {min, max}`, `component`, and
-`backgroundColor`, plus optional enrichment fields `accent`, `tags`,
-`layout`, `bands`, `version`, and `author` [@types-ts]. The
+`backgroundColor`, plus optional enrichment fields `accent`, `order`, `tags`,
+`layout`, `bands`, `version`, and `author` [@types-ts]. `order` is the field
+`byOrder()` reads, described above; it is not checked by
+`validateGameConfig` at all, so an omitted `order` is a valid config that
+simply sorts last. The
 [Game config schema](../reference/game-config-schema) reference page is the
 field-by-field contract for this type; this page is only concerned with how
 the registry enforces and stores it.
