@@ -46,10 +46,15 @@ function gamesWidth(i: HomeGridInput, railW: number): number {
   return i.width - railW - GRID_PAD_H * 2;
 }
 
-/** Phone landscape rail — preserves the exact pre-refactor behavior. */
+/**
+ * Phone landscape rail. The row divisor targets ~2 rows on a typical landscape
+ * phone: at the original 200 a 390dp-tall screen resolved to a single row of
+ * about three tiles, leaving 8 of 11 games offscreen with nothing saying so.
+ * Tiles stay far above the 44dp touch minimum at two rows.
+ */
 function phoneGrid(i: HomeGridInput): HomeGrid {
   const h = usableHeight(i);
-  const rows = Math.max(1, Math.min(3, Math.round(h / 200)));
+  const rows = Math.max(1, Math.min(3, Math.round(h / 140)));
   const cardH = Math.floor(h / rows) - CELL_GAP;
   const cardW = Math.max(116, Math.min(160, Math.round(cardH * 0.82)));
   const emojiSize = Math.max(30, Math.min(54, Math.round(cardH * 0.3)));
