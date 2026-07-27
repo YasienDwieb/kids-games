@@ -41,7 +41,11 @@ page for the mechanism.
 Re-exported from `src/constants/` so games have one surface instead of
 reaching into `@/constants/*` directly: `COLORS`, `ACCENTS` (typed by
 `AccentName`), `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES`,
-`SHADOWS`, and `FONTS` [@sdk-barrel].
+`SHADOWS`, and `FONTS` [@sdk-barrel]. The barrel also re-exports
+`bestTextOn` and `contrastRatio`, the two contrast-math functions behind the
+[WCAG AA contrast floor](../decisions/wcag-aa-contrast-floor) — any component
+drawing text on an arbitrary or game-supplied fill should call `bestTextOn`
+rather than hardcoding a label color [@sdk-barrel].
 
 ## UI primitives
 
@@ -124,7 +128,8 @@ model that groups games for Home filtering and Settings [@sdk-barrel].
 
 `useTranslation` and `Trans` are re-exported straight from `react-i18next` so
 games do not need a second i18n dependency [@sdk-barrel]. Alongside them:
-`registerTranslations`, `currentLanguage`, `LANGUAGES`, `DEFAULT_LANGUAGE`,
+`i18n` (the configured i18next instance itself), `registerTranslations`,
+`currentLanguage`, `LANGUAGES`, `DEFAULT_LANGUAGE`,
 `languageMeta`, `isRTL`, `LanguageCode`, `LanguageMeta`, `useLanguage`,
 `applyLanguage`, `bootstrapLanguage`, and `gameName`/`gameDescription`/
 `gameShortName` — resolving a game's localized name, description, and short

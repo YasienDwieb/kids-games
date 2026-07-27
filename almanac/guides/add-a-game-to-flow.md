@@ -60,19 +60,18 @@ state from inside the adapter. `useFlowRound`'s `complete()` plays the
 `'success'` sound cue and calls `onComplete` after a short delay, and is
 idempotent against being triggered twice [@use-flow-round].
 
-**Honor the `seed` argument — do not recompute your own.** `unitAt(i, seed)`
+**4. Honor the `seed` argument — do not recompute your own.** `unitAt(i, seed)`
 is handed a per-journey seed that changes every time the player calls
 `reset()`; thread it into whatever PRNG state drives your round's layout
-instead of deriving a seed purely from `i`. `animal-safari/flow.tsx`
-originally ignored the incoming seed and recomputed `level * 7919` itself, so
-`reset()` had no visible effect — every journey replayed the exact same
-distractors and correct-tile position. `roundForUnit(i, sessionSeed)` in
-`animal-safari/utils/levels.ts` is the pattern to copy: mix the seed into
-layout only, and keep it out of which content item unit `i` actually
-represents, so guided mode still plays the same content ladder as the
-standalone game [@animal-safari-levels].
+only, and keep `i` alone as the thing that decides which content the unit
+teaches. `roundForUnit(i, sessionSeed)` in `animal-safari/utils/levels.ts` is
+the pattern to copy [@animal-safari-levels]. An earlier version of
+`animal-safari/flow.tsx` got this wrong by ignoring the incoming seed
+entirely; see the seed contract and that incident on the
+[Flow engine](../architecture/flow-engine) architecture page before writing
+your own `unitAt`.
 
-**4. Add one side-effect import to `src/flow/index.ts`.** This file is the
+**5. Add one side-effect import to `src/flow/index.ts`.** This file is the
 flow equivalent of `src/games/index.ts` — the single place that imports every
 flow-enabled game's adapter module for its registration side effect
 [@flow-index]. Add `import '../games/<id>/flow';` alongside the existing
