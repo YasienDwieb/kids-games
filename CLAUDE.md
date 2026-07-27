@@ -104,6 +104,8 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 **AI skill:** `.claude/skills/kids-games-dev/SKILL.md` — covers scaffolding, SDK usage, asset selection, layout modes, age bands, and config schema. Triggers automatically in Claude Code for game-related tasks.
 
+**Wiki maintenance:** `.claude/skills/almanac-refresh/SKILL.md` — how to bring the `almanac/` CodeAlmanac wiki back in sync with the code (range ingests, sync, garden, validate).
+
 ## Key Dependencies
 
 - `@react-navigation/native` + `@react-navigation/native-stack` — navigation
