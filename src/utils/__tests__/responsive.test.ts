@@ -21,18 +21,31 @@ describe('isTablet', () => {
 });
 
 describe('computeHomeGrid — phone (locked behavior)', () => {
-  it('iPhone landscape produces the historical rail values', () => {
+  it('iPhone landscape lays the rail out in two rows', () => {
     const g = computeHomeGrid(iphoneLandscape);
     // Derived from: h = 390 - 0 - 21 - 28 - 56 = 285
-    // rows = max(1,min(3,round(285/200=1.425)=1)) = 1
-    // cardH = floor(285/1) - 12 = 273
-    // cardW = max(116,min(160,round(273*0.82=223.86)=224)) = 160
-    // emoji = max(30,min(54,round(273*0.3=81.9)=82)) = 54
-    expect(g).toEqual({ rows: 1, cols: 11, cardW: 160, cardH: 273, emojiSize: 54, scroll: true });
+    // rows = max(1,min(3,round(285/140=2.036)=2)) = 2
+    // cardH = floor(285/2) - 12 = 130
+    // cardW = max(116,min(160,round(130*0.82=106.6)=107)) = 116
+    // emoji = max(30,min(54,round(130*0.3=39)=39)) = 39
+    expect(g).toEqual({ rows: 2, cols: 6, cardW: 116, cardH: 130, emojiSize: 39, scroll: true });
   });
 
-  it('taller phone landscape yields more rows but same caps', () => {
-    // height 420 → h = 420-0-21-28-56 = 315; round(315/200=1.575)=2 rows
+  it('shows far more of the catalogue than a single row would', () => {
+    // The point of two rows: a 390dp-tall phone showed ~3 of 11 games at one
+    // row of 160dp cards, with no affordance saying the rest existed.
+    const g = computeHomeGrid(iphoneLandscape);
+    const visibleCols = Math.floor((844 - 244 - 12 * 2) / (g.cardW + 12));
+    expect(g.rows * visibleCols).toBeGreaterThanOrEqual(8);
+  });
+
+  it('keeps tiles well above the 44dp touch minimum', () => {
+    const g = computeHomeGrid(iphoneLandscape);
+    expect(Math.min(g.cardW, g.cardH)).toBeGreaterThan(44 * 2);
+  });
+
+  it('taller phone landscape stays within the caps', () => {
+    // height 420 → h = 420-0-21-28-56 = 315; round(315/140=2.25)=2 rows
     const g = computeHomeGrid({ ...iphoneLandscape, height: 420 });
     expect(g.rows).toBe(2);
     expect(g.cardW).toBeLessThanOrEqual(160);
