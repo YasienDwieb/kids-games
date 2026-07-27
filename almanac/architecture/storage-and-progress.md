@@ -1,7 +1,7 @@
 ---
 title: "Storage and Progress Architecture"
 summary: "createStore is the single AsyncStorage primitive behind two systems: per-game level/resume progress driven by useLevels and resumeStatusFor, and app-wide settings driven by useSettings — both namespaced under kg: keys."
-topics: [architecture, storage, progress, settings]
+topics: [architecture, storage, settings]
 sources:
   - id: create-store
     type: file

@@ -1,7 +1,7 @@
 ---
 title: "Test On A Real Device"
 summary: "How to verify a UI or behavior change on a physical Android phone via Expo Go and adb, since the repo has no automated e2e or screenshot tests."
-topics: [guides, testing, device]
+topics: [guides, testing]
 sources:
   - id: setup-docs
     type: file

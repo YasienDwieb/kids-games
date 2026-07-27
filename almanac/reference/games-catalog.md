@@ -1,7 +1,7 @@
 ---
 title: "Games Catalog Reference"
 summary: "The exact id, age range, accent, layout mode, and flow eligibility of all 11 games currently registered in src/games/index.ts, verified against each game's own config.ts."
-topics: [reference, games, catalog]
+topics: [reference, games]
 sources:
   - id: games-index
     type: file

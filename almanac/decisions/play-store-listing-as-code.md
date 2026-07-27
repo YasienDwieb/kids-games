@@ -1,7 +1,7 @@
 ---
 title: "Play Store Listing As Code"
 summary: "The Google Play listing text, screenshots, and changelogs are committed to the repo as fastlane metadata and managed separately from the EAS binary pipeline."
-topics: [decisions, release, fastlane]
+topics: [decisions, release, play-store]
 sources:
   - id: play-store-doc
     type: file

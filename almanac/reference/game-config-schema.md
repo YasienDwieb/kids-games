@@ -1,7 +1,7 @@
 ---
 title: "Game Config Schema Reference"
 summary: "The exact GameConfig field list a game's config.ts must satisfy, the validation rules registerGame enforces before a config reaches the registry, and the layout.mode enum that controls shell vs. bare rendering."
-topics: [reference, games, schema]
+topics: [reference, games]
 sources:
   - id: config-types
     type: file

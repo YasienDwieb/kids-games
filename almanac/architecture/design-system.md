@@ -1,7 +1,7 @@
 ---
 title: "Design System Architecture"
 summary: "A warm-cream token system (COLORS, ACCENTS, SPACING, FONTS, SHADOWS, TOUCH_TARGET) plus a small set of shared component primitives — PressableButton, BigButton, AppBar, GameCard — that every screen and game builds UI from instead of raw hex colors, system fonts, or hand-rolled buttons and headers."
-topics: [architecture, design-system, ui]
+topics: [architecture, design-system]
 sources:
   - id: colors-ts
     type: file

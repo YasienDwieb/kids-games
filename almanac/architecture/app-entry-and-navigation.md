@@ -1,7 +1,7 @@
 ---
 title: "App Entry and Navigation Architecture"
 summary: "Traces the boot sequence from index.ts through App.tsx's font, side-effect, orientation, and language gates into RootNavigator and its four screens."
-topics: [architecture, navigation, boot]
+topics: [architecture, navigation]
 sources:
   - id: index-ts
     type: file

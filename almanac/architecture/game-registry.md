@@ -1,7 +1,7 @@
 ---
 title: "Game Registry Architecture"
 summary: "The in-memory registry that validates and stores every GameConfig, and the single wiring file, src/games/index.ts, that imports each game's config for its registration side effect."
-topics: [architecture, games, registry]
+topics: [architecture, games]
 sources:
   - id: registry-ts
     type: file

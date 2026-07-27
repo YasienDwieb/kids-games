@@ -1,7 +1,7 @@
 ---
 title: "Kids Zone Product Name"
 summary: "The repository, license, and trademark notice are named Kids Games, but every native and store-facing identifier in the shipped app uses the different name Kids Zone."
-topics: [decisions, branding, release]
+topics: [decisions, release]
 sources:
   - id: app-json
     type: file

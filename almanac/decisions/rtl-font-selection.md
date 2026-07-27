@@ -1,7 +1,7 @@
 ---
 title: "Decision: Key Font Selection off I18nManager.isRTL"
 summary: "FONTS resolves Latin versus Arabic font families by reading I18nManager.isRTL, not i18n.language, because RTL is synchronously correct at StyleSheet.create() time and a language switch always triggers a full app reload anyway."
-topics: [decisions, i18n, rtl, typography]
+topics: [decisions, i18n, rtl, design-system]
 sources:
   - id: typography
     type: file

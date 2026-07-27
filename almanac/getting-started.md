@@ -89,6 +89,10 @@ re-deriving the workflow from source:
   [Release an Android build](guides/release-an-android-build) covers the two
   manual GitHub Actions workflows: a shareable test APK versus a production
   AAB submitted to Google Play.
+- **Releasing an iOS build** —
+  [Release an iOS build](guides/release-an-ios-build) covers the EAS
+  build/submit/metadata commands and finishing the submission in App Store
+  Connect — iOS has no GitHub Actions workflow of its own.
 - **Updating the Play Store listing** —
   [Update the Play Store listing](guides/update-the-play-store-listing)
   covers the fastlane lanes that push listing text, screenshots, and release
@@ -119,3 +123,11 @@ them:
   you assume a broken type or failing test would be caught automatically —
   it would not; `npm test` and `tsc --noEmit` are a documented developer
   habit, not an enforced gate.
+- [Parent gate for Settings](decisions/parent-gate-for-settings) blocks
+  `SettingsScreen` behind a solvable-only-by-an-adult challenge; know which
+  controls it protects (and the two, sound and language, that were
+  deliberately left ungated on Home) before adding a new Settings control.
+- [WCAG AA contrast floor](decisions/wcag-aa-contrast-floor) is enforced by a
+  Jest suite — any new color added to `ACCENTS`, or any component that draws
+  text on an arbitrary fill, must clear it via `bestTextOn`, covered on the
+  [design system](architecture/design-system) page.

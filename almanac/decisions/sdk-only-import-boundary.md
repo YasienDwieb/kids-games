@@ -1,7 +1,7 @@
 ---
 title: "Decision: SDK-Only Import Boundary Between Games"
 summary: "Games may import only from the @/sdk barrel, never from each other or from deep src/ paths, with a single carved-out exception for a shared listen-and-find engine."
-topics: [decisions, sdk-boundary, games]
+topics: [decisions, sdk, games]
 sources:
   - id: contributing
     type: file

@@ -1,7 +1,7 @@
 ---
 title: "Build and Release Config Reference"
 summary: "The exact EAS build profiles, app.json manifest fields, and package.json scripts that govern building and releasing the app."
-topics: [reference, build, release]
+topics: [reference, release]
 sources:
   - id: eas-json
     type: file

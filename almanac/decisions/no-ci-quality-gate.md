@@ -1,7 +1,7 @@
 ---
 title: "No CI Quality Gate"
 summary: "The repo has no automated typecheck or test workflow on push or PR; the two GitHub Actions workflows are manual release pipelines, and quality checks are a documented developer responsibility."
-topics: [decisions, ci, testing]
+topics: [decisions, testing]
 sources:
   - id: release-apk-workflow
     type: file
