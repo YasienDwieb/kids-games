@@ -9,7 +9,7 @@ A multi-game Expo React Native app for young children (ages 2–12). Each game i
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/home-landscape.jpg" alt="Home — Your Journey + All games grid" width="640" />
+  <img src="docs/screenshots/home-landscape.jpg" alt="Home — Up next journey card, the games grid, and the sound / language / settings controls" width="640" />
 </p>
 <p align="center">
   <img src="docs/screenshots/letter-land.jpg" alt="Letter Land — which letter is it?" width="320" />
