@@ -9,9 +9,12 @@ import {
   pick,
   assembleChoices,
   buildRound,
+  seedForLevel,
+  HEAR_TARGETS,
+  SOUND_TARGETS,
   SOUND_ANIMALS,
 } from '../utils/generate';
-import { ANIMALS, CHOICES_PER_ROUND, modeForLevel } from '../constants';
+import { ANIMALS, CHOICES_PER_ROUND, LEVEL_COUNT, modeForLevel } from '../constants';
 import type { Animal } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -235,20 +238,20 @@ describe('buildRound', () => {
     }
   });
 
-  it('hearName target walks ALL animals in order (wrapping by length)', () => {
+  it('hearName target walks HEAR_TARGETS by round ordinal (wrapping)', () => {
     for (let lvl = 1; lvl <= SWEEP; lvl += 2) {
       const round = buildRound(lvl, lvl * 7919);
       expect(round.mode).toBe('hearName');
-      const expected = ANIMALS[(lvl - 1) % ANIMALS.length];
+      const expected = HEAR_TARGETS[Math.floor((lvl - 1) / 2) % HEAR_TARGETS.length];
       expect(round.target.id).toBe(expected.id);
     }
   });
 
-  it('whichSound target walks SOUND_ANIMALS in order (wrapping by length)', () => {
+  it('whichSound target walks SOUND_TARGETS by round ordinal (wrapping)', () => {
     for (let lvl = 2; lvl <= SWEEP; lvl += 2) {
       const round = buildRound(lvl, lvl * 7919);
       expect(round.mode).toBe('whichSound');
-      const expected = SOUND_ANIMALS[(lvl - 1) % SOUND_ANIMALS.length];
+      const expected = SOUND_TARGETS[Math.floor((lvl - 1) / 2) % SOUND_TARGETS.length];
       expect(round.target.id).toBe(expected.id);
     }
   });
@@ -291,6 +294,100 @@ describe('buildRound', () => {
   it('different seeds produce different layouts for the same level (probabilistically)', () => {
     const layouts = [1, 2, 3, 4, 5, 6, 7, 8].map((s) =>
       buildRound(1, s * 1000).choices.map((a) => a.id).join(','),
+    );
+    expect(new Set(layouts).size).toBeGreaterThan(1);
+  });
+
+  it('the target does not depend on the seed — only the layout does', () => {
+    for (let lvl = 1; lvl <= LEVEL_COUNT; lvl++) {
+      const ids = [1, 7, 99, 12345].map((s) => buildRound(lvl, s).target.id);
+      expect(new Set(ids).size).toBe(1);
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Target pools — disjoint, so the ladder never repeats an animal
+// ---------------------------------------------------------------------------
+
+describe('target pools', () => {
+  it('HEAR_TARGETS and SOUND_TARGETS are disjoint', () => {
+    const hear = new Set(HEAR_TARGETS.map((a) => a.id));
+    SOUND_TARGETS.forEach((a) => expect(hear.has(a.id)).toBe(false));
+  });
+
+  it('together they cover every animal exactly once', () => {
+    const ids = [...HEAR_TARGETS, ...SOUND_TARGETS].map((a) => a.id).sort();
+    expect(ids).toEqual([...ANIMALS].map((a) => a.id).sort());
+  });
+
+  it('SOUND_TARGETS are all sound-bearing (cow lives in HEAR_TARGETS)', () => {
+    SOUND_TARGETS.forEach((a) => expect(a.hasSound).toBe(true));
+    expect(HEAR_TARGETS.some((a) => a.id === 'cow')).toBe(true);
+  });
+
+  it('each pool can supply every round of its mode without wrapping', () => {
+    expect(HEAR_TARGETS.length).toBeGreaterThanOrEqual(Math.ceil(LEVEL_COUNT / 2));
+    expect(SOUND_TARGETS.length).toBeGreaterThanOrEqual(Math.floor(LEVEL_COUNT / 2));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The ladder a child actually plays — the interleaved sequence
+// ---------------------------------------------------------------------------
+
+describe('the played ladder (levels 1..LEVEL_COUNT)', () => {
+  const ladder = () =>
+    Array.from({ length: LEVEL_COUNT }, (_, i) => buildRound(i + 1, seedForLevel(i + 1)));
+
+  it('never targets the same animal on two consecutive levels', () => {
+    const targets = ladder().map((r) => r.target.id);
+    for (let i = 1; i < targets.length; i++) {
+      expect(targets[i]).not.toBe(targets[i - 1]);
+    }
+  });
+
+  it('targets every animal exactly once across the ladder', () => {
+    const targets = ladder().map((r) => r.target.id);
+    expect(new Set(targets).size).toBe(LEVEL_COUNT);
+    expect(targets.slice().sort()).toEqual([...ANIMALS].map((a) => a.id).sort());
+  });
+
+  it('leaves no animal unreachable as a target', () => {
+    const targets = new Set(ladder().map((r) => r.target.id));
+    ANIMALS.forEach((a) => expect(targets.has(a.id)).toBe(true));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// seedForLevel — shared by the standalone ladder and the guided adapter
+// ---------------------------------------------------------------------------
+
+describe('seedForLevel', () => {
+  it('with no session seed reproduces the historical level*7919 seed', () => {
+    for (let lvl = 1; lvl <= LEVEL_COUNT; lvl++) {
+      expect(seedForLevel(lvl)).toBe(lvl * 7919);
+      expect(seedForLevel(lvl, 0)).toBe(lvl * 7919);
+    }
+  });
+
+  it('is deterministic for the same (level, sessionSeed)', () => {
+    expect(seedForLevel(4, 777)).toBe(seedForLevel(4, 777));
+  });
+
+  it('distinct session seeds give distinct level seeds', () => {
+    const seeds = [1, 2, 3, 999, 123456].map((s) => seedForLevel(5, s));
+    expect(new Set(seeds).size).toBe(seeds.length);
+  });
+
+  it('distinct levels give distinct seeds within one session', () => {
+    const seeds = Array.from({ length: LEVEL_COUNT }, (_, i) => seedForLevel(i + 1, 42));
+    expect(new Set(seeds).size).toBe(LEVEL_COUNT);
+  });
+
+  it('a session seed reshuffles the choice layout (probabilistically)', () => {
+    const layouts = [0, 1, 2, 3, 4, 5, 6, 7].map((s) =>
+      buildRound(1, seedForLevel(1, s)).choices.map((a) => a.id).join(','),
     );
     expect(new Set(layouts).size).toBeGreaterThan(1);
   });

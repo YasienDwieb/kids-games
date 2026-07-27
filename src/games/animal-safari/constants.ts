@@ -36,6 +36,9 @@ export const ANIMALS: readonly Animal[] = [
 /** Number of animal choices shown in a round. */
 export const CHOICES_PER_ROUND = 3;
 
+/** Total levels in the finite ladder (also the guided-flow unit count). */
+export const LEVEL_COUNT = 12;
+
 /**
  * Round mode by 1-based level (mirrors letter-land's odd/even alternation):
  * odd levels → 'hearName', even levels → 'whichSound'.
