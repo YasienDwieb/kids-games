@@ -24,6 +24,18 @@ sources:
   - id: letter-land-en
     type: file
     path: src/games/letter-land/locales/en.ts
+  - id: app-bar
+    type: file
+    path: src/components/common/AppBar.tsx
+  - id: back-button
+    type: file
+    path: src/components/common/BackButton.tsx
+  - id: archer
+    type: file
+    path: src/games/balloon-archer/components/Archer.tsx
+  - id: arrow
+    type: file
+    path: src/games/balloon-archer/components/Arrow.tsx
 ---
 
 The app runs one shared `i18next` instance, initialized once in
@@ -139,6 +151,43 @@ user-facing string in either language means adding its key to this array, or
 the guard simply does not know to check it — this is the contract the
 [Add a translated string](../guides/add-a-translated-string) guide walks
 through end to end.
+
+## The module-scope trap: read `isRTL` at access time, not import time
+
+`I18nManager.isRTL` is correct early in boot, but not as early as a plain
+module-level constant assumes. Several components originally captured it the
+same way: `const BACK_GLYPH = I18nManager.isRTL ? '›' : '‹';` evaluated once,
+at the top of the module, the moment the file was first imported
+[@app-bar]. That pattern is broken in this app, and it was proven broken on a
+real device, not just in theory: one Arabic-language screen showed a
+component that read `I18nManager.isRTL` during render mirroring correctly,
+while `AppBar`'s back chevron — captured at module scope in the same file —
+stayed stuck on the LTR glyph for the entire session, on the same screen, in
+the same language. `I18nManager.isRTL` is `false` when modules are first
+evaluated and only becomes `true` later in the session, after the native
+bridge finishes syncing the flag to JS; a module-level constant freezes
+whatever the flag was at that earlier, still-`false` moment, while native
+layout mirroring (which does not depend on this JS value at all) already
+mirrors correctly — so the visual bug looks like a layout-mirroring failure
+but is really a stale-constant bug.
+
+The fix, applied in commit `1114d53`, is to defer the read to a function
+called at render or access time instead of a captured constant: `AppBar` and
+`BackButton` both changed their glyph constant to a `backGlyph()` function
+called inside the component body [@app-bar] [@back-button], and
+`balloon-archer`'s `Archer` and `Arrow` components applied the same fix to
+the sprite-flip transforms that mirror their bow and arrow to face the
+correct direction in RTL [@archer] [@arrow]. This is the same pattern
+`FONTS` already used for the reason covered on the
+[RTL font selection](../decisions/rtl-font-selection) decision page — an
+object of getters, so each property resolves `I18nManager.isRTL` at the
+moment it is *read*, not at the moment its module was *imported*. The general
+rule for any code in this app keyed off `I18nManager.isRTL`: never write
+`const x = I18nManager.isRTL ? a : b` at module top level; wrap the read in a
+function, a getter, or read it directly inside a component body instead. Web
+cannot reproduce this class of bug at all, since RTL there is CSS-driven
+rather than a native flag read through the bridge — it only shows up on a
+real Android or iOS device.
 
 ## Fonts follow the native flag too
 

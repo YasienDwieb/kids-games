@@ -18,6 +18,9 @@ sources:
   - id: registry-test
     type: file
     path: src/sdk/config/__tests__/registry.test.ts
+  - id: order-test
+    type: file
+    path: src/sdk/config/__tests__/order.test.ts
 ---
 
 This page is the exact field-by-field contract for `GameConfig`, the object
@@ -41,6 +44,7 @@ new game, see [Add a new game](../guides/add-a-new-game).
 | `component` | `ComponentType` | yes | Must be a function [@config-types] [@validate-ts] |
 | `backgroundColor` | `string` | yes | Non-empty [@config-types] [@validate-ts] |
 | `accent` | `AccentName` | no | One of the six accent names from `ACCENTS` (`green`, `orange`, `coral`, `purple`, `blue`, `pink`); falls back to a derived accent when omitted [@config-types] |
+| `order` | `number` | no | Ascending Home-screen sort weight; not validated. Omitted games sort after every game that declares one, in registration order — see [Game registry](../architecture/game-registry) for the exact `byOrder()` behavior [@config-types] [@order-test] |
 | `tags` | `string[]` | no | Free-form; not validated [@config-types] |
 | `layout` | `GameLayoutOptions` | no | See layout fields below [@config-types] |
 | `bands` | `string[]` | no | Explicit age-band override, bypassing the derivation from `ageRange` [@config-types] |

@@ -131,6 +131,19 @@ always initializes scrolled to `x: 0` regardless of layout direction,
 `onContentSizeChange` when `I18nManager.isRTL` is true, so game 0 still lands
 flush at the visual start of the rail [@home-screen].
 
+Tiles on the rail are ordered by each game's `order` field (see
+[Game registry](../architecture/game-registry)) rather than by import order,
+and each tile's visible label is `gameShortName(game)` — a shortened,
+one-line label used because the rail's tiles are only ~116dp wide — while the
+full `gameName(game)` still reaches screen readers through the tile's
+`accessibilityLabel` [@home-screen]. `HomeScreen` is also the home of Kids
+Zone's only ungated controls: a sound-mute button and a language-switch
+button (with its own confirmation dialog) live directly on this screen,
+outside the parent gate that now blocks the rest of Settings — the
+[Parent gate for Settings](../decisions/parent-gate-for-settings) decision
+page explains why those two controls specifically were kept ungated
+[@home-screen].
+
 ### Tablet-aware sizing, not just orientation
 
 Both the portrait and landscape branches are further sized by
