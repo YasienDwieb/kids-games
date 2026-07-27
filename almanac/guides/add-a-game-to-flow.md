@@ -18,6 +18,9 @@ sources:
   - id: settings-screen
     type: file
     path: src/screens/SettingsScreen.tsx
+  - id: animal-safari-levels
+    type: file
+    path: src/games/animal-safari/utils/levels.ts
 ---
 
 Use this guide when a game already exists and is registered on Home, and you
@@ -56,6 +59,18 @@ gives you when the round finishes; do not touch the game's own level or score
 state from inside the adapter. `useFlowRound`'s `complete()` plays the
 `'success'` sound cue and calls `onComplete` after a short delay, and is
 idempotent against being triggered twice [@use-flow-round].
+
+**Honor the `seed` argument — do not recompute your own.** `unitAt(i, seed)`
+is handed a per-journey seed that changes every time the player calls
+`reset()`; thread it into whatever PRNG state drives your round's layout
+instead of deriving a seed purely from `i`. `animal-safari/flow.tsx`
+originally ignored the incoming seed and recomputed `level * 7919` itself, so
+`reset()` had no visible effect — every journey replayed the exact same
+distractors and correct-tile position. `roundForUnit(i, sessionSeed)` in
+`animal-safari/utils/levels.ts` is the pattern to copy: mix the seed into
+layout only, and keep it out of which content item unit `i` actually
+represents, so guided mode still plays the same content ladder as the
+standalone game [@animal-safari-levels].
 
 **4. Add one side-effect import to `src/flow/index.ts`.** This file is the
 flow equivalent of `src/games/index.ts` — the single place that imports every
