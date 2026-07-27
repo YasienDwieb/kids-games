@@ -24,6 +24,12 @@ sources:
   - id: app-json
     type: file
     path: app.json
+  - id: responsive-ts
+    type: file
+    path: src/utils/responsive.ts
+  - id: responsive-test
+    type: file
+    path: src/utils/__tests__/responsive.test.ts
 ---
 
 Kids Zone boots through a short, strict chain: `index.ts` hands the process to
@@ -112,18 +118,49 @@ either redundant or wrong for the landscape layout.
 
 `HomeScreen` is the app's landing screen and branches on device orientation
 rather than on a settings toggle: when `width > height` it renders a
-landscape two-pane layout — a fixed-width journey card on one side, a
-horizontal games rail on the other — and otherwise falls back to a portrait
-scroll view with a 2-column game grid [@home-screen]. The game list itself
-comes from the registry: `settings.ageBand ? gamesForBand(settings.ageBand) :
-getAllGames()`, so an age band chosen in Settings filters the Home tile set
-without touching how games are registered [@home-screen]. One RTL-specific
-detail is worth knowing if you touch this screen: the landscape games rail is
-a column-major grid inside a horizontal `ScrollView`, and because a native
-horizontal `ScrollView` always initializes scrolled to `x: 0` regardless of
-layout direction, `HomeScreen` manually snaps the scroll position to the
-content's far edge in `onContentSizeChange` when `I18nManager.isRTL` is true,
-so game 0 still lands flush at the visual start of the rail [@home-screen].
+landscape two-pane layout — a journey card on one side, a games rail on the
+other — and otherwise falls back to a portrait scroll view with a game grid
+[@home-screen]. The game list itself comes from the registry:
+`settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames()`, so an age
+band chosen in Settings filters the Home tile set without touching how games
+are registered [@home-screen]. One RTL-specific detail is worth knowing if you
+touch this screen: the landscape games rail can be a column-major grid inside
+a horizontal `ScrollView`, and because a native horizontal `ScrollView`
+always initializes scrolled to `x: 0` regardless of layout direction,
+`HomeScreen` manually snaps the scroll position to the content's far edge in
+`onContentSizeChange` when `I18nManager.isRTL` is true, so game 0 still lands
+flush at the visual start of the rail [@home-screen].
+
+### Tablet-aware sizing, not just orientation
+
+Both the portrait and landscape branches are further sized by
+`src/utils/responsive.ts`, a pure, dimension-driven module deliberately keyed
+on `width`/`height` alone rather than `Platform.OS`, so an Android tablet and
+an iPad of the same size class get the same layout [@responsive-ts].
+`isTablet(width, height)` treats any screen whose *short* side is `>= 768`dp
+as a tablet [@responsive-ts]. Portrait columns go from a fixed 2 on phones to
+3 or 4 on tablets (`width > 900 ? 4 : 3`), so a tablet in portrait doesn't
+render two oversized columns [@home-screen]. In landscape, `homeRailWidth`
+widens the journey pane from the phone's 244dp to 300dp on tablets, and
+`computeHomeGrid` decides how the games rail itself is sized and whether it
+scrolls [@responsive-ts].
+
+`computeHomeGrid` has two code paths. The phone path is the original rail
+math preserved unchanged — 1 to 3 rows chosen from the available height,
+card width and emoji size derived from row height and clamped to phone-sized
+bounds — and it always renders inside a horizontal `ScrollView`
+[@responsive-ts]. `src/utils/__tests__/responsive.test.ts` locks these exact
+phone numbers as a regression guard, so a future layout change that shifts
+phone card sizes will fail that test unless the change is deliberate
+[@responsive-test]. The tablet path instead searches row counts for the
+largest card size (bounded 150–260dp) that fits *every* game in the available
+width and height with no scrolling at all — a "fit-to-screen" grid rendered
+in a centered, wrapping `View` instead of a `ScrollView`
+[@responsive-ts] [@home-screen]. If no row count fits all games even at the
+minimum card size, the tablet path falls back to the same horizontal-scroll
+rendering as phones, sized with tablet-minimum cards, so an unusually large
+game count degrades to scrolling instead of clipping content
+[@responsive-ts] [@responsive-test].
 
 ### `GamePlayerScreen`
 

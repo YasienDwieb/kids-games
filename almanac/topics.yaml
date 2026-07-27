@@ -81,7 +81,7 @@ topics:
 
   - slug: release
     title: Release
-    description: Building, versioning, and shipping the app to testers and the Google Play Store
+    description: Building, versioning, and shipping the app to testers, the Google Play Store, and the Apple App Store
     parents: []
 
   - slug: testing
