@@ -56,8 +56,15 @@ new game, see [Add a new game](../guides/add-a-new-game).
 | Field | Type | Default | Meaning |
 |---|---|---|---|
 | `mode` | `'shell' \| 'bare'` | `'shell'` | `'shell'` wraps the game in `GameShell`; `'bare'` gives the game a raw safe-area canvas with no shared chrome [@config-types] |
-| `title` | `string` | game's `name` | Overrides the header title shown when `mode: 'shell'` [@config-types] |
-| `showBack` | `boolean` | `true` (shown) | Set `false` to hide the back button in the shell header [@config-types] |
+| `showBack` | `boolean` | `true` (shown) | Set `false` to hide the floating back button `GameShell` renders [@config-types] |
+
+`GameLayoutOptions` no longer has a `title` field — `GameShell` used to render
+an `AppBar` with a centered game title, but that chrome was removed along with
+the `AppBar` itself once shell-mode games were unified with the bare-mode
+floating layout; see [Game shell and back navigation](../architecture/game-shell-and-back-navigation)
+for why. A `config.ts` written against an older version of this schema that
+still sets `layout: { title: '...' }` fails to type-check against the current
+`GameLayoutOptions`.
 
 `layout.mode` is not validated by `validateGameConfig` — an invalid string
 would only surface as a TypeScript type error at the `config.ts` call site,

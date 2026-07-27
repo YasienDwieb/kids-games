@@ -110,9 +110,10 @@ is available to every screen beneath this point.
 `headerShown: false` set globally, and exactly four screens registered:
 `Home`, `GamePlayer`, `Settings`, and `FlowPlayer` [@root-navigator]. Turning
 off the native header everywhere is intentional — every screen in this app
-draws its own chrome (the [game shell](../architecture/game-shell-and-back-navigation)'s
-`AppBar`, or a floating back button), so a second, stock header would be
-either redundant or wrong for the landscape layout.
+draws its own chrome, most commonly the floating back button and HUD the
+[game shell](../architecture/game-shell-and-back-navigation) renders over the
+playfield, so a second, stock header would be either redundant or wrong for
+the landscape layout.
 
 ### `HomeScreen`
 

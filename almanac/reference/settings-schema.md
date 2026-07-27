@@ -42,7 +42,7 @@ guessed at.
 
 | Field | Type | Default | Consumer |
 |---|---|---|---|
-| `soundEnabled` | `boolean` | `true` | Gates `useSound`, `useLoopSound`, and `useSpeech` — each checks `settings.soundEnabled` before playing anything [@use-sound]. Toggled by a mute icon button on `HomeScreen` itself, not `SettingsScreen` — see below. |
+| `soundEnabled` | `boolean` | `true` | Gates `useSound` and `useLoopSound` only — sound effects, not spoken prompts [@use-sound]. `useSpeech` deliberately ignores this field; see [Audio and speech](../architecture/audio-and-speech) for why muting effects must never silence the listen-and-find games' spoken questions. Toggled by a mute icon button on `HomeScreen` itself, not `SettingsScreen` — see below. |
 | `hapticsEnabled` | `boolean` | `true` | Gates the haptic pulse inside `useSound`, unless a call site passes `{ haptic: false }` [@use-sound]. Toggled by a `Switch` on `SettingsScreen`'s general tab, behind the [parent gate](../decisions/parent-gate-for-settings) [@settings-screen]. |
 | `ageBand` | `string \| null` | `null` | `HomeScreen` filters the game grid with `gamesForBand(settings.ageBand)` when set; `null` shows every registered game via `getAllGames()` [@home-screen]. Set from Settings' "Show games for" chip row, behind the [parent gate](../decisions/parent-gate-for-settings) [@settings-screen]. |
 | `language` | `string \| null` | `null` | `bootstrapLanguage()` reads it at boot; `null` means "follow the device language" on first run, after which `useLanguage().changeLanguage()` persists an explicit choice [@use-language]. Switched from a language button and confirmation dialog on `HomeScreen` itself, not `SettingsScreen` — see below. |

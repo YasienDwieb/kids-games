@@ -1,6 +1,6 @@
 ---
 title: "Audio and Speech Architecture"
-summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, while useSpeech wraps expo-speech with the same settings gate and graceful degradation, despite CLAUDE.md still describing the sound layer as expo-av."
+summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, gated on settings.soundEnabled; useSpeech wraps expo-speech with the same graceful degradation but is deliberately never gated by any sound setting, since spoken prompts are game content in the listen-and-find games. CLAUDE.md still describes the sound layer as expo-av."
 topics: [architecture, audio, speech, assets]
 sources:
   - id: use-sound
@@ -21,6 +21,12 @@ sources:
   - id: claude-md
     type: file
     path: CLAUDE.md
+  - id: never-muted-test
+    type: file
+    path: src/sdk/speech/__tests__/never-muted.test.ts
+  - id: settings-store
+    type: file
+    path: src/sdk/settings/store.ts
 ---
 
 Games never load a sound file or ask for a specific voice directly. They call
@@ -28,10 +34,11 @@ Games never load a sound file or ask for a specific voice directly. They call
 resolves the rest: whether sound is on, whether haptics should fire, which of
 several interchangeable clips to play, and which locale to speak in. Both
 `useSound` and `useLoopSound` sit on top of `expo-audio`, and `useSpeech` sits
-on top of `expo-speech`; all three share the same shape — read
-`settingsStore` first, degrade to a silent no-op on any failure, never throw
-into the calling game. The layer that ties sound requests to actual audio
-files is the asset manifest's tag vocabulary, queried through
+on top of `expo-speech`; all three degrade to a silent no-op on any failure
+and never throw into the calling game, but only `useSound`/`useLoopSound`
+actually gate playback on a setting — `useSpeech` deliberately does not, for
+reasons covered in its own section below. The layer that ties sound requests
+to actual audio files is the asset manifest's tag vocabulary, queried through
 `src/sdk/assets/query.ts`.
 
 ## Intent tags, not manifest keys
@@ -110,19 +117,37 @@ Treat the source files as authoritative for what the app actually does;
 `CLAUDE.md`'s reference to `expo-av` is a stale note from before the library
 migration and should not be relied on when reasoning about this layer.
 
-## `useSpeech`: text-to-speech with the same discipline as `useSound`
+## `useSpeech`: text-to-speech that no sound setting can silence
 
-`useSpeech()` wraps `expo-speech` and deliberately mirrors `useSound`'s
-shape: `speak(text, {rate?, pitch?})` awaits `settingsStore.get()` and bails
-if `soundEnabled` is false, exactly like `useSound.play` [@use-speech]. The
-one addition `useSpeech` needs that `useSound` doesn't is a mounted-ref guard
-placed *after* that await: if the component unmounted while the settings read
-was in flight, `speak` returns without calling `Speech.speak` at all
-[@use-speech]. That guard exists to close a specific race — the hook's own
-unmount cleanup calls `Speech.stop()` synchronously, and without the guard a
-`speak()` call that was already awaiting settings when the unmount happened
-could resolve afterward and start talking on whatever screen replaced it
-[@use-speech]. Every call to `speak` also calls `Speech.stop()` immediately
+`useSpeech()` wraps `expo-speech`, and unlike `useSound`/`useLoopSound` it is
+deliberately **not** gated by `settings.soundEnabled` or by any dedicated voice
+toggle — `Settings` has no field for muting speech at all [@use-speech]
+[@settings-store]. The reasoning is specific to this app: in the
+listen-and-find games (`letter-land`, `numbers-land`, `animal-safari`) the
+spoken prompt *is* the question — "which letter is this?" has no other way to
+reach the child — so a setting that could mute it would make those three games
+literally unplayable while looking like an ordinary sound toggle. An earlier
+version of this hook added a separate `voiceEnabled` setting to split spoken
+content from sound-effect decoration, but that still left a control a parent
+could flip to break those games; the shipped design removes the toggle
+entirely instead. `src/sdk/speech/__tests__/never-muted.test.ts` enforces this
+by reading `useSpeech.ts`'s own source and asserting it contains neither a
+`soundEnabled` check nor any reference to `voiceEnabled`, and separately
+asserts `'voiceEnabled' in DEFAULT_SETTINGS` is `false` — a regression test
+written against the source text itself, not just behavior, so a future PR
+can't quietly reintroduce a mute path [@never-muted-test]. `speak` still
+`await`s `settingsStore.get()` before speaking, but only to preserve timing
+for the mounted-ref guard described next — the returned settings value itself
+is not read for gating [@use-speech].
+
+The one guard `useSpeech` does keep is a mounted-ref check placed *after* that
+await: if the component unmounted while the store read was in flight, `speak`
+returns without calling `Speech.speak` at all [@use-speech]. That guard exists
+to close a specific race — the hook's own unmount cleanup calls
+`Speech.stop()` synchronously, and without the guard a `speak()` call that was
+already in flight when the unmount happened could resolve afterward and start
+talking on whatever screen replaced it [@use-speech]. Every call to `speak`
+also calls `Speech.stop()` immediately
 before `Speech.speak()`, because `expo-speech` queues utterances by default —
 without that stop, rapid repeated `speak` calls (for example, replaying a
 letter prompt) would stack up and play back to back instead of each call

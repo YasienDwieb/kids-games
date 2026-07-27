@@ -27,6 +27,9 @@ sources:
   - id: settings-hook
     type: file
     path: src/sdk/settings/useSettings.ts
+  - id: create-store-test
+    type: file
+    path: src/sdk/storage/__tests__/createStore.test.ts
 ---
 
 Everything the app persists between launches — a game's saved level, its
@@ -47,7 +50,28 @@ backed by `AsyncStorage`, with the storage key computed as `` `kg:${namespace}` 
 [@create-store]. `get()` reads that key, parses it as JSON, and falls back to
 `defaultValue` both when the key is missing and when `JSON.parse` throws — a
 corrupted or unexpected value on disk degrades to the default rather than
-crashing the caller [@create-store]. `set(value)` writes the JSON-serialized
+crashing the caller [@create-store].
+
+When the parsed value and the default are both plain objects, `get()` returns
+`{ ...defaultValue, ...parsed }` instead of the raw parsed value
+[@create-store]. This merge is the fix for a real regression: before it
+existed, a field added to a store's shape after release — a new setting, a new
+progress column — read back as `undefined` for every user who already had a
+stored blob from an older app version, so a newly added boolean setting
+silently behaved as "off" for the entire existing install base instead of
+picking up its intended default [@create-store]. `isPlainObject` guards the
+merge so it only applies to record-shaped stores; a store whose `T` is a bare
+primitive (`createStore<number>('counter', 0)`) still gets the parsed value
+back untouched rather than being spread into an object [@create-store]. A
+stored key always wins over the default when both are present — the merge only
+fills in keys the stored blob is missing, it never overwrites a value the user
+or a previous session already wrote [@create-store-test]. Any store built on
+`createStore` — progress, settings, or a future one — gets this forward
+compatibility for free; a maintainer adding a field to an existing store's
+shape does not need a migration step, `get()` fills the gap on the next read
+[@create-store-test].
+
+`set(value)` writes the JSON-serialized
 value and then synchronously calls every subscriber function with the new
 value, so a store update is visible to every mounted consumer without an
 extra read round-trip [@create-store]. `subscribe(fn)` adds `fn` to an

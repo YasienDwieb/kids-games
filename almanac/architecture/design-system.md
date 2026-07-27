@@ -33,6 +33,12 @@ sources:
   - id: hold-to-confirm
     type: file
     path: src/components/common/HoldToConfirm.tsx
+  - id: odd-one-out-puzzle
+    type: file
+    path: src/games/shape-detective/components/OddOneOutPuzzle.tsx
+  - id: pattern-puzzle
+    type: file
+    path: src/games/shape-detective/components/PatternPuzzle.tsx
 ---
 
 Every screen and [game module](../concepts/game-module) in this app draws
@@ -146,7 +152,27 @@ nor `accent` is supplied, the fill defaults to `ACCENTS.purple.base`, not
 section above for why [@pressable-button]. A `ghost` variant
 swaps the same face/socket mechanic onto a white surface with ink text
 instead of a solid accent fill, so the same press animation exists for
-secondary actions [@pressable-button]. `BigButton` is a thin wrapper over
+secondary actions [@pressable-button].
+
+Because the socket/face split means `PressableButton` paints its own
+background, a caller that wants a specific fill color must pass it through the
+`color` prop, not through a plain `style={{ backgroundColor }}` — the two look
+identical in a prop list, but a `style` background only ever lands on the
+outer socket, a roughly 5px edge that the face sits above and normally hides
+almost entirely. `shape-detective`'s pattern and odd-one-out puzzles shipped
+this exact mistake: each answer tile is supposed to reveal its accent color
+(green for correct, coral for wrong) by tinting the whole button face, but the
+color was passed as `style.backgroundColor`, so the reveal only ever tinted
+that thin socket edge and never visibly changed the tile at all [@pattern-puzzle]
+[@odd-one-out-puzzle]. The fix was passing the same color through `color`
+instead, plus giving the shape inside the button a fixed-size `View` wrapper
+(`optionSlot`/`itemSlot`) so every tile paints the exact same footprint
+regardless of the shape's own size — sizing the outer button itself let the
+face shrink around a small shape and leak the socket edge around it as a
+visible nested box [@pattern-puzzle] [@odd-one-out-puzzle]. Any new
+`PressableButton` caller that needs its answer to visibly change color on
+reveal should use `color`, never a `style` background. `BigButton` is a thin
+wrapper over
 `PressableButton` that only exists to preserve an older `title`/`onPress`/
 `color` call signature used across the games, so existing call sites did not
 need to be rewritten when `PressableButton` was introduced [@big-button].
