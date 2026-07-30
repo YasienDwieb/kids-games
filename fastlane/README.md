@@ -63,6 +63,16 @@ Promote an existing release to another track — no rebuild, no new version code
 
 fastlane promote version_code:<vc> [track:internal] [to:production] [status:draft]
 
+### android rollout
+
+```sh
+[bundle exec] fastlane android rollout
+```
+
+Start rollout of an existing draft release — this is what makes it live.
+
+fastlane rollout version_code:<vc> [track:production] [percent:0.2]
+
 ### android pull
 
 ```sh

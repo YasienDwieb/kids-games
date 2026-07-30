@@ -93,6 +93,26 @@ platform :android do
     )
   end
 
+  desc "Start rollout of an existing draft release — this is what makes it live."
+  desc "fastlane rollout version_code:<vc> [track:production] [percent:0.2]"
+  lane :rollout do |options|
+    percent = options[:percent].to_f
+    staged  = percent > 0 && percent < 1.0
+    upload_to_play_store(
+      track: android_track(options),
+      version_code: require_version_code(options),
+      # A staged rollout is 'inProgress' + a fraction; anything else goes to 100%.
+      release_status: staged ? "inProgress" : "completed",
+      rollout: staged ? percent.to_s : nil,
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+
   desc "Pull current listing from Play Console into fastlane/metadata."
   lane :pull do
     download_from_play_store
