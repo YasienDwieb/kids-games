@@ -38,15 +38,20 @@ than the repo tracking it in `app.json` [@eas-json].
 
 `submit.production.android` submits with `serviceAccountKeyPath:
 "./fastlane/play-store-key.json"` as its Google service account credential, to
-`track: "internal"`, with `releaseStatus: "draft"` — every automated submit
-lands as a draft on the internal track rather than going live automatically
-[@eas-json]. This profile only ships the binary; the separate Play Store
-listing text, screenshots, and changelog are maintained independently as
-fastlane metadata, a split recorded on the
+`track: "production"`, with `releaseStatus: "draft"` — every automated submit
+lands as a draft on the production track, staying behind a manual "Start
+rollout" click in the Play Console rather than going live automatically
+[@eas-json]. A separate `submit.internal` profile holds the same service
+account credential targeting `track: "internal"` (also `releaseStatus:
+"draft"`), for a deliberate manual test submit outside the normal
+`production`-only release path [@eas-json]. This profile only ships the
+binary; the separate Play Store listing text, screenshots, and changelog are
+maintained independently as fastlane metadata, a split recorded on the
 [Play Store listing as code](../decisions/play-store-listing-as-code) decision
 page. The [Release an Android build](../guides/release-an-android-build)
 guide walks through choosing between the `preview` (APK) and `production`
-(AAB) paths.
+(AAB) paths, plus how to move a build already on `internal` to `production`
+without rebuilding it.
 
 `submit.production.ios` holds the App Store Connect (ASC) credentials EAS
 needs to upload an iOS build non-interactively: an API key file
