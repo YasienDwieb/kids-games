@@ -71,15 +71,35 @@ workflow then:
    but stays behind a manual **"Start rollout"** click in the Play Console —
    this workflow is never a one-way door, even though it always targets
    production [@aab-workflow]. That click has a command-line equivalent:
-   `fastlane rollout version_code:<vc> track:production` moves the release to
-   `completed` (fully live), or to a fractional, `inProgress` staged rollout
-   when passed `percent:<0-1>` (e.g. `percent:0.2` for 20%) [@fastfile].
+   `fastlane rollout version_code:<vc> [track:production] [percent:<0-1>]`
+   moves the release to `completed` (fully live) by default, or to a
+   fractional, `inProgress` staged rollout when passed a `percent` below
+   `1.0` (e.g. `percent:0.2` for 20%) [@fastfile].
 3. Runs `fastlane metadata` and then `fastlane changelog`, both targeting
    `track:production` and the version code from step 1, to push the store
    listing text and that version's release notes [@aab-workflow]. See
    [Update the Play Store listing](../guides/update-the-play-store-listing)
    for what those fastlane lanes actually push and how to edit the listing
    content itself, rather than repeating fastlane's lane behavior here.
+
+### Gotcha: `rollout` Must Always Set `rollout:`, Not Just `release_status:`
+
+An earlier version of the `rollout` lane set `release_status: "completed"`
+and left `rollout` unset for a full release. Running it printed "Successfully
+finished the upload to Google Play" and changed nothing — versionCode 13 sat
+on `production` as a draft, exactly as before [@fastfile]. The cause is in
+fastlane `supply`'s `Uploader#perform_upload`: every lane in this Fastfile
+sets `skip_upload_apk` and `skip_upload_aab`, so no version codes ever come
+from a binary, and on that path `supply` only touches the existing release if
+`track_promote_to` or `rollout` is set — `release_status` alone is never read
+[@fastfile]. `promote` was never affected because it always sets
+`track_promote_to`. The fix is to always pass `rollout:` explicitly — the
+current lane defaults it to `"1.0"` for a full release — and derive
+`release_status` from that value instead of setting it independently
+(`inProgress` below `1.0`, `completed` at `1.0`) [@fastfile]. The lesson
+generalizes: any future lane here that skips the binary upload needs
+`track_promote_to` or `rollout` to actually change anything, no matter what
+`release_status` says.
 
 This workflow does not bump `app.json`'s semver or create a git tag — that
 remains Branch A's responsibility [@aab-workflow]. In practice, a full
