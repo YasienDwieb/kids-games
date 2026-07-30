@@ -1,12 +1,21 @@
 name: Release — build AAB & submit to Play
 
-# Builds a production AAB on EAS, submits it to the Play "internal" track as a
-# draft, then pushes the en/ar store listing + release notes via Fastlane supply.
+# Builds a production AAB on EAS, submits it to the Play **production** track as
+# a draft, then pushes the en/ar store listing + release notes via Fastlane supply.
 #
 # Division of labour:
 #   • EAS    — builds the AAB and owns versionCode (remote autoIncrement).
-#   • Play   — receives the binary via `eas submit` (internal track, draft).
+#   • Play   — receives the binary via `eas submit` (production track, draft).
 #   • supply — attaches listing text/images/changelogs to that release.
+#
+# Production only, on purpose: routing releases through internal → closed →
+# production is not required for an app that is already live, and it strands
+# releases (1.2.0 sat on internal for weeks while production served 1.1.1). For a
+# deliberate test build, run `eas submit --profile internal` by hand, then move it
+# over with `fastlane promote` — never rebuild just to change track.
+#
+# The release lands as a **draft**: nothing reaches users until you press
+# "Start rollout" in the Play Console, so this workflow is not a one-way door.
 #
 # This workflow does NOT bump semver or push tags — the APK release workflow
 # remains the version authority. versionCode (the only value Play requires to be
@@ -24,7 +33,7 @@ concurrency:
 
 jobs:
   release:
-    name: Build AAB & submit to Play (internal · draft)
+    name: Build AAB & submit to Play (production · draft)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -72,21 +81,22 @@ jobs:
           echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
           echo "Built $BUILD_ID — versionCode $VERSION_CODE"
 
-      - name: Submit AAB to Play (internal · draft)
+      # eas.json `submit.production.android` → track: production, releaseStatus: draft.
+      - name: Submit AAB to Play (production · draft)
         run: |
           set -euo pipefail
           eas submit --platform android --profile production \
             --id "$BUILD_ID" --non-interactive
 
       # Listing text/images/changelogs attach to the release `eas submit` just
-      # created on the internal track. SUPPLY_JSON_KEY (absolute) overrides the
-      # Appfile path so it resolves regardless of fastlane's working dir.
+      # created on production. SUPPLY_JSON_KEY (absolute) overrides the Appfile
+      # path so it resolves regardless of fastlane's working dir.
       - name: Push store listing (en/ar)
         env:
           SUPPLY_JSON_KEY: ${{ github.workspace }}/fastlane/play-store-key.json
-        run: fastlane metadata version_code:"$VERSION_CODE" track:internal
+        run: fastlane metadata version_code:"$VERSION_CODE" track:production
 
       - name: Push release notes (en/ar)
         env:
           SUPPLY_JSON_KEY: ${{ github.workspace }}/fastlane/play-store-key.json
-        run: fastlane changelog version_code:"$VERSION_CODE" track:internal
+        run: fastlane changelog version_code:"$VERSION_CODE" track:production

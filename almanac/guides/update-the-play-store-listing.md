@@ -21,6 +21,12 @@ sources:
   - id: aab-workflow
     type: file
     path: .github/workflows/release-aab.yml
+  - id: docs-screenshots
+    type: file
+    path: docs/screenshots/
+  - id: readme
+    type: file
+    path: README.md
 ---
 
 Kids Zone's Google Play listing — title, descriptions, screenshots, and
@@ -75,13 +81,27 @@ what version code and track to target before editing anything
 
 Which track to target is not fixed. The automated
 [Release an Android build](../guides/release-an-android-build) AAB workflow
-always pushes to the `internal` track as part of a production submission
-[@aab-workflow]. But `docs/PLAY_STORE.md`'s own worked example of
-`fastlane tracks` output shows the closed-testing release actually living on
-the `alpha` track with `production` empty at that time [@play-store-docs] —
+always pushes to the `production` track, since it submits every build there
+as a draft release [@aab-workflow]. A build submitted by hand with the
+`submit.internal` EAS profile, or one promoted between tracks with
+`fastlane promote`, needs its listing lanes pointed at whichever track it
+actually landed on. `docs/PLAY_STORE.md`'s own worked example of
+`fastlane tracks` output shows a closed-testing release living on the
+`alpha` track with `production` empty at that time [@play-store-docs] —
 a reminder that the right track for a listing-only edit is whatever
 `fastlane tracks` reports right now, not whatever track a workflow file
-happens to mention.
+happens to mention. `fastlane tracks` output is also the only trustworthy
+answer to "what's actually live" — a git tag or `app.json`'s version proves
+nothing shipped [@play-store-docs].
+
+Screenshot edits have a second file to update. `docs/screenshots/*.jpg` in
+the repo root are byte-identical copies of the `en-US` phone screenshot set
+(`home-landscape.jpg` mirrors `01.jpg`, and so on) because the README embeds
+them directly [@docs-screenshots] [@readme]. Refresh both copies in the same
+change —
+`md5sum docs/screenshots/*.jpg
+fastlane/metadata/android/en-US/images/phoneScreenshots/*.jpg` shows at a
+glance whether they've drifted apart.
 
 The Arabic listing under `fastlane/metadata/android/ar/` is a complete,
 independently written listing (title, both descriptions, changelog, images),

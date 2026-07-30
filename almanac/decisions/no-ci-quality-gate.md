@@ -33,9 +33,9 @@ runs them on demand, they never fire on `push` or `pull_request`
 [@release-apk-workflow] [@release-aab-workflow]. `release-apk.yml` bumps the
 app version, builds a preview APK with `eas build --profile preview`, and
 publishes it as a GitHub Release [@release-apk-workflow]. `release-aab.yml`
-builds a production AAB, submits it to Google Play's internal track with
-`eas submit`, and pushes the fastlane listing metadata for that release
-[@release-aab-workflow]. Neither workflow runs `npm test` or
+builds a production AAB, submits it to Google Play's production track as a
+draft with `eas submit`, and pushes the fastlane listing metadata for that
+release [@release-aab-workflow]. Neither workflow runs `npm test` or
 `tsc --noEmit` at any step.
 
 Instead, `CONTRIBUTING.md` states that both commands "must be green before

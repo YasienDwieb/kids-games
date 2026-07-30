@@ -62,11 +62,21 @@ rather than one file per version; a maintainer can still add
 
 Current. The `release-aab.yml` GitHub Actions workflow wires both halves
 together in one run: it builds the AAB with `eas build`, submits it with
-`eas submit --platform android` to the Play internal track, reads the
+`eas submit --platform android` to the Play **production** track, reads the
 resulting `versionCode` back out of the build metadata, and then runs
-`fastlane metadata version_code:"$VERSION_CODE" track:internal` followed by
-`fastlane changelog version_code:"$VERSION_CODE" track:internal` against that
-same release [@release-aab-workflow].
+`fastlane metadata version_code:"$VERSION_CODE" track:production` followed by
+`fastlane changelog version_code:"$VERSION_CODE" track:production` against
+that same release [@release-aab-workflow]. The workflow used to submit to the
+`internal` track and require a manual promotion to `production` afterward;
+that stranded a release (versionCode 13 sat on `internal`/`alpha` for weeks
+while `production` still served versionCode 11) with no listing-lane fault
+involved, so `eas.json`'s `submit.production.android.track` and both `supply`
+lane invocations were changed to target `production` directly, with
+`releaseStatus: "draft"` kept so rollout is still a manual Play Console step
+[@eas-json] [@release-aab-workflow]. A separate `submit.internal` EAS profile
+and a `fastlane promote` lane now exist for the deliberate case — testing a
+build on `internal` before it ships — without rebuilding the AAB
+[@eas-json] [@fastfile].
 
 This decision covers Google Play only. iOS listing text is also
 version-controlled, in `store.config.json`, but pushed with `eas metadata:push`

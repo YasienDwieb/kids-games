@@ -53,6 +53,16 @@ Push only release notes for an existing release.
 
 Requires version_code: of an existing release on track: (default production).
 
+### android promote
+
+```sh
+[bundle exec] fastlane android promote
+```
+
+Promote an existing release to another track — no rebuild, no new version code.
+
+fastlane promote version_code:<vc> [track:internal] [to:production] [status:draft]
+
 ### android pull
 
 ```sh

@@ -19,7 +19,7 @@
     "production": {
       "android": {
         "serviceAccountKeyPath": "./fastlane/play-store-key.json",
-        "track": "internal",
+        "track": "production",
         "releaseStatus": "draft"
       },
       "ios": {
@@ -28,6 +28,13 @@
         "ascApiKeyIssuerId": "39271b7c-fb0c-4b41-91d1-377b65e44696",
         "appleTeamId": "J98M86H34Z",
         "ascAppId": "6793942277"
+      }
+    },
+    "internal": {
+      "android": {
+        "serviceAccountKeyPath": "./fastlane/play-store-key.json",
+        "track": "internal",
+        "releaseStatus": "draft"
       }
     }
   }

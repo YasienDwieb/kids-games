@@ -12,6 +12,12 @@ sources:
   - id: eas-json
     type: file
     path: eas.json
+  - id: fastfile
+    type: file
+    path: fastlane/Fastfile
+  - id: skill
+    type: file
+    path: .claude/skills/fastlane-release/SKILL.md
 ---
 
 Kids Zone ships Android builds through two separate, manually triggered GitHub
@@ -47,7 +53,9 @@ why that check is a manual habit rather than an enforced gate in this repo.
 
 ## Branch B: I Need To Ship A Production Build To The Play Store
 
-Trigger `release-aab.yml` manually. It runs
+Trigger `release-aab.yml` manually. It takes no `workflow_dispatch` inputs —
+it always builds and ships to production, on purpose; there is no separate
+internal/closed/production choice at trigger time [@aab-workflow]. It runs
 `eas build --platform android --profile production`, the `production` EAS
 profile, which has `autoIncrement: true` — EAS, not this repo, owns the
 Android version code for production builds [@aab-workflow] [@eas-json]. The
@@ -55,13 +63,16 @@ workflow then:
 
 1. Captures the EAS build id and the auto-incremented `appBuildVersion`
    (the version code) from the build output [@aab-workflow].
-2. Runs `eas submit` against that build id to Google Play's `internal` track
-   as a draft release, using the Play service-account key written from the
-   `PLAY_STORE_KEY_JSON` secret, matching `eas.json`'s `submit.production`
-   config (`track: "internal"`, `releaseStatus: "draft"`) [@aab-workflow]
-   [@eas-json].
+2. Runs `eas submit` against that build id to Google Play's **`production`**
+   track as a draft release, using the Play service-account key written from
+   the `PLAY_STORE_KEY_JSON` secret, matching `eas.json`'s `submit.production`
+   config (`track: "production"`, `releaseStatus: "draft"`) [@aab-workflow]
+   [@eas-json]. `releaseStatus: "draft"` means the build lands on production
+   but stays behind a manual **"Start rollout"** click in the Play Console —
+   this workflow is never a one-way door, even though it always targets
+   production [@aab-workflow].
 3. Runs `fastlane metadata` and then `fastlane changelog`, both targeting
-   `track:internal` and the version code from step 1, to push the store
+   `track:production` and the version code from step 1, to push the store
    listing text and that version's release notes [@aab-workflow]. See
    [Update the Play Store listing](../guides/update-the-play-store-listing)
    for what those fastlane lanes actually push and how to edit the listing
@@ -73,12 +84,49 @@ production release that should carry both a tagged version and a live Play
 submission may mean running both workflows: Branch A for the version bump and
 tag, Branch B for the actual Play Console submission.
 
+Shipping straight to `production` (draft) is deliberate, not an oversight.
+Routing every release through internal → closed → production first buys no
+review-time advantage — Google reviews the artifact, not the track it
+travelled through — and it can strand a release: version 1.2.0 (versionCode
+13) sat on the internal and alpha tracks for weeks while production kept
+serving 1.1.1 (versionCode 11), because nobody ran the manual promotion
+[@skill]. For a deliberate test build instead of a production ship, submit
+the same AAB by hand with the separate `submit.internal` profile
+(`eas submit --platform android --profile internal --id <BUILD_ID>`,
+`track: "internal"`, `releaseStatus: "draft"`) and move it to production later
+with the `fastlane promote` lane — never rebuild an AAB just to change which
+track it lands on [@eas-json] [@fastfile].
+
+### Recovering From A Failed Submit
+
+If the workflow fails at the "Submit AAB to Play" step, the EAS build already
+succeeded — the AAB exists and its version code is known. Rebuilding wastes
+about an hour and burns a version code for nothing; reuse the finished build
+instead of restarting the workflow [@skill]:
+
+1. Find the build: `eas build:list --platform android --limit 5
+   --non-interactive --json` and read off the `id`, `appBuildVersion`, and
+   `status` of the build that finished [@skill].
+2. Submit it directly: `eas submit --platform android --profile production
+   --id <BUILD_ID> --non-interactive` [@skill].
+3. Run `fastlane tracks` to confirm the version code now shows `[draft]` on
+   `production`, then run `fastlane metadata` and `fastlane changelog` for
+   that version code and track, exactly as the workflow would have
+   [@skill] [@fastfile].
+
+A `Google Api Error: This edit has expired` or `This Edit has been deleted`
+failure (after several retries) means the Play "edit" was invalidated while
+the job was running — most often because a release was discarded in the Play
+Console mid-flight — not a credentials or metadata problem. The fix is the
+same manual re-submit above [@skill].
+
 ## Verify
 
 For Branch A, confirm the new GitHub Release appears in the repo's Releases
 list with the APK attached and the new `v*` tag pushed to `master`
-[@apk-workflow]. For Branch B, open the Play Console and confirm the build
-shows up as a draft release on the internal testing track before promoting it
-to any wider track [@aab-workflow] [@eas-json]. Field-by-field details of
+[@apk-workflow]. For Branch B, run `fastlane tracks` and confirm the new
+version code shows up `[draft]` on the `production` track — that is the only
+reliable check, since a git tag or `app.json`'s version proves nothing about
+what actually reached Play [@fastfile] [@skill]. Field-by-field details of
 `eas.json`'s build and submit profiles are covered in
 [Build and release config](../reference/build-and-release-config).
