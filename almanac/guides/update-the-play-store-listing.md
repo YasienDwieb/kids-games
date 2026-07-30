@@ -47,7 +47,9 @@ it has nothing to attach to if the track is empty [@play-store-docs]
 [@fastfile]. Run `fastlane tracks` first; it's read-only and lists every track
 with its releases and version codes, which is the only reliable way to know
 what version code and track to target before editing anything
-[@fastfile] [@play-store-docs].
+[@fastfile] [@play-store-docs]. Run lanes as plain `fastlane <lane>` — this
+repo has no `Gemfile`, so `bundle exec fastlane` fails with "Could not locate
+Gemfile" rather than running the lane [@fastfile].
 
 ## Steps
 
@@ -114,7 +116,13 @@ empty [@play-store-docs] [@metadata-dir].
 After a `metadata` or `changelog` run, check the listing preview in the Play
 Console for the track you targeted, or run `fastlane pull` again and diff the
 freshly pulled files against what you just edited to confirm they match
-[@fastfile] [@play-store-docs]. See
+[@fastfile] [@play-store-docs]. `supply` uploads `en-US` and `ar` on
+concurrent threads, so their log lines interleave unpredictably — piping a run
+through `tail` can cut off the `ar` lines and make a real upload look skipped.
+Confirm both locales landed with
+`fastlane changelog ... | grep -iE "language|Uploaded"` and check that both
+`en-US` and `ar` appear, rather than judging coverage from a truncated tail
+[@fastfile]. See
 [Licensing and attribution](../reference/licensing-and-attribution) if a
 listing change involves updating credited third-party assets that also appear
 in a screenshot.

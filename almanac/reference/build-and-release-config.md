@@ -51,7 +51,8 @@ maintained independently as fastlane metadata, a split recorded on the
 page. The [Release an Android build](../guides/release-an-android-build)
 guide walks through choosing between the `preview` (APK) and `production`
 (AAB) paths, plus how to move a build already on `internal` to `production`
-without rebuilding it.
+or start the rollout of a `draft` release, in both cases without rebuilding
+it.
 
 `submit.production.ios` holds the App Store Connect (ASC) credentials EAS
 needs to upload an iOS build non-interactively: an API key file

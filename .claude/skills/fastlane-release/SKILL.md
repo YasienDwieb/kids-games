@@ -166,7 +166,8 @@ It has **no inputs — it always ships to `production`**:
 4. `fastlane changelog version_code:$VERSION_CODE track:production`
 
 `releaseStatus: draft` means the release appears on production but stays behind
-**"Start rollout"** in the Play Console — CI is never a one-way door.
+**"Start rollout"** — CI is never a one-way door. **The workflow does not make a release
+live**; finish it with the Console button or the `rollout` lane (§6.2b).
 
 Production-only is deliberate. Routing every release through internal → closed →
 production is *not* required for an app that is already live, buys no review-time
@@ -189,6 +190,7 @@ fastlane validate version_code:<vc> track:<t>    # dry-run, no changes
 fastlane metadata  version_code:<vc> track:<t>   # listing text + images (no notes)
 fastlane changelog version_code:<vc> track:<t>   # release notes only
 fastlane promote  version_code:<vc> track:<from> to:<to>   # move a release between tracks
+fastlane rollout  version_code:<vc> [percent:<0-1>]        # start rollout — MAKES IT LIVE
 fastlane pull                                    # pull live listing into metadata/
 ```
 
@@ -210,6 +212,30 @@ the repo had a `v1.1.2` tag and `app.json` said `1.2.0`.
 
 Running a lane is an outward, publishing action — confirm with the user and prefer
 `validate` first.
+
+### 6.2b Starting the rollout — the step that makes a release live
+
+CI leaves the new release as a **draft on `production`** (`eas.json`
+`submit.production.android.releaseStatus: "draft"`). Nothing reaches users until the
+rollout starts — either the **"Start rollout"** button in the Play Console, or:
+
+```bash
+fastlane rollout version_code:<vc>                  # 100%, release_status completed
+fastlane rollout version_code:<vc> percent:0.2      # staged: inProgress at 20%
+```
+
+This is **the** irreversible step in the whole flow — users who receive the update have
+it. Confirm with the user before running it, and run `tracks` afterwards to verify;
+`[draft]` → `[completed]` (or `[inProgress]`) is the only proof it worked.
+
+**The trap this lane exists to avoid.** `supply` only touches an existing release when
+`track_promote_to` **or** `rollout` is set — see `Uploader#perform_upload`. With no
+binary uploaded, `release_status` is *never read*. So a call that skips all uploads and
+sets only `release_status: "completed"` commits an **empty edit and prints
+`Successfully finished the upload to Google Play` while changing nothing** — the release
+stays a draft. That is exactly how a "shipped" 1.2.0 sat unreleased. Always pass
+`rollout`; never trust the success line alone; verify with `tracks`. (The `promote` lane
+is immune — it goes through `track_promote_to`, the other branch of that condition.)
 
 ### 6.3 Recovering from a failed submit — do NOT rebuild
 

@@ -60,9 +60,10 @@ rather than one file per version; a maintainer can still add
 
 ## Status
 
-Current. The `release-aab.yml` GitHub Actions workflow wires both halves
-together in one run: it builds the AAB with `eas build`, submits it with
-`eas submit --platform android` to the Play **production** track, reads the
+Current. The `release-aab.yml` GitHub Actions workflow — walked through in
+[Release an Android build](../guides/release-an-android-build) — wires both
+halves together in one run: it builds the AAB with `eas build`, submits it
+with `eas submit --platform android` to the Play **production** track, reads the
 resulting `versionCode` back out of the build metadata, and then runs
 `fastlane metadata version_code:"$VERSION_CODE" track:production` followed by
 `fastlane changelog version_code:"$VERSION_CODE" track:production` against
@@ -76,7 +77,20 @@ lane invocations were changed to target `production` directly, with
 [@eas-json] [@release-aab-workflow]. A separate `submit.internal` EAS profile
 and a `fastlane promote` lane now exist for the deliberate case — testing a
 build on `internal` before it ships — without rebuilding the AAB
-[@eas-json] [@fastfile].
+[@eas-json] [@fastfile]. A `fastlane rollout` lane
+(`fastlane rollout version_code:<vc> [track:production] [percent:<0-1>]`) is
+the command-line equivalent of the Play Console's manual "Start rollout"
+click: it moves a `draft` release on a given track to `completed` by
+default, or to a fractional, `inProgress` staged rollout when passed a
+`percent` below `1.0` [@fastfile]. Making a lane that skips the binary
+upload actually touch an existing release is easy to get wrong in fastlane
+`supply` — the gotcha and its root cause are recorded in
+[Release an Android build](../guides/release-an-android-build) rather than
+repeated here. VersionCode 13, the release stranded on `internal`/`alpha`
+above, was later promoted to a production draft with `fastlane promote` and
+then moved to `completed` on `production` with `fastlane rollout`, shipping
+1.2.0 without a rebuild at any point and closing out that stranding
+incident.
 
 This decision covers Google Play only. iOS listing text is also
 version-controlled, in `store.config.json`, but pushed with `eas metadata:push`

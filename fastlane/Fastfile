@@ -93,6 +93,31 @@ platform :android do
     )
   end
 
+  desc "Start rollout of an existing draft release — this is what makes it live."
+  desc "fastlane rollout version_code:<vc> [track:production] [percent:0.2]"
+  lane :rollout do |options|
+    # `rollout` MUST always be passed. With no binary upload, supply only touches
+    # an existing release if track_promote_to or rollout is set
+    # (supply/uploader.rb#perform_upload) — release_status alone is never read on
+    # that path, so a nil rollout commits an empty edit and reports success while
+    # leaving the release a draft.
+    percent = options[:percent] ? options[:percent].to_f : 1.0
+    UI.user_error!("percent must be > 0 and <= 1.0 (got #{percent})") unless percent > 0 && percent <= 1.0
+    upload_to_play_store(
+      track: android_track(options),
+      version_code: require_version_code(options),
+      # A staged rollout is 'inProgress' + a fraction; 1.0 means full release.
+      release_status: percent < 1.0 ? "inProgress" : "completed",
+      rollout: percent.to_s,
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+
   desc "Pull current listing from Play Console into fastlane/metadata."
   lane :pull do
     download_from_play_store
