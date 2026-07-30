@@ -70,7 +70,10 @@ workflow then:
    [@eas-json]. `releaseStatus: "draft"` means the build lands on production
    but stays behind a manual **"Start rollout"** click in the Play Console —
    this workflow is never a one-way door, even though it always targets
-   production [@aab-workflow].
+   production [@aab-workflow]. That click has a command-line equivalent:
+   `fastlane rollout version_code:<vc> track:production` moves the release to
+   `completed` (fully live), or to a fractional, `inProgress` staged rollout
+   when passed `percent:<0-1>` (e.g. `percent:0.2` for 20%) [@fastfile].
 3. Runs `fastlane metadata` and then `fastlane changelog`, both targeting
    `track:production` and the version code from step 1, to push the store
    listing text and that version's release notes [@aab-workflow]. See
@@ -84,18 +87,17 @@ production release that should carry both a tagged version and a live Play
 submission may mean running both workflows: Branch A for the version bump and
 tag, Branch B for the actual Play Console submission.
 
-Shipping straight to `production` (draft) is deliberate, not an oversight.
-Routing every release through internal → closed → production first buys no
-review-time advantage — Google reviews the artifact, not the track it
-travelled through — and it can strand a release: version 1.2.0 (versionCode
-13) sat on the internal and alpha tracks for weeks while production kept
-serving 1.1.1 (versionCode 11), because nobody ran the manual promotion
-[@skill]. For a deliberate test build instead of a production ship, submit
-the same AAB by hand with the separate `submit.internal` profile
-(`eas submit --platform android --profile internal --id <BUILD_ID>`,
-`track: "internal"`, `releaseStatus: "draft"`) and move it to production later
-with the `fastlane promote` lane — never rebuild an AAB just to change which
-track it lands on [@eas-json] [@fastfile].
+Shipping straight to `production` (draft) is deliberate, not an oversight —
+see [Play Store listing as code](../decisions/play-store-listing-as-code) for
+why the workflow was changed from an internal-first path to this one after a
+release got stranded on `internal`/`alpha` for weeks. For a deliberate test
+build instead of a production ship, submit the same AAB by hand with the
+separate `submit.internal` profile (`eas submit --platform android --profile
+internal --id <BUILD_ID>`, `track: "internal"`, `releaseStatus: "draft"`),
+then either move it to production with the `fastlane promote` lane or start
+its rollout in place with `fastlane rollout` once it's ready to go live —
+never rebuild an AAB just to change which track it lands on or to flip it
+live [@eas-json] [@fastfile].
 
 ### Recovering From A Failed Submit
 
