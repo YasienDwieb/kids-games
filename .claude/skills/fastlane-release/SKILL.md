@@ -157,11 +157,23 @@ the `src/games/` tree.
 `.github/workflows/release-aab.yml` (**`workflow_dispatch`**, run it from the Actions tab)
 is the whole release in one job, and it is the path to prefer:
 
+It has **no inputs — it always ships to `production`**:
+
 1. `eas build -p android --profile production` → AAB, capturing `BUILD_ID` + `VERSION_CODE`
-2. `eas submit --id "$BUILD_ID"` → Play **internal** track, **draft** (per `eas.json`
-   `submit.production.android`)
-3. `fastlane metadata  version_code:$VERSION_CODE track:internal`
-4. `fastlane changelog version_code:$VERSION_CODE track:internal`
+2. `eas submit --profile production --id "$BUILD_ID"` → Play **production** track,
+   **draft** (per `eas.json` `submit.production.android`)
+3. `fastlane metadata  version_code:$VERSION_CODE track:production`
+4. `fastlane changelog version_code:$VERSION_CODE track:production`
+
+`releaseStatus: draft` means the release appears on production but stays behind
+**"Start rollout"** in the Play Console — CI is never a one-way door.
+
+Production-only is deliberate. Routing every release through internal → closed →
+production is *not* required for an app that is already live, buys no review-time
+advantage, and strands releases (1.2.0/vc=13 sat on internal+alpha for weeks while
+production served 1.1.1). For a deliberate test build, submit by hand with the
+`submit.internal` profile (`eas submit -p android --profile internal --id <BUILD_ID>`)
+and move it over later with `fastlane promote` (§6.4) — never rebuild to change track.
 
 Division of labour: **EAS owns `versionCode`** (remote autoIncrement — never hand-edit it);
 `app.json` `expo.version` is the semver you bump. The workflow does not tag or bump semver.
@@ -176,6 +188,7 @@ fastlane tracks                                  # list tracks + version codes
 fastlane validate version_code:<vc> track:<t>    # dry-run, no changes
 fastlane metadata  version_code:<vc> track:<t>   # listing text + images (no notes)
 fastlane changelog version_code:<vc> track:<t>   # release notes only
+fastlane promote  version_code:<vc> track:<from> to:<to>   # move a release between tracks
 fastlane pull                                    # pull live listing into metadata/
 ```
 
@@ -185,10 +198,11 @@ dies with "Could not locate Gemfile"). CI installs it with `gem install fastlane
 `supply` uploads listing text + images + changelogs **per existing release version_code**
 — there is no binary upload in these lanes, so each targets a release that already exists
 on the track. **Always run `tracks` first and target the version code of the release you
-mean.** `track` defaults to `production`, which is usually *wrong* here: release notes are
-per-version-code, so pushing next version's notes against the live production code stamps
-them onto the release users are already running. A new release normally lives as a
-`[draft]` on `internal` — target that.
+mean.** `track` defaults to `production`, which is right for the normal flow but still
+needs the *correct version code*: release notes are per-version-code, so aiming them at
+the live production release stamps next version's notes onto the build users are already
+running. The release you want is the one `tracks` shows as `[draft]` — check before every
+run.
 
 `fastlane tracks` is also the only honest answer to "what is actually live". A git tag or
 an `app.json` version proves nothing shipped: production sat on `vc=11 name="1.1.1"` while
@@ -219,6 +233,25 @@ metadata fault; nothing is wrong with the repo. Just re-submit the existing buil
 
 After a manual recovery the listing you pushed may come from an unmerged
 `chore/release-metadata` branch — say so, and get the PR merged so Play and `master` agree.
+
+### 6.4 Promoting a release between tracks — never rebuild for this
+
+A build already sitting on a test track can be moved to production as-is:
+
+```bash
+fastlane tracks                                            # find the version code
+fastlane promote version_code:<vc> track:internal to:production
+fastlane tracks                                            # confirm it landed as [draft]
+```
+
+Defaults are `track:internal to:production status:draft`. Pass `status:completed` only if
+you want it to go live without the Console click.
+
+**Never discard a test release and rebuild just to "release directly to production".**
+Review time is identical — Google reviews the artifact, not the route it took, and an AAB
+already scanned for a test track is if anything reviewed faster. Rebuilding costs an hour,
+burns a version code, and swaps a tested binary for an untested one. Discarding a release
+mid-flight is also what produces the `This Edit has been deleted` failure in §6.3.
 
 ## 7. Validate before committing
 

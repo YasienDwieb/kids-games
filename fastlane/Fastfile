@@ -72,6 +72,27 @@ platform :android do
     )
   end
 
+  desc "Promote an existing release to another track — no rebuild, no new version code."
+  desc "fastlane promote version_code:<vc> [track:internal] [to:production] [status:draft]"
+  lane :promote do |options|
+    from = options[:track] || "internal"
+    to   = options[:to]    || "production"
+    upload_to_play_store(
+      track: from,
+      track_promote_to: to,
+      # draft by default: the release lands on the target track but stays behind
+      # "Start rollout" in the Console. Pass status:completed to go live directly.
+      track_promote_release_status: options[:status] || "draft",
+      version_code: require_version_code(options),
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+
   desc "Pull current listing from Play Console into fastlane/metadata."
   lane :pull do
     download_from_play_store
