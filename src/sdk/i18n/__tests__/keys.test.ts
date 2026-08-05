@@ -398,6 +398,22 @@ const KEYS: string[] = [
   'numbers-land:names.8',
   'numbers-land:names.9',
   'numbers-land:names.10',
+  // candy-catch
+  'candy-catch:meta.name',
+  'candy-catch:meta.description',
+  'candy-catch:hud.level',
+  'candy-catch:hud.score',
+  'candy-catch:start.title',
+  'candy-catch:start.subtitle',
+  'candy-catch:start.tap',
+  'candy-catch:win.title',
+  'candy-catch:win.next',
+  'candy-catch:win.done',
+  'candy-catch:lose.title',
+  'candy-catch:lose.subtitle',
+  'candy-catch:lose.retry',
+  'candy-catch:a11y.basket',
+  'candy-catch:a11y.hint',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {
