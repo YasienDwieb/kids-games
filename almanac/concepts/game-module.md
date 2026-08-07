@@ -66,12 +66,12 @@ registration flow and its validation rules in full, and the
 [Game config schema](../reference/game-config-schema) page gives the exact
 field-by-field contract.
 
-## Eleven games, one pattern
+## Twelve games, one pattern
 
-Eleven games exist in this shape today: `simple-pairs`, `color-mixer`,
+Twelve games exist in this shape today: `simple-pairs`, `color-mixer`,
 `mouse-maze`, `balloon-archer`, `shape-detective`, `turbo-road`,
-`count-and-pop`, `match-up`, `letter-land`, `numbers-land`, and
-`animal-safari` [@games-index]. Each is a game in the sense defined here —
+`count-and-pop`, `match-up`, `letter-land`, `numbers-land`, `animal-safari`,
+and `candy-catch` [@games-index]. Each is a game in the sense defined here —
 independently playable from Home, with its own score/level progression if it
 opts into one — which is a narrower idea than a "flow unit." A
 [Flow](../concepts/flow) unit reuses a game's existing content inside a
@@ -79,5 +79,5 @@ different, scoreless playback mode; the game module concept describes the
 thing being reused, not the reused form. The
 [Add a new game](../guides/add-a-new-game) guide walks through creating one of
 these folders end to end, and the
-[Games catalog](../reference/games-catalog) reference lists all eleven with
+[Games catalog](../reference/games-catalog) reference lists all twelve with
 their exact metadata.

@@ -30,7 +30,7 @@ deep `src/` path such as `@/sdk/audio/useSound` or `../../components/common`
 re-exports everything a game is allowed to touch: the config/registry API,
 design tokens, UI primitives, the asset manifest, storage, settings, audio,
 speech, motion, layout (`GameShell`), age bands, progress/levels, i18n, and the
-flow engine [@sdk-barrel]. The boundary exists so that eleven independently
+flow engine [@sdk-barrel]. The boundary exists so that twelve independently
 built games, written at different times by different contributors, cannot
 develop hidden coupling to each other's internals — a game can only break by
 changing its own code or the SDK's public contract, never by another game

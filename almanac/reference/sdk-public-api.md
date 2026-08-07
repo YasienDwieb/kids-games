@@ -1,7 +1,7 @@
 ---
 title: "SDK Public API Reference"
 summary: "Every symbol the @/sdk barrel exports, grouped by subsystem, with the test that guarantees none of them resolve to undefined."
-topics: [reference, sdk]
+topics: [reference, sdk, motion]
 sources:
   - id: sdk-barrel
     type: file
@@ -88,7 +88,7 @@ page [@sdk-barrel].
 
 | Export | Kind |
 |---|---|
-| `useSound` | hook — `{ play(intent, options?) }`; `PlayOptions` is its options type |
+| `useSound` | hook — `{ play(intent, options?), prewarm(intents) }`; `PlayOptions` is its options type |
 | `useLoopSound` | hook — looping variant of `useSound` |
 | `useSpeech` | hook — text-to-speech wrapper; `SpeakOptions` is its options type |
 
@@ -97,8 +97,16 @@ see [Audio and speech](../architecture/audio-and-speech) [@sdk-barrel].
 
 ## Motion
 
-`useTilt` — the one motion/orientation hook exported from the barrel
-[@sdk-barrel].
+| Export | Kind |
+|---|---|
+| `useTilt` | hook — device-tilt input |
+| `useGameLoop` | hook — runs a worklet `step(dt, elapsed)` on every frame, on the UI thread; `GameLoopStep` and `GameLoopOptions` are its callback and options types |
+| `MAX_DT`, `clampDt`, `clamp`, `lerp`, `approach`, `wrap` | worklet-safe motion math from `frame.ts` |
+
+`useGameLoop` and the `frame.ts` helpers are the newer half of this section;
+see [Motion and the game loop](../architecture/motion-and-game-loop) for the
+frame-loop contract, the dt-clamp invariant, and `candy-catch` as the
+reference consumer [@sdk-barrel].
 
 ## Layout
 

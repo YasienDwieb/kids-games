@@ -1,6 +1,6 @@
 ---
 title: "Games Catalog Reference"
-summary: "The exact id, age range, accent, layout mode, and flow eligibility of all 11 games currently registered in src/games/index.ts, verified against each game's own config.ts."
+summary: "The exact id, age range, accent, layout mode, and flow eligibility of all 12 games currently registered in src/games/index.ts, verified against each game's own config.ts."
 topics: [reference, games]
 sources:
   - id: games-index
@@ -42,9 +42,12 @@ sources:
   - id: animal-safari-config
     type: file
     path: src/games/animal-safari/config.ts
+  - id: candy-catch-config
+    type: file
+    path: src/games/candy-catch/config.ts
 ---
 
-This page is a lookup table for the 11 games currently registered by
+This page is a lookup table for the 12 games currently registered by
 `src/games/index.ts`, one `import './<id>/config'` line per game
 [@games-index]. Each row's age range, accent, layout mode, and `order` is
 read directly from that game's own `config.ts`; each is a
@@ -56,7 +59,7 @@ own `flow.tsx` adapter and can appear in a guided-play session
 how those ranges map onto the [age bands](../concepts/age-bands) shown in
 Home and Settings is a separate derivation covered on that page.
 
-## The 11 registered games
+## The 12 registered games
 
 Rows are listed in ascending `order` — the same sequence `getAllGames()`
 returns, and so the same left-to-right/top-to-bottom sequence the games rail
@@ -77,6 +80,7 @@ and how ties or omissions are broken.
 | `count-and-pop` | 90 | 3–7 | pink | shell | yes | Counting: tap to pop N objects, or pick the numeral matching a shown group [@count-and-pop-config] [@flow-registrar] |
 | `letter-land` | 100 | 3–7 | blue | shell | yes | Listen-and-find letters via text-to-speech, plus finger-trace letter shapes [@letter-land-config] [@flow-registrar] |
 | `numbers-land` | 110 | 3–7 | orange | shell | yes | Listen-and-find digits, the audio-first sibling of Count & Pop [@numbers-land-config] [@flow-registrar] |
+| `candy-catch` | 130 | 3–7 | pink | bare | no | Drag a basket left/right to catch falling treats and dodge chili/bomb hazards across an endless level curve [@candy-catch-config] |
 
 Each game's Home tile shows `gameShortName(game)` — the localized
 `meta.shortName` string when the game's locale files declare one, falling

@@ -14,7 +14,7 @@ sources:
     path: src/games/_shared/listen-find/
 ---
 
-This decision fixes how the eleven game modules under `src/games/` are allowed
+This decision fixes how the twelve game modules under `src/games/` are allowed
 to depend on each other: not at all, except through the `@/sdk` barrel, with one
 narrow, explicitly named exception. It is what keeps a codebase built by many
 different contributors — human and AI agent alike — from turning into a web of
@@ -79,7 +79,7 @@ a game's folder cannot silently break a sibling, because nothing outside
 `_shared/listen-find` is allowed to depend on that folder's internals. The
 tradeoff moves onto the SDK instead — because it is the one surface every game
 touches, any breaking change to `@/sdk` now has to be considered against all
-eleven games at once, which raises the bar for changing that surface casually.
+twelve games at once, which raises the bar for changing that surface casually.
 This is the same reason the [game registry](../architecture/game-registry) can
 stay a simple in-memory map: it only ever has to reason about one game at a
 time, never about one game reaching into another.

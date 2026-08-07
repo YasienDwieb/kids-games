@@ -14,7 +14,7 @@ sources:
 Kids Games is a multi-game Expo/React Native app for children ages 2–12
 [@readme], shipped to app stores under a different product name,
 [Kids Zone](decisions/kids-zone-product-name) — `app.json`'s `expo.name` is
-`"Kids Zone"`, not "Kids Games" [@app-json]. The repository holds eleven
+`"Kids Zone"`, not "Kids Games" [@app-json]. The repository holds twelve
 independent games under `src/games/`,
 a shared platform core under `src/sdk/` that every game imports from, and a
 second, separate engine, [flow](concepts/flow), that interleaves several
@@ -35,7 +35,7 @@ folder that registers itself with one side-effecting import and otherwise
 imports only from a single barrel module, `@/sdk`. Read
 [Game module](concepts/game-module) for the folder shape every game follows,
 and [SDK boundary](concepts/sdk-boundary) for the rule — and its one
-sanctioned exception — that keeps eleven games from developing hidden
+sanctioned exception — that keeps twelve games from developing hidden
 coupling to each other. [Game registry](architecture/game-registry) and
 [App entry and navigation](architecture/app-entry-and-navigation) trace how a
 game actually becomes visible to the running app, and
@@ -104,14 +104,14 @@ re-deriving the workflow from source:
 
 ## Worth knowing early
 
-A few decisions and reference pages are easy to reach for wrong if you skip
-them:
+A few decisions, reference, and architecture pages are easy to reach for
+wrong if you skip them:
 
 - [SDK-only import boundary](decisions/sdk-only-import-boundary) is the
   decision behind the SDK boundary concept above — read it before adding any
   cross-game dependency, sanctioned or otherwise.
 - [Games catalog](reference/games-catalog) is the exact, current lookup
-  table of all eleven registered games, their age ranges, and their flow
+  table of all twelve registered games, their age ranges, and their flow
   eligibility — check it before assuming a game exists or participates in
   flow.
 - [Licensing and attribution](reference/licensing-and-attribution) matters
@@ -131,3 +131,9 @@ them:
   Jest suite — any new color added to `ACCENTS`, or any component that draws
   text on an arbitrary fill, must clear it via `bestTextOn`, covered on the
   [design system](architecture/design-system) page.
+- [Motion and the game loop](architecture/motion-and-game-loop) covers
+  `useGameLoop`, the SDK's UI-thread frame loop for continuous motion like
+  falling items or a chasing basket. Only `candy-catch` is built on it so
+  far — `turbo-road` and `balloon-archer` still run their own
+  `requestAnimationFrame` loops on the JS thread, deliberately. Read it
+  before assuming every game's animation goes through reanimated.

@@ -103,7 +103,7 @@ every game's `config.ts` purely for its registration side effect — one line
 per game, such as `import './letter-land/config';` [@games-index]. This file
 is deliberately the *only* place that changes when a new game is added to the
 app. Concentrating every registration behind one line, in one file, means
-adding an eleventh or twelfth game is a single-line diff rather than a change
+adding the next game is a single-line diff rather than a change
 that touches routing, a manual game list, or any other file that multiple
 contributors might be editing at once — it avoids parallel-edit collisions
 across the games that already exist. This is the mechanism the

@@ -1,11 +1,14 @@
 ---
 title: "Audio and Speech Architecture"
-summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, gated on settings.soundEnabled; useSpeech wraps expo-speech with the same graceful degradation but is deliberately never gated by any sound setting, since spoken prompts are game content in the listen-and-find games. CLAUDE.md still describes the sound layer as expo-av."
+summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, gated on settings.soundEnabled; useSpeech wraps expo-speech with the same graceful degradation but is deliberately never gated by any sound setting, since spoken prompts are game content in the listen-and-find games. useSound mirrors settingsStore into a ref instead of reading it per call, and exposes prewarm() to load audio players before a level starts, both changes made for games that call play() from a per-frame motion loop."
 topics: [architecture, audio, assets]
 sources:
   - id: use-sound
     type: file
     path: src/sdk/audio/useSound.ts
+  - id: use-sound-test
+    type: file
+    path: src/sdk/audio/__tests__/useSound.test.tsx
   - id: use-loop-sound
     type: file
     path: src/sdk/audio/useLoopSound.ts
@@ -18,15 +21,15 @@ sources:
   - id: manifest-ts
     type: file
     path: src/sdk/assets/manifest.ts
-  - id: claude-md
-    type: file
-    path: CLAUDE.md
   - id: never-muted-test
     type: file
     path: src/sdk/speech/__tests__/never-muted.test.ts
   - id: settings-store
     type: file
     path: src/sdk/settings/store.ts
+  - id: create-store
+    type: file
+    path: src/sdk/storage/createStore.ts
 ---
 
 Games never load a sound file or ask for a specific voice directly. They call
@@ -69,22 +72,49 @@ in the random-variant behavior at all, since each has only one clip in its
 
 ## `useSound`: one-shot effects
 
-`useSound()` returns a single `play(intent, options?)` function. Calling it
-first awaits `settingsStore.get()`, then fires an `Haptics.impactAsync(Light)`
-if `settings.hapticsEnabled` is true and the caller didn't pass
+`useSound()` returns `{ play(intent, options?), prewarm(intents) }`. `play` is
+synchronous now, not `async`: on mount, the hook fires `settingsStore.get()`
+once and also calls `settingsStore.subscribe()`, mirroring whatever comes back
+into a plain `useRef<Settings>` rather than re-reading storage inside `play`
+itself [@use-sound] [@create-store]. `play` fires an `Haptics.impactAsync(Light)`
+if the mirrored `hapticsEnabled` is true and the caller didn't pass
 `{ haptic: false }` — haptics and sound are gated independently, so haptics
 can still fire even when sound playback is skipped a line later because
-`settings.soundEnabled` is false [@use-sound]. If sound is enabled, `play`
+`soundEnabled` is false [@use-sound]. If sound is enabled, `play`
 calls `pickModule(intent)`; a returned `undefined` means an unknown intent
 and `play` returns immediately, silently [@use-sound]. Otherwise it either
 replays a cached `AudioPlayer` for that exact module — calling `seekTo(0)`
 first, since `expo-audio` does not auto-rewind on finish — or creates one via
 `createAudioPlayer(module)` and caches it keyed by module identity
 [@use-sound]. The whole call is wrapped in a `try/catch` that swallows any
-playback failure, and the effect's cleanup removes every cached player on
-unmount [@use-sound]. `setAudioModeAsync({ playsInSilentMode: true })` is
-called once on mount so effects still play even when the device's hardware
-mute switch is on [@use-sound].
+playback failure, and the effect's cleanup unsubscribes from the store and
+removes every cached player on unmount [@use-sound]. `setAudioModeAsync({
+playsInSilentMode: true })` is called once on mount so effects still play even
+when the device's hardware mute switch is on [@use-sound].
+
+The settings mirror exists because `play()` is called from places where an
+`AsyncStorage` round-trip plus a JSON parse is expensive: repeatedly during a
+drag gesture, and — since the
+[motion and game loop](../architecture/motion-and-game-loop) subsystem shipped in the same
+range — from inside a `useGameLoop` `step` worklet via `runOnJS`, on the same
+JS thread the loop's own event handling runs on [@use-sound]. Reading a ref
+instead of awaiting the store keeps that hot path free of both costs, while
+`settingsStore.subscribe()` still keeps the mirrored value current if the
+setting changes elsewhere in the app while the game stays mounted
+[@use-sound]. `useSound.test.tsx` pins this as a regression test: calling
+`play()` 25 times in a row must not add any `AsyncStorage.getItem` calls
+beyond what mounting already cost, and a `soundEnabled: false` write made
+through `settingsStore` after mount must still reach an already-mounted
+caller's next `play()` [@use-sound-test].
+
+`prewarm(intents)` loads every variant module for a list of intents up front
+via `createAudioPlayer`, so no player is constructed for the first time in the
+middle of a level [@use-sound]. Before this existed, the first occurrence of
+each sound variant during play created its `AudioPlayer` on the spot — a file
+load landing mid-gameplay. `candy-catch` calls `prewarm` once, with its full
+list of sound intents, right after mount [@use-sound]. `useSound.test.tsx`
+confirms that after a `prewarm` call, up to 30 further `play()` calls create no
+additional `AudioPlayer` instances [@use-sound-test].
 
 ## `useLoopSound`: ambient sound tied to a lifecycle
 
@@ -105,17 +135,6 @@ in-flight `creatingRef` guard prevents two overlapping create calls from ever
 racing if `active` toggles rapidly during the async `createAudioPlayer` call,
 and a `mountedRef` check discards a player created after the component has
 already unmounted [@use-loop-sound].
-
-## The `expo-av` documentation mismatch
-
-`CLAUDE.md` still lists `expo-av` as the library backing "sound effects and
-audio" [@claude-md]. That is out of date: neither `useSound.ts` nor
-`useLoopSound.ts` imports `expo-av` at all — both import `createAudioPlayer`
-and `setAudioModeAsync` from `expo-audio` [@use-sound] [@use-loop-sound], and
-`expo-av` is not even listed as a project dependency, only `expo-audio` is.
-Treat the source files as authoritative for what the app actually does;
-`CLAUDE.md`'s reference to `expo-av` is a stale note from before the library
-migration and should not be relied on when reasoning about this layer.
 
 ## `useSpeech`: text-to-speech that no sound setting can silence
 

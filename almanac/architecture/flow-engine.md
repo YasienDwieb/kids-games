@@ -68,9 +68,9 @@ populates this registry — the flow-mode analogue of `src/games/index.ts` — a
 it imports exactly six `flow.tsx` modules as side effects: `count-and-pop`,
 `shape-detective`, `match-up`, `letter-land`, `numbers-land`, and
 `animal-safari` [@flow-registrar]. A game that never imports a `flow.tsx`
-here — `simple-pairs`, `color-mixer`, `mouse-maze`, `balloon-archer`, and
-`turbo-road` — has no adapter and can never appear in a flow sequence, no
-matter how complete the game itself is. `unitAt(i, seed)` is what lets a
+here — `simple-pairs`, `color-mixer`, `mouse-maze`, `balloon-archer`,
+`turbo-road`, and `candy-catch` — has no adapter and can never appear in a
+flow sequence, no matter how complete the game itself is. `unitAt(i, seed)` is what lets a
 finite, addressable slice of the game's own content become a `FlowUnit`
 without the game rewriting any of its actual gameplay: the unit's `render`
 function is typically the game's existing round component, wired to call

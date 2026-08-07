@@ -69,7 +69,7 @@ range [@flow-progress]. A dedicated navigation screen (`FlowPlayerScreen`) hosts
 this loop, rather than a mode flag threaded through `GamePlayerScreen`.
 
 A game opts in by writing a `flow.tsx` file that calls `registerFlowAdapter`.
-That is a deliberate, per-game choice — only 6 of the repository's 11 games
+That is a deliberate, per-game choice — only 6 of the repository's 12 games
 (`animal-safari`, `count-and-pop`, `letter-land`, `match-up`, `numbers-land`,
 `shape-detective`) currently ship one.
 
