@@ -1,6 +1,6 @@
 ---
 title: "Audio and Speech Architecture"
-summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, gated on settings.soundEnabled; useSpeech wraps expo-speech with the same graceful degradation but is deliberately never gated by any sound setting, since spoken prompts are game content in the listen-and-find games. useSound mirrors settingsStore into a ref instead of reading it per call, and exposes prewarm() to load audio players before a level starts, both changes made for games that call play() from a per-frame motion loop. CLAUDE.md still describes the sound layer as expo-av."
+summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, gated on settings.soundEnabled; useSpeech wraps expo-speech with the same graceful degradation but is deliberately never gated by any sound setting, since spoken prompts are game content in the listen-and-find games. useSound mirrors settingsStore into a ref instead of reading it per call, and exposes prewarm() to load audio players before a level starts, both changes made for games that call play() from a per-frame motion loop."
 topics: [architecture, audio, assets]
 sources:
   - id: use-sound
@@ -21,9 +21,6 @@ sources:
   - id: manifest-ts
     type: file
     path: src/sdk/assets/manifest.ts
-  - id: claude-md
-    type: file
-    path: CLAUDE.md
   - id: never-muted-test
     type: file
     path: src/sdk/speech/__tests__/never-muted.test.ts
@@ -138,17 +135,6 @@ in-flight `creatingRef` guard prevents two overlapping create calls from ever
 racing if `active` toggles rapidly during the async `createAudioPlayer` call,
 and a `mountedRef` check discards a player created after the component has
 already unmounted [@use-loop-sound].
-
-## The `expo-av` documentation mismatch
-
-`CLAUDE.md` still lists `expo-av` as the library backing "sound effects and
-audio" [@claude-md]. That is out of date: neither `useSound.ts` nor
-`useLoopSound.ts` imports `expo-av` at all — both import `createAudioPlayer`
-and `setAudioModeAsync` from `expo-audio` [@use-sound] [@use-loop-sound], and
-`expo-av` is not even listed as a project dependency, only `expo-audio` is.
-Treat the source files as authoritative for what the app actually does;
-`CLAUDE.md`'s reference to `expo-av` is a stale note from before the library
-migration and should not be relied on when reasoning about this layer.
 
 ## `useSpeech`: text-to-speech that no sound setting can silence
 
