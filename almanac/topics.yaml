@@ -59,6 +59,11 @@ topics:
     description: Sound-effect playback and text-to-speech, both gated by settings and resolved through the asset manifest
     parents: [assets]
 
+  - slug: motion
+    title: Motion
+    description: Continuous per-frame movement — the UI-thread game loop and worklet-safe easing math games use to animate without touching React state
+    parents: [sdk]
+
   - slug: storage
     title: Storage
     description: The single AsyncStorage-backed persistence primitive and the systems built on it
