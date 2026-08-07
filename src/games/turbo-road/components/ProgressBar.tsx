@@ -22,8 +22,10 @@ const styles = StyleSheet.create({
   rail: {
     position: 'absolute',
     end: 10,
-    top: 128,
-    bottom: 128,
+    // Clears the floating HUD row at the top; the short landscape viewport
+    // needs the rest of the height, so the bottom margin stays small.
+    top: 96,
+    bottom: 40,
     width: RAIL_W,
     borderRadius: RAIL_W / 2,
     backgroundColor: COLORS.line2,

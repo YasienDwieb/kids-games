@@ -126,6 +126,14 @@ export const DECOR_BANDS = 12;
 
 /** Road width as a ratio of the playfield width. */
 export const ROAD_WIDTH_RATIO = 0.7;
+/** Cap on road width relative to playfield HEIGHT. Only binds in landscape,
+    where the width ratio alone would make the road absurdly wide; it keeps
+    the road filling most of a wide screen instead of a portrait-thin strip. */
+export const ROAD_HEIGHT_CAP_RATIO = 1.25;
+/** Lane width the emoji sprite sizes were authored against. Wider lanes
+    (landscape) scale the cars/pickups up so they don't swim in empty asphalt. */
+export const SPRITE_BASE_LANE = 118;
+export const SPRITE_MAX_SCALE = 1.45;
 
 /* ---------------- garage catalog ---------------- */
 

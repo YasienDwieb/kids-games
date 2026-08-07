@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import {
   BORDER_RADIUS,
   COLORS,
@@ -14,22 +14,26 @@ import type { PauseOverlayProps } from '../types';
 // presentational; the race world is frozen by the engine while it shows.
 export function PauseOverlay({ onResume, onExit }: PauseOverlayProps) {
   const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   return (
     <View style={styles.scrim} onStartShouldSetResponder={() => true}>
-      <View style={styles.card}>
-        <Text style={styles.glyph}>⏸️</Text>
+      <View style={[styles.card, landscape && styles.cardLandscape]}>
+        <Text style={[styles.glyph, landscape && styles.glyphLandscape]}>⏸️</Text>
         <Text style={styles.title}>{t('turbo-road:pause.title')}</Text>
-        <View style={styles.buttons}>
+        <View style={[styles.buttons, landscape && styles.buttonsLandscape]}>
           <PressableButton
             label={t('turbo-road:pause.resume')}
             accent="coral"
             onPress={onResume}
+            style={landscape ? styles.buttonHalf : undefined}
           />
           <PressableButton
             label={t('turbo-road:pause.exit')}
             variant="ghost"
             onPress={onExit}
+            style={landscape ? styles.buttonHalf : undefined}
           />
         </View>
       </View>
@@ -55,11 +59,21 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     ...SHADOWS.lg,
   },
+  // Landscape is short: trim the padding and lay the two CTAs side by side so
+  // the card never grows taller than the screen.
+  cardLandscape: {
+    maxWidth: 460,
+    padding: SPACING.lg,
+    gap: SPACING.sm,
+  },
   glyph: { fontSize: 56, lineHeight: 64 },
+  glyphLandscape: { fontSize: 40, lineHeight: 48 },
   title: {
     fontFamily: FONTS.display,
     fontSize: 26,
     color: COLORS.ink,
   },
   buttons: { alignSelf: 'stretch', gap: SPACING.sm + SPACING.xs, marginTop: SPACING.sm },
+  buttonsLandscape: { flexDirection: 'row', marginTop: 0 },
+  buttonHalf: { flex: 1 },
 });

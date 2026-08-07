@@ -1,4 +1,11 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import {
   ACCENTS,
   BORDER_RADIUS,
@@ -19,6 +26,9 @@ import type { CarDef, GarageScreenProps, TrimDef } from '../types';
 /* Width reserved at the header start so the SDK BackButton (64px circle,
    absolute top-start) never collides with the title. */
 const BACK_CLEARANCE = TOUCH_TARGET.recommended + SPACING.sm;
+/* Same clearance as a leading padding: the button sits SPACING.md in from the
+   safe-area edge, so the title has to start past its far side. */
+const BACK_PADDING = SPACING.md + BACK_CLEARANCE;
 
 /** Map a car stat (≈0.9–1.15) onto a 0..1 bar fill. */
 const statFill = (v: number): number =>
@@ -49,105 +59,94 @@ export function GarageScreen({
   onDone,
 }: GarageScreenProps) {
   const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   const trim: TrimDef = TRIMS.find((tr) => tr.id === garage.trim) ?? TRIMS[0];
   const selectedCar: CarDef =
     CARS.find((c) => c.id === garage.selected) ?? CARS[0];
 
-  return (
-    <SafeContainer backgroundColor={COLORS.canvas} style={styles.safe}>
-      {/* Header — top-start corner left clear for the overlaid BackButton. */}
-      <View style={styles.header}>
-        <View style={styles.headerSide} />
-        <Text style={styles.title} numberOfLines={1}>
-          {t('turbo-road:garage.title')}
+  /* Hero — selected car on its trim-tinted pedestal + the trim swatches. */
+  const hero = (
+    <View style={styles.heroZone}>
+      <View
+        style={[
+          styles.pedestal,
+          landscape && styles.pedestalLandscape,
+          { backgroundColor: trim.tint, borderColor: trim.base },
+        ]}
+      >
+        <Text style={[styles.heroEmoji, landscape && styles.heroEmojiLandscape]}>
+          {selectedCar.emoji}
         </Text>
-        <View
-          style={[styles.headerSide, styles.headerEnd]}
-          accessibilityLabel={t('turbo-road:a11y.coins')}
-        >
-          <HudPill>
-            <Text style={hudTextStyle}>🪙 {garage.coins}</Text>
-          </HudPill>
-        </View>
       </View>
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Hero — selected car on its trim-tinted pedestal. */}
-        <View style={styles.heroZone}>
+      <View style={[styles.trimRow, landscape && styles.trimRowLandscape]}>
+        {/* Landscape stacks the label above the swatches — the pane is too
+            narrow to hold both on one line without clipping. */}
+        <Text style={[styles.trimLabel, landscape && styles.trimLabelLandscape]}>
+          {t('turbo-road:garage.trim')}
+        </Text>
+        {TRIMS.map((tr) => {
+          const isSelected = tr.id === garage.trim;
+          return (
+            <Pressable
+              key={tr.id}
+              onPress={() => onSelectTrim(tr.id)}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t(`turbo-road:trims.${tr.id}`)}
+              accessibilityState={{ selected: isSelected }}
+              style={[styles.swatchRing, isSelected && styles.swatchRingSelected]}
+            >
+              <View style={[styles.swatch, { backgroundColor: tr.base }]} />
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+
+  /* Trophy shelf — one cup per completed 4-level tour. */
+  const trophyShelf = (
+    <View style={[styles.trophyShelf, landscape && styles.trophyShelfLandscape]}>
+      <Text style={styles.trophyTitle}>{t('turbo-road:garage.trophies')}</Text>
+      {trophies === 0 ? (
+        <Text style={styles.trophyEmpty}>{t('turbo-road:garage.noTrophies')}</Text>
+      ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={styles.trophyRow}>
+            {Array.from({ length: trophies }, (_, i) => (
+              <View key={i} style={styles.trophyItem}>
+                <Text style={styles.trophyEmoji}>🏆</Text>
+                <Text style={styles.trophyName} numberOfLines={1}>
+                  {t(`turbo-road:cups.${THEME_ORDER[i % THEME_ORDER.length]}`)}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      )}
+    </View>
+  );
+
+  /* Collection grid — 2 car cards per row in portrait, 3 in landscape. */
+  const grid = (
+    <View style={[styles.grid, landscape && styles.gridLandscape]}>
+      {CARS.map((car) => {
+        const isSelected = car.id === garage.selected;
+        const isOwned = garage.owned.includes(car.id);
+        const canAfford = garage.coins >= car.price;
+
+        return (
           <View
+            key={car.id}
             style={[
-              styles.pedestal,
-              { backgroundColor: trim.tint, borderColor: trim.base },
+              styles.card,
+              landscape && styles.cardLandscape,
+              isSelected && styles.cardSelected,
             ]}
           >
-            <Text style={styles.heroEmoji}>{selectedCar.emoji}</Text>
-          </View>
-
-          {/* Trim swatches */}
-          <View style={styles.trimRow}>
-            <Text style={styles.trimLabel}>{t('turbo-road:garage.trim')}</Text>
-            {TRIMS.map((tr) => {
-              const isSelected = tr.id === garage.trim;
-              return (
-                <Pressable
-                  key={tr.id}
-                  onPress={() => onSelectTrim(tr.id)}
-                  hitSlop={10}
-                  accessibilityRole="button"
-                  accessibilityLabel={t(`turbo-road:trims.${tr.id}`)}
-                  accessibilityState={{ selected: isSelected }}
-                  style={[
-                    styles.swatchRing,
-                    isSelected && styles.swatchRingSelected,
-                  ]}
-                >
-                  <View
-                    style={[styles.swatch, { backgroundColor: tr.base }]}
-                  />
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* Trophy shelf — one cup per completed 4-level tour. */}
-        <View style={styles.trophyShelf}>
-          <Text style={styles.trophyTitle}>{t('turbo-road:garage.trophies')}</Text>
-          {trophies === 0 ? (
-            <Text style={styles.trophyEmpty}>{t('turbo-road:garage.noTrophies')}</Text>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.trophyRow}>
-                {Array.from({ length: trophies }, (_, i) => (
-                  <View key={i} style={styles.trophyItem}>
-                    <Text style={styles.trophyEmoji}>🏆</Text>
-                    <Text style={styles.trophyName} numberOfLines={1}>
-                      {t(`turbo-road:cups.${THEME_ORDER[i % THEME_ORDER.length]}`)}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-          )}
-        </View>
-
-        {/* Collection grid — 2 columns of car cards. */}
-        <View style={styles.grid}>
-          {CARS.map((car) => {
-            const isSelected = car.id === garage.selected;
-            const isOwned = garage.owned.includes(car.id);
-            const canAfford = garage.coins >= car.price;
-
-            return (
-              <View
-                key={car.id}
-                style={[styles.card, isSelected && styles.cardSelected]}
-              >
                 {!isOwned && (
                   <View style={styles.lockBadge}>
                     <Text style={styles.lockBadgeText}>🔒</Text>
@@ -218,20 +217,85 @@ export function GarageScreen({
                     />
                   </>
                 )}
-              </View>
-            );
-          })}
+          </View>
+        );
+      })}
+    </View>
+  );
+
+  const doneButton = (
+    <PressableButton
+      label={t('turbo-road:garage.done')}
+      accent="coral"
+      onPress={onDone}
+    />
+  );
+
+  const coinsPill = (
+    <View accessibilityLabel={t('turbo-road:a11y.coins')}>
+      <HudPill>
+        <Text style={hudTextStyle}>🪙 {garage.coins}</Text>
+      </HudPill>
+    </View>
+  );
+
+  /* Landscape: the car you drive and the CTA stay put on one side while the
+     collection scrolls beside them — otherwise the grid is entirely below the
+     fold on a short screen. */
+  if (landscape) {
+    return (
+      <SafeContainer backgroundColor={COLORS.canvas} style={styles.safe}>
+        <View style={styles.headerLandscape}>
+          <Text style={styles.titleLandscape} numberOfLines={1}>
+            {t('turbo-road:garage.title')}
+          </Text>
+          {coinsPill}
         </View>
+
+        <View style={styles.panes}>
+          <View style={styles.heroPane}>
+            {hero}
+            {doneButton}
+          </View>
+
+          <View style={styles.collectionPane}>
+            {trophyShelf}
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollContentLandscape}
+              showsVerticalScrollIndicator={false}
+            >
+              {grid}
+            </ScrollView>
+          </View>
+        </View>
+      </SafeContainer>
+    );
+  }
+
+  return (
+    <SafeContainer backgroundColor={COLORS.canvas} style={styles.safe}>
+      {/* Header — top-start corner left clear for the overlaid BackButton. */}
+      <View style={styles.header}>
+        <View style={styles.headerSide} />
+        <Text style={styles.title} numberOfLines={1}>
+          {t('turbo-road:garage.title')}
+        </Text>
+        <View style={[styles.headerSide, styles.headerEnd]}>{coinsPill}</View>
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {hero}
+        {trophyShelf}
+        {grid}
       </ScrollView>
 
       {/* Done — pinned full-width CTA (safe-area handled by SafeContainer). */}
-      <View style={styles.footer}>
-        <PressableButton
-          label={t('turbo-road:garage.done')}
-          accent="coral"
-          onPress={onDone}
-        />
-      </View>
+      <View style={styles.footer}>{doneButton}</View>
     </SafeContainer>
   );
 }
@@ -259,6 +323,66 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: COLORS.ink,
     textAlign: 'center',
+  },
+
+  /* ---------------- landscape two-pane ---------------- */
+  headerLandscape: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: 44,
+    paddingHorizontal: SPACING.md,
+    // Clears the overlaid BackButton in the start corner.
+    paddingStart: BACK_PADDING,
+    gap: SPACING.sm,
+  },
+  titleLandscape: {
+    fontFamily: FONTS.display,
+    fontSize: 20,
+    color: COLORS.ink,
+  },
+  panes: {
+    flex: 1,
+    flexDirection: 'row',
+    paddingHorizontal: SPACING.md,
+    paddingBottom: SPACING.sm,
+    gap: SPACING.md,
+  },
+  heroPane: {
+    width: 210,
+    justifyContent: 'space-evenly',
+  },
+  collectionPane: {
+    flex: 1,
+    gap: SPACING.sm,
+  },
+  scrollContentLandscape: {
+    paddingBottom: SPACING.sm,
+  },
+  pedestalLandscape: {
+    width: 176,
+    height: 104,
+    alignSelf: 'center',
+  },
+  heroEmojiLandscape: {
+    fontSize: 62,
+    lineHeight: 74,
+  },
+  trophyShelfLandscape: {
+    marginTop: 0,
+  },
+  gridLandscape: {
+    marginTop: 0,
+    columnGap: SPACING.sm,
+    rowGap: SPACING.sm,
+    justifyContent: 'flex-start',
+  },
+  cardLandscape: {
+    // 3 per row: (100% - 2 gaps) / 3, expressed as a percentage that leaves
+    // room for the two SPACING.sm column gaps.
+    width: '31.8%',
+    minHeight: 0,
+    paddingVertical: SPACING.sm,
   },
   scroll: {
     flex: 1,
@@ -291,12 +415,25 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     marginTop: SPACING.md,
   },
+  trimRowLandscape: {
+    alignSelf: 'stretch',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: SPACING.sm,
+    marginTop: SPACING.sm,
+  },
   trimLabel: {
     fontFamily: FONTS.bodyExtra,
     fontSize: 13,
     letterSpacing: 1,
     textTransform: 'uppercase',
     color: COLORS.inkSoft,
+  },
+  // Full width so the four swatches wrap onto their own line beneath it.
+  trimLabelLandscape: {
+    width: '100%',
+    textAlign: 'center',
+    marginBottom: SPACING.xs,
   },
   swatchRing: {
     width: 44,
