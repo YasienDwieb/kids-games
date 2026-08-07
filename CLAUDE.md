@@ -113,6 +113,7 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 - `expo-screen-orientation` — orientation control per game
 - `expo-audio` — sound effects and audio
 - `expo-speech` — spoken prompts (listen-and-find games)
+- `react-native-reanimated` + `react-native-worklets` — UI-thread game motion (`@/sdk` `useGameLoop`); needs the `react-native-worklets/plugin` babel plugin last in the list, and ships only via a native/EAS build, never OTA
 
 ## HomeScreen
 
