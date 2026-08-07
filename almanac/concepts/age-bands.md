@@ -68,5 +68,5 @@ Because band membership is computed from the same `ageRange` every game
 already declares for the [game registry](../architecture/game-registry), age
 bands add no new authoring burden — they are a read-time grouping over data
 that already exists. The [Games catalog](../reference/games-catalog)
-reference lists each of the eleven games' `ageRange` and resulting band
+reference lists each of the twelve games' `ageRange` and resulting band
 membership directly.

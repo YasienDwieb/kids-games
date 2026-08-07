@@ -62,7 +62,10 @@ use it [@candy-catch-index]. It is also, as of this range, the *only* one:
 `turbo-road` and `balloon-archer` still drive their motion with their own
 `requestAnimationFrame` loops [@turbo-road-loop] [@balloon-archer-loop]. Do not
 assume every game has been migrated to `useGameLoop` just because the
-mechanism exists in the SDK.
+mechanism exists in the SDK; the reasons those two stay on the JS thread are
+covered later on this page, alongside a second, unrelated technique —
+splitting a static render layer from a small dynamic one — that `mouse-maze`
+uses to fix a different kind of stutter without reanimated at all.
 
 ## `useGameLoop`: the contract
 

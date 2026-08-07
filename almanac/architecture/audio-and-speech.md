@@ -1,7 +1,7 @@
 ---
 title: "Audio and Speech Architecture"
 summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, gated on settings.soundEnabled; useSpeech wraps expo-speech with the same graceful degradation but is deliberately never gated by any sound setting, since spoken prompts are game content in the listen-and-find games. useSound mirrors settingsStore into a ref instead of reading it per call, and exposes prewarm() to load audio players before a level starts, both changes made for games that call play() from a per-frame motion loop. CLAUDE.md still describes the sound layer as expo-av."
-topics: [architecture, audio, assets, motion]
+topics: [architecture, audio, assets]
 sources:
   - id: use-sound
     type: file

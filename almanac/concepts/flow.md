@@ -66,12 +66,13 @@ from that game's own content [@flow-adapter].
 
 ## Which games participate
 
-Six of the eleven registered games currently ship a `flow.tsx` adapter and
+Six of the twelve registered games currently ship a `flow.tsx` adapter and
 are wired into the flow registrar at `src/flow/index.ts`: `count-and-pop`,
 `shape-detective`, `match-up`, `letter-land`, `numbers-land`, and
-`animal-safari` [@flow-registrar]. The remaining five — `simple-pairs`,
-`color-mixer`, `mouse-maze`, `balloon-archer`, and `turbo-road` — have no flow
-adapter and never appear in a flow session. The player controls which of the
+`animal-safari` [@flow-registrar]. The remaining six — `simple-pairs`,
+`color-mixer`, `mouse-maze`, `balloon-archer`, `turbo-road`, and `candy-catch`
+— have no flow adapter and never appear in a flow session. The player
+controls which of the
 eligible games are actually included through Settings, stored as
 `settings.flowGameIds: string[] | null`; `null` means "all eligible games,"
 otherwise only the listed ids are pulled in when `FlowPlayerScreen` builds its
