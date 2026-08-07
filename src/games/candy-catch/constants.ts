@@ -8,7 +8,7 @@ export const GOOD_ITEMS = [
   { emoji: '🍇', points: 5 },
   { emoji: '🍓', points: 5 },
   { emoji: '🍌', points: 5 },
-  { emoji: '🍑', points: 5 },
+  { emoji: '🍐', points: 5 },
   { emoji: '🍪', points: 8 },
   { emoji: '🧁', points: 8 },
   { emoji: '🍩', points: 8 },
@@ -27,6 +27,23 @@ export const BOMB = { emoji: '💣' } as const;
 export const ITEM_SIZE = 56;
 export const BASKET_WIDTH = 118;
 export const BASKET_HEIGHT = 82;
+
+/**
+ * Falling items are drawn by a fixed pool of views that are mounted once and
+ * reused. Nothing mounts or unmounts mid-level, so no view creation or image
+ * decode ever lands in the middle of a fall. Comfortably above the most items
+ * that can share the screen at the fastest spawn rate.
+ */
+export const ITEM_POOL = 10;
+
+/** How eagerly the basket chases the finger (higher = snappier). */
+export const BASKET_FOLLOW = 22;
+/** Degrees the basket leans into its movement. */
+export const BASKET_TILT_MAX = 9;
+/** Fade-out for a caught/missed item, in ms. */
+export const ITEM_FADE_MS = 130;
+/** Seconds a slot rests after use, so it can't be respawned mid fade-out. */
+export const SLOT_COOLDOWN = 0.25;
 
 export type ItemKind = 'good' | 'gold' | 'bad' | 'bomb';
 

@@ -19,10 +19,16 @@ export function pickAsset(intent: string): AssetId | undefined {
   return (Object.keys(ASSETS) as AssetId[]).find((id) => (ASSETS[id].tags as readonly string[]).includes(intent));
 }
 
+/** Every variant module for an intent — used to load them all up front. */
+export function modulesFor(intent: string): readonly number[] {
+  const id = pickAsset(intent);
+  if (!id) return [];
+  return getAsset(id).modules as readonly number[];
+}
+
 /** A random variant module for an intent, or undefined if the intent matches nothing. */
 export function pickModule(intent: string): number | undefined {
-  const id = pickAsset(intent);
-  if (!id) return undefined;
-  const mods = getAsset(id).modules as readonly number[];
+  const mods = modulesFor(intent);
+  if (mods.length === 0) return undefined;
   return mods[Math.floor(Math.random() * mods.length)];
 }
