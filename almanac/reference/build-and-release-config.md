@@ -69,7 +69,7 @@ full build/submit/metadata flow this profile feeds.
 |---|---|
 | `expo.name` | `"Kids Zone"` |
 | `expo.slug` | `"kids-zone"` |
-| `expo.version` | `"1.2.0"` |
+| `expo.version` | `"1.2.1"` |
 | `expo.orientation` | `"landscape"` |
 | `expo.newArchEnabled` | `true` |
 | `expo.ios.bundleIdentifier` | `"dev.waybeyond.kidszone"` |
