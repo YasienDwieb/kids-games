@@ -1,6 +1,6 @@
 ---
 title: "Motion and the Game Loop"
-summary: "src/sdk/motion/ gives games a UI-thread frame loop (useGameLoop) and a set of worklet-safe easing helpers (frame.ts), so continuous motion — falling items, a chasing basket — keeps its cadence no matter what the JS thread is doing. candy-catch is the first and, as of this range, only consumer; turbo-road and balloon-archer still drive their own requestAnimationFrame loops on the JS thread. The page also covers a separate, non-reanimated technique — splitting a static render layer from a small dynamic one — that mouse-maze uses to fix a discrete-state re-render stutter."
+summary: "src/sdk/motion/ gives games a UI-thread frame loop (useGameLoop) and a set of worklet-safe easing helpers (frame.ts), so continuous motion — falling items, a chasing basket — keeps its cadence no matter what the JS thread is doing. candy-catch is the first and, as of this range, only consumer; turbo-road and balloon-archer still drive their own requestAnimationFrame loops on the JS thread, and stay there deliberately after device profiling showed both smooth once useSound stopped blocking the frame loop. The page also covers a separate, non-reanimated technique — splitting a static render layer from a small dynamic one — that mouse-maze uses to fix a discrete-state re-render stutter."
 topics: [architecture, sdk, motion]
 sources:
   - id: use-game-loop
@@ -27,6 +27,9 @@ sources:
   - id: turbo-road-loop
     type: file
     path: src/games/turbo-road/hooks/useRaceGame.ts
+  - id: turbo-road-engine
+    type: file
+    path: src/games/turbo-road/utils/engine.ts
   - id: balloon-archer-loop
     type: file
     path: src/games/balloon-archer/hooks/useArcheryGame.ts
@@ -209,6 +212,40 @@ the JS thread to handle directly. Prefer the cheaper, framework-native fix
 (memoization, layer splitting) when the problem is an oversized re-render on a
 discrete state change; reach for `useGameLoop` when the problem is continuous
 motion that must not depend on the JS thread's availability at all.
+
+## turbo-road and balloon-archer stay on the JS thread — deliberately
+
+Not migrating `turbo-road` and `balloon-archer` to `useGameLoop` is a decision,
+not a gap left over from adding this subsystem. Both were profiled on a real
+device (Redmi Note 8 Pro, via `adb shell dumpsys gfxinfo host.exp.exponent`)
+after the `useSound` settings-mirror fix described in
+[Audio and speech](../architecture/audio-and-speech) landed, and both came
+back smooth: `turbo-road` at 634 frames with 1.42% janky frames and 0 missed
+vsync, `balloon-archer` at 301 frames with 0% janky frames and 0 missed vsync
+[@turbo-road-loop] [@balloon-archer-loop]. Their earlier stutter traced to
+`useSound().play()` doing an `AsyncStorage` read plus `JSON.parse` on every
+call — inside `turbo-road`'s own frame loop — which starved the JS thread on
+every sound effect; fixing that in the SDK, not migrating the game loops, is
+what made both smooth again.
+
+Do not read that as "finish the migration" work waiting to happen. Moving
+`turbo-road`'s 411-line `utils/engine.ts` onto `useGameLoop` would mean
+decomposing its mutated `WorldState` — roughly 30 scalars plus rival, traffic,
+and obstacle arrays, held in a ref and mutated in place by functions like
+`applyObstacleHit` — into reanimated shared values, since reanimated cannot
+mutate a plain object held in a shared value in place [@turbo-road-engine]. That
+is a large, risky rewrite with no measured problem left to justify it. If a
+`turbo-road` or `balloon-archer` change is ever suspected of reintroducing
+jank, re-measure with `dumpsys gfxinfo` before reaching for a `useGameLoop`
+rewrite.
+
+One fragility is worth watching rather than fixing speculatively:
+`balloon-archer` still forces a full React re-render every frame through a
+`setFrame` counter in `useArcheryGame.ts`, driven by its own
+`requestAnimationFrame` loop [@balloon-archer-loop]. That fits the frame
+budget at today's balloon counts, per the measurement above, but it will not
+scale to significantly more on-screen balloons without revisiting the same
+choice.
 
 ## Boundary and native-dependency notes
 
