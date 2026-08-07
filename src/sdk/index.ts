@@ -54,6 +54,9 @@ export type { SpeakOptions } from './speech/useSpeech';
 
 // Motion & orientation
 export { useTilt } from './motion/useTilt';
+export { useGameLoop } from './motion/useGameLoop';
+export type { GameLoopStep, GameLoopOptions } from './motion/useGameLoop';
+export { MAX_DT, clampDt, clamp, lerp, approach, wrap } from './motion/frame';
 
 // Layout
 export { GameShell } from './layout/GameShell';
