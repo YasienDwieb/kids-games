@@ -1,6 +1,6 @@
 ---
 title: "Motion and the Game Loop"
-summary: "src/sdk/motion/ gives games a UI-thread frame loop (useGameLoop) and a set of worklet-safe easing helpers (frame.ts), so continuous motion — falling items, a chasing basket — keeps its cadence no matter what the JS thread is doing. candy-catch is the first and, as of this range, only consumer; turbo-road and balloon-archer still drive their own requestAnimationFrame loops on the JS thread."
+summary: "src/sdk/motion/ gives games a UI-thread frame loop (useGameLoop) and a set of worklet-safe easing helpers (frame.ts), so continuous motion — falling items, a chasing basket — keeps its cadence no matter what the JS thread is doing. candy-catch is the first and, as of this range, only consumer; turbo-road and balloon-archer still drive their own requestAnimationFrame loops on the JS thread. The page also covers a separate, non-reanimated technique — splitting a static render layer from a small dynamic one — that mouse-maze uses to fix a discrete-state re-render stutter."
 topics: [architecture, sdk, motion]
 sources:
   - id: use-game-loop
@@ -33,6 +33,12 @@ sources:
   - id: sdk-barrel
     type: file
     path: src/sdk/index.ts
+  - id: maze-board
+    type: file
+    path: src/games/mouse-maze/components/MazeBoard.tsx
+  - id: mouse-maze-constants
+    type: file
+    path: src/games/mouse-maze/constants.ts
 ---
 
 `src/sdk/motion/` gives games one shared way to move something continuously: a
@@ -155,6 +161,54 @@ hand-rolled loop, both worth knowing as gotchas for any future
    the rest of this page describes.
 2. **No dt clamp.** Covered above — the old loop had no ceiling on a single
    frame's `dt`, so a stalled frame teleported every falling item.
+
+## A different technique for the same goal: splitting static and dynamic render layers
+
+Not every smoothness fix in this repo goes through `useGameLoop`. `mouse-maze`
+is not a `useGameLoop` consumer — it has no continuous motion, only per-step
+state after a drag — but its board component, `MazeBoard.tsx`, had its own
+stutter problem with a different cause and a different fix, worth recording
+here precisely because it is easy to conflate with the reanimated technique
+above [@maze-board].
+
+Dragging the mouse commits a new maze state on every step, and the old
+`MazeBoard` re-rendered the *entire* wall grid — up to 9x9 bordered `View`
+cells, since a level's grid grows from `LEVEL.START_SIZE` (5) to
+`LEVEL.MAX_SIZE` (9) [@mouse-maze-constants] — on every one of those commits,
+even though the walls themselves never change within a level. The fix splits
+`MazeBoard` into two layers: `MazeWalls`, wrapped in `memo` and given only
+`grid` and `cellSize` as props, renders the expensive bordered-cell tree
+exactly once per level; `MazeMarkers`, a small absolutely-positioned overlay
+holding the breadcrumb trail, hint path, stars, and goal, re-renders on every
+drag step but is cheap because it only mounts a handful of views instead of
+`grid.length ** 2` of them [@maze-board].
+
+This is an ordinary React re-render optimization — `memo` plus prop
+stability — not a UI-thread integration. It has nothing to do with reanimated,
+shared values, or `useFrameCallback`, and mouse-maze pulls in none of that
+machinery. The technique generalizes past this one board: when a component
+tree has a large, expensive, mostly-static part and a small part that changes
+every interaction, split them into two components so the expensive part can
+be memoized and the state update only re-renders the small part.
+
+The memoization is only correct because `grid` and `cellSize` are invariant
+for the lifetime of a level — `useMaze` builds a new `grid` when the level
+changes and `cellSize` is derived from the board's layout size, not from
+per-step state [@maze-board]. If a future change made cell size respond to
+something that changes mid-level (for example, a mid-level zoom or a
+window-resize-driven relayout), `MazeWalls` would need `cellSize` treated as a
+changing prop again, and the memo boundary would need to move or be
+reconsidered.
+
+Reanimated's `useGameLoop` and this layer-split are complementary answers to
+the same underlying goal — keep a game feeling smooth — for different
+problems: `useGameLoop` moves *continuous per-frame* integration off the JS
+thread so it survives JS-thread hiccups, while the `MazeBoard` split reduces
+the *size* of a per-interaction React re-render so it stays cheap enough for
+the JS thread to handle directly. Prefer the cheaper, framework-native fix
+(memoization, layer splitting) when the problem is an oversized re-render on a
+discrete state change; reach for `useGameLoop` when the problem is continuous
+motion that must not depend on the JS thread's availability at all.
 
 ## Boundary and native-dependency notes
 
