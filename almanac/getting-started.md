@@ -61,9 +61,11 @@ namespace, and the app supports full right-to-left layout for Arabic; see
 [i18n and RTL](architecture/i18n-and-rtl) for how translation, native RTL
 state, and font selection interact, and [Age bands](concepts/age-bands) for
 the age-grouping model layered on top of the same game metadata. The app is
-also landscape-only end to end, which shapes every screen's layout; that lock
-is covered in [App entry and navigation](architecture/app-entry-and-navigation)
-and its own decision page.
+also landscape-only end to end, which shapes every screen's layout; the lock
+itself is covered in [App entry and navigation](architecture/app-entry-and-navigation)
+and [Landscape orientation lock](decisions/landscape-orientation-lock), and how
+individual screens branch their own layout for that shape is covered in
+[Landscape screen branching](concepts/landscape-screen-branching).
 
 ## Common work areas
 

@@ -190,7 +190,12 @@ the top corner, and an optional progress indicator shown as a rounded
 percentage once `progress > 0` [@game-card]. It also supports a `fill` mode,
 used by the landscape rail layout, that drops the card's fixed aspect ratio
 so the emoji frame flexes to absorb whatever height is left over, keeping
-every card in a row the same size regardless of content [@game-card]. Every
+every card in a row the same size regardless of content [@game-card]. That
+rail is `HomeScreen`'s own landscape branch, the earliest instance of a
+wider pattern of individual screens computing their own `landscape` boolean
+and rendering a purpose-built tree or style set for it — see
+[Landscape screen branching](../concepts/landscape-screen-branching) for the
+idiom and its recurring gotchas. Every
 shared pressable in this layer — `PressableButton`, `GameCard`, `Chip`, and
 `HoldToConfirm` — also sets `accessibilityRole="button"` (and
 `accessibilityState` where relevant, such as a disabled or selected state),
