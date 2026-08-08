@@ -25,15 +25,30 @@ import {
   DECOR_SPACING,
   ENTITY_EMOJI,
   PLAYER_Y_RATIO,
+  ROAD_HEIGHT_CAP_RATIO,
   ROAD_WIDTH_RATIO,
+  SPRITE_BASE_LANE,
+  SPRITE_MAX_SCALE,
   TRAFFIC_EMOJI,
   VIEW_DIST,
 } from '../constants';
 import type { PlayfieldProps } from '../types';
 
-/* Sky strip height as a ratio of the playfield height. */
+/* Sky strip height as a ratio of the playfield height, with a floor so the
+   short landscape viewport still gets a horizon band taller than the HUD. */
 const SKY_RATIO = 0.12;
+const SKY_MIN = 54;
 const DASH_PERIOD = DASH_LEN + DASH_GAP;
+
+/* Sprite footprints at SPRITE_BASE_LANE; everything below is `× sprite`. */
+const PLAYER_BOX = 68;
+const PLAYER_FONT = 44;
+const RIVAL_BOX = 56;
+const RIVAL_FONT = 40;
+const ENTITY_BOX = 48;
+const COIN_FONT = 24;
+const OBSTACLE_FONT = 30;
+const BOOST_PAD = { w: 48, h: 56, glyph: 22 };
 
 /* One-shot celebration burst at the finish line: emoji pieces spring
    outward from the car and fade. Mount-once, cleaned up automatically. */
@@ -195,16 +210,25 @@ export function Playfield({
 
   const W = size.w;
   const H = size.h;
-  const skyH = H * SKY_RATIO;
+  const skyH = Math.max(H * SKY_RATIO, SKY_MIN);
   /** Pixels per world unit (playfield height ↔ VIEW_DIST). */
   const scale = H / VIEW_DIST;
-  // Cap the road by height so landscape keeps sane lane proportions.
-  const roadW = Math.min(W * ROAD_WIDTH_RATIO, H * 0.92);
+  // Cap the road by height so lanes keep sane proportions. The cap only
+  // binds in landscape, where it still leaves roadside gutters for decor.
+  const roadW = Math.min(W * ROAD_WIDTH_RATIO, H * ROAD_HEIGHT_CAP_RATIO);
   const roadLeft = (W - roadW) / 2;
   const laneW = roadW / 3;
   geom.current.roadLeft = roadLeft;
   geom.current.laneW = laneW;
   const playerY = PLAYER_Y_RATIO * H;
+
+  // Sprites grow with the lane so wide landscape lanes don't dwarf the cars.
+  const sprite = Math.min(SPRITE_MAX_SCALE, Math.max(1, laneW / SPRITE_BASE_LANE));
+  const playerBox = PLAYER_BOX * sprite;
+  const rivalBox = RIVAL_BOX * sprite;
+  const entityBox = ENTITY_BOX * sprite;
+  const boostW = BOOST_PAD.w * sprite;
+  const boostH = BOOST_PAD.h * sprite;
 
   /* ================= per-layout static pieces + interpolations =========== */
 
@@ -246,9 +270,9 @@ export function Playfield({
     () =>
       anim.playerLaneX.interpolate({
         inputRange: [0, 2],
-        outputRange: [laneW * 0.5 - 34, laneW * 2.5 - 34],
+        outputRange: [laneW * 0.5 - playerBox / 2, laneW * 2.5 - playerBox / 2],
       }),
-    [anim.playerLaneX, laneW],
+    [anim.playerLaneX, laneW, playerBox],
   );
   const shakeShift = useMemo(
     () => anim.shake.interpolate({ inputRange: [-1, 1], outputRange: [-laneW, laneW] }),
@@ -267,22 +291,22 @@ export function Playfield({
       anim.rivals.map((r) => ({
         x: r.laneX.interpolate({
           inputRange: [0, 2],
-          outputRange: [laneW * 0.5 - 28, laneW * 2.5 - 28],
+          outputRange: [laneW * 0.5 - rivalBox / 2, laneW * 2.5 - rivalBox / 2],
         }),
         y: r.gap.interpolate({ inputRange: [0, VIEW_DIST], outputRange: [0, -H] }),
       })),
-    [anim.rivals, laneW, H],
+    [anim.rivals, laneW, rivalBox, H],
   );
   const trafficTransforms = useMemo(
     () =>
       anim.traffic.map((tr) => ({
         x: tr.lane.interpolate({
           inputRange: [0, 2],
-          outputRange: [laneW * 0.5 - 28, laneW * 2.5 - 28],
+          outputRange: [laneW * 0.5 - rivalBox / 2, laneW * 2.5 - rivalBox / 2],
         }),
         y: tr.gap.interpolate({ inputRange: [0, VIEW_DIST], outputRange: [0, -H] }),
       })),
-    [anim.traffic, laneW, H],
+    [anim.traffic, laneW, rivalBox, H],
   );
 
   // Repeating dash strip (rendered once): translated by dashShift, the
@@ -426,16 +450,35 @@ export function Playfield({
                   key={e.id}
                   style={[
                     styles.boostPad,
-                    { left: x - 24, top: y - 28, transform: [{ scale: boostScale }] },
+                    {
+                      left: x - boostW / 2,
+                      top: y - boostH / 2,
+                      width: boostW,
+                      height: boostH,
+                      transform: [{ scale: boostScale }],
+                    },
                   ]}
                 >
-                  <Text style={styles.boostGlyph}>⚡</Text>
+                  <Text style={{ fontSize: BOOST_PAD.glyph * sprite }}>⚡</Text>
                 </Animated.View>
               );
             }
             return (
-              <View key={e.id} style={[styles.entityBox, { left: x - 24, top: y - 24 }]}>
-                <Text style={e.kind === 'coin' ? styles.coin : styles.obstacle}>
+              <View
+                key={e.id}
+                style={[
+                  styles.entityBox,
+                  {
+                    left: x - entityBox / 2,
+                    top: y - entityBox / 2,
+                    width: entityBox,
+                    height: entityBox,
+                  },
+                ]}
+              >
+                <Text
+                  style={{ fontSize: (e.kind === 'coin' ? COIN_FONT : OBSTACLE_FONT) * sprite }}
+                >
                   {ENTITY_EMOJI[e.kind]}
                 </Text>
               </View>
@@ -453,12 +496,16 @@ export function Playfield({
               style={[
                 styles.rivalBox,
                 {
-                  top: playerY - 28,
+                  top: playerY - rivalBox / 2,
+                  width: rivalBox,
+                  height: rivalBox,
                   transform: [{ translateX: tr.x }, { translateY: tr.y }],
                 },
               ]}
             >
-              <Text style={styles.rivalCar}>{r.emoji}</Text>
+              <Text style={[styles.rivalCar, { fontSize: RIVAL_FONT * sprite }]}>
+                {r.emoji}
+              </Text>
             </Animated.View>
           );
         })}
@@ -473,12 +520,16 @@ export function Playfield({
               style={[
                 styles.rivalBox,
                 {
-                  top: playerY - 28,
+                  top: playerY - rivalBox / 2,
+                  width: rivalBox,
+                  height: rivalBox,
                   transform: [{ translateX: tr.x }, { translateY: tr.y }],
                 },
               ]}
             >
-              <Text style={styles.truckCar}>{TRAFFIC_EMOJI}</Text>
+              <Text style={[styles.truckCar, { fontSize: RIVAL_FONT * sprite }]}>
+                {TRAFFIC_EMOJI}
+              </Text>
             </Animated.View>
           );
         })}
@@ -487,7 +538,7 @@ export function Playfield({
         <Animated.View
           style={[
             styles.playerBox,
-            { top: playerY - 34 },
+            { top: playerY - playerBox / 2, width: playerBox, height: playerBox },
             {
               transform: [
                 { translateX: playerShift },
@@ -498,21 +549,36 @@ export function Playfield({
             ui.slowActive && styles.playerSlow,
           ]}
         >
+          {ui.shieldActive && (
+            <View style={[styles.shieldBubble, { borderRadius: playerBox / 2 + 6 }]} />
+          )}
+          {/* Twin exhaust trails in the chosen trim colour — the car's only
+              livery cue, and they flare gold under boost. */}
           <View
             style={[
-              styles.playerGlow,
-              { backgroundColor: trim.tint, borderColor: trim.base },
-              ui.boostActive && { backgroundColor: trim.base, borderColor: COLORS.gold },
+              styles.streak,
+              styles.streakLeft,
+              {
+                width: 5 * sprite,
+                height: (ui.boostActive ? 26 : 13) * sprite,
+                backgroundColor: ui.boostActive ? COLORS.gold : trim.base,
+              },
             ]}
           />
-          {ui.shieldActive && <View style={styles.shieldBubble} />}
-          {ui.boostActive && (
-            <>
-              <View style={[styles.streak, styles.streakLeft, { backgroundColor: trim.base }]} />
-              <View style={[styles.streak, styles.streakRight, { backgroundColor: trim.base }]} />
-            </>
-          )}
-          <Text style={styles.playerCar}>{playerEmoji}</Text>
+          <View
+            style={[
+              styles.streak,
+              styles.streakRight,
+              {
+                width: 5 * sprite,
+                height: (ui.boostActive ? 26 : 13) * sprite,
+                backgroundColor: ui.boostActive ? COLORS.gold : trim.base,
+              },
+            ]}
+          />
+          <Text style={[styles.playerCar, { fontSize: PLAYER_FONT * sprite }]}>
+            {playerEmoji}
+          </Text>
           {ui.magnetActive && <Text style={styles.magnetBadge}>🧲</Text>}
         </Animated.View>
 
@@ -529,7 +595,13 @@ export function Playfield({
         <Animated.Text style={[styles.cloud, styles.cloud1, { transform: [{ translateX: cloud1X }] }]}>
           ☁️
         </Animated.Text>
-        <Animated.Text style={[styles.cloud, styles.cloud2, { transform: [{ translateX: cloud2X }] }]}>
+        <Animated.Text
+          style={[
+            styles.cloud,
+            styles.cloud2,
+            { top: skyH - 26, transform: [{ translateX: cloud2X }] },
+          ]}
+        >
           ☁️
         </Animated.Text>
       </View>
@@ -608,20 +680,14 @@ const styles = StyleSheet.create({
   finishRow: { flexDirection: 'row', height: 8 },
   finishCell: { width: 8, height: 8 },
 
-  /* entities */
+  /* entities (width/height/fontSize are set inline — they scale with the lane) */
   entityBox: {
     position: 'absolute',
-    width: 48,
-    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  coin: { fontSize: 24 },
-  obstacle: { fontSize: 30 },
   boostPad: {
     position: 'absolute',
-    width: 48,
-    height: 56,
     borderRadius: BORDER_RADIUS.soft,
     backgroundColor: ACCENTS.coral.tint,
     borderWidth: 2,
@@ -629,35 +695,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  boostGlyph: { fontSize: 22 },
 
   /* cars (emoji face left → rotate 90° to face up) */
   rivalBox: {
     position: 'absolute',
     left: 0,
-    width: 56,
-    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rivalCar: { fontSize: 40, transform: [{ rotate: '90deg' }] },
+  rivalCar: { transform: [{ rotate: '90deg' }] },
   // Oncoming: faces DOWN the screen, toward the player.
-  truckCar: { fontSize: 40, transform: [{ rotate: '-90deg' }] },
+  truckCar: { transform: [{ rotate: '-90deg' }] },
   playerBox: {
     position: 'absolute',
     left: 0,
-    width: 68,
-    height: 68,
     alignItems: 'center',
     justifyContent: 'center',
   },
   playerSlow: { opacity: 0.55 },
-  playerGlow: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 34,
-    borderWidth: 3,
-    ...SHADOWS.sm,
-  },
   // Held shield: a calm blue bubble around the car.
   shieldBubble: {
     position: 'absolute',
@@ -665,7 +720,6 @@ const styles = StyleSheet.create({
     bottom: -6,
     left: -6,
     right: -6,
-    borderRadius: 40,
     borderWidth: 3,
     borderColor: ACCENTS.blue.base,
     backgroundColor: ACCENTS.blue.tint,
@@ -677,17 +731,16 @@ const styles = StyleSheet.create({
     right: -8,
     fontSize: 18,
   },
-  playerCar: { fontSize: 44, transform: [{ rotate: '90deg' }] },
+  playerCar: { transform: [{ rotate: '90deg' }] },
+  // Percentage insets so the trails stay pinned to the car at any sprite scale.
   streak: {
     position: 'absolute',
-    bottom: -10,
-    width: 5,
-    height: 18,
+    bottom: 4,
     borderRadius: 3,
-    opacity: 0.85,
+    opacity: 0.9,
   },
-  streakLeft: { left: 16 },
-  streakRight: { right: 16 },
+  streakLeft: { left: '24%' },
+  streakRight: { right: '24%' },
 
   /* sky */
   sky: {
@@ -727,18 +780,19 @@ const styles = StyleSheet.create({
     color: COLORS.surface,
   },
 
-  /* steering hint (shows only at the start of a race) */
+  /* steering hint (shows only at the start of a race) — pinned to the very
+     bottom so it never sits under the car on a short landscape screen */
   hintWrap: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: SPACING.xl,
+    bottom: SPACING.xs,
     alignItems: 'center',
   },
   steerHint: {
     fontFamily: FONTS.display,
-    fontSize: 32,
-    lineHeight: 40,
+    fontSize: 26,
+    lineHeight: 32,
     color: COLORS.ink,
     opacity: 0.3,
   },

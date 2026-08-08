@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import {
@@ -20,6 +21,7 @@ import {
   SHADOWS,
   SPACING,
   Star,
+  TOUCH_TARGET,
   useTranslation,
 } from '@/sdk';
 import { MISSION_LADDERS } from '../constants';
@@ -120,6 +122,45 @@ function MissionRow({
   );
 }
 
+/* Landscape variant: the same mission as a narrow tile, three side by side
+   under the map, so the strip costs one row of height instead of three. */
+function MissionTile({
+  mission,
+  onClaim,
+}: {
+  mission: Mission;
+  onClaim: (id: number) => void;
+}) {
+  const { t } = useTranslation();
+  const done = mission.progress >= mission.target;
+  const ratio = Math.min(1, mission.progress / mission.target);
+  const label = t(`turbo-road:missions.types.${mission.type}`, { n: mission.target });
+
+  return (
+    <View style={styles.missionTile} accessible accessibilityLabel={label}>
+      <View style={styles.missionTileHead}>
+        <Text style={styles.missionEmoji}>{MISSION_LADDERS[mission.type].emoji}</Text>
+        {done ? (
+          <PressableButton
+            label={`${t('turbo-road:missions.claim')} 🪙${mission.reward}`}
+            accent="coral"
+            onPress={() => onClaim(mission.id)}
+            style={styles.claimBtn}
+            textStyle={styles.claimText}
+          />
+        ) : (
+          <Text style={styles.missionCount} numberOfLines={1}>
+            {mission.progress}/{mission.target}
+          </Text>
+        )}
+      </View>
+      <View style={styles.missionTrack}>
+        <View style={[styles.missionFill, { width: `${ratio * 100}%` }]} />
+      </View>
+    </View>
+  );
+}
+
 export function StartScreen({
   level,
   totalStars,
@@ -135,6 +176,8 @@ export function StartScreen({
   onGarage,
 }: StartScreenProps) {
   const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
   const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -167,6 +210,160 @@ export function StartScreen({
   const currentIdx = nodeLevels.indexOf(level);
   const currentNode = NODES[currentIdx];
 
+  /* ---- pieces shared by both orientations ---- */
+
+  const coinsPill = (
+    <View accessible accessibilityLabel={t('turbo-road:a11y.coins')}>
+      <HudPill>
+        <Text style={hudTextStyle}>🪙 {walletCoins}</Text>
+      </HudPill>
+    </View>
+  );
+
+  const starsPill = (
+    <View accessible accessibilityLabel={t('turbo-road:a11y.stars')}>
+      <HudPill>
+        <Star size={18} />
+        <Text style={hudTextStyle}>{totalStars}</Text>
+      </HudPill>
+    </View>
+  );
+
+  const chipsRow = (
+    <View style={[styles.chipsRow, landscape && styles.chipsRowLandscape]}>
+      <View style={[styles.chip, styles.levelChip]}>
+        <Text style={[styles.chipText, styles.levelChipText]}>
+          {t('turbo-road:start.level', { n: level })}
+        </Text>
+      </View>
+      <View style={[styles.chip, styles.themeChip]}>
+        <Text style={styles.chipText}>
+          {theme.chipEmoji} {t(`turbo-road:themes.${theme.id}`)}
+        </Text>
+      </View>
+    </View>
+  );
+
+  const map = (
+    <View style={styles.map} accessibilityLabel={t('turbo-road:start.mapLabel')}>
+      {PATH_DOTS.map((d, i) => (
+        <View key={i} style={[styles.pathDot, { left: mirrorX(d.x) - 2, top: d.y - 2 }]} />
+      ))}
+
+      <Animated.View
+        style={[
+          styles.pulseRing,
+          {
+            left: mirrorX(currentNode.x) - RING_SIZE / 2,
+            top: currentNode.y - RING_SIZE / 2,
+            opacity: ringOpacity,
+            transform: [{ scale: ringScale }],
+          },
+        ]}
+      />
+
+      {NODES.map((p, i) => {
+        const n = nodeLevels[i];
+        const status = n < level ? 'done' : n === level ? 'current' : 'future';
+        const size = NODE_SIZE[status];
+        return (
+          <View
+            key={n}
+            style={[
+              styles.node,
+              status === 'future' ? styles.nodeFuture : styles.nodeDone,
+              {
+                width: size,
+                height: size,
+                borderRadius: size / 2,
+                left: mirrorX(p.x) - size / 2,
+                top: p.y - size / 2,
+              },
+            ]}
+          >
+            {/* Plain <Text>: digits stay Western and never mirror. */}
+            <Text style={[styles.nodeDigit, status === 'future' && styles.nodeDigitFuture]}>
+              {n}
+            </Text>
+          </View>
+        );
+      })}
+    </View>
+  );
+
+  const controlsRow = (
+    <View style={[styles.controlsRow, landscape && styles.controlsRowLandscape]}>
+      <Text style={styles.controlsLabel}>{t('turbo-road:controls.label')}</Text>
+      <Chip
+        label={`🖐️ ${t('turbo-road:controls.drag')}`}
+        active={control === 'drag'}
+        onPress={() => onControlChange('drag')}
+      />
+      <Chip
+        label={`📱 ${t('turbo-road:controls.tilt')}`}
+        active={control === 'tilt'}
+        onPress={() => onControlChange('tilt')}
+      />
+    </View>
+  );
+
+  /* ---- landscape: map + missions beside the car and the CTAs ---- */
+  if (landscape) {
+    return (
+      <View style={styles.landscapeRoot}>
+        <View style={styles.mapPane}>
+          <View style={styles.landscapeHeader}>
+            <Text style={styles.titleLandscape} numberOfLines={1}>
+              {t('turbo-road:start.title')}
+            </Text>
+            {chipsRow}
+          </View>
+
+          <View style={styles.mapWrapLandscape}>{map}</View>
+
+          {missions.length > 0 && (
+            <View style={styles.missionStrip}>
+              {missions.map((m) => (
+                <MissionTile key={m.id} mission={m} onClaim={onClaimMission} />
+              ))}
+            </View>
+          )}
+        </View>
+
+        <View style={styles.sidePane}>
+          <View style={styles.pillsRow}>
+            {coinsPill}
+            {starsPill}
+          </View>
+
+          <View
+            style={[
+              styles.pedestalLandscape,
+              SHADOWS.md,
+              { backgroundColor: trim.tint, borderColor: trim.base },
+            ]}
+          >
+            <Text style={styles.carLandscape}>{playerEmoji}</Text>
+          </View>
+
+          {controlsRow}
+
+          <PressableButton
+            label={t('turbo-road:start.race')}
+            accent="coral"
+            onPress={onRace}
+            textStyle={styles.raceText}
+          />
+          <PressableButton
+            label={t('turbo-road:start.garage')}
+            variant="ghost"
+            onPress={onGarage}
+          />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       style={styles.root}
@@ -175,84 +372,14 @@ export function StartScreen({
       showsVerticalScrollIndicator={false}
     >
       {/* Top row — start corner stays clear for the SDK BackButton. */}
-      <View style={styles.topRow}>
-        <View accessible accessibilityLabel={t('turbo-road:a11y.coins')}>
-          <HudPill>
-            <Text style={hudTextStyle}>🪙 {walletCoins}</Text>
-          </HudPill>
-        </View>
-      </View>
+      <View style={styles.topRow}>{coinsPill}</View>
 
       <Text style={styles.title}>{t('turbo-road:start.title')}</Text>
 
-      <View style={styles.chipsRow}>
-        <View style={[styles.chip, styles.levelChip]}>
-          <Text style={[styles.chipText, styles.levelChipText]}>
-            {t('turbo-road:start.level', { n: level })}
-          </Text>
-        </View>
-        <View style={[styles.chip, styles.themeChip]}>
-          <Text style={styles.chipText}>
-            {theme.chipEmoji} {t(`turbo-road:themes.${theme.id}`)}
-          </Text>
-        </View>
-      </View>
+      {chipsRow}
 
       {/* Road-trip map */}
-      <View style={styles.mapWrap}>
-        <View style={styles.map} accessibilityLabel={t('turbo-road:start.mapLabel')}>
-          {PATH_DOTS.map((d, i) => (
-            <View
-              key={i}
-              style={[styles.pathDot, { left: mirrorX(d.x) - 2, top: d.y - 2 }]}
-            />
-          ))}
-
-          <Animated.View
-            style={[
-              styles.pulseRing,
-              {
-                left: mirrorX(currentNode.x) - RING_SIZE / 2,
-                top: currentNode.y - RING_SIZE / 2,
-                opacity: ringOpacity,
-                transform: [{ scale: ringScale }],
-              },
-            ]}
-          />
-
-          {NODES.map((p, i) => {
-            const n = nodeLevels[i];
-            const status = n < level ? 'done' : n === level ? 'current' : 'future';
-            const size = NODE_SIZE[status];
-            return (
-              <View
-                key={n}
-                style={[
-                  styles.node,
-                  status === 'future' ? styles.nodeFuture : styles.nodeDone,
-                  {
-                    width: size,
-                    height: size,
-                    borderRadius: size / 2,
-                    left: mirrorX(p.x) - size / 2,
-                    top: p.y - size / 2,
-                  },
-                ]}
-              >
-                {/* Plain <Text>: digits stay Western and never mirror. */}
-                <Text
-                  style={[
-                    styles.nodeDigit,
-                    status === 'future' && styles.nodeDigitFuture,
-                  ]}
-                >
-                  {n}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      </View>
+      <View style={styles.mapWrap}>{map}</View>
 
       {/* Selected car on its trim pedestal + total stars */}
       <View style={styles.heroZone}>
@@ -265,12 +392,7 @@ export function StartScreen({
         >
           <Text style={styles.car}>{playerEmoji}</Text>
         </View>
-        <View accessible accessibilityLabel={t('turbo-road:a11y.stars')}>
-          <HudPill>
-            <Star size={18} />
-            <Text style={hudTextStyle}>{totalStars}</Text>
-          </HudPill>
-        </View>
+        {starsPill}
       </View>
 
       {/* Missions — the come-back-tomorrow layer. */}
@@ -284,19 +406,7 @@ export function StartScreen({
       )}
 
       {/* Steering mode — finger-follow (default) or tilt-the-phone. */}
-      <View style={styles.controlsRow}>
-        <Text style={styles.controlsLabel}>{t('turbo-road:controls.label')}</Text>
-        <Chip
-          label={`🖐️ ${t('turbo-road:controls.drag')}`}
-          active={control === 'drag'}
-          onPress={() => onControlChange('drag')}
-        />
-        <Chip
-          label={`📱 ${t('turbo-road:controls.tilt')}`}
-          active={control === 'tilt'}
-          onPress={() => onControlChange('tilt')}
-        />
-      </View>
+      {controlsRow}
 
       <View style={styles.buttons}>
         <PressableButton
@@ -319,6 +429,84 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: COLORS.canvas,
+  },
+
+  /* ---------------- landscape two-pane ---------------- */
+  // The app runs landscape-locked, so this is the layout children actually
+  // see: journey map + missions on one side, car and the CTAs on the other,
+  // everything on one screen with no scrolling to reach "Race!".
+  landscapeRoot: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: COLORS.canvas,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    gap: SPACING.md,
+  },
+  mapPane: {
+    flex: 1,
+    justifyContent: 'space-evenly',
+  },
+  landscapeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    // Clears the SDK BackButton (absolute, 64px circle sitting SPACING.md in
+    // from the safe-area edge — the root already contributes that SPACING.md).
+    paddingStart: TOUCH_TARGET.recommended + SPACING.sm,
+  },
+  titleLandscape: {
+    fontFamily: FONTS.display,
+    fontSize: 22,
+    color: COLORS.ink,
+  },
+  mapWrapLandscape: {
+    flexShrink: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  missionStrip: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  missionTile: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
+    borderRadius: BORDER_RADIUS.soft,
+    paddingVertical: SPACING.xs + 2,
+    paddingHorizontal: SPACING.sm,
+    gap: SPACING.xs,
+    ...SHADOWS.sm,
+  },
+  missionTileHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: SPACING.xs,
+    minHeight: 26,
+  },
+  sidePane: {
+    width: 268,
+    justifyContent: 'space-evenly',
+    alignItems: 'stretch',
+  },
+  pillsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: SPACING.sm,
+  },
+  pedestalLandscape: {
+    alignSelf: 'center',
+    width: 176,
+    height: 100,
+    borderRadius: BORDER_RADIUS.card,
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  carLandscape: {
+    fontSize: 60,
+    lineHeight: 72,
   },
   // flexGrow keeps the portrait layout identical (map zone stretches);
   // in landscape the content scrolls instead of clipping.
@@ -378,6 +566,10 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
     paddingTop: SPACING.md,
   },
+  controlsRowLandscape: {
+    paddingTop: 0,
+    gap: SPACING.xs,
+  },
   controlsLabel: {
     fontFamily: FONTS.bodySemi,
     fontSize: 14,
@@ -404,6 +596,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: SPACING.sm,
     marginTop: SPACING.md,
+  },
+  chipsRowLandscape: {
+    marginTop: 0,
+    flexShrink: 1,
   },
   chip: {
     height: 36,

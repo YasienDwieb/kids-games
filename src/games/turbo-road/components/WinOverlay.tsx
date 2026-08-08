@@ -60,6 +60,7 @@ export function WinOverlay({
 }: WinOverlayProps) {
   const { t } = useTranslation();
   const window = useWindowDimensions();
+  const landscape = window.width > window.height;
 
   const trophyScale = useRef(new Animated.Value(0.3)).current;
   const starPops = useRef([0, 1, 2].map(() => new Animated.Value(0))).current;
@@ -141,48 +142,65 @@ export function WinOverlay({
         })}
       </View>
 
-      <View style={[styles.card, SHADOWS.lg]}>
-        <Animated.Text
-          style={[styles.trophy, { transform: [{ scale: trophyScale }] }]}
-        >
-          {TROPHY[place]}
-        </Animated.Text>
+      {/* Landscape splits the card into result | actions — stacked, the card
+          is taller than a landscape screen and clips its own buttons. */}
+      <View
+        style={[styles.card, landscape && styles.cardLandscape, SHADOWS.lg]}
+      >
+        <View style={landscape ? styles.resultColumn : undefined}>
+          <Animated.Text
+            style={[
+              styles.trophy,
+              landscape && styles.trophyLandscape,
+              { transform: [{ scale: trophyScale }] },
+            ]}
+          >
+            {TROPHY[place]}
+          </Animated.Text>
 
-        <Text style={styles.title}>{t(`turbo-road:win.title.p${place}`)}</Text>
+          <Text style={[styles.title, landscape && styles.titleLandscape]}>
+            {t(`turbo-road:win.title.p${place}`)}
+          </Text>
 
-        {cupTheme !== undefined && (
-          <View style={styles.cupBanner}>
-            <Text style={styles.cupText}>
-              🏆 {t('turbo-road:cups.earned', { name: t(`turbo-road:cups.${cupTheme}`) })}
+          {cupTheme !== undefined && (
+            <View style={styles.cupBanner}>
+              <Text style={styles.cupText}>
+                🏆 {t('turbo-road:cups.earned', { name: t(`turbo-road:cups.${cupTheme}`) })}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.starsRow}>
+            {[0, 1, 2].map((i) => (
+              <Animated.View key={i} style={{ transform: [{ scale: starPops[i] }] }}>
+                <Star
+                  size={(landscape ? 0.78 : 1) * (i === 1 ? 48 : 38)}
+                  filled={i < stars}
+                />
+              </Animated.View>
+            ))}
+          </View>
+        </View>
+
+        <View style={landscape ? styles.actionColumn : undefined}>
+          <View style={[styles.coinsPill, landscape && styles.coinsPillLandscape]}>
+            <Text style={styles.coinsText}>
+              🪙 {t('turbo-road:win.coins', { n: coinsEarned })}
             </Text>
           </View>
-        )}
 
-        <View style={styles.starsRow}>
-          {[0, 1, 2].map((i) => (
-            <Animated.View key={i} style={{ transform: [{ scale: starPops[i] }] }}>
-              <Star size={i === 1 ? 48 : 38} filled={i < stars} />
-            </Animated.View>
-          ))}
-        </View>
-
-        <View style={styles.coinsPill}>
-          <Text style={styles.coinsText}>
-            🪙 {t('turbo-road:win.coins', { n: coinsEarned })}
-          </Text>
-        </View>
-
-        <View style={styles.buttons}>
-          <PressableButton
-            label={`${t('turbo-road:win.next')} ${nextGlyph}`}
-            accent="coral"
-            onPress={onNext}
-          />
-          <PressableButton
-            label={t('turbo-road:win.garage')}
-            variant="ghost"
-            onPress={onGarage}
-          />
+          <View style={[styles.buttons, landscape && styles.buttonsLandscape]}>
+            <PressableButton
+              label={`${t('turbo-road:win.next')} ${nextGlyph}`}
+              accent="coral"
+              onPress={onNext}
+            />
+            <PressableButton
+              label={t('turbo-road:win.garage')}
+              variant="ghost"
+              onPress={onGarage}
+            />
+          </View>
         </View>
       </View>
     </View>
@@ -215,9 +233,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     alignItems: 'center',
   },
+  cardLandscape: {
+    maxWidth: 560,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    gap: SPACING.lg,
+  },
+  resultColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  actionColumn: {
+    width: 220,
+    alignItems: 'center',
+  },
   trophy: {
     fontSize: 72,
     lineHeight: 84,
+  },
+  trophyLandscape: {
+    fontSize: 54,
+    lineHeight: 64,
   },
   title: {
     fontFamily: FONTS.display,
@@ -225,6 +263,10 @@ const styles = StyleSheet.create({
     color: COLORS.ink,
     marginTop: SPACING.sm,
     textAlign: 'center',
+  },
+  titleLandscape: {
+    fontSize: 24,
+    marginTop: SPACING.xs,
   },
   starsRow: {
     flexDirection: 'row',
@@ -257,6 +299,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.line,
     marginTop: SPACING.md,
   },
+  coinsPillLandscape: {
+    marginTop: 0,
+  },
   coinsText: {
     fontFamily: FONTS.display,
     fontSize: 18,
@@ -266,5 +311,9 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     gap: SPACING.sm + SPACING.xs,
     marginTop: SPACING.lg,
+  },
+  buttonsLandscape: {
+    gap: SPACING.sm,
+    marginTop: SPACING.md,
   },
 });
