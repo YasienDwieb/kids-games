@@ -63,3 +63,12 @@ web users get whatever aspect ratio their browser window happens to be, with no
 enforced orientation at all, which is a real platform difference to keep in
 mind when adding responsive layout code that is meant to work identically on
 both.
+
+This decision only fixes the *device's* orientation; it does nothing to fix
+any individual screen's *layout* for that orientation. Most game screens were
+authored portrait-first, before or independently of this lock, and each has
+to be revisited on its own to grow an actual landscape layout — the resulting
+per-screen `useWindowDimensions()` / `landscape` branch, its two recurring
+gotchas, and the one component that sidesteps branching entirely by deriving
+its layout from measured size instead of an orientation flag are covered on
+[Landscape screen branching](../concepts/landscape-screen-branching).

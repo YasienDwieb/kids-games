@@ -121,7 +121,11 @@ the landscape layout.
 rather than on a settings toggle: when `width > height` it renders a
 landscape two-pane layout — a journey card on one side, a games rail on the
 other — and otherwise falls back to a portrait scroll view with a game grid
-[@home-screen]. The game list itself comes from the registry:
+[@home-screen]. This `useWindowDimensions()` / `landscape` branch is the
+earliest instance of a pattern repeated across many game screens; see
+[Landscape screen branching](../concepts/landscape-screen-branching) for the
+idiom, its two recurring gotchas, and the one component that sidesteps it
+entirely. The game list itself comes from the registry:
 `settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames()`, so an age
 band chosen in Settings filters the Home tile set without touching how games
 are registered [@home-screen]. One RTL-specific detail is worth knowing if you
