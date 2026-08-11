@@ -88,7 +88,8 @@ src/
 │   ├── match-up/           # Draw a line from each thing to its match
 │   ├── letter-land/        # Listen-and-find letters (phonics)
 │   ├── numbers-land/       # Listen-and-find numbers
-│   └── animal-safari/      # Listen-and-find animals (first words)
+│   ├── animal-safari/      # Listen-and-find animals (first words)
+│   └── candy-catch/        # Slide-the-basket catching arcade
 ├── types/                  # RootStackParamList, shared types
 ├── hooks/                  # Shared hooks
 └── utils/                  # Shared helpers
@@ -133,6 +134,7 @@ See `CLAUDE.md` (Design-system adherence) and the `kids-games-dev` skill for the
 | **Letter Land** | 3–7 | Literacy & phonics | Listen and find the letter — with spoken prompts and word-picture heroes |
 | **Numbers Land** | 3–7 | Numbers | Listen and find the number, with spoken prompts |
 | **Animal Safari** | 3–7 | First words | Listen and find the animal — by name or by the sound it makes |
+| **Candy Catch** | 3–7 | Reflex & arcade | Slide the basket to catch the treats and dodge the yucky ones |
 
 ## Adding a New Game
 
