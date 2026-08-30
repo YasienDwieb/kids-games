@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { ColorBlob } from './ColorBlob';
 import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
 import { COLORS as PALETTE } from '../constants';
@@ -8,6 +8,7 @@ type ChallengeCardProps = {
   challenge: Challenge;
   isComplete: boolean;
   onSelect: () => void;
+  style?: ViewStyle;
 };
 
 const DIFFICULTY_STARS: Record<Challenge['difficulty'], number> = {
@@ -16,7 +17,7 @@ const DIFFICULTY_STARS: Record<Challenge['difficulty'], number> = {
   hard: 3,
 };
 
-export function ChallengeCard({ challenge, isComplete, onSelect }: ChallengeCardProps) {
+export function ChallengeCard({ challenge, isComplete, onSelect, style }: ChallengeCardProps) {
   const { t } = useTranslation();
   const colorData = PALETTE[challenge.targetColor];
   const stars = DIFFICULTY_STARS[challenge.difficulty];
@@ -28,6 +29,7 @@ export function ChallengeCard({ challenge, isComplete, onSelect }: ChallengeCard
         styles.card,
         isComplete && styles.cardComplete,
         pressed && styles.cardPressed,
+        style,
       ]}
     >
       {/* Color preview */}
