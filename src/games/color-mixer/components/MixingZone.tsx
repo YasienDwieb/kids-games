@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, EmojiImage, FONTS, useTranslation } from '@/sdk';
 import { DraggableResult } from './DraggableResult';
 import { DIMENSIONS } from '../constants';
 
@@ -69,7 +69,7 @@ export function MixingZone({
     >
       {!currentMixHex && (
         <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>🎨</Text>
+          <EmojiImage emoji="🎨" size={36} style={styles.emptyIcon} />
           <Text style={styles.emptyText}>{t('color-mixer:mixingZone.dropHere')}</Text>
         </View>
       )}
@@ -114,7 +114,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyIcon: {
-    fontSize: 36,
     marginBottom: 8,
   },
   emptyText: {
