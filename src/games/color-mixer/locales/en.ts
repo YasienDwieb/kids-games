@@ -22,6 +22,7 @@ export const en = {
   // Action buttons
   actions: {
     undo: '↩️ Undo',
+    done: 'Done!',
     clear: '🗑️ Clear',
     save: '💾 Save',
   },
@@ -102,6 +103,7 @@ export const en = {
       keepMixing: 'Keep mixing!',
     },
     success: 'You did it!',
+    next: 'Next challenge',
   },
 
   // Discovery celebration modal

@@ -1,5 +1,11 @@
-import { COLORS, MATCH_THRESHOLD } from '../constants';
-import { hexToRgb } from './colorMath';
+import {
+  COLORS,
+  DISCOVERY_DELTA_E,
+  METER_RANGE_DELTA_E,
+  STARS_TO_COMPLETE,
+  STAR_DELTA_E,
+} from '../constants';
+import { deltaE00Hex } from './deltaE';
 import type { ColorId } from '../types';
 
 /** The discoverable (non-primary) colors. */
@@ -7,17 +13,15 @@ export const FAMOUS_IDS: ColorId[] = (Object.keys(COLORS) as ColorId[]).filter(
   (id) => !COLORS[id].isPrimary,
 );
 
-/** Euclidean RGB distance between two hex colors. */
+/** Perceptual distance between two hex colors (CIEDE2000). */
 export function colorDistance(a: string, b: string): number {
-  const x = hexToRgb(a);
-  const y = hexToRgb(b);
-  return Math.sqrt((x.r - y.r) ** 2 + (x.g - y.g) ** 2 + (x.b - y.b) ** 2);
+  return deltaE00Hex(a, b);
 }
 
-/** Closest famous color within MATCH_THRESHOLD, else null. */
+/** Closest famous color within the discovery threshold, else null. */
 export function nearestFamous(hex: string): ColorId | null {
   let best: ColorId | null = null;
-  let bestDist = MATCH_THRESHOLD;
+  let bestDist = DISCOVERY_DELTA_E;
   for (const id of FAMOUS_IDS) {
     const d = colorDistance(hex, COLORS[id].hex);
     if (d < bestDist) {
@@ -30,11 +34,26 @@ export function nearestFamous(hex: string): ColorId | null {
 
 /** 0..1 progress toward a target (1 = exact), for the challenge meter only. */
 export function closeness(hex: string, targetHex: string): number {
-  const RANGE = 180; // distance over which the meter fills
-  return Math.max(0, 1 - colorDistance(hex, targetHex) / RANGE);
+  return Math.max(0, 1 - colorDistance(hex, targetHex) / METER_RANGE_DELTA_E);
 }
 
-/** Whether a blend satisfies a challenge target. */
+/**
+ * Graded challenge score, 0–3.
+ *
+ * Scoring is graded rather than binary so a child can see themselves getting closer. One
+ * star is feedback, not success: ΔE00 12 is plainly a different color, so completing on it
+ * would mean "you made Green!" over something visibly not green.
+ */
+export function starsFor(mixHex: string | null, targetHex: string): 0 | 1 | 2 | 3 {
+  if (mixHex == null) return 0;
+  const d = colorDistance(mixHex, targetHex);
+  if (d < STAR_DELTA_E.three) return 3;
+  if (d < STAR_DELTA_E.two) return 2;
+  if (d < STAR_DELTA_E.one) return 1;
+  return 0;
+}
+
+/** Whether a blend is good enough to finish a challenge. */
 export function isChallengeMet(mixHex: string | null, targetHex: string): boolean {
-  return mixHex != null && colorDistance(mixHex, targetHex) < MATCH_THRESHOLD;
+  return starsFor(mixHex, targetHex) >= STARS_TO_COMPLETE;
 }

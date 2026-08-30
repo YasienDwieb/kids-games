@@ -20,6 +20,7 @@ export const ar: GameTranslations = {
 
   actions: {
     undo: '↩️ تراجع',
+    done: 'تم!',
     clear: '🗑️ مسح',
     save: '💾 حفظ',
   },
@@ -92,6 +93,7 @@ export const ar: GameTranslations = {
       keepMixing: 'استمر في المزج!',
     },
     success: 'أحسنت!',
+    next: 'التحدي التالي',
   },
 
   discovery: {

@@ -51,6 +51,8 @@ const KEYS: string[] = [
   'color-mixer:mixingZone.dropHere',
   'color-mixer:colors.red',
   'color-mixer:colors.lightBlue',
+  'color-mixer:actions.done',
+  'color-mixer:challenge.next',
   'color-mixer:challengeHints.c1',
   'color-mixer:challengeHints.c6',
   'color-mixer:discoveryHints.orange',
