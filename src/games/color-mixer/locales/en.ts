@@ -94,7 +94,7 @@ export const en = {
   // Challenge mode (in-game target panel)
   challenge: {
     makeThisColor: 'Make this color:',
-    needHint: '💡 Need a hint?',
+    needHint: 'Need a hint?',
     backLabel: 'Back to challenges',
     meter: {
       perfect: 'Perfect!',
