@@ -33,7 +33,7 @@ import {
 } from './components';
 import { useColorMixer, useChallengeMode } from './hooks';
 import { COLORS, DIMENSIONS } from './constants';
-import { isChallengeMet, starsFor } from './utils';
+import { MIX_CAP, isChallengeMet, starsFor } from './utils';
 import type { ColorId, GameMode, PigmentId, SavedColor } from './types';
 
 export default function ColorMixerGame() {
@@ -56,6 +56,8 @@ export default function ColorMixerGame() {
   const [liftedHex, setLiftedHex] = useState<string | null>(null);
   const ghostPos = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
 
+  // Bumped whenever a full pot refuses a drop, so the zone can shake.
+  const [rejectedAt, setRejectedAt] = useState(0);
   const [showCollection, setShowCollection] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
@@ -94,6 +96,12 @@ export default function ColorMixerGame() {
     return dx * dx + dy * dy <= radius * radius;
   }, []);
 
+  // A drop the pot cannot take must still answer: sound plus a shake, never silence.
+  const refuseDrop = useCallback(() => {
+    play('wrong');
+    setRejectedAt((n) => n + 1);
+  }, [play]);
+
   const dragColorRef = useRef<PigmentId | null>(null);
 
   const handleDragStart = useCallback((colorId: PigmentId, _instanceId: string) => {
@@ -106,21 +114,26 @@ export default function ColorMixerGame() {
   const handleDragEnd = useCallback(
     (_instanceId: string, pos: { x: number; y: number }) => {
       if (dragColorRef.current && isInsideZone(pos)) {
-        mixer.addPigment(dragColorRef.current);
+        if (mixer.potFull) refuseDrop();
+        else mixer.addPigment(dragColorRef.current);
       }
       dragColorRef.current = null;
     },
-    [isInsideZone, mixer.addPigment],
+    [isInsideZone, mixer.addPigment, mixer.potFull, refuseDrop],
   );
 
   const GHOST_SIZE = DIMENSIONS.PALETTE_ITEM_SIZE;
 
   const addSavedToMix = useCallback(
     (saved: SavedColor) => {
+      if (mixer.potFull) {
+        refuseDrop();
+        return;
+      }
       mixer.addSavedColor(saved);
       play('pop');
     },
-    [mixer.addSavedColor, play],
+    [mixer.addSavedColor, mixer.potFull, play, refuseDrop],
   );
 
   const handleSavedTap = useCallback(
@@ -322,6 +335,9 @@ export default function ColorMixerGame() {
       <MixingZone
         size={zoneSize}
         currentMixHex={mixer.currentMixHex}
+        dropCount={mixer.mixLog.length}
+        dropCap={MIX_CAP}
+        rejectedAt={rejectedAt}
         onLayout={handleZoneLayout}
         onResultDragEnd={handleResultDragEnd}
       />
@@ -330,6 +346,11 @@ export default function ColorMixerGame() {
 
   const actionsBlock = (
     <View style={styles.actions}>
+      {mixer.potFull && (
+        <Text style={styles.potFull} numberOfLines={2}>
+          {t('color-mixer:mixingZone.potFull')}
+        </Text>
+      )}
       {canFinishChallenge && (
         <PressableButton
           label={t('color-mixer:actions.done')}
@@ -370,6 +391,7 @@ export default function ColorMixerGame() {
       onSavedLiftEnd={handleSavedLiftEnd}
       paletteItemPositions={palettePositions}
       landscape={landscape}
+      dimmed={mixer.potFull}
     />
   );
 
@@ -503,6 +525,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  potFull: {
+    flexShrink: 1,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 12,
+    color: TOKENS.inkSoft,
+    textAlign: 'center',
   },
   actions: {
     flexDirection: 'row',

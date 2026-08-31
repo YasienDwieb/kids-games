@@ -26,6 +26,7 @@ export const ar: GameTranslations = {
   },
 
   mixingZone: {
+    potFull: 'الوعاء ممتلئ! تراجع عن قطرة أو ابدأ من جديد.',
     dropHere: 'ضع الألوان هنا!',
   },
 

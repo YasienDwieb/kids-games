@@ -49,6 +49,7 @@ const KEYS: string[] = [
   'color-mixer:meta.name',
   'color-mixer:title',
   'color-mixer:mixingZone.dropHere',
+  'color-mixer:mixingZone.potFull',
   'color-mixer:colors.red',
   'color-mixer:colors.lightBlue',
   'color-mixer:actions.done',

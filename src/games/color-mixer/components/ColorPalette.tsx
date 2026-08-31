@@ -19,6 +19,8 @@ type ColorPaletteProps = {
   onSavedLiftEnd?: (x: number, y: number) => void;
   paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
   landscape?: boolean;
+  /** Pot is full — the palette still renders but reads as unavailable. */
+  dimmed?: boolean;
 };
 
 export function ColorPalette({
@@ -33,6 +35,7 @@ export function ColorPalette({
   onSavedLiftEnd,
   paletteItemPositions,
   landscape = false,
+  dimmed = false,
 }: ColorPaletteProps) {
   const { t } = useTranslation();
 
@@ -42,7 +45,7 @@ export function ColorPalette({
       {!landscape && <View style={styles.paletteEdge} />}
       <View style={[styles.palette, landscape && styles.paletteLandscape]}>
         <Text style={styles.title}>{t('color-mixer:palette.colorsTitle')}</Text>
-        <View style={styles.slotsRow}>
+        <View style={[styles.slotsRow, dimmed && styles.slotsRowDimmed]}>
           {availableColors.map((colorId) => (
             <PaletteSlot
               key={colorId}
@@ -180,11 +183,11 @@ function DraggableSlotBlob({
 
         onDragStart(instanceId);
       },
-      onPanResponderMove: (evt, gs) => {
+      onPanResponderMove: (_evt, gs) => {
         pan.setValue({ x: gs.dx, y: gs.dy });
-        onDragMove(instanceId, { x: evt.nativeEvent.pageX, y: evt.nativeEvent.pageY });
+        onDragMove(instanceId, { x: gs.moveX, y: gs.moveY });
       },
-      onPanResponderRelease: (evt, gs) => {
+      onPanResponderRelease: (_evt, gs) => {
         pan.flattenOffset();
 
         Animated.spring(scaleAnim, {
@@ -193,7 +196,9 @@ function DraggableSlotBlob({
           useNativeDriver: true,
         }).start();
 
-        onDragEnd(instanceId, { x: evt.nativeEvent.pageX, y: evt.nativeEvent.pageY });
+        // gestureState, not nativeEvent: a release event's touch list can be empty on
+        // Android, and this matches the saved-swatch path that already works on device.
+        onDragEnd(instanceId, { x: gs.moveX, y: gs.moveY });
 
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
@@ -318,6 +323,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     letterSpacing: 1,
     textTransform: 'uppercase',
+  },
+  slotsRowDimmed: {
+    opacity: 0.4,
   },
   slotsRow: {
     flexDirection: 'row',

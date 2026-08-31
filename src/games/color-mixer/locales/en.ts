@@ -29,6 +29,7 @@ export const en = {
 
   // Mixing zone empty state
   mixingZone: {
+    potFull: "Pot's full! Undo a drop, or start over.",
     dropHere: 'Drop colors here!',
   },
 

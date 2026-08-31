@@ -1,5 +1,5 @@
 import { COLORS } from '../../constants';
-import { MIX_CAP, PIGMENT_IDS, addDrop, mixHex, tally } from '../wheelMix';
+import { MIX_CAP, PIGMENT_IDS, addDrop, mixHex, removeDrop, tally } from '../wheelMix';
 import type { PigmentId } from '../../types';
 
 const log = (...drops: PigmentId[]): PigmentId[] => drops;
@@ -86,6 +86,19 @@ describe('wheelMix — pigment model', () => {
       let pot: PigmentId[] = [];
       for (let i = 0; i < MIX_CAP + 6; i++) pot = addDrop(pot, 'red');
       expect(pot).toHaveLength(MIX_CAP);
+    });
+
+    it('is always recoverable — undo frees room for a different pigment', () => {
+      // A full pot silently refusing every drop is what a child experiences as the game
+      // breaking. The cap must be a wall you can step back from, not a dead end.
+      let pot: PigmentId[] = [];
+      for (let i = 0; i < MIX_CAP; i++) pot = addDrop(pot, 'blue');
+      expect(addDrop(pot, 'yellow')).toHaveLength(MIX_CAP);
+
+      const afterUndo = removeDrop(pot);
+      const steered = addDrop(afterUndo, 'yellow');
+      expect(steered).toHaveLength(MIX_CAP);
+      expect(mixHex(steered)).not.toBe(mixHex(pot));
     });
 
     it('a drop past the cap changes nothing at all', () => {
