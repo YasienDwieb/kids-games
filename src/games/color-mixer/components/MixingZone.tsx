@@ -78,6 +78,16 @@ export function MixingZone({
   // four-year-old, but hitting the wall with no warning is worse.
   const showCount = dropCount >= dropCap - 4;
 
+  // The empty state scales with the pot, which is no longer a fixed 180: challenge mode
+  // spends ~19dp of diameter on the target strip, and the zone clamps as low as 112.
+  // Fixed 36/16 type stayed 128dp wide inside a 161dp circle — crowding the dashed ring,
+  // and overflowing it outright at the floor. Width is capped to the circle's inscribed
+  // box so the copy can never touch the border.
+  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+  const iconSize = clamp(Math.round(size * 0.2), 20, 36);
+  const emptyFontSize = clamp(Math.round(size * 0.089), 11, 16);
+  const emptyMaxWidth = Math.round(size * 0.78);
+
   return (
     <Animated.View
       ref={viewRef}
@@ -94,9 +104,20 @@ export function MixingZone({
       ]}
     >
       {!currentMixHex && (
-        <View style={styles.emptyState}>
-          <EmojiImage emoji="🎨" size={36} style={styles.emptyIcon} />
-          <Text style={styles.emptyText}>{t('color-mixer:mixingZone.dropHere')}</Text>
+        <View style={[styles.emptyState, { maxWidth: emptyMaxWidth }]}>
+          <EmojiImage
+            emoji="🎨"
+            size={iconSize}
+            style={{ marginBottom: clamp(Math.round(size * 0.045), 4, 8) }}
+          />
+          <Text
+            style={[
+              styles.emptyText,
+              { fontSize: emptyFontSize, lineHeight: Math.round(emptyFontSize * 1.25) },
+            ]}
+          >
+            {t('color-mixer:mixingZone.dropHere')}
+          </Text>
         </View>
       )}
 
@@ -146,9 +167,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyIcon: {
-    marginBottom: 8,
-  },
   counter: {
     position: 'absolute',
     bottom: -10,
@@ -165,7 +183,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontFamily: FONTS.body,
-    fontSize: 16,
     color: TOKENS.inkSoft,
     textAlign: 'center',
   },
