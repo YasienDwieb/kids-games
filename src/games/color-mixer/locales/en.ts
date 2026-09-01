@@ -22,12 +22,14 @@ export const en = {
   // Action buttons
   actions: {
     undo: '↩️ Undo',
+    done: 'Done!',
     clear: '🗑️ Clear',
     save: '💾 Save',
   },
 
   // Mixing zone empty state
   mixingZone: {
+    potFull: "Pot's full! Undo a drop, or start over.",
     dropHere: 'Drop colors here!',
   },
 
@@ -93,7 +95,7 @@ export const en = {
   // Challenge mode (in-game target panel)
   challenge: {
     makeThisColor: 'Make this color:',
-    needHint: '💡 Need a hint?',
+    needHint: 'Need a hint?',
     backLabel: 'Back to challenges',
     meter: {
       perfect: 'Perfect!',
@@ -102,6 +104,7 @@ export const en = {
       keepMixing: 'Keep mixing!',
     },
     success: 'You did it!',
+    next: 'Next challenge',
   },
 
   // Discovery celebration modal

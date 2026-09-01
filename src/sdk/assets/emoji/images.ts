@@ -120,6 +120,11 @@ export const EMOJI_IMAGES: Record<string, ImageSourcePropType> = {
   "📱": require("./png/1F4F1.png"),
   "🌹": require("./png/1F339.png"),
   "✋": require("./png/270B.png"),
+  // Color Mixer UI art
+  "🎨": require("./png/1F3A8.png"),
+  "🎉": require("./png/1F389.png"),
+  "💡": require("./png/1F4A1.png"),
+  "🏆": require("./png/1F3C6.png"),
 };
 
 /** Resolve an emoji glyph to its bundled image, or undefined if not available. */

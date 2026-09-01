@@ -25,28 +25,28 @@ export const COLORS: Record<ColorId, ColorData> = {
   orange: {
     id: 'orange',
     name: 'Orange',
-    hex: '#F18835',
+    hex: '#F57C00',
     isPrimary: false,
     isUnlocked: false,
   },
   green: {
     id: 'green',
     name: 'Green',
-    hex: '#8EB08D',
+    hex: '#43A047',
     isPrimary: false,
     isUnlocked: false,
   },
   purple: {
     id: 'purple',
     name: 'Purple',
-    hex: '#82618D',
+    hex: '#8E24AA',
     isPrimary: false,
     isUnlocked: false,
   },
   brown: {
     id: 'brown',
     name: 'Brown',
-    hex: '#AB8870',
+    hex: '#916146',
     isPrimary: false,
     isUnlocked: false,
   },
@@ -82,7 +82,11 @@ export const COLORS: Record<ColorId, ColorData> = {
 
 export const DIMENSIONS = {
   COLOR_BLOB_SIZE: 70,
-  MIXING_ZONE_SIZE: 180,
+  // The zone is sized from measured space (see index.tsx); these bound it. MIN keeps it a
+  // usable drop target in challenge-mode landscape, where the panel is shortest.
+  MIXING_ZONE_MAX: 180,
+  MIXING_ZONE_MIN: 112,
+  MIXING_ZONE_MARGIN: 8,
   PALETTE_ITEM_SIZE: 60,
   RESULT_BLOB_SIZE: 100,
 };
@@ -113,5 +117,22 @@ export const CHALLENGES: Challenge[] = [
   { id: 'c6', targetColor: 'brown', hint: 'Mix ALL the primary colors', difficulty: 'hard' },
 ];
 
-/** Generous RGB (Euclidean) distance under which a blend "matches" a target. */
-export const MATCH_THRESHOLD = 60;
+/**
+ * Match thresholds, in CIEDE2000 — pinned to that metric, not RGB distance.
+ *
+ * The old rule was Euclidean RGB under 60, which is not what an eye does: on the previous
+ * palette green (#8EB08D) and brown (#AB8870) sat only 57.3 apart, so a green mix silently
+ * satisfied the *brown* challenge. The authored palette separates the closest pair to 100.3
+ * RGB / 17.2 ΔE00, and these thresholds are comfortably inside that.
+ */
+/** A blend this close to a famous color counts as discovering it. */
+export const DISCOVERY_DELTA_E = 5;
+
+/** Graded challenge scoring. 1 star is feedback, not completion. */
+export const STAR_DELTA_E = { three: 3, two: 6, one: 12 } as const;
+
+/** Stars needed to finish a challenge — ΔE00 12 is still plainly visible. */
+export const STARS_TO_COMPLETE = 2;
+
+/** ΔE00 span over which the "getting warmer" meter fills. */
+export const METER_RANGE_DELTA_E = 40;

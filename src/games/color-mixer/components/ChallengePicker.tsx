@@ -1,6 +1,6 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
+import { COLORS, EmojiImage, FONTS, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
 import { ChallengeCard } from './ChallengeCard';
 import type { Challenge } from '../types';
 
@@ -20,6 +20,10 @@ export function ChallengePicker({
   onBack,
 }: ChallengePickerProps) {
   const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  // Two columns in landscape: one full-width card per row wastes the panel and pushes the
+  // harder groups below the fold on a phone.
+  const landscape = width > height;
 
   const difficultyLabel = (diff: Challenge['difficulty']): string =>
     t(`color-mixer:picker.difficulty.${diff}`);
@@ -54,10 +58,11 @@ export function ChallengePicker({
         {grouped.map((group) => (
           <View key={group.difficulty} style={styles.group}>
             <Text style={styles.groupTitle}>{group.label}</Text>
-            <View style={styles.cardList}>
+            <View style={[styles.cardList, landscape && styles.cardGrid]}>
               {group.items.map((challenge) => (
                 <ChallengeCard
                   key={challenge.id}
+                  style={landscape ? styles.gridCard : undefined}
                   challenge={challenge}
                   isComplete={completedChallenges.includes(challenge.id)}
                   onSelect={() => onSelectChallenge(challenge)}
@@ -69,7 +74,7 @@ export function ChallengePicker({
 
         {completedCount === totalCount && (
           <View style={styles.allDone}>
-            <Text style={styles.allDoneEmoji}>🏆</Text>
+            <EmojiImage emoji="🏆" size={48} style={styles.allDoneEmoji} />
             <Text style={styles.allDoneText}>{t('color-mixer:picker.allDone')}</Text>
           </View>
         )}
@@ -135,13 +140,20 @@ const styles = StyleSheet.create({
   cardList: {
     gap: 10,
   },
+  cardGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  gridCard: {
+    // Two per row, accounting for the 10dp gap.
+    width: '48.5%',
+  },
   allDone: {
     alignItems: 'center',
     marginTop: 16,
     paddingVertical: 20,
   },
   allDoneEmoji: {
-    fontSize: 48,
     marginBottom: 8,
   },
   allDoneText: {

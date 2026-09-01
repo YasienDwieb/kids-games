@@ -7,6 +7,7 @@ export { DiscoveryCelebration } from './DiscoveryCelebration';
 export { Sparkles } from './Sparkles';
 export { ChallengeCard } from './ChallengeCard';
 export { ChallengeMode } from './ChallengeMode';
+export { ChallengeSuccess } from './ChallengeSuccess';
 export { ChallengePicker } from './ChallengePicker';
 export { DraggableResult } from './DraggableResult';
 export { ColorNamingDialog } from './ColorNamingDialog';

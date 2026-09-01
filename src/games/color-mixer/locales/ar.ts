@@ -20,11 +20,13 @@ export const ar: GameTranslations = {
 
   actions: {
     undo: '↩️ تراجع',
+    done: 'تم!',
     clear: '🗑️ مسح',
     save: '💾 حفظ',
   },
 
   mixingZone: {
+    potFull: 'الوعاء ممتلئ! تراجع عن قطرة أو ابدأ من جديد.',
     dropHere: 'ضع الألوان هنا!',
   },
 
@@ -83,7 +85,7 @@ export const ar: GameTranslations = {
 
   challenge: {
     makeThisColor: 'اصنع هذا اللون:',
-    needHint: '💡 تريد تلميحاً؟',
+    needHint: 'تريد تلميحاً؟',
     backLabel: 'رجوع للتحديات',
     meter: {
       perfect: 'ممتاز!',
@@ -92,6 +94,7 @@ export const ar: GameTranslations = {
       keepMixing: 'استمر في المزج!',
     },
     success: 'أحسنت!',
+    next: 'التحدي التالي',
   },
 
   discovery: {

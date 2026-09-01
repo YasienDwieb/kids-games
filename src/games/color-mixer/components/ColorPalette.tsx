@@ -5,20 +5,22 @@ import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
 import { isVerticalDrag, sortSavedNewestFirst } from '../utils';
-import type { ColorId, SavedColor } from '../types';
+import type { ColorId, PigmentId, SavedColor } from '../types';
 
 type ColorPaletteProps = {
-  availableColors: ColorId[];
-  onColorDragStart: (colorId: ColorId, instanceId: string) => void;
+  availableColors: PigmentId[];
+  onColorDragStart: (colorId: PigmentId, instanceId: string) => void;
   onColorDragMove: (instanceId: string, position: { x: number; y: number }) => void;
   onColorDragEnd: (instanceId: string, position: { x: number; y: number }) => void;
   savedColors?: SavedColor[];
-  onSavedTap?: (hex: string) => void;
-  onSavedLiftStart?: (hex: string, x: number, y: number) => void;
+  onSavedTap?: (saved: SavedColor) => void;
+  onSavedLiftStart?: (saved: SavedColor, x: number, y: number) => void;
   onSavedLiftMove?: (x: number, y: number) => void;
   onSavedLiftEnd?: (x: number, y: number) => void;
   paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
   landscape?: boolean;
+  /** Pot is full — the palette still renders but reads as unavailable. */
+  dimmed?: boolean;
 };
 
 export function ColorPalette({
@@ -33,6 +35,7 @@ export function ColorPalette({
   onSavedLiftEnd,
   paletteItemPositions,
   landscape = false,
+  dimmed = false,
 }: ColorPaletteProps) {
   const { t } = useTranslation();
 
@@ -42,7 +45,7 @@ export function ColorPalette({
       {!landscape && <View style={styles.paletteEdge} />}
       <View style={[styles.palette, landscape && styles.paletteLandscape]}>
         <Text style={styles.title}>{t('color-mixer:palette.colorsTitle')}</Text>
-        <View style={styles.slotsRow}>
+        <View style={[styles.slotsRow, dimmed && styles.slotsRowDimmed]}>
           {availableColors.map((colorId) => (
             <PaletteSlot
               key={colorId}
@@ -86,8 +89,8 @@ export function ColorPalette({
 }
 
 type PaletteSlotProps = {
-  colorId: ColorId;
-  onDragStart: (colorId: ColorId, instanceId: string) => void;
+  colorId: PigmentId;
+  onDragStart: (colorId: PigmentId, instanceId: string) => void;
   onDragMove: (instanceId: string, position: { x: number; y: number }) => void;
   onDragEnd: (instanceId: string, position: { x: number; y: number }) => void;
   paletteItemPositions?: React.MutableRefObject<Map<string, { x: number; y: number; width: number; height: number }>>;
@@ -96,13 +99,11 @@ type PaletteSlotProps = {
 function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemPositions }: PaletteSlotProps) {
   const { t } = useTranslation();
   const slotRef = useRef<View>(null);
-  const slotPosition = useRef({ x: 0, y: 0 });
   const instanceCounter = useRef(0);
 
   const measureSlot = useCallback(() => {
     slotRef.current?.measure((_x, _y, w, h, pageX, pageY) => {
       if (pageX !== undefined) {
-        slotPosition.current = { x: pageX, y: pageY };
         paletteItemPositions?.current.set(colorId, { x: pageX, y: pageY, width: w, height: h });
       }
     });
@@ -112,18 +113,15 @@ function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemP
     onDragStart(colorId, instanceId);
   }, [colorId, onDragStart]);
 
-  const handleDragMove = useCallback((instanceId: string, localPos: { x: number; y: number }) => {
-    onDragMove(instanceId, {
-      x: slotPosition.current.x + localPos.x,
-      y: slotPosition.current.y + localPos.y,
-    });
+  // The blob reports the finger's page position directly (as SavedSwatch does). It used
+  // to report a gesture delta that was added to the slot's top-left corner, which biased
+  // every drop ~30dp up-left of where the child actually let go.
+  const handleDragMove = useCallback((instanceId: string, page: { x: number; y: number }) => {
+    onDragMove(instanceId, page);
   }, [onDragMove]);
 
-  const handleDragEnd = useCallback((instanceId: string, localPos: { x: number; y: number }) => {
-    onDragEnd(instanceId, {
-      x: slotPosition.current.x + localPos.x,
-      y: slotPosition.current.y + localPos.y,
-    });
+  const handleDragEnd = useCallback((instanceId: string, page: { x: number; y: number }) => {
+    onDragEnd(instanceId, page);
   }, [onDragEnd]);
 
   const colorData = COLORS[colorId];
@@ -148,7 +146,7 @@ function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemP
 }
 
 type DraggableSlotBlobProps = {
-  colorId?: ColorId;
+  colorId?: PigmentId;
   colorHex?: string;
   instanceId: string;
   size: number;
@@ -187,7 +185,7 @@ function DraggableSlotBlob({
       },
       onPanResponderMove: (_evt, gs) => {
         pan.setValue({ x: gs.dx, y: gs.dy });
-        onDragMove(instanceId, { x: gs.dx, y: gs.dy });
+        onDragMove(instanceId, { x: gs.moveX, y: gs.moveY });
       },
       onPanResponderRelease: (_evt, gs) => {
         pan.flattenOffset();
@@ -198,7 +196,9 @@ function DraggableSlotBlob({
           useNativeDriver: true,
         }).start();
 
-        onDragEnd(instanceId, { x: gs.dx, y: gs.dy });
+        // gestureState, not nativeEvent: a release event's touch list can be empty on
+        // Android, and this matches the saved-swatch path that already works on device.
+        onDragEnd(instanceId, { x: gs.moveX, y: gs.moveY });
 
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
@@ -229,8 +229,8 @@ function DraggableSlotBlob({
 
 type SavedSwatchProps = {
   saved: SavedColor;
-  onTap?: (hex: string) => void;
-  onLiftStart?: (hex: string, x: number, y: number) => void;
+  onTap?: (saved: SavedColor) => void;
+  onLiftStart?: (saved: SavedColor, x: number, y: number) => void;
   onLiftMove?: (x: number, y: number) => void;
   onLiftEnd?: (x: number, y: number) => void;
 };
@@ -256,7 +256,7 @@ function SavedSwatch({ saved, onTap, onLiftStart, onLiftMove, onLiftEnd }: Saved
       onMoveShouldSetPanResponder: (_evt, gs) => isVerticalDrag(gs.dx, gs.dy),
       onPanResponderGrant: (evt) => {
         dimAnim.setValue(0.3); // dim the in-strip swatch while its ghost is lifted
-        onLiftStart?.(saved.hex, evt.nativeEvent.pageX, evt.nativeEvent.pageY);
+        onLiftStart?.(saved, evt.nativeEvent.pageX, evt.nativeEvent.pageY);
       },
       onPanResponderMove: (_evt, gs) => onLiftMove?.(gs.moveX, gs.moveY),
       onPanResponderRelease: (_evt, gs) => endLift(gs.moveX, gs.moveY),
@@ -267,7 +267,7 @@ function SavedSwatch({ saved, onTap, onLiftStart, onLiftMove, onLiftEnd }: Saved
 
   return (
     <Animated.View {...panResponder.panHandlers} style={{ opacity: dimAnim }}>
-      <Pressable style={styles.slot} onPress={() => onTap?.(saved.hex)}>
+      <Pressable style={styles.slot} onPress={() => onTap?.(saved)}>
         <View style={styles.slotDraggableArea}>
           <ColorBlob color={saved.hex} size={DIMENSIONS.PALETTE_ITEM_SIZE} showShine />
         </View>
@@ -323,6 +323,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     letterSpacing: 1,
     textTransform: 'uppercase',
+  },
+  slotsRowDimmed: {
+    opacity: 0.4,
   },
   slotsRow: {
     flexDirection: 'row',

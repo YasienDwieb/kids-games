@@ -1,5 +1,12 @@
-import { useCallback, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   COLORS as TOKENS,
@@ -22,13 +29,21 @@ import {
   ColorNamingDialog,
   ChallengeMode,
   ChallengePicker,
+  ChallengeSuccess,
 } from './components';
 import { useColorMixer, useChallengeMode } from './hooks';
 import { COLORS, DIMENSIONS } from './constants';
-import type { ColorId, GameMode } from './types';
+import { MIX_CAP, isChallengeMet, starsFor } from './utils';
+import type { ColorId, GameMode, PigmentId, SavedColor } from './types';
 
 export default function ColorMixerGame() {
-  const mixer = useColorMixer();
+  const [mode, setMode] = useState<GameMode>('freeplay');
+  const [showChallengePicker, setShowChallengePicker] = useState(false);
+
+  // Discoveries are a free-play reward. During a challenge a full-screen celebration for
+  // some *other* color interrupts the one the child is actually working on.
+  const inChallenge = mode === 'challenge';
+  const mixer = useColorMixer({ detectDiscoveries: !inChallenge });
   const challenge = useChallengeMode();
   const insets = useSafeAreaInsets();
   const { play } = useSound();
@@ -41,10 +56,25 @@ export default function ColorMixerGame() {
   const [liftedHex, setLiftedHex] = useState<string | null>(null);
   const ghostPos = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
 
-  const [mode, setMode] = useState<GameMode>('freeplay');
+  // Bumped whenever a full pot refuses a drop, so the zone can shake.
+  const [rejectedAt, setRejectedAt] = useState(0);
   const [showCollection, setShowCollection] = useState(false);
-  const [showChallengePicker, setShowChallengePicker] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+
+  // The mixing zone is sized from the space the play area actually gets, not a fixed
+  // number: in challenge mode the landscape left panel has ~180dp less room, and a hard
+  // 180 pushed the zone and its action buttons off the bottom of the screen.
+  const [zoneSize, setZoneSize] = useState(DIMENSIONS.MIXING_ZONE_MAX);
+
+  const handlePlayAreaLayout = useCallback((e: LayoutChangeEvent) => {
+    const { width: w, height: h } = e.nativeEvent.layout;
+    if (w <= 0 || h <= 0) return;
+    const fit = Math.min(w, h) - DIMENSIONS.MIXING_ZONE_MARGIN * 2;
+    const next = Math.round(
+      Math.max(DIMENSIONS.MIXING_ZONE_MIN, Math.min(DIMENSIONS.MIXING_ZONE_MAX, fit)),
+    );
+    setZoneSize((prev) => (prev === next ? prev : next));
+  }, []);
 
   const zoneRect = useRef({ x: 0, y: 0, width: 0, height: 0 });
   const palettePositions = useRef<Map<string, { x: number; y: number; width: number; height: number }>>(new Map());
@@ -66,9 +96,15 @@ export default function ColorMixerGame() {
     return dx * dx + dy * dy <= radius * radius;
   }, []);
 
-  const dragColorRef = useRef<ColorId | null>(null);
+  // A drop the pot cannot take must still answer: sound plus a shake, never silence.
+  const refuseDrop = useCallback(() => {
+    play('wrong');
+    setRejectedAt((n) => n + 1);
+  }, [play]);
 
-  const handleDragStart = useCallback((colorId: ColorId, _instanceId: string) => {
+  const dragColorRef = useRef<PigmentId | null>(null);
+
+  const handleDragStart = useCallback((colorId: PigmentId, _instanceId: string) => {
     dragColorRef.current = colorId;
   }, []);
 
@@ -78,32 +114,40 @@ export default function ColorMixerGame() {
   const handleDragEnd = useCallback(
     (_instanceId: string, pos: { x: number; y: number }) => {
       if (dragColorRef.current && isInsideZone(pos)) {
-        mixer.addColorToContinuousMix(COLORS[dragColorRef.current].hex);
+        if (mixer.potFull) refuseDrop();
+        else mixer.addPigment(dragColorRef.current);
       }
       dragColorRef.current = null;
     },
-    [isInsideZone, mixer.addColorToContinuousMix],
+    [isInsideZone, mixer.addPigment, mixer.potFull, refuseDrop],
   );
 
   const GHOST_SIZE = DIMENSIONS.PALETTE_ITEM_SIZE;
 
   const addSavedToMix = useCallback(
-    (hex: string) => {
-      mixer.addColorToContinuousMix(hex);
+    (saved: SavedColor) => {
+      if (mixer.potFull) {
+        refuseDrop();
+        return;
+      }
+      mixer.addSavedColor(saved);
       play('pop');
     },
-    [mixer.addColorToContinuousMix, play],
+    [mixer.addSavedColor, mixer.potFull, play, refuseDrop],
   );
 
   const handleSavedTap = useCallback(
-    (hex: string) => addSavedToMix(hex),
+    (saved: SavedColor) => addSavedToMix(saved),
     [addSavedToMix],
   );
 
+  const liftedSaved = useRef<SavedColor | null>(null);
+
   const handleSavedLiftStart = useCallback(
-    (hex: string, x: number, y: number) => {
+    (saved: SavedColor, x: number, y: number) => {
       ghostPos.setValue({ x: x - GHOST_SIZE / 2, y: y - GHOST_SIZE / 2 });
-      setLiftedHex(hex);
+      liftedSaved.current = saved;
+      setLiftedHex(saved.hex);
     },
     [GHOST_SIZE, ghostPos],
   );
@@ -117,10 +161,10 @@ export default function ColorMixerGame() {
 
   const handleSavedLiftEnd = useCallback(
     (x: number, y: number) => {
-      setLiftedHex((hex) => {
-        if (hex && isInsideZone({ x, y })) addSavedToMix(hex);
-        return null;
-      });
+      const saved = liftedSaved.current;
+      liftedSaved.current = null;
+      if (saved && isInsideZone({ x, y })) addSavedToMix(saved);
+      setLiftedHex(null);
     },
     [isInsideZone, addSavedToMix],
   );
@@ -141,16 +185,17 @@ export default function ColorMixerGame() {
     (pos: { x: number; y: number }) => {
       for (const [id, bounds] of palettePositions.current.entries()) {
         if (isPositionInBounds(pos, bounds)) {
-          const targetHex =
-            COLORS[id as ColorId]?.hex ?? mixer.savedColors.find((s) => s.id === id)?.hex;
-          if (targetHex) {
-            mixer.addColorToContinuousMix(targetHex);
+          if (COLORS[id as ColorId]?.isPrimary) {
+            mixer.addPigment(id as PigmentId);
+            return;
           }
+          const saved = mixer.savedColors.find((s) => s.id === id);
+          if (saved) mixer.addSavedColor(saved);
           return;
         }
       }
     },
-    [isPositionInBounds, mixer.savedColors, mixer.addColorToContinuousMix],
+    [isPositionInBounds, mixer.savedColors, mixer.addPigment, mixer.addSavedColor],
   );
 
   const handleSaveColor = useCallback(
@@ -167,14 +212,51 @@ export default function ColorMixerGame() {
     setShowChallengePicker(true);
   }, [challenge.markChallengeComplete]);
 
+  // Success detection lives here, not in ChallengeMode: the celebration has to cover the
+  // whole game, and in landscape ChallengeMode is only a ~76dp strip.
+  const activeChallenge = mode === 'challenge' && !showChallengePicker ? challenge.currentChallenge : null;
+  const challengeTargetHex = activeChallenge ? COLORS[activeChallenge.targetColor].hex : null;
+  const stars = challengeTargetHex ? starsFor(mixer.currentMixHex, challengeTargetHex) : 0;
+  const canFinishChallenge = !!challengeTargetHex && isChallengeMet(mixer.currentMixHex, challengeTargetHex);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Completion is explicit. It used to fire on a timer the moment the mix passed, which
+  // ejected a child at their first passing star before they could refine it — and, because
+  // the effect that set the flag also listed it as a dependency, its own cleanup cancelled
+  // that timer, so the celebration never dismissed at all.
+  const finishChallenge = useCallback(() => {
+    if (!canFinishChallenge) return;
+    play('win');
+    setShowSuccess(true);
+  }, [canFinishChallenge, play]);
+
+  const dismissSuccess = useCallback(() => {
+    setShowSuccess(false);
+    handleChallengeComplete();
+  }, [handleChallengeComplete]);
+
+  useEffect(() => {
+    if (!activeChallenge) setShowSuccess(false);
+  }, [activeChallenge]);
+
+  // Page coordinates measured before a mode/orientation change are wrong afterwards:
+  // drops then silently miss the zone. Drop them and let onLayout re-measure.
+  const invalidateMeasurements = useCallback(() => {
+    zoneRect.current = { x: 0, y: 0, width: 0, height: 0 };
+    palettePositions.current.clear();
+  }, []);
+
+  useEffect(invalidateMeasurements, [invalidateMeasurements, landscape, mode, showChallengePicker]);
+
   const handleSwitchMode = useCallback(
     (newMode: GameMode) => {
+      invalidateMeasurements();
       setMode(newMode);
       mixer.clearContinuousMix();
       challenge.clearChallenge();
       setShowChallengePicker(newMode === 'challenge');
     },
-    [mixer.clearContinuousMix, challenge.clearChallenge],
+    [mixer.clearContinuousMix, challenge.clearChallenge, invalidateMeasurements],
   );
 
   // Back steps up one internal level (challenge → picker → free play) before home.
@@ -238,20 +320,24 @@ export default function ColorMixerGame() {
     </View>
   );
 
-  const challengeBlock = mode === 'challenge' && challenge.currentChallenge ? (
+  const challengeBlock = activeChallenge ? (
     <ChallengeMode
-      currentChallenge={challenge.currentChallenge}
+      currentChallenge={activeChallenge}
       currentMixHex={mixer.currentMixHex}
-      onChallengeComplete={handleChallengeComplete}
+      stars={stars}
+      landscape={landscape}
       onBack={() => setShowChallengePicker(true)}
     />
   ) : null;
 
   const mixingZoneBlock = (
-    <View style={styles.playArea}>
+    <View style={styles.playArea} onLayout={handlePlayAreaLayout}>
       <MixingZone
-        size={DIMENSIONS.MIXING_ZONE_SIZE}
+        size={zoneSize}
         currentMixHex={mixer.currentMixHex}
+        dropCount={mixer.mixLog.length}
+        dropCap={MIX_CAP}
+        rejectedAt={rejectedAt}
         onLayout={handleZoneLayout}
         onResultDragEnd={handleResultDragEnd}
       />
@@ -260,6 +346,18 @@ export default function ColorMixerGame() {
 
   const actionsBlock = (
     <View style={styles.actions}>
+      {mixer.potFull && (
+        <Text style={styles.potFull} numberOfLines={2}>
+          {t('color-mixer:mixingZone.potFull')}
+        </Text>
+      )}
+      {canFinishChallenge && (
+        <PressableButton
+          label={t('color-mixer:actions.done')}
+          accent="green"
+          onPress={finishChallenge}
+        />
+      )}
       {mixer.canUndo && (
         <PressableButton label={t('color-mixer:actions.undo')} variant="ghost" onPress={mixer.undoLastMix} />
       )}
@@ -293,6 +391,7 @@ export default function ColorMixerGame() {
       onSavedLiftEnd={handleSavedLiftEnd}
       paletteItemPositions={palettePositions}
       landscape={landscape}
+      dimmed={mixer.potFull}
     />
   );
 
@@ -352,6 +451,14 @@ export default function ColorMixerGame() {
         colorHex={mixer.currentMixHex}
         onSave={handleSaveColor}
         onCancel={() => setSaveDialogOpen(false)}
+      />
+
+      <ChallengeSuccess
+        visible={showSuccess}
+        targetHex={challengeTargetHex ?? '#FFFFFF'}
+        targetName={activeChallenge ? t(`color-mixer:colors.${activeChallenge.targetColor}`) : ''}
+        stars={stars}
+        onDismiss={dismissSuccess}
       />
 
       <ColorCollection
@@ -418,6 +525,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  potFull: {
+    flexShrink: 1,
+    fontFamily: FONTS.bodySemi,
+    fontSize: 12,
+    color: TOKENS.inkSoft,
+    textAlign: 'center',
   },
   actions: {
     flexDirection: 'row',
