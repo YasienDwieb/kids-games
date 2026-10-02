@@ -62,10 +62,11 @@ For full setup, testing on a phone via Expo Go, and local/EAS cloud builds acros
 
 ## Tech Stack
 
-- Expo SDK 54, React 19, React Native 0.81
+- Expo SDK 57, React 19.2, React Native 0.86 (New Architecture)
 - TypeScript (strict mode)
 - React Navigation (native-stack)
 - `react-native-safe-area-context`, `react-native-gesture-handler`, `expo-audio`, `expo-haptics`, `expo-speech`, `expo-screen-orientation`
+- `react-native-reanimated` + `react-native-worklets` — UI-thread game motion (needs a native/EAS build, not OTA)
 - i18n: `i18next` + `react-i18next` + `expo-localization` — English + Arabic with full RTL
 - Fonts: Fredoka (display) + Nunito (body), IBM Plex Sans Arabic (RTL) via `@expo-google-fonts/*`
 
@@ -79,13 +80,16 @@ src/
 ├── sdk/                    # SDK platform core — the single import surface for games (@/sdk)
 │   ├── config/             # registerGame / getGame / getAllGames + GameConfig types
 │   ├── layout/             # GameShell, useGameShell, useScreenBack
-│   ├── audio/              # useSound (play SFX by intent)
+│   ├── audio/              # useSound (play SFX by intent, per-game win jingles)
 │   ├── storage/            # createStore (AsyncStorage-backed)
 │   ├── progress/           # levels & resume: useLevels, ResumePrompt
 │   ├── settings/           # useSettings (sound / haptics / age band / language)
 │   ├── age/                # AGE_BANDS, gamesForBand, bandsForGame
 │   ├── i18n/               # useTranslation, registerTranslations, useLanguage (en + ar, RTL)
-│   └── assets/             # shared 8-bit SFX manifest
+│   ├── flow/               # Guided Journey: sequencing, progress, scene backdrop
+│   ├── motion/             # useGameLoop / useTilt (reanimated UI-thread motion)
+│   ├── speech/             # useSpeech (spoken prompts for listen-and-find games)
+│   └── assets/             # shared soft CC0 SFX manifest (Kenney; see CREDITS.md)
 ├── components/common/      # Design-system primitives (see below)
 ├── constants/              # Design tokens: COLORS, ACCENTS, SPACING, BORDER_RADIUS, FONT_SIZES, FONTS, SHADOWS, TOUCH_TARGET
 ├── games/
@@ -117,7 +121,7 @@ Games import **only** from `@/sdk` — never from another game or deep `src/` pa
 
 - **Config & registry** — `registerGame`, `getGame`, `getAllGames`, `GameConfig`
 - **Layout** — `GameShell` + `useGameShell` (shell mode); `useScreenBack` (intercept back to step up internal screens before exiting)
-- **Audio** — `useSound().play('pop' | 'success' | 'win' | 'wrong' | …)`
+- **Audio** — `useSound().play('sfx.pop' | 'sfx.success' | 'sfx.win' | 'sfx.wrong' | …)`; each intent has several soft variants picked at random, and every game sets its own win jingle via `GameConfig.sounds`
 - **Storage** — `createStore(namespace, defaultValue)`
 - **Progress & levels** — `useLevels`, `levelsFromList`/`levelsFromGenerator`, `ResumePrompt`
 - **Settings / Age** — `useSettings`, `AGE_BANDS`, `gamesForBand`
