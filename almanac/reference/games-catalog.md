@@ -98,3 +98,9 @@ because sprint-planning documents under `docs/` (e.g.
 `doodle-dots` and `rhythm-tap`, that have no folder under `src/games/` and no
 entry in `src/games/index.ts` — those two are planning documents only and are
 not part of this catalog [@games-index].
+
+`color-mixer`'s "drag-and-drop color mixing" is not RGB averaging — it mixes
+an authored pigment wheel and matches with a perceptual color-distance
+metric, a deliberate replacement for an earlier engine that modeled light
+instead of paint. See
+[Mix paint, not light](../decisions/color-mixer-pigment-mixing) for why.

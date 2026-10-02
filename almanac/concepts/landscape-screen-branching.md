@@ -195,9 +195,13 @@ when landscape, the same style-overlay approach as `WinOverlay` and
 The difference from every other example on this page is that `ChallengeMode`
 does not call `useWindowDimensions()` itself. Its parent, the top-level
 `color-mixer` screen component, computes `landscape = width > height` once
-and passes it down as a prop to `ChallengeMode` (and to the sibling
-`ChallengeSuccess` celebration) [@color-mixer-index]
-[@color-mixer-challenge-mode]. `ChallengePicker`, by contrast, is shown as a
+and passes it down as a prop [@color-mixer-index] [@color-mixer-challenge-mode].
+The sibling `ChallengeSuccess` celebration, added after this page was first
+written, takes no `landscape` prop at all — it is a full-screen `Modal`
+rendered at the game root specifically so it covers the screen regardless of
+orientation, rather than being sized to either pane; see
+[Mix paint, not light](../decisions/color-mixer-pigment-mixing) for why that
+celebration exists and what it replaced. `ChallengePicker`, by contrast, is shown as a
 full-screen replacement for the whole game rather than a child laid out
 alongside other panes, so it computes its own `landscape` locally like every
 other top-level screen in this survey [@color-mixer-challenge-picker]. The
