@@ -71,15 +71,13 @@ full build/submit/metadata flow this profile feeds.
 | `expo.slug` | `"kids-zone"` |
 | `expo.version` | `"1.2.1"` |
 | `expo.orientation` | `"landscape"` |
-| `expo.newArchEnabled` | `true` |
 | `expo.ios.bundleIdentifier` | `"dev.waybeyond.kidszone"` |
 | `expo.ios.config.usesNonExemptEncryption` | `false` |
 | `expo.android.package` | `"dev.waybeyond.kidszone"` |
-| `expo.android.edgeToEdgeEnabled` | `true` |
 | `expo.android.predictiveBackGestureEnabled` | `false` |
 | `expo.android.blockedPermissions` | `["android.permission.ACTIVITY_RECOGNITION"]` |
 | `expo.web.favicon` | `"./assets/favicon.png"` |
-| `expo.plugins` | `["expo-localization"]` |
+| `expo.plugins` | `["expo-localization", "expo-audio", "expo-font", "expo-status-bar", "expo-asset", ["expo-splash-screen", {...}]]` |
 
 These fields are read directly off `app.json`'s `expo` key [@app-json]. The
 repository's own name and package are "kids-games", but the shipped
@@ -96,6 +94,15 @@ going to review without this declaration answered [@app-json]. `expo.version`
 is shared between platforms — bumping it for an Android release also bumps
 the version iOS ships next, so the two release flows are not fully
 independent even though their build/submit tooling is.
+
+The Expo SDK 57 upgrade (React Native 0.86, React 19.2) removed
+`newArchEnabled`, `android.edgeToEdgeEnabled`, and the top-level `splash` key
+from `app.json` — SDK 57 defaults the New Architecture and edge-to-edge on, so
+those flags are no longer needed, and splash screen configuration moved from
+a manifest field to the `expo-splash-screen` config plugin shown in the
+plugins row above [@app-json]. The same upgrade added `expo-audio`,
+`expo-font`, `expo-status-bar`, and `expo-asset` to `expo.plugins` alongside
+`expo-localization` [@app-json].
 
 ## store.config.json — the iOS listing
 
@@ -126,6 +133,6 @@ These scripts are the complete `scripts` block in `package.json` [@package-json]
 There is no `lint` or `typecheck` script — `npx tsc --noEmit`
 is the ad hoc command for a manual type check, run by a developer before
 pushing rather than by any script or CI step [@package-json]. `package.json`
-pins Expo SDK 54 (`"expo": "~54.0.33"`), React 19 (`"react": "19.1.0"`), and
-React Native 0.81 (`"react-native": "0.81.5"`) as the core platform versions
-[@package-json].
+pins Expo SDK 57 (`"expo": "~57.0.26"`), React 19.2
+(`"react": "19.2.3"`), and React Native 0.86 (`"react-native": "0.86.3"`) as
+the core platform versions [@package-json].
