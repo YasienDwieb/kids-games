@@ -296,7 +296,6 @@ export interface PlayfieldProps {
   ui: RaceUiState;
   anim: RaceAnimRefs;
   playerEmoji: string;
-  trim: TrimDef;
   /** Continuous steering: target lane position 0..2 (the car follows it). */
   onSteerTo: (lane: number) => void;
 }
