@@ -13,8 +13,20 @@ function starsFor(moves: number, pairs: number): number {
   return 1;
 }
 
-function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: () => void }) {
+function GameContent({
+  difficulty,
+  onBack,
+  onCompleteChange,
+}: {
+  difficulty: Difficulty;
+  onBack: () => void;
+  onCompleteChange: (complete: boolean) => void;
+}) {
   const { gameState, flipCard, resetGame } = useSimplePairs(difficulty);
+
+  useEffect(() => {
+    onCompleteChange(gameState.isComplete);
+  }, [gameState.isComplete, onCompleteChange]);
   const { play } = useSound();
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
@@ -83,10 +95,12 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
 
 export default function SimplePairsGame() {
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+  const [complete, setComplete] = useState(false);
 
-  // Back from the board returns to the difficulty picker before exiting home.
+  // Back from the board returns to the difficulty picker before exiting home;
+  // from the win screen it exits straight home (the dialog offers "Pick a level").
   useScreenBack(() => {
-    if (difficulty) {
+    if (difficulty && !complete) {
       setDifficulty(null);
       return true;
     }
@@ -97,7 +111,17 @@ export default function SimplePairsGame() {
     return <DifficultySelect onSelect={setDifficulty} />;
   }
 
-  return <GameContent key={difficulty} difficulty={difficulty} onBack={() => setDifficulty(null)} />;
+  return (
+    <GameContent
+      key={difficulty}
+      difficulty={difficulty}
+      onBack={() => {
+        setComplete(false);
+        setDifficulty(null);
+      }}
+      onCompleteChange={setComplete}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

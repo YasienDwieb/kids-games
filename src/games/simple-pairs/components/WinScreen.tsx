@@ -152,7 +152,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 30,
+    // Above the board/HUD but below the floating BackButton (zIndex 10), so
+    // back stays tappable on the win screen.
+    zIndex: 5,
     padding: 26,
   },
   confettiLayer: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
