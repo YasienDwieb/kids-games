@@ -39,23 +39,38 @@ sources:
   - id: dimensions-ts
     type: file
     path: src/constants/dimensions.ts
+  - id: color-mixer-index
+    type: file
+    path: src/games/color-mixer/index.tsx
+  - id: color-mixer-challenge-mode
+    type: file
+    path: src/games/color-mixer/components/ChallengeMode.tsx
+  - id: color-mixer-challenge-picker
+    type: file
+    path: src/games/color-mixer/components/ChallengePicker.tsx
 ---
 
 A recurring layout technique shows up across this codebase's screens: rather
-than writing one flexible layout that reflows at any aspect ratio, a component
-calls `useWindowDimensions()`, computes `const landscape = width > height`,
-and renders either a second, purpose-built JSX tree for landscape or the same
-tree with a parallel set of `landscape && styles.xLandscape` style overrides.
+than writing one flexible layout that reflows at any aspect ratio, a screen
+computes `const landscape = width > height` from `useWindowDimensions()` —
+or, for one component nested inside an already-landscape-aware screen,
+receives `landscape` as a prop instead — and renders either a second,
+purpose-built JSX tree for landscape or the same tree with a parallel set of
+`landscape && styles.xLandscape` style overrides.
 `HomeScreen` is the earliest example already covered in
 [App entry and navigation](../architecture/app-entry-and-navigation)
-[@home-screen]; `turbo-road`'s `StartScreen`, `GarageScreen`, `WinOverlay`, and
-`PauseOverlay` are the newest, all rewritten in one pass to add landscape trees
-after having none [@turbo-road-start] [@turbo-road-garage] [@turbo-road-win]
-[@turbo-road-pause]. `simple-pairs`'s `DifficultySelect`, `count-and-pop`'s
-`HowMany`, and `shape-detective`'s `PatternPuzzle` use the identical
-`width > height` idiom [@difficulty-select] [@how-many] [@pattern-puzzle]. A
-future agent adding or fixing a game screen should recognize this as an
-established pattern, not a one-off, and know the two gotchas below that have
+[@home-screen]; `turbo-road`'s `StartScreen`, `GarageScreen`, `WinOverlay`,
+and `PauseOverlay` were rewritten in one pass to add landscape trees after
+having none [@turbo-road-start] [@turbo-road-garage] [@turbo-road-win]
+[@turbo-road-pause], and `color-mixer`'s `ChallengeMode` and
+`ChallengePicker` are the newest, with `ChallengeMode` taking the prop-driven
+shortcut described below [@color-mixer-challenge-mode]
+[@color-mixer-challenge-picker]. `simple-pairs`'s `DifficultySelect`,
+`count-and-pop`'s `HowMany`, and `shape-detective`'s `PatternPuzzle` use the
+identical `width > height` idiom [@difficulty-select] [@how-many]
+[@pattern-puzzle]. A future agent adding or fixing a game screen should
+recognize this as an established pattern, not a one-off, and know the two
+gotchas below that have
 already bitten it twice.
 
 ## Why the app-level orientation lock doesn't make this redundant
@@ -162,3 +177,32 @@ to preserve the road-width/sprite-scale coupling, not just one side of it.
 its full-bleed rectangle without competing layout siblings; a screen with a
 header, chips, and CTAs to arrange still needs an explicit `landscape`
 branch to decide *composition*, not just scale.
+
+## A prop-threaded variant: color-mixer's challenge screens
+
+`color-mixer`'s challenge flow adds both known branching styles again, plus a
+variant on *where* `landscape` gets computed. `ChallengeMode` — the strip of
+target color, closeness meter, and hint shown above the mixing zone during a
+challenge — takes `landscape: boolean` as a prop and, when true, returns an
+entirely separate single-row JSX tree instead of the portrait column, the
+same "two trees" style as `StartScreen`/`GarageScreen`
+[@color-mixer-challenge-mode]. `ChallengePicker`, the full-screen challenge
+selection list, instead keeps one tree and switches `cardList` to
+`flexDirection: 'row', flexWrap: 'wrap'` plus a `width: '48.5%'` card style
+when landscape, the same style-overlay approach as `WinOverlay` and
+`DifficultySelect` [@color-mixer-challenge-picker].
+
+The difference from every other example on this page is that `ChallengeMode`
+does not call `useWindowDimensions()` itself. Its parent, the top-level
+`color-mixer` screen component, computes `landscape = width > height` once
+and passes it down as a prop to `ChallengeMode` (and to the sibling
+`ChallengeSuccess` celebration) [@color-mixer-index]
+[@color-mixer-challenge-mode]. `ChallengePicker`, by contrast, is shown as a
+full-screen replacement for the whole game rather than a child laid out
+alongside other panes, so it computes its own `landscape` locally like every
+other top-level screen in this survey [@color-mixer-challenge-picker]. The
+rule this suggests: a component that is a full screen in its own right reads
+`useWindowDimensions()` itself; a component that is one region nested inside
+an already-landscape-aware parent screen can just take `landscape` as a prop
+instead of re-deriving it, so the whole screen agrees on one measurement
+rather than each child hook call racing to the same conclusion separately.
