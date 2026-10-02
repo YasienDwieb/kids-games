@@ -83,7 +83,8 @@ export function useArcheryGame({
   const reset = useCallback(() => {
     const h = ref.current.area.height;
     world.current = makeWorld(ref.current.data);
-    world.current.laneY = h > 0 ? (h - GROUND_H) / 2 : LANE_TOP;
+    // 0 = not yet measured; the settle effect below centres it once we know the area.
+    world.current.laneY = h > 0 ? (h - GROUND_H) / 2 : 0;
     world.current.lastSpawn = now();
     setEpoch((e) => e + 1);
   }, []);
@@ -96,8 +97,11 @@ export function useArcheryGame({
   // Settle the resting lane once we know the play area.
   useEffect(() => {
     const w = world.current;
-    if (!w.drawing && area.height > 0) w.laneY = clampLane(w.laneY || (area.height - GROUND_H) / 2);
-  }, [area.height, clampLane]);
+    if (!w.drawing && area.height > 0) {
+      w.laneY = clampLane(w.laneY || (area.height - GROUND_H) / 2);
+      tick();
+    }
+  }, [area.height, clampLane, tick]);
 
   // Single rAF simulation loop. Runs while playing; self-stops once a level is
   // cleared or failed, and restarts on reset (epoch) / enable / resize.
