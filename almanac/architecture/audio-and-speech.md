@@ -30,6 +30,15 @@ sources:
   - id: create-store
     type: file
     path: src/sdk/storage/createStore.ts
+  - id: sound-overrides-context
+    type: file
+    path: src/sdk/audio/SoundOverridesContext.ts
+  - id: game-player-screen
+    type: file
+    path: src/screens/GamePlayerScreen.tsx
+  - id: win-jingles-test
+    type: file
+    path: src/games/__tests__/winJingles.test.ts
 ---
 
 Games never load a sound file or ask for a specific voice directly. They call
@@ -120,6 +129,53 @@ load landing mid-gameplay. `candy-catch` calls `prewarm` once, with its full
 list of sound intents, right after mount [@use-sound]. `useSound.test.tsx`
 confirms that after a `prewarm` call, up to 30 further `play()` calls create no
 additional `AudioPlayer` instances [@use-sound-test].
+
+## Per-game sound overrides: `SoundOverridesContext`
+
+By default every game resolves the same intent to the same shared asset —
+`play('win')` always picks among `sfx.win`'s own three clips, so two games
+finishing a level back to back can sound identical. `GameConfig.sounds` (a
+`SoundOverrides` map of `{ [fromAssetId]: toAssetId }`, e.g. `{ 'sfx.win':
+'jingle.sax-10' }`) lets one game redirect an intent to a different manifest
+asset without touching any of its own `play()` call sites [@query-ts]. The
+map is keyed by asset id, not by intent string, so it also catches every
+other intent tag that resolves to the same asset — `'celebration'` would be
+redirected along with `'win'`, since both tags sit on `sfx.win`
+[@query-ts].
+
+`GamePlayerScreen` is the one place this map is read off a game's config: it
+takes `game.sounds ?? {}` and wraps the whole rendered game tree —
+both the `layout.mode === 'bare'` branch and the `GameShell`-wrapped
+`'shell'` branch — in `SoundOverridesContext.Provider`, so every component
+under the game, including shared engines like `_shared/listen-find` that a
+game never customizes itself, sees the same override map [@game-player-screen]
+[@sound-overrides-context]. `useSound` reads that context with
+`useContext(SoundOverridesContext)` and copies the current value into a
+`ref` on every render — the same pattern already used for the `settingsStore`
+mirror above — so `play` and `prewarm` keep a stable callback identity across
+re-renders for games that pass them as hook dependencies [@use-sound]. Both
+functions then pass that ref's value through to `pickModule`/`modulesFor` in
+`query.ts`, which look up `overrides[id] ?? id` after resolving the intent to
+an asset id, so an unset override is a no-op and the whole feature degrades
+to today's shared-asset behavior for any game that omits `sounds` entirely
+[@query-ts].
+
+The concrete use case driving this is a distinct win jingle per game. A
+dedicated manifest family, `jingle.*` (twelve ids — three instruments times
+four melodies — detailed on the
+[Asset manifest tags](../reference/asset-manifest-tags) reference page),
+exists only as override targets: every entry carries `tags: []`, so none of
+them is ever reachable by `play(intent)` on its own, only by a game's
+`sounds` override [@manifest-ts]. `src/games/__tests__/winJingles.test.ts`
+enforces that every registered game which ever calls `play('win')` sets one
+of these ids, and that no two games share the same one — reading each
+`config.ts` as plain text rather than importing every game's component tree
+[@win-jingles-test]. `count-and-pop` is the one deliberate exception: it only
+ever plays `'success'` on a correct pop and never reaches a `'win'` state, so
+the test instead asserts it carries no override at all, since one would be
+dead config [@win-jingles-test]. `validateGameConfig` separately checks that
+every key and value in `sounds` is a real asset id, covered on the
+[Game config schema](../reference/game-config-schema) reference page.
 
 ## `useLoopSound`: ambient sound tied to a lifecycle
 

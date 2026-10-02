@@ -80,18 +80,22 @@ not automatically relicense assets the project merely bundled from elsewhere
 | Asset | Bundled at | License | Attribution required? |
 |---|---|---|---|
 | Google Noto Emoji artwork | `src/sdk/assets/emoji/png/`, resolved via `src/sdk/assets/emoji/images.ts` and rendered through the `EmojiImage` SDK primitive | Apache License 2.0 | Yes — commercial use is permitted and there is no share-alike obligation, but the project honors attribution via the `CREDITS.md` entry itself [@credits] |
-| Kenney feedback SFX (Interface Sounds, Music Jingles, Digital Audio, Impact Sounds) | `src/sdk/assets/audio/cc0/`, played through `useSound()` for `pop`/`success`/`win`/`wrong`/`powerup`/`transition`/`hit` | CC0 1.0 public domain dedication | No — no attribution required; credited as a courtesy. Clips were converted to WAV, trimmed, and loudness-normalized, which CC0 permits [@credits] |
-| "Balloon Sounds" by AntumDeluge (pop recorded by Gniffelbaf), OpenGameArt | `src/sdk/assets/audio/cc0/balloon_pop.wav`, the `sfx.balloon` intent in Balloon Archer | CC0 1.0 public domain dedication | No — no attribution required; credited as a courtesy. Trimmed to 0.4s with a fade-out and loudness-normalized [@credits] |
+| Kenney feedback SFX and jingles (Interface Sounds, Music Jingles, Digital Audio, Impact Sounds) | `src/sdk/assets/audio/cc0/`, played through `useSound()` for `pop`/`success`/`win`/`wrong`/`powerup`/`transition`/`hit`/`balloon`, plus the twelve `jingle.*` per-game win-jingle assets | CC0 1.0 public domain dedication | No — no attribution required; credited as a courtesy. Clips were converted to WAV, trimmed, and loudness-normalized, which CC0 permits [@credits] |
 
-This replaced an earlier bundled pack, "Sound Effects Mini Pack 1.5" by
-phoenix1291 (Swiss Arcade Game Entertainment) — also CC0 — which the project
-removed because its 8-bit chiptune style read as harsh to children; see
+Every bundled audio clip is now sourced from Kenney. Two earlier
+non-Kenney audio sources were replaced, not merely trimmed: an 8-bit chiptune
+pack, "Sound Effects Mini Pack 1.5" by phoenix1291 (Swiss Arcade Game
+Entertainment, also CC0), was removed because its style read as harsh to
+children, and a single OpenGameArt balloon-pop recording ("Balloon Sounds" by
+AntumDeluge) was replaced by a Kenney `drop_003` clip pitched to five
+pentatonic notes for the `sfx.balloon` intent; neither replaced source has a
+remaining `CREDITS.md` entry [@credits]. See
 [Asset manifest tags](../reference/asset-manifest-tags) for the tag
-vocabulary the replacement set uses [@credits].
+vocabulary the current set uses.
 
-Both entries record the exact source URL and license URL alongside the terms
-honored, which is the pattern `CONTRIBUTING.md` asks every new third-party asset
-entry to follow before it is imported into the codebase.
+The Kenney entry records the exact source URL and license URL alongside the
+terms honored, which is the pattern `CONTRIBUTING.md` asks every new
+third-party asset entry to follow before it is imported into the codebase.
 
 If you are changing what the Play Store listing itself says about licensing or
 credits, that text lives outside this reference; see

@@ -63,6 +63,7 @@ the barrel [@alias-test].
 | `ASSETS` | the manifest object, keyed by asset id |
 | `AssetId` | type — union of manifest keys |
 | `getAsset`, `findAssets`, `pickAsset`, `pickModule` | query functions over the manifest |
+| `SoundOverrides` | type — `Partial<Record<AssetId, AssetId>>`, a per-game swap map used by `GameConfig.sounds` |
 | `EMOJI_IMAGES`, `getEmojiImage` | bundled emoji PNG lookup |
 | `AssetEntry`, `AssetType` | types describing one manifest entry |
 
@@ -91,9 +92,14 @@ page [@sdk-barrel].
 | `useSound` | hook — `{ play(intent, options?), prewarm(intents) }`; `PlayOptions` is its options type |
 | `useLoopSound` | hook — looping variant of `useSound` |
 | `useSpeech` | hook — text-to-speech wrapper; `SpeakOptions` is its options type |
+| `SoundOverridesContext` | React context carrying the active game's `GameConfig.sounds`; provided by `GamePlayerScreen`, read by `useSound` |
 
-Both resolve intent strings against the same asset manifest tag vocabulary;
-see [Audio and speech](../architecture/audio-and-speech) [@sdk-barrel].
+Both `useSound` and `useLoopSound` resolve intent strings against the same
+asset manifest tag vocabulary; see
+[Audio and speech](../architecture/audio-and-speech) [@sdk-barrel]. Games
+never touch `SoundOverridesContext` directly — it exists only so
+`GamePlayerScreen` can hand a game's own `sounds` override map to `useSound`
+without every game wiring the provider itself.
 
 ## Motion
 

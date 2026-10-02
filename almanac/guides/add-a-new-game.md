@@ -27,6 +27,9 @@ sources:
   - id: skill
     type: file
     path: .claude/skills/kids-games-dev/SKILL.md
+  - id: win-jingles-test
+    type: file
+    path: src/games/__tests__/winJingles.test.ts
 ---
 
 Use this guide when you are adding a brand-new activity to the app — a game
@@ -67,6 +70,17 @@ for how that chrome actually works rather than re-deriving it here. Keep the
 `import './i18n';` side-effect import at the top of `config.ts`
 [@template-config] — it registers the game's translation bundle the moment the
 config module loads.
+
+If your game ever plays a `'win'` sound, also set
+`sounds: { 'sfx.win': 'jingle.<id>' }` in `config.ts`, picking a `jingle.*`
+id no other game currently uses — `src/games/__tests__/winJingles.test.ts`
+fails the whole suite if two games share one, or if a game that never calls
+`play('win')` carries an override at all [@win-jingles-test]. The full
+`jingle.*` list and the override mechanism are on the
+[Asset manifest tags](../reference/asset-manifest-tags) and
+[Audio and speech](../architecture/audio-and-speech) pages; the exact
+`sounds` field contract is on
+[Game config schema](../reference/game-config-schema).
 
 **3. Write the locale files.** Create `locales/en.ts` as
 `export const en = {...} as const;` plus a derived `GameTranslations` type,
