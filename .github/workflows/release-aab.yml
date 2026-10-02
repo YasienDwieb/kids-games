@@ -2,6 +2,8 @@ name: Release — build AAB & submit to Play
 
 # Builds a production AAB on EAS, submits it to the Play **production** track as
 # a draft, then pushes the en/ar store listing + release notes via Fastlane supply.
+# By default the release stays a draft behind "Start rollout" in the Play Console;
+# tick the `rollout` input to roll it out in the same job.
 #
 # Division of labour:
 #   • EAS    — builds the AAB and owns versionCode (remote autoIncrement).
@@ -14,8 +16,10 @@ name: Release — build AAB & submit to Play
 # deliberate test build, run `eas submit --profile internal` by hand, then move it
 # over with `fastlane promote` — never rebuild just to change track.
 #
-# The release lands as a **draft**: nothing reaches users until you press
-# "Start rollout" in the Play Console, so this workflow is not a one-way door.
+# The release lands as a **draft**, so listing and release notes are attached
+# BEFORE it is sent for review. Rollout is the one irreversible step, hence
+# opt-in: leave it off for a last look in the Console, then finish with
+# `fastlane rollout version_code:<vc>` or "Start rollout".
 #
 # This workflow does NOT bump semver or push tags — the APK release workflow
 # remains the version authority. versionCode (the only value Play requires to be
@@ -23,6 +27,11 @@ name: Release — build AAB & submit to Play
 
 on:
   workflow_dispatch:
+    inputs:
+      rollout:
+        description: "Start the production rollout (100%) once the listing is pushed. Off = leave the release as a draft."
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -33,7 +42,7 @@ concurrency:
 
 jobs:
   release:
-    name: Build AAB & submit to Play (production · draft)
+    name: Build AAB & submit to Play (production)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -100,3 +109,16 @@ jobs:
         env:
           SUPPLY_JSON_KEY: ${{ github.workspace }}/fastlane/play-store-key.json
         run: fastlane changelog version_code:"$VERSION_CODE" track:production
+
+      # Draft → completed: sends the release for review and makes it live on
+      # approval. Opt-in, and last: everything above only decorates a release
+      # nobody can see yet.
+      - name: Start production rollout (draft → completed)
+        if: ${{ inputs.rollout }}
+        env:
+          SUPPLY_JSON_KEY: ${{ github.workspace }}/fastlane/play-store-key.json
+        run: fastlane rollout version_code:"$VERSION_CODE" track:production
+
+      - name: Left as draft
+        if: ${{ !inputs.rollout }}
+        run: echo "::notice::versionCode $VERSION_CODE is a DRAFT on production. Start it with 'fastlane rollout version_code:$VERSION_CODE' or the Console's Start rollout button."
