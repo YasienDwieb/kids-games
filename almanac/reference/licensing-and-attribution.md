@@ -80,7 +80,14 @@ not automatically relicense assets the project merely bundled from elsewhere
 | Asset | Bundled at | License | Attribution required? |
 |---|---|---|---|
 | Google Noto Emoji artwork | `src/sdk/assets/emoji/png/`, resolved via `src/sdk/assets/emoji/images.ts` and rendered through the `EmojiImage` SDK primitive | Apache License 2.0 | Yes — commercial use is permitted and there is no share-alike obligation, but the project honors attribution via the `CREDITS.md` entry itself [@credits] |
-| "Sound Effects Mini Pack 1.5" by phoenix1291 (Swiss Arcade Game Entertainment) | `src/sdk/assets/audio/`, played through `useSound()` | CC0 1.0 public domain dedication | No — commercial use and redistribution are permitted with no attribution required; the project credits "phoenix1291" / "SwissArcadeGameEntertainment" only as a courtesy [@credits] |
+| Kenney feedback SFX (Interface Sounds, Music Jingles, Digital Audio, Impact Sounds) | `src/sdk/assets/audio/cc0/`, played through `useSound()` for `pop`/`success`/`win`/`wrong`/`powerup`/`transition`/`hit` | CC0 1.0 public domain dedication | No — no attribution required; credited as a courtesy. Clips were converted to WAV, trimmed, and loudness-normalized, which CC0 permits [@credits] |
+| "Balloon Sounds" by AntumDeluge (pop recorded by Gniffelbaf), OpenGameArt | `src/sdk/assets/audio/cc0/balloon_pop.wav`, the `sfx.balloon` intent in Balloon Archer | CC0 1.0 public domain dedication | No — no attribution required; credited as a courtesy. Trimmed to 0.4s with a fade-out and loudness-normalized [@credits] |
+
+This replaced an earlier bundled pack, "Sound Effects Mini Pack 1.5" by
+phoenix1291 (Swiss Arcade Game Entertainment) — also CC0 — which the project
+removed because its 8-bit chiptune style read as harsh to children; see
+[Asset manifest tags](../reference/asset-manifest-tags) for the tag
+vocabulary the replacement set uses [@credits].
 
 Both entries record the exact source URL and license URL alongside the terms
 honored, which is the pattern `CONTRIBUTING.md` asks every new third-party asset

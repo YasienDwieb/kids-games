@@ -50,18 +50,23 @@ Games ask for sounds by a small vocabulary of intent tags — `'pop'`,
 `'success'`, `'win'`, `'wrong'`, `'powerup'`, `'transition'`, and so on — not
 by the manifest's own keys like `'sfx.pop'`. `manifest.ts` defines `ASSETS` as
 a map from an asset id (e.g. `'sfx.pop'`) to an entry with a `modules` array
-of several `require()`'d clips and a `tags` array that includes the intents
-that resolve to it; `'sfx.pop'`'s tags are `['pop', 'flip', 'tap', 'ui',
-'select']`, so any of those five words plays one of its five `Blip*.wav`
+of one or more `require()`'d clips and a `tags` array that includes the
+intents that resolve to it; `'sfx.pop'`'s tags are `['pop', 'flip', 'tap',
+'ui', 'select']`, so any of those five words plays one of its `drop_*.wav`
 variants [@manifest-ts]. `query.ts`'s `pickAsset(intent)` finds the first
 asset id whose `tags` include the given intent, and `pickModule(intent)`
 takes that asset's `modules` array and returns one entry at random
 [@query-ts]. Picking randomly among several clips for the same intent — most
-entries in the manifest carry four or five near-identical variants — exists
+entries in the manifest carry two to four near-identical variants — exists
 so that repeated taps or matches in a game don't all trigger the exact same
-sample back to back [@manifest-ts]. An intent that matches nothing in the
-manifest makes `pickAsset` return `undefined`, and every caller downstream
-treats that as a graceful no-op rather than an error.
+sample back to back [@manifest-ts]. Every clip in the manifest is normalized
+to one loudness (−25 dBFS active RMS, peak ≤ −6 dBFS) so switching between
+intents in the same play session never makes one sound jump out over
+another; the full tag table and the CC0 sourcing behind it are on the
+[Asset manifest tags](../reference/asset-manifest-tags) reference page. An
+intent that matches nothing in the manifest makes `pickAsset` return
+`undefined`, and every caller downstream treats that as a graceful no-op
+rather than an error.
 
 The manifest also holds a second, unrelated vocabulary: real animal sound
 clips keyed like `'animal.lion'`, each with a single fixed module rather than

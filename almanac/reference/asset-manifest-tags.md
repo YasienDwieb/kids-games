@@ -37,12 +37,19 @@ re-reading the manifest from scratch.
 | `pickAsset(intent)` | Returns the first asset id in `ASSETS` whose `tags` array includes the intent string. This is a match against an entry's `tags`, not against the manifest key — `pickAsset('correct')` returns `'sfx.success'`, not a key literally named `'correct'` [@asset-query]. |
 | `pickModule(intent)` | Calls `pickAsset(intent)`, then returns one random entry from that asset's `modules` array, or `undefined` if no asset matches [@asset-query]. |
 
-Sound-effect entries carry five interchangeable `require()`'d `.wav` variants
-in `modules` (drawn from the "Sound Effects Mini Pack 1.5" 8-bit pack)
-specifically so `pickModule`'s random pick keeps repeated taps or matches from
-sounding identical every time [@manifest]. The `animal.*` entries are the
-exception: each maps to exactly one real animal-sound clip and is played by
-its literal id (`useSound().play('animal.lion')`), not through the
+Sound-effect entries carry one to several interchangeable `require()`'d
+`.wav` variants in `modules`, so `pickModule`'s random pick keeps repeated
+taps or matches from sounding identical every time [@manifest]. Every clip in
+the manifest is a soft CC0 recording — Kenney's "Interface Sounds," "Music
+Jingles," "Digital Audio," and "Impact Sounds" packs, plus one OpenGameArt
+balloon-pop recording — loudness-normalized to one level (−25 dBFS active
+RMS, peak ≤ −6 dBFS) so no intent jumps out over another; this replaced an
+earlier 8-bit chiptune pack ("Sound Effects Mini Pack 1.5") that was pulled for
+sounding harsh to children [@manifest]. See
+[Licensing and attribution](../reference/licensing-and-attribution) for the
+exact credit entries. The `animal.*` entries are the exception to the
+multi-variant pattern: each maps to exactly one real animal-sound clip and is
+played by its literal id (`useSound().play('animal.lion')`), not through the
 tag/intent system [@manifest].
 
 ## Controlled tag vocabulary
@@ -54,15 +61,18 @@ tag/intent system [@manifest].
 | `sfx.win` | `win`, `celebration`, `complete`, `levelup` | Level or round complete |
 | `sfx.wrong` | `wrong`, `mismatch`, `error`, `incorrect`, `lose` | Wrong answer, mismatch, failure |
 | `sfx.powerup` | `powerup`, `boost`, `upgrade` | Power-up or upgrade pickup |
-| `sfx.jump` | `jump`, `hop`, `bounce` | Character jump/hop/bounce |
 | `sfx.transition` | `transition`, `teleport`, `whoosh`, `appear`, `next` | Scene/screen transitions, appear/next cues |
-| `sfx.explosion` | `explosion`, `blast`, `boom`, `destroy`, `pop-big` | Big destructive impact |
+| `sfx.balloon` | `balloon` | Popping a balloon (Balloon Archer) |
 | `sfx.hit` | `hit`, `bump`, `thud`, `hurt`, `damage` | Collision, bump, damage feedback |
-| `sfx.laser` | `laser`, `shoot`, `zap`, `fire`, `beam` | Shooting/zap mechanics |
-| `sfx.random` | `random`, `misc`, `surprise`, `blip-alt` | Miscellaneous/surprise cue with no better fit |
+
+The old `sfx.jump`, `sfx.explosion`, `sfx.laser`, and `sfx.random` entries were
+removed along with the 8-bit pack; no current game intent maps to them
+[@manifest]. A future mechanic that needs one of those behaviors (jump,
+explosion, laser, misc blip) should add a soft CC0 clip under a new or
+existing tag rather than reviving the old intent names.
 
 This vocabulary is intentionally closed: `CLAUDE.md` documents the same
-eleven `sfx.*` tag sets as the controlled list for the manifest, and instructs
+`sfx.*` tag sets as the controlled list for the manifest, and instructs
 that adding a new sound effect means dropping the file under
 `src/sdk/assets/<type>/` and adding a tagged `modules: [...]` entry rather than
 inventing a new ad hoc tag [@claude-md]. `useSound` and `useLoopSound` both

@@ -51,7 +51,13 @@ it's imported [@credits].
    `src/sdk/assets/types.ts` [@types]. Tags should come from, or sensibly
    extend, the existing controlled vocabulary — see
    [Asset manifest tags](../reference/asset-manifest-tags) for the exact
-   current list rather than guessing at what's already covered.
+   current list rather than guessing at what's already covered. Prefer soft,
+   tonal clips with little energy above 4 kHz over harsh or shrill ones — the
+   project replaced an entire 8-bit SFX pack for sounding harsh to children —
+   and normalize any new clip to the same loudness the rest of the manifest
+   uses (−25 dBFS active RMS, peak ≤ −6 dBFS) so it doesn't jump out against
+   the others [@manifest]. Ship new clips as WAV; Ogg Vorbis does not play on
+   iOS.
 3. Games play the new sound only by intent string, never by file path or
    manifest key: `useSound().play('<tag>')`. `useSound` resolves the tag to a
    random module variant, respects the user's sound and haptics settings, and
@@ -65,8 +71,10 @@ it's imported [@credits].
    consumes it, a "Source" line with the upstream project, a "License" line
    with the exact license and a link, and a "Terms honored" line stating what
    obligations (attribution, share-alike, etc.) apply. The Noto Emoji entry and
-   the "Sound Effects Mini Pack 1.5" entry are the two existing examples to
-   follow for wording and structure [@credits].
+   the Kenney feedback-SFX entry are the two existing examples to follow for
+   wording and structure [@credits]. See
+   [Licensing and attribution](../reference/licensing-and-attribution) for
+   the full current list of bundled third-party assets and their terms.
 
 ## Procedure B: Add A New Bundled Emoji Image
 
