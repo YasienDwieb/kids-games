@@ -12,6 +12,9 @@ A multi-game Expo React Native app for young children (ages 2–12). Each game i
   <img src="docs/screenshots/home-landscape.jpg" alt="Home — Up next journey card, the games grid, and the sound / language / settings controls" width="640" />
 </p>
 <p align="center">
+  <img src="docs/screenshots/color-mixer.jpg" alt="Color Mixer — mix red, yellow and blue like real paint, with white and black to tint and shade" width="640" />
+</p>
+<p align="center">
   <img src="docs/screenshots/letter-land.jpg" alt="Letter Land — which letter is it?" width="320" />
   <img src="docs/screenshots/numbers-land.jpg" alt="Numbers Land — which number is it?" width="320" />
 </p>
@@ -20,20 +23,31 @@ A multi-game Expo React Native app for young children (ages 2–12). Each game i
   <img src="docs/screenshots/match-up.jpg" alt="Match Up — match each animal to its food" width="320" />
 </p>
 
-## Try it (Android APK)
+## Get it
 
-Want to play without building anything? Grab the latest signed APK from the
-**[Releases page](https://github.com/YasienDwieb/kids-games/releases/latest)**, copy it to an
-Android device, and install it (you may need to allow "install from unknown sources").
+The app ships on Google Play as **Kids Zone: Fun Learning Games**.
 
-> This is a pre-store build for early experimentation — a Play Store listing will follow.
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=dev.waybeyond.kidszone">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="72" />
+  </a>
+</p>
+
+Prefer to sideload? The **[Releases page](https://github.com/YasienDwieb/kids-games/releases/latest)**
+carries a signed APK — copy it to an Android device and install it (you may need to allow
+"install from unknown sources"). Note that the APK there lags the store build; **Google Play
+is the current version**.
 
 ## Store listing (Google Play)
 
 The Google Play store listing — title, descriptions, release notes, and graphics
 (English + Arabic) — is managed as code with [`fastlane supply`](https://docs.fastlane.tools/actions/supply/)
 under [`fastlane/`](fastlane/). See **[docs/PLAY_STORE.md](docs/PLAY_STORE.md)** for the
-layout, character limits, and the `tracks` / `validate` / `metadata` / `changelog` / `pull` lanes.
+layout, character limits, and the `tracks` / `validate` / `metadata` / `changelog` / `promote` /
+`rollout` / `pull` lanes. Builds come from EAS via
+[`.github/workflows/release-aab.yml`](.github/workflows/release-aab.yml), which submits to
+production as a **draft** — `fastlane rollout version_code:<vc>` is the step that makes a
+release live.
 
 ## Getting Started
 
@@ -79,7 +93,7 @@ src/
 │   ├── _template/          # Copy this to start a new game
 │   ├── _shared/            # Cross-game building blocks (listen-find board & round generator)
 │   ├── simple-pairs/       # Memory matching card game
-│   ├── color-mixer/        # Color mixing & discovery game
+│   ├── color-mixer/        # Paint-mixing & color discovery
 │   ├── mouse-maze/         # Swipe-to-solve maze with levels
 │   ├── balloon-archer/     # Aim-and-pop balloon arcade game
 │   ├── shape-detective/    # Shape pattern & logic puzzles
@@ -124,7 +138,7 @@ See `CLAUDE.md` (Design-system adherence) and the `kids-games-dev` skill for the
 | Game | Ages | Theme | Description |
 |------|------|-------|-------------|
 | **Simple Pairs** | 2–5 | Memory | Match pairs of cards across Easy→Expert levels |
-| **Color Mixer** | 4–8 | Color theory | Blend RGB colors to discover famous colors, solve closeness challenges, and save your own |
+| **Color Mixer** | 4–8 | Color theory | Mix red, yellow and blue like real paint — tint and shade with white and black, take on color-matching challenges, and save your own |
 | **Mouse Maze** | 3–8 | Logic | Swipe to guide the mouse to the cheese, collecting stars; levels resume on return |
 | **Balloon Archer** | 5–8 | Aim & arcade | Aim your bow and pop the balloons across levels, with limited arrows |
 | **Shape Detective** | 3–10 | Patterns & logic | Spot the next shape, find the odd one out, and sort shapes into groups |
