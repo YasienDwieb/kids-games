@@ -494,7 +494,7 @@ const DOTS = Array.from({ length: 22 }, (_, i) => ({
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  dots: { ...StyleSheet.absoluteFillObject },
+  dots: { ...StyleSheet.absoluteFill },
   dot: { position: 'absolute', backgroundColor: 'rgba(255,255,255,0.6)' },
   field: { flex: 1 },
   ltr: { direction: 'ltr' as const },

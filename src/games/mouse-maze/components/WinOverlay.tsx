@@ -57,7 +57,7 @@ export function WinOverlay({ collected, total, onNext }: WinOverlayProps) {
 
 const styles = StyleSheet.create({
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',

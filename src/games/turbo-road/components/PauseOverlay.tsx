@@ -43,7 +43,7 @@ export function PauseOverlay({ onResume, onExit }: PauseOverlayProps) {
 
 const styles = StyleSheet.create({
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',

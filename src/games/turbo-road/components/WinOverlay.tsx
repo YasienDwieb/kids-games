@@ -209,14 +209,14 @@ export function WinOverlay({
 
 const styles = StyleSheet.create({
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.lg,
   },
   confettiLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: 'hidden',
   },
   confetti: {

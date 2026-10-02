@@ -64,7 +64,7 @@ export function LevelOverlay({ variant, stars, isLast, popped, quota, onNext, on
 
 const styles = StyleSheet.create({
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',

@@ -759,7 +759,7 @@ const styles = StyleSheet.create({
 
   /* countdown */
   countWrap: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },

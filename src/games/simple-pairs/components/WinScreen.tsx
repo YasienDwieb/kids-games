@@ -136,14 +136,14 @@ export function WinScreen({ visible, moves, stars, onPlayAgain, onPickLevel }: W
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 30,
     padding: 26,
   },
-  confettiLayer: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  confettiLayer: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
   confetti: { position: 'absolute', top: 0 },
   card: {
     backgroundColor: COLORS.surface,

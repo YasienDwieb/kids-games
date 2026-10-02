@@ -25,5 +25,5 @@ export function SceneCanvas({
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.canvas, overflow: 'hidden' },
-  overlay: { ...StyleSheet.absoluteFillObject },
+  overlay: { ...StyleSheet.absoluteFill },
 });

@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   scroll: { paddingTop: SPACING.sm, paddingBottom: SPACING.xl },
 
   dialogScrim: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',

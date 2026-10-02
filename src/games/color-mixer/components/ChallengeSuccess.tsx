@@ -15,7 +15,7 @@ type ChallengeSuccessProps = {
 /**
  * Challenge celebration.
  *
- * Rendered at the game root — not inside `ChallengeMode` — because an `absoluteFillObject`
+ * Rendered at the game root — not inside `ChallengeMode` — because an `absoluteFill`
  * there covers only the challenge strip, which in landscape is ~76dp tall.
  *
  * It is always dismissible: by tapping anywhere, by the button, or by a timer. An earlier

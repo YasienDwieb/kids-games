@@ -47,7 +47,7 @@ export function MatchCelebration({ visible, onComplete }: MatchCelebrationProps)
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 20,

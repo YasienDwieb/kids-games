@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sparkleLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
   },
