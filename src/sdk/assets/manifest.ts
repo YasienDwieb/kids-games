@@ -158,57 +158,57 @@ export const ASSETS = {
   // each — played by id via useSound().play('animal.<id>') in Animal Safari's
   // 'whichSound' rounds. (Cow has no clip, so there is no 'animal.cow' entry.)
   'animal.lion': {
-    modules: [require('./audio/animals/lion.ogg')],
+    modules: [require('./audio/animals/lion.m4a')],
     type: 'audio',
     tags: ['lion'],
   },
   'animal.elephant': {
-    modules: [require('./audio/animals/elephant.ogg')],
+    modules: [require('./audio/animals/elephant.m4a')],
     type: 'audio',
     tags: ['elephant'],
   },
   'animal.dog': {
-    modules: [require('./audio/animals/dog.ogg')],
+    modules: [require('./audio/animals/dog.m4a')],
     type: 'audio',
     tags: ['dog'],
   },
   'animal.cat': {
-    modules: [require('./audio/animals/cat.ogg')],
+    modules: [require('./audio/animals/cat.m4a')],
     type: 'audio',
     tags: ['cat'],
   },
   'animal.frog': {
-    modules: [require('./audio/animals/frog.ogg')],
+    modules: [require('./audio/animals/frog.m4a')],
     type: 'audio',
     tags: ['frog'],
   },
   'animal.horse': {
-    modules: [require('./audio/animals/horse.ogg')],
+    modules: [require('./audio/animals/horse.m4a')],
     type: 'audio',
     tags: ['horse'],
   },
   'animal.sheep': {
-    modules: [require('./audio/animals/sheep.ogg')],
+    modules: [require('./audio/animals/sheep.m4a')],
     type: 'audio',
     tags: ['sheep'],
   },
   'animal.rooster': {
-    modules: [require('./audio/animals/rooster.ogg')],
+    modules: [require('./audio/animals/rooster.m4a')],
     type: 'audio',
     tags: ['rooster'],
   },
   'animal.duck': {
-    modules: [require('./audio/animals/duck.ogg')],
+    modules: [require('./audio/animals/duck.m4a')],
     type: 'audio',
     tags: ['duck'],
   },
   'animal.bird': {
-    modules: [require('./audio/animals/bird.ogg')],
+    modules: [require('./audio/animals/bird.m4a')],
     type: 'audio',
     tags: ['bird'],
   },
   'animal.bee': {
-    modules: [require('./audio/animals/bee.ogg')],
+    modules: [require('./audio/animals/bee.m4a')],
     type: 'audio',
     tags: ['bee'],
   },

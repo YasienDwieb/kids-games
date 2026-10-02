@@ -4,22 +4,23 @@ All clips below are **CC0** or **Public Domain** (no attribution legally require
 Provenance is recorded here anyway for traceability. Source: Wikimedia Commons.
 
 Some clips were trimmed to a short representative segment (with tiny fade in/out)
-and/or re-encoded to Ogg Vorbis for use as kid-friendly SFX. The license of a
+and re-encoded to AAC (`.m4a`, mono 96 kbps) for use as kid-friendly SFX. (They were
+Ogg Vorbis originally; iOS only plays Ogg from 18.4, so AAC keeps every iPhone working.) The license of a
 trimmed/re-encoded clip is unchanged (CC0/PD permit modification).
 
 | Animal | File | License | Source File (Wikimedia Commons) | Source URL |
 |--------|------|---------|----------------------------------|------------|
-| lion | lion.ogg | Public domain | File:Lion raring-sound1TamilNadu178.ogg | https://commons.wikimedia.org/wiki/File:Lion_raring-sound1TamilNadu178.ogg |
-| elephant | elephant.ogg | CC0 | File:Elephant voice - trumpeting.ogg | https://commons.wikimedia.org/wiki/File:Elephant_voice_-_trumpeting.ogg |
-| dog | dog.ogg | CC0 | File:Puppy at a night.ogg | https://commons.wikimedia.org/wiki/File:Puppy_at_a_night.ogg |
-| cat | cat.ogg | Public domain | File:Meow of a pleading cat.oga | https://commons.wikimedia.org/wiki/File:Meow_of_a_pleading_cat.oga |
-| frog | frog.ogg | Public domain | File:Grasfrosch Paarungsrufe.OGG | https://commons.wikimedia.org/wiki/File:Grasfrosch_Paarungsrufe.OGG |
-| horse | horse.ogg | Public domain | File:Wiehern.ogg | https://commons.wikimedia.org/wiki/File:Wiehern.ogg |
-| sheep | sheep.ogg | Public domain | File:Sheep bleating.ogg | https://commons.wikimedia.org/wiki/File:Sheep_bleating.ogg |
-| rooster | rooster.ogg | Public domain | File:Small rooster crowing.ogg | https://commons.wikimedia.org/wiki/File:Small_rooster_crowing.ogg |
-| duck | duck.ogg | CC0 | File:Ducks snatching.ogg | https://commons.wikimedia.org/wiki/File:Ducks_snatching.ogg |
-| bird | bird.ogg | CC0 | File:Birds chirping in a garden.ogg | https://commons.wikimedia.org/wiki/File:Birds_chirping_in_a_garden.ogg |
-| bee | bee.ogg | Public domain | File:Bombus buzz.ogg | https://commons.wikimedia.org/wiki/File:Bombus_buzz.ogg |
+| lion | lion.m4a | Public domain | File:Lion raring-sound1TamilNadu178.ogg | https://commons.wikimedia.org/wiki/File:Lion_raring-sound1TamilNadu178.ogg |
+| elephant | elephant.m4a | CC0 | File:Elephant voice - trumpeting.ogg | https://commons.wikimedia.org/wiki/File:Elephant_voice_-_trumpeting.ogg |
+| dog | dog.m4a | CC0 | File:Puppy at a night.ogg | https://commons.wikimedia.org/wiki/File:Puppy_at_a_night.ogg |
+| cat | cat.m4a | Public domain | File:Meow of a pleading cat.oga | https://commons.wikimedia.org/wiki/File:Meow_of_a_pleading_cat.oga |
+| frog | frog.m4a | Public domain | File:Grasfrosch Paarungsrufe.OGG | https://commons.wikimedia.org/wiki/File:Grasfrosch_Paarungsrufe.OGG |
+| horse | horse.m4a | Public domain | File:Wiehern.ogg | https://commons.wikimedia.org/wiki/File:Wiehern.ogg |
+| sheep | sheep.m4a | Public domain | File:Sheep bleating.ogg | https://commons.wikimedia.org/wiki/File:Sheep_bleating.ogg |
+| rooster | rooster.m4a | Public domain | File:Small rooster crowing.ogg | https://commons.wikimedia.org/wiki/File:Small_rooster_crowing.ogg |
+| duck | duck.m4a | CC0 | File:Ducks snatching.ogg | https://commons.wikimedia.org/wiki/File:Ducks_snatching.ogg |
+| bird | bird.m4a | CC0 | File:Birds chirping in a garden.ogg | https://commons.wikimedia.org/wiki/File:Birds_chirping_in_a_garden.ogg |
+| bee | bee.m4a | Public domain | File:Bombus buzz.ogg | https://commons.wikimedia.org/wiki/File:Bombus_buzz.ogg |
 
 ## Per-clip notes (duration / processing)
 
