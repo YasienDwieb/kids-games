@@ -269,4 +269,9 @@ picking up this dependency in a running app requires whatever this repo's
 normal native build path already produces — see
 [Release an Android build](../guides/release-an-android-build) and
 [Release an iOS build](../guides/release-an-ios-build) — rather than a
-Metro-only reload.
+Metro-only reload. Jest never exercises the real native modules either: both
+`react-native-reanimated` and `react-native-worklets` are mocked in
+`jest.setup.js`, a requirement that got stricter when `react-native-worklets`
+0.10 started installing its native module on import — see
+[Test on a real device](../guides/test-on-a-real-device) for the mock setup
+and why it exists.

@@ -21,6 +21,9 @@ sources:
   - id: order-test
     type: file
     path: src/sdk/config/__tests__/order.test.ts
+  - id: win-jingles-test
+    type: file
+    path: src/games/__tests__/winJingles.test.ts
 ---
 
 This page is the exact field-by-field contract for `GameConfig`, the object
@@ -47,6 +50,7 @@ new game, see [Add a new game](../guides/add-a-new-game).
 | `order` | `number` | no | Ascending Home-screen sort weight; not validated. Omitted games sort after every game that declares one, in registration order — see [Game registry](../architecture/game-registry) for the exact `byOrder()` behavior [@config-types] [@order-test] |
 | `tags` | `string[]` | no | Free-form; not validated [@config-types] |
 | `layout` | `GameLayoutOptions` | no | See layout fields below [@config-types] |
+| `sounds` | `SoundOverrides` (`Partial<Record<AssetId, AssetId>>`) | no | Per-game swap of one manifest asset for another, e.g. `{ 'sfx.win': 'jingle.sax-10' }`; every key and value must be a real `AssetId` or `registerGame` throws [@config-types] [@validate-ts] |
 | `bands` | `string[]` | no | Explicit age-band override, bypassing the derivation from `ageRange` [@config-types] |
 | `version` | `string` | no | Free-form; not validated [@config-types] |
 | `author` | `string` | no | Free-form; not validated [@config-types] |
@@ -92,6 +96,21 @@ registry [@registry-ts]. Every failure throws `Error("Invalid game config:
   min, max } is required` ``; an `ageRange` where `min > max` throws a
   message matching `/ageRange/`, e.g. `` `ageRange.min (8) must be <=
   ageRange.max (3)` `` [@validate-ts] [@validate-test].
+- Every `sounds` entry is checked against `ASSETS`: a key that is not a known
+  asset id throws `` `sounds key "<from>" is not an asset id` ``, and a value
+  that is missing or not a known asset id throws `` `sounds["<from>"] =
+  "<to>" is not an asset id` `` — both match `/sounds/` [@validate-ts]
+  [@validate-test].
+
+`validateGameConfig` only checks that `sounds` points at real asset ids; it
+does not check that the override is *unique* across games.
+`src/games/__tests__/winJingles.test.ts` is the separate, cross-game guard for
+that: it reads every registered game's `config.ts` as text and fails the test
+suite if two games set the same `'sfx.win'` jingle, or if a game that never
+calls `play('win')` (currently only `count-and-pop`) carries one at all
+[@win-jingles-test]. See [Audio and speech](../architecture/audio-and-speech)
+for how the override map reaches `useSound` at runtime, and [Asset manifest
+tags](../reference/asset-manifest-tags) for the `jingle.*` ids it targets.
 
 After validation passes, `registerGame` separately checks
 `if (registry[config.id])` and throws `` `Invalid game config: duplicate id

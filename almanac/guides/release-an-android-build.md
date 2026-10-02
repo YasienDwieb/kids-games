@@ -51,6 +51,12 @@ workflow, it's worth running `npx tsc --noEmit` and `npm test` locally before
 triggering it — see [No CI quality gate](../decisions/no-ci-quality-gate) for
 why that check is a manual habit rather than an enforced gate in this repo.
 
+Both release workflows set up Node 22 (`actions/setup-node@v4` with
+`node-version: 22`) before calling `eas build`, bumped up from Node 20
+because `eas-cli` itself came to require it; a workflow run against an older
+pinned Node version fails before `eas build` even starts [@apk-workflow]
+[@aab-workflow].
+
 ## Branch B: I Need To Ship A Production Build To The Play Store
 
 Trigger `release-aab.yml` manually. It takes no `workflow_dispatch` inputs —

@@ -12,6 +12,9 @@ sources:
   - id: credits
     type: file
     path: CREDITS.md
+  - id: animal-credits
+    type: file
+    path: src/sdk/assets/audio/animals/CREDITS.md
 ---
 
 This page is lookup material for one question: what can you legally do with this
@@ -75,16 +78,41 @@ current build already trades under a different, unrelated brand.
 bundled into the app, and it is authoritative for what license terms apply to
 each one individually — the Apache-2.0 grant on the repository's own code does
 not automatically relicense assets the project merely bundled from elsewhere
-[@credits].
+[@credits]. The Animal Safari sound clips keep a second, separate credits log
+at `src/sdk/assets/audio/animals/CREDITS.md` instead of an entry in the root
+file, since it needs a per-clip table (one row per animal, each with its own
+Wikimedia Commons source file) rather than the single "used for" paragraph the
+root file's entries use [@animal-credits].
 
 | Asset | Bundled at | License | Attribution required? |
 |---|---|---|---|
 | Google Noto Emoji artwork | `src/sdk/assets/emoji/png/`, resolved via `src/sdk/assets/emoji/images.ts` and rendered through the `EmojiImage` SDK primitive | Apache License 2.0 | Yes — commercial use is permitted and there is no share-alike obligation, but the project honors attribution via the `CREDITS.md` entry itself [@credits] |
-| "Sound Effects Mini Pack 1.5" by phoenix1291 (Swiss Arcade Game Entertainment) | `src/sdk/assets/audio/`, played through `useSound()` | CC0 1.0 public domain dedication | No — commercial use and redistribution are permitted with no attribution required; the project credits "phoenix1291" / "SwissArcadeGameEntertainment" only as a courtesy [@credits] |
+| Kenney feedback SFX and jingles (Interface Sounds, Music Jingles, Digital Audio, Impact Sounds) | `src/sdk/assets/audio/cc0/`, played through `useSound()` for `pop`/`success`/`win`/`wrong`/`powerup`/`transition`/`hit`/`balloon`, plus the twelve `jingle.*` per-game win-jingle assets | CC0 1.0 public domain dedication | No — no attribution required; credited as a courtesy. Clips were converted to WAV, trimmed, and loudness-normalized, which CC0 permits [@credits] |
+| Animal Safari sound clips (lion, elephant, dog, cat, frog, horse, sheep, rooster, duck, bird, bee) | `src/sdk/assets/audio/animals/`, played by literal id (`useSound().play('animal.lion')`) in Animal Safari's "which sound" rounds | CC0 or Public Domain per clip (recorded individually on Wikimedia Commons) | No — recorded here as a courtesy, same as the Kenney set [@animal-credits] |
 
-Both entries record the exact source URL and license URL alongside the terms
-honored, which is the pattern `CONTRIBUTING.md` asks every new third-party asset
-entry to follow before it is imported into the codebase.
+The animal clips were originally Ogg Vorbis and were re-encoded to AAC
+(`.m4a`, mono 96 kbps) because iOS only plays Ogg starting at version 18.4 and
+this app supports older iPhones; CC0/public-domain terms permit that kind of
+re-encoding the same way they already permitted the trimming and fade-in/out
+each clip received [@animal-credits]. See
+[Add a game asset](../guides/add-a-game-asset) for the resulting rule on new
+audio: short SFX ship as WAV, longer clips ship as `.m4a`, and Ogg is never
+used for a new asset.
+
+Every bundled audio clip is now sourced from Kenney. Two earlier
+non-Kenney audio sources were replaced, not merely trimmed: an 8-bit chiptune
+pack, "Sound Effects Mini Pack 1.5" by phoenix1291 (Swiss Arcade Game
+Entertainment, also CC0), was removed because its style read as harsh to
+children, and a single OpenGameArt balloon-pop recording ("Balloon Sounds" by
+AntumDeluge) was replaced by a Kenney `drop_003` clip pitched to five
+pentatonic notes for the `sfx.balloon` intent; neither replaced source has a
+remaining `CREDITS.md` entry [@credits]. See
+[Asset manifest tags](../reference/asset-manifest-tags) for the tag
+vocabulary the current set uses.
+
+The Kenney entry records the exact source URL and license URL alongside the
+terms honored, which is the pattern `CONTRIBUTING.md` asks every new
+third-party asset entry to follow before it is imported into the codebase.
 
 If you are changing what the Play Store listing itself says about licensing or
 credits, that text lives outside this reference; see

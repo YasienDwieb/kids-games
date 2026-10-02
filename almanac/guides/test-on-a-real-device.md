@@ -15,14 +15,23 @@ sources:
 ---
 
 Jest in this repo, configured in `jest.config.js` and `jest.setup.js`, mocks
-`@react-native-async-storage/async-storage`, `expo-audio`, and `expo-haptics`
-[@jest-config] [@jest-setup]. That makes it a fast, reliable tool for pure
-logic, config validation, and i18n key resolution, but it means Jest never
-actually renders a screen, plays a sound, or fires a haptic — those are all
-stubbed out. There is no automated end-to-end or screenshot/visual-regression
-suite anywhere in the repo. Confirming that a UI or behavior change actually
-works correctly, as opposed to type-checking or unit-testing cleanly, means
-running the app on a physical device.
+`@react-native-async-storage/async-storage`, `expo-audio`, `expo-haptics`,
+`react-native-worklets`, and `react-native-reanimated` [@jest-config]
+[@jest-setup]. That makes it a fast, reliable tool for pure logic, config
+validation, and i18n key resolution, but it means Jest never actually renders
+a screen, plays a sound, fires a haptic, or runs a worklet off the JS thread —
+those are all stubbed out. The `react-native-worklets`/`react-native-reanimated`
+mocks were added when the repo picked up `react-native-worklets` 0.10: that
+version installs its native module as a side effect of being imported, which
+crashes under plain Jest, so `jest.setup.js` points both packages at their own
+shipped mocks (`react-native-worklets/src/mock` and
+`react-native-reanimated/mock`) instead of writing a custom one [@jest-setup].
+See [Motion and game loop](../architecture/motion-and-game-loop) for what
+reanimated and worklets are used for in this repo. There is no automated
+end-to-end or screenshot/visual-regression suite anywhere in the repo.
+Confirming that a UI or behavior change actually works correctly, as opposed
+to type-checking or unit-testing cleanly, means running the app on a physical
+device.
 
 ## Preconditions
 

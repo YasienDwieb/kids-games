@@ -133,6 +133,12 @@ wrong if you skip them:
   Jest suite — any new color added to `ACCENTS`, or any component that draws
   text on an arbitrary fill, must clear it via `bestTextOn`, covered on the
   [design system](architecture/design-system) page.
+- [Mix paint, not light](decisions/color-mixer-pigment-mixing) explains why
+  Color Mixer's blending and color-matching math was replaced wholesale — an
+  RGB-average blend and a flat Euclidean distance threshold both produced
+  wrong colors and let one challenge accept another's answer. Read it before
+  touching `color-mixer`'s mixing engine, its `COLORS` palette, or its
+  saved-color schema.
 - [Motion and the game loop](architecture/motion-and-game-loop) covers
   `useGameLoop`, the SDK's UI-thread frame loop for continuous motion like
   falling items or a chasing basket. Only `candy-catch` is built on it so
