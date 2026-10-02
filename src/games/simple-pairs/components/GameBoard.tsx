@@ -33,12 +33,9 @@ export function GameBoard({ cards, onCardPress, disabled, columns }: GameBoardPr
   const widthSize = Math.floor(availableWidth / columns - LAYOUT.CARD_GAP);
   // The measured height already excludes the header; subtract our own vertical
   // padding (tighter in landscape, see containerLandscape).
-  // Until measured (boardH === 0), fall back to width-based sizing so there's no flash.
+  // Cards aren't rendered until measured (see below), so there's no oversized first frame.
   const verticalPadding = (landscape ? SPACING.xs : BOARD_PADDING) * 2;
-  const heightSize =
-    boardH > 0
-      ? Math.floor((boardH - verticalPadding) / rowCount - LAYOUT.CARD_GAP)
-      : widthSize;
+  const heightSize = Math.floor((boardH - verticalPadding) / rowCount - LAYOUT.CARD_GAP);
   const cardSize = Math.min(widthSize, heightSize, LAYOUT.CARD_SIZE);
 
   const rows: CardType[][] = [];
@@ -51,22 +48,24 @@ export function GameBoard({ cards, onCardPress, disabled, columns }: GameBoardPr
       style={[styles.container, landscape && styles.containerLandscape]}
       onLayout={onLayout}
     >
-      <View style={[styles.board, landscape && styles.boardLandscape]}>
-        {rows.map((row, rowIndex) => (
-          <View key={rowIndex} style={[styles.row, landscape && styles.rowLandscape]}>
-            {row.map((card) => (
-              <View key={card.id} style={{ marginHorizontal: LAYOUT.CARD_GAP / 2 }}>
-                <Card
-                  card={card}
-                  onPress={onCardPress}
-                  disabled={disabled}
-                  size={cardSize}
-                />
-              </View>
-            ))}
-          </View>
-        ))}
-      </View>
+      {boardH > 0 && (
+        <View style={[styles.board, landscape && styles.boardLandscape]}>
+          {rows.map((row, rowIndex) => (
+            <View key={rowIndex} style={[styles.row, landscape && styles.rowLandscape]}>
+              {row.map((card) => (
+                <View key={card.id} style={{ marginHorizontal: LAYOUT.CARD_GAP / 2 }}>
+                  <Card
+                    card={card}
+                    onPress={onCardPress}
+                    disabled={disabled}
+                    size={cardSize}
+                  />
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }

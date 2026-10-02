@@ -73,7 +73,6 @@ function GameContent({ difficulty, onBack }: { difficulty: Difficulty; onBack: (
 
       <WinScreen
         visible={gameState.isComplete}
-        moves={gameState.moves}
         stars={stars}
         onPlayAgain={handlePlayAgain}
         onPickLevel={onBack}

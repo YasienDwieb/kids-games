@@ -6,7 +6,6 @@ export const en = {
   },
   difficulty: {
     select: {
-      title: 'Simple Pairs',
       subtitle: 'How many pairs can you match?',
     },
     easy: 'Easy',
@@ -23,8 +22,6 @@ export const en = {
   },
   win: {
     title: 'You did it!',
-    movesOne: 'All pairs matched in {{count}} move',
-    movesOther: 'All pairs matched in {{count}} moves',
     playAgain: 'Play again',
     pickLevel: 'Pick a level',
   },

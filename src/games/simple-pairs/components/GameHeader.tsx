@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { I18nManager, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HudPill, hudTextStyle, IconButton } from '../../../components/common';
 import { SPACING, TOUCH_TARGET } from '../../../constants';
@@ -21,16 +21,16 @@ export function GameHeader({ found, total, moves, onReset }: GameHeaderProps) {
   const movesKey = moves === 1 ? 'header.movesOne' : 'header.movesOther';
 
   if (landscape) {
-    // Compact single-row layout: hud pills + reset button side by side.
-    // Leading spacer reserves room for the floating BackButton (64px + SPACING.md gap).
+    // Compact single row pinned to the end edge (like the other games' HUDs),
+    // leaving the start corner to the floating BackButton.
+    const endInset = I18nManager.isRTL ? insets.left : insets.right;
     return (
       <View
         style={[
           styles.wrapLandscape,
-          { paddingTop: insets.top + SPACING.xs, paddingStart: insets.left + SPACING.md },
+          { paddingTop: insets.top + SPACING.xs, paddingEnd: endInset + SPACING.md },
         ]}
       >
-        <View style={styles.backButtonSpacer} />
         <HudPill>
           <Text style={styles.icon}>🃏</Text>
           <Text style={hudTextStyle}>
@@ -87,12 +87,11 @@ const styles = StyleSheet.create({
   wrapLandscape: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
     gap: SPACING.sm,
-    paddingHorizontal: SPACING.md,
+    minHeight: TOUCH_TARGET.recommended,
     paddingBottom: SPACING.xs,
   },
-  // 64px (recommended touch target) + gap; ensures the floating BackButton doesn't overlap the first pill.
-  backButtonSpacer: { width: TOUCH_TARGET.recommended },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
