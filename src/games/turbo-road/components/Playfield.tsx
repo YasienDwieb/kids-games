@@ -120,7 +120,6 @@ export function Playfield({
   ui,
   anim,
   playerEmoji,
-  trim,
   onSteerTo,
 }: PlayfieldProps) {
   const { t } = useTranslation();
@@ -552,30 +551,6 @@ export function Playfield({
           {ui.shieldActive && (
             <View style={[styles.shieldBubble, { borderRadius: playerBox / 2 + 6 }]} />
           )}
-          {/* Twin exhaust trails in the chosen trim colour — the car's only
-              livery cue, and they flare gold under boost. */}
-          <View
-            style={[
-              styles.streak,
-              styles.streakLeft,
-              {
-                width: 5 * sprite,
-                height: (ui.boostActive ? 26 : 13) * sprite,
-                backgroundColor: ui.boostActive ? COLORS.gold : trim.base,
-              },
-            ]}
-          />
-          <View
-            style={[
-              styles.streak,
-              styles.streakRight,
-              {
-                width: 5 * sprite,
-                height: (ui.boostActive ? 26 : 13) * sprite,
-                backgroundColor: ui.boostActive ? COLORS.gold : trim.base,
-              },
-            ]}
-          />
           <Text style={[styles.playerCar, { fontSize: PLAYER_FONT * sprite }]}>
             {playerEmoji}
           </Text>
@@ -732,15 +707,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   playerCar: { transform: [{ rotate: '90deg' }] },
-  // Percentage insets so the trails stay pinned to the car at any sprite scale.
-  streak: {
-    position: 'absolute',
-    bottom: 4,
-    borderRadius: 3,
-    opacity: 0.9,
-  },
-  streakLeft: { left: '24%' },
-  streakRight: { right: '24%' },
 
   /* sky */
   sky: {

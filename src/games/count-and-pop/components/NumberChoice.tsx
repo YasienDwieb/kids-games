@@ -154,7 +154,7 @@ export function NumberChoice({
     : COLORS.ink;
 
   return (
-    <Animated.View style={{ transform: [{ scale: popScale }] }}>
+    <Animated.View style={[styles.cell, { transform: [{ scale: popScale }] }]}>
       <Pressable
         onPress={disabled ? undefined : onPress}
         onPressIn={pressIn}
@@ -204,11 +204,15 @@ export function NumberChoice({
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
-  socket: {
+  // Row child: flex sizes the width here, not inside the column wrapper
+  // (flex on the socket collapsed it vertically to just the EDGE padding).
+  cell: {
+    flex: 1,
     minWidth: 72,
+  },
+  socket: {
     borderRadius: BORDER_RADIUS.btn,
     paddingBottom: EDGE,
-    flex: 1,
   },
   face: {
     borderRadius: BORDER_RADIUS.btn,

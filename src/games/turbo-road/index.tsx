@@ -62,7 +62,6 @@ function Race({
   theme,
   playerEmoji,
   car,
-  trim,
   control,
   onFinish,
   onExit,
@@ -72,7 +71,6 @@ function Race({
   theme: RoadTheme;
   playerEmoji: string;
   car: CarDef;
-  trim: TrimDef;
   control: ControlMode;
   onFinish: (result: RaceResult) => void;
   onExit: () => void;
@@ -116,7 +114,6 @@ function Race({
         ui={ui}
         anim={anim}
         playerEmoji={playerEmoji}
-        trim={trim}
         onSteerTo={steerTo}
       />
       {/* Hud is not inset-aware; float it inside the safe area over the
@@ -300,7 +297,6 @@ export default function TurboRoadGame() {
           theme={theme}
           playerEmoji={car.emoji}
           car={car}
-          trim={trim}
           control={prefs.control}
           onFinish={handleFinish}
           onExit={handleExitRace}
