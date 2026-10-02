@@ -15,7 +15,6 @@ export const ar: GameTranslations = {
   },
   difficulty: {
     select: {
-      title: 'الذاكرة الممتعة',
       subtitle: 'كم بطاقة متطابقة تستطيع أن تجد؟',
     },
     easy: 'سهل',
@@ -32,8 +31,6 @@ export const ar: GameTranslations = {
   },
   win: {
     title: 'أحسنت!',
-    movesOne: 'طابقت كل البطاقات في {{count}} خطوة',
-    movesOther: 'طابقت كل البطاقات في {{count}} خطوات',
     playAgain: 'العب مرة ثانية',
     pickLevel: 'اختر مستوى',
   },

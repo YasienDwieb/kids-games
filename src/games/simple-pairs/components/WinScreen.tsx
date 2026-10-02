@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Animated, Dimensions, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { PressableButton, Star } from '../../../components/common';
 import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING } from '../../../constants';
 import { useTranslation } from '@/sdk';
 
 type WinScreenProps = {
   visible: boolean;
-  moves: number;
   stars: number;
   onPlayAgain: () => void;
   onPickLevel: () => void;
@@ -53,12 +52,14 @@ function ConfettiPiece({ index }: { index: number }) {
   );
 }
 
-export function WinScreen({ visible, moves, stars, onPlayAgain, onPickLevel }: WinScreenProps) {
+export function WinScreen({ visible, stars, onPlayAgain, onPickLevel }: WinScreenProps) {
   const overlayOpacity = useRef(new Animated.Value(0)).current;
   const pop = useRef(new Animated.Value(0)).current;
   const starAnims = useRef([0, 1, 2].map(() => new Animated.Value(0))).current;
   const pulse = useRef(new Animated.Value(1)).current;
   const { t } = useTranslation();
+  const { width, height } = useWindowDimensions();
+  const landscape = width > height;
 
   useEffect(() => {
     if (!visible) {
@@ -90,8 +91,6 @@ export function WinScreen({ visible, moves, stars, onPlayAgain, onPickLevel }: W
 
   if (!visible) return null;
 
-  const movesKey = moves === 1 ? 'win.movesOne' : 'win.movesOther';
-
   return (
     <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
       <View style={styles.confettiLayer} pointerEvents="none">
@@ -100,22 +99,35 @@ export function WinScreen({ visible, moves, stars, onPlayAgain, onPickLevel }: W
         ))}
       </View>
 
-      <Animated.View style={[styles.card, { transform: [{ scale: pop }] }]}>
-        <Animated.Text style={[styles.hero, { transform: [{ scale: pulse }] }]}>🎉</Animated.Text>
-        <Text style={styles.title}>{t('simple-pairs:win.title')}</Text>
-        <Text style={styles.subtitle}>
-          {t(`simple-pairs:${movesKey}`, { count: moves })}
-        </Text>
+      {/* Landscape splits the card into result | actions (as turbo-road does) —
+          stacked, the card is taller than a landscape screen and clips. */}
+      <Animated.View
+        style={[styles.card, landscape && styles.cardLandscape, { transform: [{ scale: pop }] }]}
+      >
+        <View style={landscape ? styles.resultColumn : styles.resultStacked}>
+          <Animated.Text
+            style={[
+              styles.hero,
+              landscape && styles.heroLandscape,
+              { transform: [{ scale: pulse }] },
+            ]}
+          >
+            🎉
+          </Animated.Text>
+          <Text style={[styles.title, landscape && styles.titleLandscape]}>
+            {t('simple-pairs:win.title')}
+          </Text>
 
-        <View style={styles.starsRow}>
-          {starAnims.map((a, i) => (
-            <Animated.View key={i} style={{ transform: [{ scale: a }] }}>
-              <Star size={i === 1 ? 52 : 44} filled={i < stars} />
-            </Animated.View>
-          ))}
+          <View style={[styles.starsRow, landscape && styles.starsRowLandscape]}>
+            {starAnims.map((a, i) => (
+              <Animated.View key={i} style={{ transform: [{ scale: a }] }}>
+                <Star size={(landscape ? 0.8 : 1) * (i === 1 ? 52 : 44)} filled={i < stars} />
+              </Animated.View>
+            ))}
+          </View>
         </View>
 
-        <View style={styles.actions}>
+        <View style={[styles.actions, landscape && styles.actionsLandscape]}>
           <PressableButton
             label={t('simple-pairs:win.playAgain')}
             accent="green"
@@ -140,7 +152,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 30,
+    // Above the board/HUD but below the floating BackButton (zIndex 10), so
+    // back stays tappable on the win screen.
+    zIndex: 5,
     padding: 26,
   },
   confettiLayer: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
@@ -156,26 +170,33 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     ...SHADOWS.lg,
   },
+  cardLandscape: {
+    maxWidth: 560,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingVertical: SPACING.lg,
+    gap: SPACING.lg,
+  },
+  resultStacked: { alignItems: 'center', width: '100%' },
+  resultColumn: { flex: 1, alignItems: 'center' },
   hero: { fontSize: 64, lineHeight: 70 },
+  heroLandscape: { fontSize: 48, lineHeight: 56 },
   title: {
     fontFamily: FONTS.displayBold,
     fontSize: 28,
     color: COLORS.ink,
     marginTop: 10,
-  },
-  subtitle: {
-    fontFamily: FONTS.body,
-    fontSize: 15,
-    color: COLORS.inkSoft,
     textAlign: 'center',
-    marginTop: 2,
   },
+  titleLandscape: { fontSize: 24, marginTop: SPACING.xs },
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginVertical: 22,
   },
+  starsRowLandscape: { marginTop: SPACING.md, marginBottom: 0 },
   actions: { width: '100%', gap: 10 },
+  actionsLandscape: { width: 220 },
   action: { width: '100%' },
 });

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Difficulty } from '../types';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from '../constants';
 import { PressableButton, EmojiFrame } from '../../../components/common';
-import { COLORS, FONTS, SPACING } from '../../../constants';
+import { COLORS, FONTS, SPACING, TOUCH_TARGET } from '../../../constants';
 import type { AccentName } from '../../../constants';
 import { useTranslation } from '@/sdk';
 
@@ -24,21 +24,24 @@ export function DifficultySelect({ onSelect }: DifficultySelectProps) {
   const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
+  // Landscape: clear the floating BackButton (start inset + md + 64 + gap) on
+  // both sides so the grid stays centered and never slides under it.
+  const sideGutter =
+    Math.max(insets.left, insets.right) + SPACING.md + TOUCH_TARGET.recommended + SPACING.md;
 
   return (
     <View
       style={[
         styles.container,
-        {
-          paddingTop: landscape
-            ? insets.top + SPACING.sm
-            : insets.top + SPACING.xxl,
-        },
+        landscape
+          ? {
+              paddingTop: insets.top + SPACING.xs,
+              paddingBottom: insets.bottom + SPACING.sm,
+              paddingHorizontal: sideGutter,
+            }
+          : { paddingTop: insets.top + SPACING.xxl },
       ]}
     >
-      <Text style={[styles.title, landscape && styles.titleLandscape]}>
-        {t('simple-pairs:difficulty.select.title')}
-      </Text>
       {!landscape && (
         <Text style={styles.subtitle}>{t('simple-pairs:difficulty.select.subtitle')}</Text>
       )}
@@ -87,38 +90,32 @@ const styles = StyleSheet.create({
     backgroundColor: GAME_COLORS.background,
     paddingHorizontal: 22,
   },
-  title: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 30,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-  titleLandscape: {
-    fontSize: 22,
-    marginBottom: SPACING.xs,
-  },
   subtitle: {
     fontFamily: FONTS.body,
     fontSize: 16,
     color: COLORS.inkSoft,
     textAlign: 'center',
-    marginTop: 6,
     marginBottom: 22,
   },
   options: {
     gap: 14,
     paddingBottom: SPACING.xl,
   },
-  // Landscape: 2-column grid so all 4 difficulty buttons fit without scrolling.
+  // Landscape: centered 2x2 grid, capped so buttons don't stretch edge to edge.
   optionsLandscape: {
+    flexGrow: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'space-evenly',
+    alignContent: 'center',
+    justifyContent: 'space-between',
+    rowGap: SPACING.md,
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+    paddingBottom: 0,
   },
   button: { width: '100%' },
-  // Landscape: each button takes ~48% of the width so 2 fit per row.
-  buttonLandscape: { width: '47%' },
+  buttonLandscape: { width: '48.5%' },
   labelCol: { gap: 2 },
   levelName: {
     fontFamily: FONTS.display,

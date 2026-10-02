@@ -44,7 +44,6 @@ const KEYS: string[] = [
   'simple-pairs:header.movesOne',
   'simple-pairs:header.movesOther',
   'simple-pairs:win.title',
-  'simple-pairs:win.movesOther',
   // color-mixer (incl. dynamic key families)
   'color-mixer:meta.name',
   'color-mixer:title',
