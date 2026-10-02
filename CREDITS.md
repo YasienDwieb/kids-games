@@ -18,7 +18,7 @@ license. Add an entry **before** importing any new third-party asset.
 ### Kenney — feedback SFX
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:
-  `pop` (drop_*), `success` (confirmation_*), `wrong` (error_*) from *Interface Sounds*;
+  `pop` (drop_*) and `balloon` (drop_003 pitched to 5 pentatonic notes), `success` (confirmation_*), `wrong` (error_*) from *Interface Sounds*;
   `win` + `transition` (jingles_PIZZI*/STEEL*) from *Music Jingles*; `powerup`
   (phaserUp*) from *Digital Audio*; `hit` (impactGeneric_light_*) from *Impact Sounds*.
 - **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/interface-sounds,
@@ -27,12 +27,3 @@ license. Add an entry **before** importing any new third-party asset.
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 - **Terms honored:** no attribution required; credited here as a courtesy. Clips were
   converted to WAV, trimmed and loudness-normalized (CC0 permits modification).
-
-### Balloon pop — OpenGameArt
-
-- **Used for:** `sfx.balloon` (`src/sdk/assets/audio/cc0/balloon_pop.wav`), Balloon Archer.
-- **Source:** "Balloon Sounds" by AntumDeluge (pop recorded by Gniffelbaf) —
-  https://opengameart.org/content/balloon-sounds
-- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
-- **Terms honored:** no attribution required; credited here as a courtesy. Trimmed to
-  0.4 s with a fade-out, converted to WAV and loudness-normalized.

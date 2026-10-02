@@ -172,7 +172,7 @@ play('hit');       // bump / collision / take damage
 
 ### The controlled tag vocabulary (from manifest.ts)
 
-SFX are soft CC0 clips from Kenney + OpenGameArt in `src/sdk/assets/audio/cc0/` (credited in root `CREDITS.md`). The old 8-bit "Sound Effects Mini Pack 1.5" (incl. jump/explosion/laser/random) was removed for being harsh — if a game needs one of those mechanics, add a soft CC0 clip (Kenney's packs are a good first stop) rather than reviving it. Prefer soft, tonal clips with little energy above 4 kHz — harsh/shrill sounds were the main complaint about the original set. Ship new clips as WAV (Ogg Vorbis does not play on iOS). Each intent below carries **several interchangeable variants** that are picked at random on play. All clips are normalized to one loudness (−25 dBFS active RMS, peak ≤ −6 dBFS); normalize any new clip to the same level so no sound jumps out.
+SFX are soft CC0 clips from Kenney in `src/sdk/assets/audio/cc0/` (credited in root `CREDITS.md`). The old 8-bit "Sound Effects Mini Pack 1.5" (incl. jump/explosion/laser/random) was removed for being harsh — if a game needs one of those mechanics, add a soft CC0 clip (Kenney's packs are a good first stop) rather than reviving it. Prefer soft, tonal clips with little energy above 4 kHz — harsh/shrill sounds were the main complaint about the original set. Ship new clips as WAV (Ogg Vorbis does not play on iOS). Each intent below carries **several interchangeable variants** that are picked at random on play. All clips are normalized to one loudness (−25 dBFS active RMS, peak ≤ −6 dBFS); normalize any new clip to the same level so no sound jumps out.
 
 | Asset id        | Tags                                            | Meaning |
 |-----------------|-------------------------------------------------|---------|
@@ -182,7 +182,7 @@ SFX are soft CC0 clips from Kenney + OpenGameArt in `src/sdk/assets/audio/cc0/` 
 | `sfx.wrong`     | `wrong`, `mismatch`, `error`, `incorrect`, `lose` | Mismatch, wrong choice |
 | `sfx.powerup`   | `powerup`, `boost`, `upgrade`                   | Power-up / boost collected |
 | `sfx.transition`| `transition`, `teleport`, `whoosh`, `appear`, `next` | Level start / next / retry (short rising pluck) |
-| `sfx.balloon`   | `balloon`                                       | Popping a balloon (real recorded pop) |
+| `sfx.balloon`   | `balloon`                                       | Popping a balloon (soft bloop, random pentatonic note — repeated pops form a tune) |
 | `sfx.hit`       | `hit`, `bump`, `thud`, `hurt`, `damage`         | Collision, bump, taking damage |
 
 **Intent lookup:** pass any tag as the intent string to `play()` or `pickAsset()`. For example, `play('match')` resolves to `sfx.success` because `match` is in its tags. An unknown intent plays nothing (silent, no error).

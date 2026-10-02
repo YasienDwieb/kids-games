@@ -1,6 +1,6 @@
 import type { AssetEntry } from './types';
 
-// Feedback sounds are soft CC0 clips from Kenney + OpenGameArt (see CREDITS.md;
+// Feedback sounds are soft CC0 clips from Kenney (see CREDITS.md;
 // original file names kept under audio/cc0/).
 // Each entry maps an intent-tag vocabulary to a kid-friendly sound. Most intents
 // carry several interchangeable variants; useSound().play(<tag>) picks one at
@@ -62,8 +62,17 @@ export const ASSETS = {
     type: 'audio',
     tags: ['transition', 'teleport', 'whoosh', 'appear', 'next'],
   },
+  // A soft tonal bloop on a major-pentatonic note per pop, not a realistic bang
+  // (noisy when repeated): a level fires many pops, and random notes from this
+  // scale always sound consonant together. 2 dB under the other SFX.
   'sfx.balloon': {
-    modules: [require('./audio/cc0/balloon_pop.wav')],
+    modules: [
+      require('./audio/cc0/balloon_note1.wav'),
+      require('./audio/cc0/balloon_note2.wav'),
+      require('./audio/cc0/balloon_note3.wav'),
+      require('./audio/cc0/balloon_note4.wav'),
+      require('./audio/cc0/balloon_note5.wav'),
+    ],
     type: 'audio',
     tags: ['balloon'],
   },
