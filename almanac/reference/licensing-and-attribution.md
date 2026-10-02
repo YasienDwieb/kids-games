@@ -12,6 +12,9 @@ sources:
   - id: credits
     type: file
     path: CREDITS.md
+  - id: animal-credits
+    type: file
+    path: src/sdk/assets/audio/animals/CREDITS.md
 ---
 
 This page is lookup material for one question: what can you legally do with this
@@ -75,12 +78,26 @@ current build already trades under a different, unrelated brand.
 bundled into the app, and it is authoritative for what license terms apply to
 each one individually — the Apache-2.0 grant on the repository's own code does
 not automatically relicense assets the project merely bundled from elsewhere
-[@credits].
+[@credits]. The Animal Safari sound clips keep a second, separate credits log
+at `src/sdk/assets/audio/animals/CREDITS.md` instead of an entry in the root
+file, since it needs a per-clip table (one row per animal, each with its own
+Wikimedia Commons source file) rather than the single "used for" paragraph the
+root file's entries use [@animal-credits].
 
 | Asset | Bundled at | License | Attribution required? |
 |---|---|---|---|
 | Google Noto Emoji artwork | `src/sdk/assets/emoji/png/`, resolved via `src/sdk/assets/emoji/images.ts` and rendered through the `EmojiImage` SDK primitive | Apache License 2.0 | Yes — commercial use is permitted and there is no share-alike obligation, but the project honors attribution via the `CREDITS.md` entry itself [@credits] |
 | Kenney feedback SFX and jingles (Interface Sounds, Music Jingles, Digital Audio, Impact Sounds) | `src/sdk/assets/audio/cc0/`, played through `useSound()` for `pop`/`success`/`win`/`wrong`/`powerup`/`transition`/`hit`/`balloon`, plus the twelve `jingle.*` per-game win-jingle assets | CC0 1.0 public domain dedication | No — no attribution required; credited as a courtesy. Clips were converted to WAV, trimmed, and loudness-normalized, which CC0 permits [@credits] |
+| Animal Safari sound clips (lion, elephant, dog, cat, frog, horse, sheep, rooster, duck, bird, bee) | `src/sdk/assets/audio/animals/`, played by literal id (`useSound().play('animal.lion')`) in Animal Safari's "which sound" rounds | CC0 or Public Domain per clip (recorded individually on Wikimedia Commons) | No — recorded here as a courtesy, same as the Kenney set [@animal-credits] |
+
+The animal clips were originally Ogg Vorbis and were re-encoded to AAC
+(`.m4a`, mono 96 kbps) because iOS only plays Ogg starting at version 18.4 and
+this app supports older iPhones; CC0/public-domain terms permit that kind of
+re-encoding the same way they already permitted the trimming and fade-in/out
+each clip received [@animal-credits]. See
+[Add a game asset](../guides/add-a-game-asset) for the resulting rule on new
+audio: short SFX ship as WAV, longer clips ship as `.m4a`, and Ogg is never
+used for a new asset.
 
 Every bundled audio clip is now sourced from Kenney. Two earlier
 non-Kenney audio sources were replaced, not merely trimmed: an 8-bit chiptune

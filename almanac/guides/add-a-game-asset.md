@@ -24,6 +24,12 @@ sources:
   - id: images-test
     type: file
     path: src/sdk/assets/emoji/__tests__/images.test.ts
+  - id: skill-md
+    type: file
+    path: .claude/skills/kids-games-dev/SKILL.md
+  - id: animal-credits
+    type: file
+    path: src/sdk/assets/audio/animals/CREDITS.md
 ---
 
 "Add a game asset" covers two different procedures in this repo that share one
@@ -56,8 +62,16 @@ it's imported [@credits].
    project replaced an entire 8-bit SFX pack for sounding harsh to children —
    and normalize any new clip to the same loudness the rest of the manifest
    uses (−25 dBFS active RMS, peak ≤ −6 dBFS) so it doesn't jump out against
-   the others [@manifest]. Ship new clips as WAV; Ogg Vorbis does not play on
-   iOS.
+   the others [@manifest]. Ship short SFX as WAV and longer clips (several
+   seconds or more, like a recorded animal sound) as AAC `.m4a`. Never ship
+   Ogg Vorbis: iOS only plays Ogg starting at version 18.4, and this app
+   supports older iPhones [@skill-md]. The animal-sound clips played by id in
+   Animal Safari's "which sound" rounds (`animal.lion`, `animal.dog`, ...)
+   were originally Ogg and were re-encoded to `.m4a` for exactly this reason
+   — re-encoding a CC0/public-domain clip to a different container does not
+   change its license [@animal-credits]. See
+   [Licensing and attribution](../reference/licensing-and-attribution) for
+   where that clip set's credits live.
 3. Games play the new sound only by intent string, never by file path or
    manifest key: `useSound().play('<tag>')`. `useSound` resolves the tag to a
    random module variant, respects the user's sound and haptics settings, and

@@ -39,6 +39,9 @@ sources:
   - id: win-jingles-test
     type: file
     path: src/games/__tests__/winJingles.test.ts
+  - id: animal-credits
+    type: file
+    path: src/sdk/assets/audio/animals/CREDITS.md
 ---
 
 Games never load a sound file or ask for a specific voice directly. They call
@@ -82,7 +85,13 @@ clips keyed like `'animal.lion'`, each with a single fixed module rather than
 several variants, used by name (`useSound().play('animal.lion')`) in Animal
 Safari's "which sound" rounds [@manifest-ts]. These entries don't participate
 in the random-variant behavior at all, since each has only one clip in its
-`modules` array.
+`modules` array. Each clip ships as AAC `.m4a`, not the Ogg Vorbis format it
+was originally sourced in, because iOS only plays Ogg starting at version
+18.4 and this app supports older iPhones; see
+[Licensing and attribution](../reference/licensing-and-attribution) for the
+per-clip credits and the [Add a game asset](../guides/add-a-game-asset) guide
+for the WAV-vs-`.m4a` rule any new audio asset should follow
+[@animal-credits].
 
 ## `useSound`: one-shot effects
 
