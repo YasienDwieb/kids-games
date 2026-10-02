@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
   mazeColumn: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   // Side panel: fixed enough to hold the HUD controls; grows no wider than needed.
   sidePanel: { justifyContent: 'center', alignItems: 'center' },
-  center: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  center: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   mouse: { position: 'absolute', top: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
   // Applied to the play area when RTL is active so the maze, mouse, and touch
   // coordinates all stay in the same physical-left frame.

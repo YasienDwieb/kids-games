@@ -66,10 +66,10 @@ const ParallaxBackground: React.FC<{ progress: number; config: BackdropConfig }>
 };
 
 const styles = StyleSheet.create({
-  root: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  root: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
   // Pin LTR so RN doesn't half-mirror the translate math under RTL.
-  world: { ...StyleSheet.absoluteFillObject, direction: 'ltr' },
-  layer: { ...StyleSheet.absoluteFillObject },
+  world: { ...StyleSheet.absoluteFill, direction: 'ltr' },
+  layer: { ...StyleSheet.absoluteFill },
   strip: { position: 'absolute', top: 0, bottom: 0 },
 });
 

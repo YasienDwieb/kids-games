@@ -82,7 +82,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.canvas },
   fill: { flex: 1 },
-  rest: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  rest: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   restText: {
     fontFamily: FONTS.displayBold,
     fontSize: FONT_SIZES.xl,
