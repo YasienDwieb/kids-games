@@ -11,7 +11,6 @@ registerGame({
   component: CountAndPopGame,
   backgroundColor: COLORS.canvas, // soft pink (ACCENTS.pink.tint)
   accent: 'pink',
-  sounds: { 'sfx.win': 'jingle.pizzi-06' },
   order: 90,
   tags: ['numbers', 'math', 'counting', 'educational'],
   layout: { mode: 'shell' },

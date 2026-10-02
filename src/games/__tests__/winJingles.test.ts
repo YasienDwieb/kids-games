@@ -7,6 +7,9 @@ const GAMES_DIR = join(__dirname, '..');
 const registered = [...readFileSync(join(GAMES_DIR, 'index.ts'), 'utf8').matchAll(/import '\.\/([\w-]+)\/config'/g)].map(
   (m) => m[1],
 );
+// Endless games that never play 'win' (they only play 'success'), so a jingle would be dead config.
+const NO_WIN_SOUND = ['count-and-pop'];
+const withWin = registered.filter((g) => !NO_WIN_SOUND.includes(g));
 
 function winJingle(game: string): string | undefined {
   const src = readFileSync(join(GAMES_DIR, game, 'config.ts'), 'utf8');
@@ -20,10 +23,14 @@ describe('per-game win jingles', () => {
   });
 
   it('gives every registered game its own jingle', () => {
-    const jingles = registered.map(winJingle);
+    const jingles = withWin.map(winJingle);
     for (const [i, j] of jingles.entries()) {
-      expect([registered[i], j && j in ASSETS]).toEqual([registered[i], true]);
+      expect([withWin[i], j && j in ASSETS]).toEqual([withWin[i], true]);
     }
     expect(new Set(jingles).size).toBe(jingles.length);
+  });
+
+  it('keeps games that never play a win sound free of a dead override', () => {
+    for (const g of NO_WIN_SOUND) expect([g, winJingle(g)]).toEqual([g, undefined]);
   });
 });
