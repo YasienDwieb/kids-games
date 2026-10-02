@@ -75,8 +75,7 @@ export default function MouseMazeGame() {
     const res = tryStep(target);
     if (!res.cell) return;
 
-    play('pop');
-    if (res.collected) play('success');
+    play(res.collected ? 'success' : 'pop');
 
     Animated.timing(pan, {
       toValue: cellToXY(res.cell),
