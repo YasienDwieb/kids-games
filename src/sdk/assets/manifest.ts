@@ -85,6 +85,70 @@ export const ASSETS = {
     type: 'audio',
     tags: ['hit', 'bump', 'thud', 'hurt', 'damage'],
   },
+  // Per-game win jingles (Kenney Music Jingles): the four rising/happy melodies
+  // (02, 06, 10, 15) on three instruments. A game picks one through its config's
+  // `sounds: { 'sfx.win': 'jingle.<id>' }`, so every game has its own fanfare.
+  // Selected by id only, never by intent — hence no tags.
+  'jingle.pizzi-02': {
+    modules: [require('./audio/cc0/jingles_PIZZI02.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.pizzi-06': {
+    modules: [require('./audio/cc0/jingles_PIZZI06.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.pizzi-10': {
+    modules: [require('./audio/cc0/jingles_PIZZI10.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.pizzi-15': {
+    modules: [require('./audio/cc0/jingles_PIZZI15.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.steel-02': {
+    modules: [require('./audio/cc0/jingles_STEEL02.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.steel-06': {
+    modules: [require('./audio/cc0/jingles_STEEL06.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.steel-10': {
+    modules: [require('./audio/cc0/jingles_STEEL10.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.steel-15': {
+    modules: [require('./audio/cc0/jingles_STEEL15.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.sax-02': {
+    modules: [require('./audio/cc0/jingles_SAX02.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.sax-06': {
+    modules: [require('./audio/cc0/jingles_SAX06.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.sax-10': {
+    modules: [require('./audio/cc0/jingles_SAX10.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.sax-15': {
+    modules: [require('./audio/cc0/jingles_SAX15.wav')],
+    type: 'audio',
+    tags: [],
+  },
   'sfx.engine': {
     modules: [require('./audio/EngineLoop.wav')],
     type: 'audio',

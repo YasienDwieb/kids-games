@@ -11,6 +11,7 @@ registerGame({
   component: CandyCatchGame,
   backgroundColor: COLORS.canvas,
   accent: 'pink',
+  sounds: { 'sfx.win': 'jingle.sax-02' },
   order: 130,
   tags: ['arcade', 'reflex', 'catching', 'fun'],
   layout: { mode: 'bare' },

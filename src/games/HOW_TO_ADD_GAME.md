@@ -33,6 +33,7 @@ registerGame({
   tags: ['matching', 'colors'],
   version: '1.0.0',
   layout: { mode: 'shell' },  // or 'bare' — see Layout section below
+  sounds: { 'sfx.win': 'jingle.sax-10' }, // this game's own win jingle — pick one no other game uses
 });
 ```
 

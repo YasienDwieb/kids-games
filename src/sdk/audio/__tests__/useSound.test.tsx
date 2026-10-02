@@ -2,18 +2,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAudioPlayer } from 'expo-audio';
 import { act, create } from 'react-test-renderer';
 import { useSound } from '../useSound';
+import { SoundOverridesContext } from '../SoundOverridesContext';
+import { getAsset } from '../../assets/query';
+import type { SoundOverrides } from '../../assets/query';
 import { settingsStore, DEFAULT_SETTINGS } from '../../settings/store';
 
 type Api = ReturnType<typeof useSound>;
 
-function mountSound(): { api: () => Api } {
+function mountSound(overrides: SoundOverrides = {}): { api: () => Api } {
   let latest: Api | null = null;
   function Probe() {
     latest = useSound();
     return null;
   }
   act(() => {
-    create(<Probe />);
+    create(
+      <SoundOverridesContext.Provider value={overrides}>
+        <Probe />
+      </SoundOverridesContext.Provider>,
+    );
   });
   return { api: () => latest as Api };
 }
@@ -114,5 +121,16 @@ describe('useSound', () => {
     });
 
     expect((createAudioPlayer as jest.Mock).mock.calls.length).toBe(afterPrewarm);
+  });
+
+  it("plays the game's override instead of the shared asset", async () => {
+    const { api } = mountSound({ 'sfx.win': 'jingle.steel-15' });
+    await settle();
+
+    act(() => {
+      api().play('win');
+    });
+
+    expect(createAudioPlayer).toHaveBeenCalledWith(getAsset('jingle.steel-15').modules[0]);
   });
 });

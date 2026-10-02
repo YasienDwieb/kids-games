@@ -35,6 +35,7 @@ This skill covers how to build, scaffold, and extend games in the Kids Games Exp
 **Audio**
 - `useSound()` — hook returning `{ play(intent, options?) }`. Plays the best-match asset for a string intent. Respects `soundEnabled` setting. Triggers haptics if `hapticsEnabled` is true and `options.haptic !== false`.
 - `PlayOptions` (type) — `{ haptic?: boolean }`
+- `SoundOverrides` (type) / `SoundOverridesContext` — per-game asset swaps from `GameConfig.sounds`; `GamePlayerScreen` provides them, so every `play()` in the game (including shared hooks) uses the game's own jingle. Games never touch the context directly.
 
 **Storage**
 - `createStore<T>(namespace, defaultValue)` — create a typed AsyncStorage-backed store with `get()`, `set(value)`, `subscribe(fn)` API
@@ -184,6 +185,9 @@ SFX are soft CC0 clips from Kenney in `src/sdk/assets/audio/cc0/` (credited in r
 | `sfx.transition`| `transition`, `teleport`, `whoosh`, `appear`, `next` | Level start / next / retry (short rising pluck) |
 | `sfx.balloon`   | `balloon`                                       | Popping a balloon (soft bloop, random pentatonic note — repeated pops form a tune) |
 | `sfx.hit`       | `hit`, `bump`, `thud`, `hurt`, `damage`         | Collision, bump, taking damage |
+| `jingle.*`      | *(none — selected by id)*                       | 12 per-game win jingles `jingle.{pizzi,steel,sax}-{02,06,10,15}`; set one in config `sounds` |
+
+**Every game has its own win jingle.** In `config.ts` set `sounds: { 'sfx.win': 'jingle.<id>' }` with a jingle no other game uses (`src/games/__tests__/winJingles.test.ts` fails otherwise). Keep calling `play('win')` — the override does the rest. If all 12 are taken, add another rising/happy Kenney *Music Jingles* clip (normalized, WAV) as a new `jingle.*` entry.
 
 **Intent lookup:** pass any tag as the intent string to `play()` or `pickAsset()`. For example, `play('match')` resolves to `sfx.success` because `match` is in its tags. An unknown intent plays nothing (silent, no error).
 
@@ -337,6 +341,7 @@ A game whose `ageRange` overlaps a band appears in that band's filter. To overri
 | `accent` | `AccentName` | Design-system accent for the home tile + themable controls (falls back to a derived accent) |
 | `tags` | `string[]` | Searchable tags |
 | `layout` | `GameLayoutOptions` | `mode: 'shell'|'bare'`, `title`, `showBack` |
+| `sounds` | `SoundOverrides` | Per-game asset swaps, e.g. `{ 'sfx.win': 'jingle.sax-10' }` — set a unique win jingle for every game |
 | `bands` | `string[]` | Override auto-derived age bands |
 | `version` | `string` | Semver string |
 | `author` | `string` | Game author name |
@@ -442,6 +447,7 @@ Copy and paste this into your PR description or working notes:
 [ ] Fill in name, description, icon, backgroundColor, ageRange
 [ ] Import only from @/sdk (never from another game or deep src/ paths)
 [ ] Pick sounds by intent: play('pop'), play('success'), play('win'), play('wrong')
+[ ] Set a unique win jingle: sounds: { 'sfx.win': 'jingle.<id>' } in config.ts
 [ ] Choose layout mode: omit for shell (default), set layout: { mode: 'bare' } for full-canvas
 [ ] If using shell mode, use useGameShell() for setScore / showOverlay / hideOverlay
 [ ] i18n: create locales/en.ts (+ GameTranslations type), locales/ar.ts, i18n.ts (§7)

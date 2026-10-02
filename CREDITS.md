@@ -19,7 +19,7 @@ license. Add an entry **before** importing any new third-party asset.
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:
   `pop` (drop_*) and `balloon` (drop_003 pitched to 5 pentatonic notes), `success` (confirmation_*), `wrong` (error_*) from *Interface Sounds*;
-  `win` + `transition` (jingles_PIZZI*/STEEL*) from *Music Jingles*; `powerup`
+  `win`, per-game win jingles + `transition` (jingles_PIZZI*/STEEL*/SAX*) from *Music Jingles*; `powerup`
   (phaserUp*) from *Digital Audio*; `hit` (impactGeneric_light_*) from *Impact Sounds*.
 - **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/interface-sounds,
   https://kenney.nl/assets/music-jingles, https://kenney.nl/assets/digital-audio,

@@ -37,7 +37,7 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 All games import exclusively from `@/sdk`. The SDK exports:
 - **Config & registry**: `registerGame`, `getGame`, `getAllGames`, `getGamesForAge`, `validateGameConfig`, `GameConfig` type, `GameRegistry` type
 - **Layout**: `GameShell` (title bar + back button + overlay slots), `GameOverlay`, `useGameShell()` hook → `{ setScore, showOverlay, hideOverlay }`, `GameShellApi`/`GameShellProps`/`OverlaySlot` types
-- **Audio**: `useSound()` → `{ play(intent, options?) }` — plays assets by intent string, respects settings/haptics; `PlayOptions` type
+- **Audio**: `useSound()` → `{ play(intent, options?) }` — plays assets by intent string, respects settings/haptics; `PlayOptions` type. Per-game swaps via `GameConfig.sounds` (`{ 'sfx.win': 'jingle.sax-10' }`), provided to `useSound` through `SoundOverridesContext` by `GamePlayerScreen`; `SoundOverrides` type
 - **Storage**: `createStore<T>(namespace, defaultValue)` → `Store<T>` with `get`/`set`/`subscribe`
 - **Progress & levels**: `levelsFromList`/`levelsFromGenerator` → `LevelSource<T>`; `useLevels({ gameId, source })` → `{ status, level, data, score, isLast, start, startOver, advance, addScore, goTo }`; `createProgressStore`, `DEFAULT_PROGRESS`, `Progress`; `resumeStatusFor`, `ResumeStatus`; `ResumePrompt` (Continue/Start-over UI). Opt-in; coarse `{ level, score }` checkpoint persisted under `kg:progress:<gameId>`.
 - **Settings**: `useSettings()` hook, `settingsStore`, `DEFAULT_SETTINGS`, `Settings` type (`soundEnabled`, `hapticsEnabled`, `ageBand`, `language`)
@@ -73,6 +73,7 @@ Shared audio assets — soft CC0 clips from Kenney in `src/sdk/assets/audio/cc0/
 - `sfx.transition` — tags: `transition`, `teleport`, `whoosh`, `appear`, `next`
 - `sfx.balloon` — tags: `balloon` (soft pentatonic bloop per pop)
 - `sfx.hit` — tags: `hit`, `bump`, `thud`, `hurt`, `damage`
+- `jingle.*` — 12 per-game win jingles `jingle.{pizzi,steel,sax}-{02,06,10,15}` (no tags; chosen by id in a game's `sounds` config). **Every game sets its own distinct `sounds: { 'sfx.win': 'jingle.…' }`** — guarded by `src/games/__tests__/winJingles.test.ts`.
 
 To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts` with a `modules: [...]` list (one or more variants).
 
