@@ -38,7 +38,6 @@ export const ASSETS = {
   'sfx.wrong': {
     modules: [
       require('./audio/cc0/error_007.wav'),
-      require('./audio/cc0/error_008.wav'),
     ],
     type: 'audio',
     tags: ['wrong', 'mismatch', 'error', 'incorrect', 'lose'],
