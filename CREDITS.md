@@ -15,12 +15,15 @@ license. Add an entry **before** importing any new third-party asset.
 
 ## Audio assets
 
-### Sound Effects Mini Pack 1.5 — 8-bit SFX
+### Kenney — feedback SFX
 
-- **Used for:** shared game sound effects (`src/sdk/assets/audio/`), via `useSound()`.
-- **Source:** "Sound effects Mini Pack 1.5" by phoenix1291
-  (Swiss Arcade Game Entertainment) — https://opengameart.org/content/sound-effects-mini-pack15
+- **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:
+  `pop` (drop_*) and `balloon` (drop_003 pitched to 5 pentatonic notes), `success` (confirmation_*), `wrong` (error_*) from *Interface Sounds*;
+  `win`, per-game win jingles + `transition` (jingles_PIZZI*/STEEL*/SAX*) from *Music Jingles*; `powerup`
+  (phaserUp*) from *Digital Audio*; `hit` (impactGeneric_light_*) from *Impact Sounds*.
+- **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/interface-sounds,
+  https://kenney.nl/assets/music-jingles, https://kenney.nl/assets/digital-audio,
+  https://kenney.nl/assets/impact-sounds
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
-- **Terms honored:** commercial use and redistribution permitted; no attribution
-  required. The author appreciates optional credit to "phoenix1291" /
-  "SwissArcadeGameEntertainment" — given here as a courtesy.
+- **Terms honored:** no attribution required; credited here as a courtesy. Clips were
+  converted to WAV, trimmed and loudness-normalized (CC0 permits modification).

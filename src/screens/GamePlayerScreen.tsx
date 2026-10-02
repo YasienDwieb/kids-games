@@ -6,13 +6,17 @@ import {
   getGame,
   GameShell,
   ScreenBackContext,
+  SoundOverridesContext,
   useTranslation,
   type BackInterceptor,
+  type SoundOverrides,
 } from '@/sdk';
 import { BackButton } from '../components/common';
 import { COLORS, FONT_SIZES } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'GamePlayer'>;
+
+const NO_OVERRIDES: SoundOverrides = {};
 
 export function GamePlayerScreen({ route, navigation }: Props) {
   const { gameId } = route.params;
@@ -53,21 +57,23 @@ export function GamePlayerScreen({ route, navigation }: Props) {
 
   return (
     <ScreenBackContext.Provider value={setInterceptor}>
-      {layout.mode === 'bare' ? (
-        // Bare mode: game composes its own canvas; we float a back button.
-        <View style={[styles.container, { backgroundColor: game.backgroundColor }]}>
-          <BackButton onPress={handleBack} />
-          <Game />
-        </View>
-      ) : (
-        <GameShell
-          background={game.backgroundColor}
-          showBack={layout.showBack ?? true}
-          onBack={handleBack}
-        >
-          <Game />
-        </GameShell>
-      )}
+      <SoundOverridesContext.Provider value={game.sounds ?? NO_OVERRIDES}>
+        {layout.mode === 'bare' ? (
+          // Bare mode: game composes its own canvas; we float a back button.
+          <View style={[styles.container, { backgroundColor: game.backgroundColor }]}>
+            <BackButton onPress={handleBack} />
+            <Game />
+          </View>
+        ) : (
+          <GameShell
+            background={game.backgroundColor}
+            showBack={layout.showBack ?? true}
+            onBack={handleBack}
+          >
+            <Game />
+          </GameShell>
+        )}
+      </SoundOverridesContext.Provider>
     </ScreenBackContext.Provider>
   );
 }

@@ -11,6 +11,7 @@ registerGame({
   component: MouseMazeGame,
   backgroundColor: '#FBF3E6',
   accent: 'orange',
+  sounds: { 'sfx.win': 'jingle.pizzi-15' },
   order: 20,
   tags: ['maze', 'puzzle', 'logic'],
   version: '1.0.0',

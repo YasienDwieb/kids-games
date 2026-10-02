@@ -11,6 +11,7 @@ registerGame({
   component: AnimalSafari,
   backgroundColor: COLORS.canvas,
   accent: 'orange',
+  sounds: { 'sfx.win': 'jingle.steel-06' },
   order: 10,
   tags: ['animals', 'vocabulary', 'listening', 'educational'],
   layout: { mode: 'shell' },

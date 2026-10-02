@@ -197,7 +197,7 @@ export function MatchBoard({
     if (round.solution[topIdx] === botIdx) {
       const next = [...connectionsRef.current, { topIdx, botIdx }];
       setConnections(next);
-      void play('pop');
+      void play('success');
       onCorrect?.();
       if (next.length === round.top.length) {
         void play('win');

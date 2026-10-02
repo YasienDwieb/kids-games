@@ -19,16 +19,23 @@ export function pickAsset(intent: string): AssetId | undefined {
   return (Object.keys(ASSETS) as AssetId[]).find((id) => (ASSETS[id].tags as readonly string[]).includes(intent));
 }
 
+/**
+ * Per-game asset swaps: when an intent resolves to the key asset, the value asset
+ * plays instead (e.g. `{ 'sfx.win': 'jingle.sax-10' }` gives a game its own win
+ * jingle while every `play('win')` call site stays the same).
+ */
+export type SoundOverrides = Partial<Record<AssetId, AssetId>>;
+
 /** Every variant module for an intent — used to load them all up front. */
-export function modulesFor(intent: string): readonly number[] {
+export function modulesFor(intent: string, overrides: SoundOverrides = {}): readonly number[] {
   const id = pickAsset(intent);
   if (!id) return [];
-  return getAsset(id).modules as readonly number[];
+  return getAsset(overrides[id] ?? id).modules as readonly number[];
 }
 
 /** A random variant module for an intent, or undefined if the intent matches nothing. */
-export function pickModule(intent: string): number | undefined {
-  const mods = modulesFor(intent);
+export function pickModule(intent: string, overrides: SoundOverrides = {}): number | undefined {
+  const mods = modulesFor(intent, overrides);
   if (mods.length === 0) return undefined;
   return mods[Math.floor(Math.random() * mods.length)];
 }

@@ -1,131 +1,153 @@
 import type { AssetEntry } from './types';
 
-// Audio sourced from "Sound Effects Mini Pack 1.5" (8-bit / chiptune SFX).
+// Feedback sounds are soft CC0 clips from Kenney (see CREDITS.md;
+// original file names kept under audio/cc0/).
 // Each entry maps an intent-tag vocabulary to a kid-friendly sound. Most intents
 // carry several interchangeable variants; useSound().play(<tag>) picks one at
 // random so repeated taps/matches don't feel monotonous. See pickAsset/pickModule
 // /findAssets in query.ts.
+// Every clip is normalized to the same loudness (-25 dBFS active RMS, peak <= -6
+// dBFS) so no intent jumps out over another; keep new clips at that level.
 export const ASSETS = {
   'sfx.pop': {
     modules: [
-      require('./audio/Blip.wav'),
-      require('./audio/Blip1.wav'),
-      require('./audio/Blip2.wav'),
-      require('./audio/Blip3.wav'),
-      require('./audio/Blip4.wav'),
+      require('./audio/cc0/drop_002.wav'),
+      require('./audio/cc0/drop_003.wav'),
+      require('./audio/cc0/drop_004.wav'),
     ],
     type: 'audio',
     tags: ['pop', 'flip', 'tap', 'ui', 'select'],
   },
   'sfx.success': {
     modules: [
-      require('./audio/Coin.wav'),
-      require('./audio/Coin1.wav'),
-      require('./audio/Coin2.wav'),
-      require('./audio/Coin3.wav'),
-      require('./audio/Coin4.wav'),
+      require('./audio/cc0/confirmation_001.wav'),
+      require('./audio/cc0/confirmation_004.wav'),
     ],
     type: 'audio',
     tags: ['success', 'match', 'reward', 'correct', 'collect'],
   },
   'sfx.win': {
     modules: [
-      require('./audio/1up.wav'),
-      require('./audio/1up1.wav'),
-      require('./audio/1up2.wav'),
-      require('./audio/1up3.wav'),
-      require('./audio/1up4.wav'),
+      require('./audio/cc0/jingles_PIZZI10.wav'),
+      require('./audio/cc0/jingles_STEEL10.wav'),
+      require('./audio/cc0/jingles_PIZZI02.wav'),
     ],
     type: 'audio',
     tags: ['win', 'celebration', 'complete', 'levelup'],
   },
   'sfx.wrong': {
     modules: [
-      require('./audio/Lose.wav'),
-      require('./audio/Lose1.wav'),
-      require('./audio/Lose2.wav'),
-      require('./audio/Lose3.wav'),
-      require('./audio/Lose4.wav'),
+      require('./audio/cc0/error_007.wav'),
+      require('./audio/cc0/error_008.wav'),
     ],
     type: 'audio',
     tags: ['wrong', 'mismatch', 'error', 'incorrect', 'lose'],
   },
   'sfx.powerup': {
     modules: [
-      require('./audio/Powerup.wav'),
-      require('./audio/Powerup1.wav'),
-      require('./audio/Powerup2.wav'),
-      require('./audio/Powerup3.wav'),
-      require('./audio/Powerup4.wav'),
+      require('./audio/cc0/phaserUp1.wav'),
+      require('./audio/cc0/phaserUp2.wav'),
+      require('./audio/cc0/phaserUp3.wav'),
+      require('./audio/cc0/phaserUp7.wav'),
     ],
     type: 'audio',
     tags: ['powerup', 'boost', 'upgrade'],
   },
-  'sfx.jump': {
-    modules: [
-      require('./audio/Jump.wav'),
-      require('./audio/Jump1.wav'),
-      require('./audio/Jump2.wav'),
-      require('./audio/Jump3.wav'),
-      require('./audio/Jump4.wav'),
-    ],
-    type: 'audio',
-    tags: ['jump', 'hop', 'bounce'],
-  },
   'sfx.transition': {
     modules: [
-      require('./audio/Teleport.wav'),
-      require('./audio/Teleport1.wav'),
-      require('./audio/Teleport2.wav'),
-      require('./audio/Teleport3.wav'),
-      require('./audio/Teleport4.wav'),
+      require('./audio/cc0/jingles_PIZZI16.wav'),
+      require('./audio/cc0/jingles_PIZZI04.wav'),
+      require('./audio/cc0/jingles_PIZZI08.wav'),
     ],
     type: 'audio',
     tags: ['transition', 'teleport', 'whoosh', 'appear', 'next'],
   },
-  'sfx.explosion': {
+  // A soft tonal bloop on a major-pentatonic note per pop, not a realistic bang
+  // (noisy when repeated): a level fires many pops, and random notes from this
+  // scale always sound consonant together. 2 dB under the other SFX.
+  'sfx.balloon': {
     modules: [
-      require('./audio/Explosion.wav'),
-      require('./audio/Explosion1.wav'),
-      require('./audio/Explosion2.wav'),
-      require('./audio/Explosion3.wav'),
-      require('./audio/Explosion4.wav'),
+      require('./audio/cc0/balloon_note1.wav'),
+      require('./audio/cc0/balloon_note2.wav'),
+      require('./audio/cc0/balloon_note3.wav'),
+      require('./audio/cc0/balloon_note4.wav'),
+      require('./audio/cc0/balloon_note5.wav'),
     ],
     type: 'audio',
-    tags: ['explosion', 'blast', 'boom', 'destroy', 'pop-big'],
+    tags: ['balloon'],
   },
   'sfx.hit': {
     modules: [
-      require('./audio/Hit.wav'),
-      require('./audio/Hit1.wav'),
-      require('./audio/Hit2.wav'),
-      require('./audio/Hit3.wav'),
-      require('./audio/Hit4.wav'),
+      require('./audio/cc0/impactGeneric_light_000.wav'),
+      require('./audio/cc0/impactGeneric_light_002.wav'),
+      require('./audio/cc0/impactGeneric_light_004.wav'),
     ],
     type: 'audio',
     tags: ['hit', 'bump', 'thud', 'hurt', 'damage'],
   },
-  'sfx.laser': {
-    modules: [
-      require('./audio/Laser-weapon.wav'),
-      require('./audio/Laser-weapon1.wav'),
-      require('./audio/Laser-weapon2.wav'),
-      require('./audio/Laser-weapon3.wav'),
-      require('./audio/Laser-weapon4.wav'),
-    ],
+  // Per-game win jingles (Kenney Music Jingles): the four rising/happy melodies
+  // (02, 06, 10, 15) on three instruments. A game picks one through its config's
+  // `sounds: { 'sfx.win': 'jingle.<id>' }`, so every game has its own fanfare.
+  // Selected by id only, never by intent — hence no tags.
+  'jingle.pizzi-02': {
+    modules: [require('./audio/cc0/jingles_PIZZI02.wav')],
     type: 'audio',
-    tags: ['laser', 'shoot', 'zap', 'fire', 'beam'],
+    tags: [],
   },
-  'sfx.random': {
-    modules: [
-      require('./audio/Random.wav'),
-      require('./audio/Random1.wav'),
-      require('./audio/Random2.wav'),
-      require('./audio/Random3.wav'),
-      require('./audio/Random4.wav'),
-    ],
+  'jingle.pizzi-06': {
+    modules: [require('./audio/cc0/jingles_PIZZI06.wav')],
     type: 'audio',
-    tags: ['random', 'misc', 'surprise', 'blip-alt'],
+    tags: [],
+  },
+  'jingle.pizzi-10': {
+    modules: [require('./audio/cc0/jingles_PIZZI10.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.pizzi-15': {
+    modules: [require('./audio/cc0/jingles_PIZZI15.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.steel-02': {
+    modules: [require('./audio/cc0/jingles_STEEL02.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.steel-06': {
+    modules: [require('./audio/cc0/jingles_STEEL06.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.steel-10': {
+    modules: [require('./audio/cc0/jingles_STEEL10.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.steel-15': {
+    modules: [require('./audio/cc0/jingles_STEEL15.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.sax-02': {
+    modules: [require('./audio/cc0/jingles_SAX02.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.sax-06': {
+    modules: [require('./audio/cc0/jingles_SAX06.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.sax-10': {
+    modules: [require('./audio/cc0/jingles_SAX10.wav')],
+    type: 'audio',
+    tags: [],
+  },
+  'jingle.sax-15': {
+    modules: [require('./audio/cc0/jingles_SAX15.wav')],
+    type: 'audio',
+    tags: [],
   },
   'sfx.engine': {
     modules: [require('./audio/EngineLoop.wav')],
@@ -134,7 +156,7 @@ export const ASSETS = {
   },
   // Real CC0/PD animal sounds (see audio/animals/CREDITS.md). One specific clip
   // each — played by id via useSound().play('animal.<id>') in Animal Safari's
-  // "whichSound" rounds. (Cow has no clip, so there is no 'animal.cow' entry.)
+  // 'whichSound' rounds. (Cow has no clip, so there is no 'animal.cow' entry.)
   'animal.lion': {
     modules: [require('./audio/animals/lion.ogg')],
     type: 'audio',

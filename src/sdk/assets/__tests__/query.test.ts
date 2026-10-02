@@ -1,4 +1,4 @@
-import { getAsset, findAssets, pickAsset, pickModule } from '../query';
+import { getAsset, findAssets, modulesFor, pickAsset, pickModule } from '../query';
 import { ASSETS } from '../manifest';
 
 describe('asset query', () => {
@@ -17,8 +17,8 @@ describe('asset query', () => {
   });
 
   it('findAssets surfaces the new sound types', () => {
-    expect(findAssets({ tags: ['explosion'] })).toContain('sfx.explosion');
-    expect(findAssets({ tags: ['laser'] })).toContain('sfx.laser');
+    expect(findAssets({ tags: ['balloon'] })).toContain('sfx.balloon');
+    expect(findAssets({ tags: ['powerup'] })).toContain('sfx.powerup');
     expect(findAssets({ tags: ['hit'] })).toContain('sfx.hit');
   });
 
@@ -39,6 +39,16 @@ describe('asset query', () => {
 
   it('pickModule returns undefined for an unknown intent', () => {
     expect(pickModule('nope-nothing')).toBeUndefined();
+  });
+
+  it('overrides swap the resolved asset for every intent that maps to it', () => {
+    const jingle = getAsset('jingle.sax-10').modules;
+    const overrides = { 'sfx.win': 'jingle.sax-10' } as const;
+    expect(modulesFor('win', overrides)).toEqual(jingle);
+    expect(modulesFor('celebration', overrides)).toEqual(jingle);
+    expect(jingle).toContain(pickModule('win', overrides));
+    // other intents are untouched
+    expect(modulesFor('pop', overrides)).toEqual(getAsset('sfx.pop').modules);
   });
 
   // Locks the intent->asset invariant: pickAsset/findAssets resolve an intent by

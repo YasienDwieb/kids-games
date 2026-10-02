@@ -11,5 +11,7 @@ registerGame({
   component: TemplateGame,
   backgroundColor: '#FFF9F0',
   tags: ['example'],
+  // Give each game its own win jingle — pick a jingle.* id no other game uses.
+  sounds: { 'sfx.win': 'jingle.pizzi-10' },
   version: '1.0.0',
 });

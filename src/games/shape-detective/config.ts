@@ -11,6 +11,7 @@ registerGame({
   component: ShapeDetectiveGame,
   backgroundColor: COLORS.canvas, // soft violet (ACCENTS.purple.tint)
   accent: 'purple',
+  sounds: { 'sfx.win': 'jingle.sax-15' },
   order: 80,
   tags: ['shapes', 'logic', 'patterns', 'educational'],
   layout: { mode: 'shell' },

@@ -1,3 +1,4 @@
+import { ASSETS } from '@/sdk/assets/manifest';
 import type { GameConfig } from './types';
 
 const ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -20,5 +21,10 @@ export function validateGameConfig(config: GameConfig): void {
     fail(`id "${config.id}": ageRange { min, max } is required`);
   } else if (ageRange.min > ageRange.max) {
     fail(`id "${config.id}": ageRange.min (${ageRange.min}) must be <= ageRange.max (${ageRange.max})`);
+  }
+
+  for (const [from, to] of Object.entries(config.sounds ?? {})) {
+    if (!(from in ASSETS)) fail(`id "${config.id}": sounds key "${from}" is not an asset id`);
+    if (!to || !(to in ASSETS)) fail(`id "${config.id}": sounds["${from}"] = "${to}" is not an asset id`);
   }
 }

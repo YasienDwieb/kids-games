@@ -24,6 +24,15 @@ describe('validateGameConfig', () => {
     expect(() => validateGameConfig({ ...valid, id: 'Bad Id!' })).toThrow(/id/);
   });
 
+  it('accepts sound overrides between known assets', () => {
+    expect(() => validateGameConfig({ ...valid, sounds: { 'sfx.win': 'jingle.pizzi-10' } })).not.toThrow();
+  });
+
+  it('rejects a sound override to an unknown asset', () => {
+    const sounds = { 'sfx.win': 'jingle.nope' } as unknown as GameConfig['sounds'];
+    expect(() => validateGameConfig({ ...valid, sounds })).toThrow(/sounds/);
+  });
+
   it('rejects ageRange where min > max', () => {
     expect(() => validateGameConfig({ ...valid, ageRange: { min: 8, max: 3 } })).toThrow(/ageRange/);
   });

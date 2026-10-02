@@ -32,6 +32,7 @@ export {
 export { ASSETS } from './assets/manifest';
 export type { AssetId } from './assets/manifest';
 export { getAsset, findAssets, pickAsset, pickModule } from './assets/query';
+export type { SoundOverrides } from './assets/query';
 export { EMOJI_IMAGES, getEmojiImage } from './assets/emoji/images';
 export type { AssetEntry, AssetType } from './assets/types';
 
@@ -45,6 +46,7 @@ export type { Settings } from './settings/store';
 
 // Audio
 export { useSound } from './audio/useSound';
+export { SoundOverridesContext } from './audio/SoundOverridesContext';
 export type { PlayOptions } from './audio/useSound';
 export { useLoopSound } from './audio/useLoopSound';
 

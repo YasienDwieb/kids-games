@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useContext, useEffect, useRef } from 'react';
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 import { modulesFor, pickModule } from '@/sdk/assets/query';
 import { settingsStore, DEFAULT_SETTINGS, type Settings } from '@/sdk/settings/store';
+import { SoundOverridesContext } from './SoundOverridesContext';
 
 export type PlayOptions = { haptic?: boolean };
 
@@ -13,6 +14,10 @@ export function useSound() {
      AsyncStorage round-trip plus a JSON.parse — on the JS thread, the same one
      driving the game. Reading a ref keeps the hot path free of both. */
   const settings = useRef<Settings>(DEFAULT_SETTINGS);
+  // Held in a ref so play/prewarm keep a stable identity for games' deps.
+  const gameOverrides = useContext(SoundOverridesContext);
+  const overrides = useRef(gameOverrides);
+  overrides.current = gameOverrides;
 
   useEffect(() => {
     let mounted = true;
@@ -64,7 +69,7 @@ export function useSound() {
   const prewarm = useCallback(
     (intents: readonly string[]) => {
       for (const intent of intents) {
-        for (const module of modulesFor(intent)) playerFor(module);
+        for (const module of modulesFor(intent, overrides.current)) playerFor(module);
       }
     },
     [playerFor],
@@ -80,7 +85,7 @@ export function useSound() {
 
       if (!current.soundEnabled) return;
 
-      const module = pickModule(intent); // random variant for the intent
+      const module = pickModule(intent, overrides.current); // random variant for the intent
       if (module === undefined) return; // graceful: unknown intent → silent
 
       const player = playerFor(module);

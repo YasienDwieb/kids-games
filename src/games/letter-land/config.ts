@@ -11,6 +11,7 @@ registerGame({
   component: LetterLand,
   backgroundColor: COLORS.canvas,
   accent: 'blue',
+  sounds: { 'sfx.win': 'jingle.pizzi-02' },
   order: 100,
   tags: ['letters', 'literacy', 'phonics', 'tracing', 'educational'],
   layout: { mode: 'shell' },

@@ -37,7 +37,7 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 All games import exclusively from `@/sdk`. The SDK exports:
 - **Config & registry**: `registerGame`, `getGame`, `getAllGames`, `getGamesForAge`, `validateGameConfig`, `GameConfig` type, `GameRegistry` type
 - **Layout**: `GameShell` (title bar + back button + overlay slots), `GameOverlay`, `useGameShell()` hook → `{ setScore, showOverlay, hideOverlay }`, `GameShellApi`/`GameShellProps`/`OverlaySlot` types
-- **Audio**: `useSound()` → `{ play(intent, options?) }` — plays assets by intent string, respects settings/haptics; `PlayOptions` type
+- **Audio**: `useSound()` → `{ play(intent, options?) }` — plays assets by intent string, respects settings/haptics; `PlayOptions` type. Per-game swaps via `GameConfig.sounds` (`{ 'sfx.win': 'jingle.sax-10' }`), provided to `useSound` through `SoundOverridesContext` by `GamePlayerScreen`; `SoundOverrides` type
 - **Storage**: `createStore<T>(namespace, defaultValue)` → `Store<T>` with `get`/`set`/`subscribe`
 - **Progress & levels**: `levelsFromList`/`levelsFromGenerator` → `LevelSource<T>`; `useLevels({ gameId, source })` → `{ status, level, data, score, isLast, start, startOver, advance, addScore, goTo }`; `createProgressStore`, `DEFAULT_PROGRESS`, `Progress`; `resumeStatusFor`, `ResumeStatus`; `ResumePrompt` (Continue/Start-over UI). Opt-in; coarse `{ level, score }` checkpoint persisted under `kg:progress:<gameId>`.
 - **Settings**: `useSettings()` hook, `settingsStore`, `DEFAULT_SETTINGS`, `Settings` type (`soundEnabled`, `hapticsEnabled`, `ageBand`, `language`)
@@ -64,18 +64,16 @@ Built on `i18next` + `react-i18next` + `expo-localization`. The app ships Englis
 
 **Asset manifest + tag vocabulary (`src/sdk/assets/manifest.ts`):**
 
-Shared audio assets (8-bit SFX from "Sound Effects Mini Pack 1.5"), referenced by intent string via `useSound().play(intent)`. Each intent carries **5 interchangeable variants** in its `modules` list; `play()` picks one at random (via `pickModule`) so repeated sounds don't feel monotonous. Controlled tags:
+Shared audio assets — soft CC0 clips from Kenney in `src/sdk/assets/audio/cc0/` (credited in root `CREDITS.md`) — referenced by intent string via `useSound().play(intent)`. Each intent carries **several interchangeable variants** in its `modules` list; `play()` picks one at random (via `pickModule`) so repeated sounds don't feel monotonous. All clips are normalized to one loudness (−25 dBFS active RMS, peak ≤ −6 dBFS) — keep new clips at that level. Controlled tags:
 - `sfx.pop` — tags: `pop`, `flip`, `tap`, `ui`, `select`
 - `sfx.success` — tags: `success`, `match`, `reward`, `correct`, `collect`
 - `sfx.win` — tags: `win`, `celebration`, `complete`, `levelup`
 - `sfx.wrong` — tags: `wrong`, `mismatch`, `error`, `incorrect`, `lose`
 - `sfx.powerup` — tags: `powerup`, `boost`, `upgrade`
-- `sfx.jump` — tags: `jump`, `hop`, `bounce`
 - `sfx.transition` — tags: `transition`, `teleport`, `whoosh`, `appear`, `next`
-- `sfx.explosion` — tags: `explosion`, `blast`, `boom`, `destroy`, `pop-big`
+- `sfx.balloon` — tags: `balloon` (soft pentatonic bloop per pop)
 - `sfx.hit` — tags: `hit`, `bump`, `thud`, `hurt`, `damage`
-- `sfx.laser` — tags: `laser`, `shoot`, `zap`, `fire`, `beam`
-- `sfx.random` — tags: `random`, `misc`, `surprise`, `blip-alt`
+- `jingle.*` — 12 per-game win jingles `jingle.{pizzi,steel,sax}-{02,06,10,15}` (no tags; chosen by id in a game's `sounds` config). **Every game sets its own distinct `sounds: { 'sfx.win': 'jingle.…' }`** — guarded by `src/games/__tests__/winJingles.test.ts`.
 
 To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts` with a `modules: [...]` list (one or more variants).
 
