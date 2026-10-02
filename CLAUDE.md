@@ -64,18 +64,15 @@ Built on `i18next` + `react-i18next` + `expo-localization`. The app ships Englis
 
 **Asset manifest + tag vocabulary (`src/sdk/assets/manifest.ts`):**
 
-Shared audio assets (8-bit SFX from "Sound Effects Mini Pack 1.5"), referenced by intent string via `useSound().play(intent)`. Each intent carries **5 interchangeable variants** in its `modules` list; `play()` picks one at random (via `pickModule`) so repeated sounds don't feel monotonous. Controlled tags:
+Shared audio assets — soft CC0 clips from Kenney + OpenGameArt in `src/sdk/assets/audio/cc0/` (credited in root `CREDITS.md`) — referenced by intent string via `useSound().play(intent)`. Each intent carries **several interchangeable variants** in its `modules` list; `play()` picks one at random (via `pickModule`) so repeated sounds don't feel monotonous. All clips are normalized to one loudness (−25 dBFS active RMS, peak ≤ −6 dBFS) — keep new clips at that level. Controlled tags:
 - `sfx.pop` — tags: `pop`, `flip`, `tap`, `ui`, `select`
 - `sfx.success` — tags: `success`, `match`, `reward`, `correct`, `collect`
 - `sfx.win` — tags: `win`, `celebration`, `complete`, `levelup`
 - `sfx.wrong` — tags: `wrong`, `mismatch`, `error`, `incorrect`, `lose`
 - `sfx.powerup` — tags: `powerup`, `boost`, `upgrade`
-- `sfx.jump` — tags: `jump`, `hop`, `bounce`
 - `sfx.transition` — tags: `transition`, `teleport`, `whoosh`, `appear`, `next`
-- `sfx.explosion` — tags: `explosion`, `blast`, `boom`, `destroy`, `pop-big`
+- `sfx.balloon` — tags: `balloon` (real balloon pop)
 - `sfx.hit` — tags: `hit`, `bump`, `thud`, `hurt`, `damage`
-- `sfx.laser` — tags: `laser`, `shoot`, `zap`, `fire`, `beam`
-- `sfx.random` — tags: `random`, `misc`, `surprise`, `blip-alt`
 
 To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts` with a `modules: [...]` list (one or more variants).
 

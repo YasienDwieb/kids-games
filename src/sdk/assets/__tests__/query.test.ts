@@ -17,8 +17,8 @@ describe('asset query', () => {
   });
 
   it('findAssets surfaces the new sound types', () => {
-    expect(findAssets({ tags: ['explosion'] })).toContain('sfx.explosion');
-    expect(findAssets({ tags: ['laser'] })).toContain('sfx.laser');
+    expect(findAssets({ tags: ['balloon'] })).toContain('sfx.balloon');
+    expect(findAssets({ tags: ['powerup'] })).toContain('sfx.powerup');
     expect(findAssets({ tags: ['hit'] })).toContain('sfx.hit');
   });
 

@@ -63,7 +63,7 @@ This skill covers how to build, scaffold, and extend games in the Kids Games Exp
 
 **Assets**
 - `ASSETS` — the typed asset manifest (keyed by `AssetId`)
-- `AssetId` (type) — union of all manifest keys (`'sfx.pop' | 'sfx.success' | 'sfx.win' | 'sfx.wrong' | 'sfx.powerup' | 'sfx.jump' | 'sfx.transition' | 'sfx.explosion' | 'sfx.hit' | 'sfx.laser' | 'sfx.random'`)
+- `AssetId` (type) — union of all manifest keys (`'sfx.pop' | 'sfx.success' | 'sfx.win' | 'sfx.wrong' | 'sfx.powerup' | 'sfx.transition' | 'sfx.balloon' | 'sfx.hit' | 'sfx.engine' | 'animal.<id>'`)
 - `getAsset(id)` — look up a manifest entry by id
 - `findAssets({ type?, tags? })` — filter manifest by type and/or tag array
 - `pickAsset(intent)` — return the first AssetId whose tags include the given intent string
@@ -163,37 +163,31 @@ play('success');   // match found, correct answer
 play('win');       // game won, level complete
 play('wrong');     // mismatch, wrong answer
 play('powerup');   // power-up / boost collected
-play('jump');      // jump / hop / bounce
 play('transition');// scene change / next round whoosh
-play('explosion'); // pop a balloon, blast a target, destroy
+play('balloon');   // pop a balloon
 play('hit');       // bump / collision / take damage
-play('laser');     // shoot / zap / fire a projectile
-play('random');    // misc / surprise blip
 ```
 
 `useSound` calls `pickModule(intent)` internally: it resolves the intent to an asset, then plays a **random variant** from that asset's `modules` list, so repeated taps/matches don't sound identical. You never reference asset ids or files directly for audio.
 
 ### The controlled tag vocabulary (from manifest.ts)
 
-All audio is from the 8-bit "Sound Effects Mini Pack 1.5" — kid-friendly chiptune SFX. Each intent below carries **5 interchangeable variants** that are picked at random on play.
+SFX are soft CC0 clips from Kenney + OpenGameArt in `src/sdk/assets/audio/cc0/` (credited in root `CREDITS.md`). The old 8-bit "Sound Effects Mini Pack 1.5" (incl. jump/explosion/laser/random) was removed for being harsh — if a game needs one of those mechanics, add a soft CC0 clip (Kenney's packs are a good first stop) rather than reviving it. Prefer soft, tonal clips with little energy above 4 kHz — harsh/shrill sounds were the main complaint about the original set. Ship new clips as WAV (Ogg Vorbis does not play on iOS). Each intent below carries **several interchangeable variants** that are picked at random on play. All clips are normalized to one loudness (−25 dBFS active RMS, peak ≤ −6 dBFS); normalize any new clip to the same level so no sound jumps out.
 
 | Asset id        | Tags                                            | Meaning |
 |-----------------|-------------------------------------------------|---------|
 | `sfx.pop`       | `pop`, `flip`, `tap`, `ui`, `select`            | Card flip, tapping, generic UI |
 | `sfx.success`   | `success`, `match`, `reward`, `correct`, `collect` | Match found, correct answer, coin/item collected |
-| `sfx.win`       | `win`, `celebration`, `complete`, `levelup`     | Game won, round complete (1-up jingle) |
+| `sfx.win`       | `win`, `celebration`, `complete`, `levelup`     | Game won, round complete (short happy jingle) |
 | `sfx.wrong`     | `wrong`, `mismatch`, `error`, `incorrect`, `lose` | Mismatch, wrong choice |
 | `sfx.powerup`   | `powerup`, `boost`, `upgrade`                   | Power-up / boost collected |
-| `sfx.jump`      | `jump`, `hop`, `bounce`                         | Jumping / hopping action |
-| `sfx.transition`| `transition`, `teleport`, `whoosh`, `appear`, `next` | Scene change, next round, teleport |
-| `sfx.explosion` | `explosion`, `blast`, `boom`, `destroy`, `pop-big` | Pop a balloon, blast/destroy a target |
+| `sfx.transition`| `transition`, `teleport`, `whoosh`, `appear`, `next` | Level start / next / retry (short rising pluck) |
+| `sfx.balloon`   | `balloon`                                       | Popping a balloon (real recorded pop) |
 | `sfx.hit`       | `hit`, `bump`, `thud`, `hurt`, `damage`         | Collision, bump, taking damage |
-| `sfx.laser`     | `laser`, `shoot`, `zap`, `fire`, `beam`         | Shooting / firing a projectile |
-| `sfx.random`    | `random`, `misc`, `surprise`, `blip-alt`        | Miscellaneous / surprise blip |
 
 **Intent lookup:** pass any tag as the intent string to `play()` or `pickAsset()`. For example, `play('match')` resolves to `sfx.success` because `match` is in its tags. An unknown intent plays nothing (silent, no error).
 
-**Picking the right sound:** prefer the four core intents (`pop`/`success`/`win`/`wrong`) for standard match/quiz feedback. Reach for `powerup`, `jump`, `transition`, `explosion`, `hit`, `laser`, or `random` only when the game genuinely has that mechanic. Always reuse an existing tagged asset before adding a new file.
+**Picking the right sound:** prefer the four core intents (`pop`/`success`/`win`/`wrong`) for standard match/quiz feedback. Reach for `powerup`, `transition`, `hit`, or `balloon` only when the game genuinely has that mechanic. Always reuse an existing tagged asset before adding a new file.
 
 ### Finding assets programmatically
 
