@@ -98,6 +98,12 @@ export { Mascot } from './mascot/Mascot';
 export type { MascotPose } from './mascot/Mascot';
 export { MascotHelper } from './mascot/MascotHelper';
 
+// Adaptive difficulty — a per-game skill tier that follows the child
+export { useAdaptive } from './adaptive/useAdaptive';
+export type { UseAdaptiveResult } from './adaptive/useAdaptive';
+export { nextAdaptive, startingTier, tierFactor, MIN_TIER, MAX_TIER } from './adaptive/adaptive';
+export type { AdaptiveState } from './adaptive/adaptive';
+
 // Tutorials — first-run demos & idle hints
 export { DemoHand } from './tutorial/DemoHand';
 export type { DemoPoint } from './tutorial/DemoHand';

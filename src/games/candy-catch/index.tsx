@@ -6,7 +6,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { levelsFromGenerator, ResumePrompt, useLevels, useSound } from '@/sdk';
+import {
+  levelsFromGenerator,
+  ResumePrompt,
+  tierFactor,
+  useAdaptive,
+  useLevels,
+  useSound,
+} from '@/sdk';
 import { CatchField } from './components/CatchField';
 import { Hud } from './components/Hud';
 import { StartOverlay, WinOverlay, LoseOverlay } from './components/Overlays';
@@ -28,6 +35,19 @@ export default function CandyCatchGame() {
   // Bumped on retry so the field remounts fresh on the same level.
   const [attempt, setAttempt] = useState(0);
 
+  // Adaptive difficulty: losing twice slows things down, a winning streak
+  // speeds them up — on top of the level curve.
+  const { tier, record } = useAdaptive('candy-catch');
+  const tuned = useMemo(
+    () => ({
+      ...data,
+      fallSpeed: data.fallSpeed * tierFactor(tier, 0.12),
+      spawnInterval: data.spawnInterval / tierFactor(tier, 0.1),
+      hazardChance: data.hazardChance * tierFactor(tier, 0.25),
+    }),
+    [data, tier],
+  );
+
   useEffect(() => {
     setScore(0);
     setLives(MAX_LIVES);
@@ -35,8 +55,14 @@ export default function CandyCatchGame() {
 
   const handleWin = useCallback(() => {
     play('win');
+    record(true);
     setOverlay('win');
-  }, [play]);
+  }, [play, record]);
+
+  const handleLose = useCallback(() => {
+    record(false);
+    setOverlay('lose');
+  }, [record]);
 
   const handleStart = useCallback(() => {
     play('transition');
@@ -80,13 +106,13 @@ export default function CandyCatchGame() {
 
       <CatchField
         key={`${level}-${attempt}`}
-        data={data}
+        data={tuned}
         active={status === 'playing' && overlay === 'none'}
         maxLives={MAX_LIVES}
         onScore={setScore}
         onLives={setLives}
         onWin={handleWin}
-        onLose={() => setOverlay('lose')}
+        onLose={handleLose}
       />
 
       <Hud level={level} score={score} target={data.target} lives={lives} />

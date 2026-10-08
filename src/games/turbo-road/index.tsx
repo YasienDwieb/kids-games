@@ -13,6 +13,8 @@ import {
   levelsFromGenerator,
   ResumePrompt,
   SafeContainer,
+  tierFactor,
+  useAdaptive,
   useLevels,
   useLoopSound,
   useScreenBack,
@@ -159,6 +161,9 @@ export default function TurboRoadGame() {
   });
   const { garage, selectCar, selectTrim, unlockCar, addCoins } = useGarage();
   const { prefs, setControl, setView: setRoadView } = usePrefs();
+  // Adaptive pace: winning keeps nudging the whole race (rivals too) a little
+  // faster; finishing last eases it. Layered on the age-band speed factor.
+  const { tier, record } = useAdaptive('turbo-road');
   const { missions, recordRace, claim } = useMissions();
 
   const [view, setView] = useState<ViewName>('start');
@@ -187,6 +192,10 @@ export default function TurboRoadGame() {
   });
 
   const car: CarDef = CARS.find((c) => c.id === garage.selected) ?? CARS[0];
+  const pacedCar = useMemo<CarDef>(
+    () => ({ ...car, stats: { ...car.stats, speed: car.stats.speed * tierFactor(tier, 0.05) } }),
+    [car, tier],
+  );
   const trim: TrimDef = TRIMS.find((tr) => tr.id === garage.trim) ?? TRIMS[0];
   const theme: RoadTheme = THEMES[data.theme];
   // One cup per completed 4-level tour; this race awards one when it closes
@@ -209,9 +218,11 @@ export default function TurboRoadGame() {
     (r: RaceResult) => {
       addCoins(r.coins);
       recordRace(r);
+      if (r.place === 1) record(true);
+      else if (r.place === 3) record(false);
       overlayTimer.current = setTimeout(() => setResult(r), FINISH_CELEBRATION_MS);
     },
-    [addCoins, recordRace],
+    [addCoins, recordRace, record],
   );
 
   const handleNext = useCallback(() => {
@@ -315,7 +326,7 @@ export default function TurboRoadGame() {
           levelNumber={level}
           theme={theme}
           playerEmoji={car.emoji}
-          car={car}
+          car={pacedCar}
           control={prefs.control}
           roadView={prefs.view}
           onFinish={handleFinish}
