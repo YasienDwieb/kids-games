@@ -21,6 +21,8 @@ import {
   FONT_SIZES,
   HudPill,
   hudTextStyle,
+  Mascot,
+  MascotHelper,
   PressableButton,
   ResumePrompt,
   SHADOWS,
@@ -50,9 +52,14 @@ export default function MatchUpGame(): React.JSX.Element {
   });
 
   const [solved, setSolved] = useState(false);
+  // Wrong links this round — Lulu encourages, then points after repeated misses.
+  const [misses, setMisses] = useState(0);
 
-  // Reset the per-round solved gate whenever the level changes.
-  useEffect(() => setSolved(false), [level]);
+  // Reset the per-round gates whenever the level changes.
+  useEffect(() => {
+    setSolved(false);
+    setMisses(0);
+  }, [level]);
 
   const startNewGame = useCallback(() => {
     setSessionSeed(Math.floor(Math.random() * 0x7fffffff));
@@ -114,12 +121,16 @@ export default function MatchUpGame(): React.JSX.Element {
         round={data}
         accent={ACCENT}
         onCorrect={() => addScore(POINTS_PER_MATCH)}
+        onWrong={() => setMisses((m) => m + 1)}
         onSolved={handleSolved}
       />
+
+      <MascotHelper pose={solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point'} />
 
       {solved ? (
         <View style={styles.overlay}>
           <View style={[styles.card, SHADOWS.lg]}>
+            <Mascot pose="cheer" size={110} />
             <View style={styles.starsRow}>
               <Star size={26} filled />
               <Star size={34} filled />

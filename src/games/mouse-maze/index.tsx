@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   GestureResponderEvent,
+  I18nManager,
   LayoutChangeEvent,
   PanResponder,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
 import {
   DemoHand,
   EmojiImage,
+  MascotHelper,
   ResumePrompt,
   levelsFromGenerator,
   useCelebrate,
@@ -254,6 +256,13 @@ export default function MouseMazeGame() {
             landscape
           />
         </View>
+        {/* Lulu points at the maze while the demo hand shows the way. */}
+        <MascotHelper
+          pose={showDemo ? 'point' : null}
+          side="end"
+          size={100}
+          pointTo={I18nManager.isRTL ? 'right' : 'left'}
+        />
         {showWin && (
           <WinOverlay collected={state.collected} total={state.total} onNext={handleNext} />
         )}

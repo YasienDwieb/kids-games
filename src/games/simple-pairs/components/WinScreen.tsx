@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Dimensions, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { PressableButton, Star } from '../../../components/common';
 import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING } from '../../../constants';
-import { useTranslation } from '@/sdk';
+import { Mascot, useTranslation } from '@/sdk';
 
 type WinScreenProps = {
   visible: boolean;
@@ -105,15 +105,9 @@ export function WinScreen({ visible, stars, onPlayAgain, onPickLevel }: WinScree
         style={[styles.card, landscape && styles.cardLandscape, { transform: [{ scale: pop }] }]}
       >
         <View style={landscape ? styles.resultColumn : styles.resultStacked}>
-          <Animated.Text
-            style={[
-              styles.hero,
-              landscape && styles.heroLandscape,
-              { transform: [{ scale: pulse }] },
-            ]}
-          >
-            🎉
-          </Animated.Text>
+          <Animated.View style={{ transform: [{ scale: pulse }] }}>
+            <Mascot pose="cheer" size={landscape ? 96 : 120} />
+          </Animated.View>
           <Text style={[styles.title, landscape && styles.titleLandscape]}>
             {t('simple-pairs:win.title')}
           </Text>
@@ -179,8 +173,6 @@ const styles = StyleSheet.create({
   },
   resultStacked: { alignItems: 'center', width: '100%' },
   resultColumn: { flex: 1, alignItems: 'center' },
-  hero: { fontSize: 64, lineHeight: 70 },
-  heroLandscape: { fontSize: 48, lineHeight: 56 },
   title: {
     fontFamily: FONTS.displayBold,
     fontSize: 28,

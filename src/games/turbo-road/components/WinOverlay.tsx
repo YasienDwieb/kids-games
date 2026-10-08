@@ -12,6 +12,7 @@ import {
   ACCENTS,
   COLORS,
   FONTS,
+  MascotHelper,
   PressableButton,
   SHADOWS,
   SPACING,
@@ -203,6 +204,8 @@ export function WinOverlay({
           </View>
         </View>
       </View>
+      {/* Lulu cheers from the corner whatever the place — every finish counts. */}
+      <MascotHelper pose="cheer" size={120} />
     </View>
   );
 }

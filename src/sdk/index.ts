@@ -92,6 +92,7 @@ export { Sticker } from './rewards/Sticker';
 // Mascot — Lulu the owl
 export { Mascot } from './mascot/Mascot';
 export type { MascotPose } from './mascot/Mascot';
+export { MascotHelper } from './mascot/MascotHelper';
 
 // Tutorials — first-run demos & idle hints
 export { DemoHand } from './tutorial/DemoHand';
