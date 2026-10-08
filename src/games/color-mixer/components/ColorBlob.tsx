@@ -10,6 +10,8 @@ type ColorBlobProps = {
   label?: string;
   onPress?: () => void;
   pulsing?: boolean;
+  /** Screen-reader name for a tappable blob (defaults to `label`). */
+  accessibilityLabel?: string;
 };
 
 export function ColorBlob({
@@ -20,6 +22,7 @@ export function ColorBlob({
   label,
   onPress,
   pulsing = false,
+  accessibilityLabel,
 }: ColorBlobProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -116,6 +119,8 @@ export function ColorBlob({
       {onPress ? (
         <Pressable
           onPress={onPress}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel ?? label}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
         >

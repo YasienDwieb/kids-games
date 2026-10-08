@@ -9,15 +9,15 @@ This folder holds one GDD per game plus the cross-game engagement plan and the 3
 | Game | Ages | Skill | Flow | GDD |
 |---|---|---|---|---|
 | 🐾 Animal Safari | 3–7 | vocabulary, listening | ✅ | [animal-safari.md](./animal-safari.md) |
-| 🃏 Simple Pairs | 2–5 | memory | ❌ | [simple-pairs.md](./simple-pairs.md) |
+| 🃏 Simple Pairs | 2–5 | memory | ✅ | [simple-pairs.md](./simple-pairs.md) |
 | 🧮 Count & Pop | 3–7 | counting, early math | ✅ | [count-and-pop.md](./count-and-pop.md) |
 | 🔢 Numbers Land | 3–7 | number recognition | ✅ | [numbers-land.md](./numbers-land.md) |
 | 🔤 Letter Land | 3–7 | letter recognition | ✅ | [letter-land.md](./letter-land.md) |
 | 🔗 Match Up | 3–7 | associations | ✅ | [match-up.md](./match-up.md) |
 | 🔺 Shape Detective | 3–10 | patterns, logic | ✅ | [shape-detective.md](./shape-detective.md) |
-| 🍭 Candy Catch | 3–7 | coordination | ❌ | [candy-catch.md](./candy-catch.md) |
-| 🐭 Mouse Maze | 3–8 | spatial planning | ❌ | [mouse-maze.md](./mouse-maze.md) |
-| 🎨 Color Mixer | 4–8 | color theory, creativity | ❌ | [color-mixer.md](./color-mixer.md) |
+| 🍭 Candy Catch | 3–7 | coordination | ✅ | [candy-catch.md](./candy-catch.md) |
+| 🐭 Mouse Maze | 3–8 | spatial planning | ✅ | [mouse-maze.md](./mouse-maze.md) |
+| 🎨 Color Mixer | 4–8 | color theory, creativity | ✅ | [color-mixer.md](./color-mixer.md) |
 | 🏹 Balloon Archer | 5–8 | timing, aiming | ❌ | [balloon-archer.md](./balloon-archer.md) |
 | 🏎️ Turbo Road | 4–12 | reflexes, meta-progression | ❌ | [turbo-road.md](./turbo-road.md) |
 
