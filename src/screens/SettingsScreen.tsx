@@ -82,7 +82,7 @@ export function SettingsScreen({ navigation }: Props) {
 
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   const resetJourney = () => {
-    flowStore.set({ step: 0, seed: 0, updatedAt: Date.now() });
+    flowStore.set({ step: 0, seed: 0, updatedAt: Date.now(), done: {} });
   };
 
   if (!unlocked) {

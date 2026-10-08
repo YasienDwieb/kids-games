@@ -30,6 +30,10 @@ import {
   sequenceLength,
   buildSequence,
   createFlowProgressStore,
+  doneCounts,
+  firstOpenStep,
+  DEFAULT_FLOW_PROGRESS,
+  type FlowProgress,
   Mascot,
   useRewards,
   DAILY_GOAL,
@@ -77,7 +81,7 @@ export function HomeScreen({ navigation }: Props) {
   const adapters = selectedAdapters(settings.flowGameIds);
   const journeyTotal = sequenceLength(adapters);
   const railRef = useRef<ScrollView>(null);
-  const [savedStep, setSavedStep] = useState(0);
+  const [savedFlow, setSavedFlow] = useState<FlowProgress>(DEFAULT_FLOW_PROGRESS);
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   // Re-read the checkpoint each time Home regains focus so the card reflects
   // progress made (or completion) inside the journey before returning here.
@@ -85,7 +89,7 @@ export function HomeScreen({ navigation }: Props) {
     useCallback(() => {
       let active = true;
       flowStore.get().then((p) => {
-        if (active) setSavedStep(p.step);
+        if (active) setSavedFlow(p);
       });
       return () => {
         active = false;
@@ -93,14 +97,19 @@ export function HomeScreen({ navigation }: Props) {
     }, [flowStore]),
   );
 
-  // The game whose unit comes next in the interleaved journey.
+  // Progress is counted per game, so it stays right when the journey's game
+  // list changes (an update adds a game, a parent toggles one in Settings).
   const sequence = journeyTotal > 0 ? buildSequence(adapters) : [];
-  const nextStep = sequence[Math.min(savedStep, sequence.length - 1)];
+  const done = doneCounts(sequence, savedFlow);
+  const savedStep = sequence.filter((s) => s.localIndex < (done[s.gameId] ?? 0)).length;
+  // The game whose unit comes next in the interleaved journey.
+  const nextStep = sequence[Math.min(firstOpenStep(sequence, done), sequence.length - 1)];
   const nextGame = nextStep ? getGame(nextStep.gameId) : undefined;
 
   const startOver = () => {
-    flowStore.set({ step: 0, seed: 0, updatedAt: Date.now() }).then(() => {
-      setSavedStep(0);
+    const fresh: FlowProgress = { step: 0, seed: 0, updatedAt: Date.now(), done: {} };
+    flowStore.set(fresh).then(() => {
+      setSavedFlow(fresh);
       navigation.navigate('FlowPlayer');
     });
   };

@@ -3,7 +3,7 @@ import type { FlowAdapter, FlowUnit } from './adapter';
 import { getFlowAdapter } from './adapter';
 import { buildSequence, sequenceLength } from './sequence';
 import {
-  createFlowProgressStore, resolveStart, advanceStep, newSeed,
+  createFlowProgressStore, doneCounts, firstOpenStep, newSeed,
   type FlowPosition, type FlowProgress,
 } from './progress';
 
@@ -36,21 +36,34 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
   const positionRef = useRef<FlowPosition | null>(null); // live value for advance()
   positionRef.current = position;
   const seedRef = useRef(0);
+  // Units finished per game — survives the game list changing between sessions.
+  const doneRef = useRef<Record<string, number>>({});
 
-  // Load the saved checkpoint once; resolve where to resume.
+  const positionAt = (step: number): FlowPosition =>
+    step >= sequenceRef.current.length ? { done: true } : { done: false, step };
+
+  // Load the saved checkpoint once; resume at the first unfinished unit of the
+  // CURRENT sequence (which may differ from the one it was saved against).
   useEffect(() => {
     let mounted = true;
     store.get().then((saved) => {
       if (!mounted) return;
       seedRef.current = saved.seed > 0 ? saved.seed : newSeed();
-      setPosition(resolveStart(sequenceRef.current.length, saved));
+      doneRef.current = doneCounts(sequenceRef.current, saved);
+      setPosition(positionAt(firstOpenStep(sequenceRef.current, doneRef.current)));
     });
     return () => { mounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store]);
 
   const persist = useCallback(
     (step: number) => {
-      const next: FlowProgress = { step, seed: seedRef.current, updatedAt: Date.now() };
+      const next: FlowProgress = {
+        step,
+        seed: seedRef.current,
+        updatedAt: Date.now(),
+        done: doneRef.current,
+      };
       store.set(next);
     },
     [store],
@@ -59,18 +72,25 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
   const advance = useCallback(() => {
     const cur = positionRef.current;
     if (!cur || cur.done) return;
-    const next = advanceStep(sequenceRef.current.length, cur.step);
-    // Persist the furthest step reached (done → one past the last unit).
-    persist(next.done ? sequenceRef.current.length : next.step);
-    setPosition(next);
+    const finished = sequenceRef.current[cur.step];
+    if (finished) {
+      doneRef.current = {
+        ...doneRef.current,
+        [finished.gameId]: Math.max(doneRef.current[finished.gameId] ?? 0, finished.localIndex + 1),
+      };
+    }
+    const nextStep = firstOpenStep(sequenceRef.current, doneRef.current);
+    persist(nextStep);
+    setPosition(positionAt(nextStep));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persist]);
 
   const reset = useCallback(() => {
     seedRef.current = newSeed();
-    const pos: FlowPosition =
-      sequenceRef.current.length > 0 ? { done: false, step: 0 } : { done: true };
+    doneRef.current = {};
     persist(0);
-    setPosition(pos);
+    setPosition(positionAt(0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persist]);
 
   const unit = useMemo<FlowUnit | null>(() => {
