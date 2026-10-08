@@ -52,10 +52,12 @@ license. Add an entry **before** importing any new third-party asset.
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:
   `pop` (drop_*) and `balloon` (drop_003 pitched to 5 pentatonic notes), `success` (confirmation_*), `wrong` (error_*) from *Interface Sounds*;
   `win`, per-game win jingles + `transition` (jingles_PIZZI*/STEEL*/SAX*) from *Music Jingles*; `powerup`
-  (phaserUp*) from *Digital Audio*; `hit` (impactGeneric_light_*) from *Impact Sounds*.
+  (phaserUp*) from *Digital Audio*; `hit` (impactGeneric_light_*) from *Impact Sounds*;
+  Turbo Road's `crash` (impactMetal/Plate_heavy_* from *Impact Sounds* layered with
+  explosionCrunch_* from *Sci-fi Sounds*) and `turbo` (thrusterFire_* from *Sci-fi Sounds*).
 - **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/interface-sounds,
   https://kenney.nl/assets/music-jingles, https://kenney.nl/assets/digital-audio,
-  https://kenney.nl/assets/impact-sounds
+  https://kenney.nl/assets/impact-sounds, https://kenney.nl/assets/sci-fi-sounds
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 - **Terms honored:** no attribution required; credited here as a courtesy. Clips were
   converted to WAV, trimmed and loudness-normalized (CC0 permits modification).

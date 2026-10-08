@@ -75,6 +75,26 @@ export const ASSETS = {
     type: 'audio',
     tags: ['balloon'],
   },
+  // Turbo Road: a car-crash crunch (Kenney impact + sci-fi crunch layered) and a
+  // thruster whoosh for boosts — louder and more specific than hit/powerup.
+  'sfx.crash': {
+    modules: [
+      require('./audio/cc0/crash_000.wav'),
+      require('./audio/cc0/crash_001.wav'),
+      require('./audio/cc0/crash_002.wav'),
+    ],
+    type: 'audio',
+    tags: ['crash'],
+  },
+  'sfx.turbo': {
+    modules: [
+      require('./audio/cc0/turbo_thruster_000.wav'),
+      require('./audio/cc0/turbo_thruster_002.wav'),
+      require('./audio/cc0/turbo_thruster_004.wav'),
+    ],
+    type: 'audio',
+    tags: ['turbo'],
+  },
   'sfx.hit': {
     modules: [
       require('./audio/cc0/impactGeneric_light_000.wav'),

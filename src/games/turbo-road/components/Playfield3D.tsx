@@ -17,11 +17,18 @@
 import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { LogBox, PanResponder, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
-import type { Group, Mesh } from 'three';
+import { MeshStandardMaterial, type Group, type Object3D, type PerspectiveCamera } from 'three';
 import { ACCENTS, COLORS } from '@/sdk';
 import type { Animated } from 'react-native';
 import type { CarId, EntityKind, PlayfieldProps } from '../types';
-import { CAR_MODEL, preloadModels, useModel, type ModelName } from '../utils/models3d';
+import {
+  CAR_MODEL,
+  SCENERY,
+  preloadModels,
+  useModel,
+  type ModelName,
+  type SceneryItem,
+} from '../utils/models3d';
 
 // three's internal Clock deprecation warning comes from react-three-fiber, not
 // our code; keep it out of the dev LogBox.
@@ -65,7 +72,7 @@ const AHEAD = 70; // metres of road drawn ahead of the car
 const DASH_LEN = 2.2;
 const DASH_PERIOD = 6; // metres
 const DASH_COUNT = Math.ceil((AHEAD + 20) / DASH_PERIOD);
-const TREE_PERIOD = 9; // metres between roadside trees
+const TREE_PERIOD = 9; // metres between roadside scenery props
 const TREE_COUNT = Math.ceil((AHEAD + 20) / TREE_PERIOD);
 
 const laneX = (lane: number) => (lane - 1) * LANE_W;
@@ -83,15 +90,38 @@ const ENTITY_COLOR: Record<EntityKind, string> = {
   magnet: ACCENTS.coral.deep,
 };
 
-function EntityMesh({ kind }: { kind: EntityKind }) {
+/**
+ * Pickups that move: coins spin, shield/magnet bob and turn, boost pads pulse.
+ * One shared material per kind, so a glow update is a single write per frame.
+ */
+type Animated3D = { spinners: Set<Object3D>; bobbers: Set<Object3D> };
+
+function EntityMesh({
+  kind,
+  motion,
+  materials,
+}: {
+  kind: EntityKind;
+  motion: Animated3D;
+  materials: Materials;
+}) {
   const color = ENTITY_COLOR[kind];
+  // React 19 ref cleanup: consumed pickups unmount and leave the set.
+  const track = (set: Set<Object3D>) => (o: Object3D | null) => {
+    if (!o) return;
+    set.add(o);
+    return () => {
+      set.delete(o);
+    };
+  };
   switch (kind) {
     case 'coin':
       return (
-        <mesh position={[0, 0.9, 0]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.55, 0.55, 0.15, 16]} />
-          <meshLambertMaterial color={color} />
-        </mesh>
+        <group position={[0, 1, 0]} ref={track(motion.spinners)}>
+          <mesh rotation={[Math.PI / 2, 0, 0]} material={materials.coin}>
+            <cylinderGeometry args={[0.6, 0.6, 0.16, 20]} />
+          </mesh>
+        </group>
       );
     case 'cone':
       return (
@@ -108,34 +138,66 @@ function EntityMesh({ kind }: { kind: EntityKind }) {
       );
     case 'barrel':
       return (
-        <mesh position={[0, 0.7, 0]}>
-          <cylinderGeometry args={[0.6, 0.6, 1.4, 14]} />
-          <meshLambertMaterial color={color} />
-        </mesh>
+        <group>
+          <mesh position={[0, 0.7, 0]}>
+            <cylinderGeometry args={[0.6, 0.6, 1.4, 16]} />
+            <meshLambertMaterial color={color} />
+          </mesh>
+          {[0.35, 1.05].map((y) => (
+            <mesh key={y} position={[0, y, 0]}>
+              <torusGeometry args={[0.61, 0.05, 6, 20]} />
+              <meshLambertMaterial color={COLORS.surface} />
+            </mesh>
+          ))}
+        </group>
       );
     case 'boost':
       return (
-        <mesh position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[LANE_W * 0.7, 2.4]} />
-          <meshLambertMaterial color={color} />
-        </mesh>
+        <group position={[0, 0.03, 0]}>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} material={materials.boost}>
+            <planeGeometry args={[LANE_W * 0.75, 2.6]} />
+          </mesh>
+          {/* Chevrons point the way forward. */}
+          {[-0.5, 0.5].map((z) => (
+            <mesh key={z} rotation={[-Math.PI / 2, 0, Math.PI / 4]} position={[0, 0.01, z]}>
+              <planeGeometry args={[0.9, 0.9]} />
+              <meshBasicMaterial color={COLORS.surface} transparent opacity={0.85} />
+            </mesh>
+          ))}
+        </group>
       );
     case 'shield':
       return (
-        <mesh position={[0, 1, 0]}>
-          <sphereGeometry args={[0.6, 14, 10]} />
-          <meshLambertMaterial color={color} transparent opacity={0.8} />
-        </mesh>
+        <group position={[0, 1.1, 0]} ref={track(motion.bobbers)}>
+          <mesh>
+            <icosahedronGeometry args={[0.65, 1]} />
+            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.5} transparent opacity={0.85} />
+          </mesh>
+        </group>
       );
     case 'magnet':
       return (
-        <mesh position={[0, 1, 0]}>
-          <torusGeometry args={[0.5, 0.18, 8, 16, Math.PI]} />
-          <meshLambertMaterial color={color} />
-        </mesh>
+        <group position={[0, 1.1, 0]} ref={track(motion.bobbers)}>
+          <mesh rotation={[0, 0, Math.PI]}>
+            <torusGeometry args={[0.5, 0.2, 10, 20, Math.PI]} />
+            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} />
+          </mesh>
+          {[-0.5, 0.5].map((x) => (
+            <mesh key={x} position={[x, 0.05, 0]}>
+              <boxGeometry args={[0.4, 0.2, 0.4]} />
+              <meshLambertMaterial color={COLORS.surface} />
+            </mesh>
+          ))}
+        </group>
       );
   }
 }
+
+type Materials = { coin: MeshStandardMaterial; boost: MeshStandardMaterial };
+
+/** Gold flecks that burst from the car when a coin is grabbed. */
+const SPARK_COUNT = 10;
+const SPARK_LIFE = 0.55; // seconds
 
 /** A car model facing −z, with a box-car stand-in while it loads. */
 function Car({ model, color, flip = false }: { model: ModelName; color: string; flip?: boolean }) {
@@ -176,14 +238,9 @@ function BoxCar({ color }: { color: string }) {
   );
 }
 
-function Tree({ color, large }: { color: string; large: boolean }) {
+function Scenery({ item, color }: { item: SceneryItem; color: string }) {
   return (
-    <Model
-      name={large ? 'treeLarge' : 'treeSmall'}
-      length={large ? 4.2 : 3}
-      fit="height"
-      fallback={<ConeTree color={color} />}
-    />
+    <Model name={item.name} length={item.size} fit={item.fit} fallback={<ConeTree color={color} />} />
   );
 }
 
@@ -211,13 +268,53 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
   const dashes = useRef<Group>(null);
   const trees = useRef<Group>(null);
   const player = useRef<Group>(null);
+  const sparks = useRef<Group>(null);
   const rivals = useRef<(Group | null)[]>([]);
   const traffic = useRef<(Group | null)[]>([]);
   const consumed = useMemo(() => new Set(ui.consumedIds), [ui.consumedIds]);
+  const motion = useMemo<Animated3D>(() => ({ spinners: new Set(), bobbers: new Set() }), []);
+  const materials = useMemo<Materials>(
+    () => ({
+      coin: new MeshStandardMaterial({
+        color: COLORS.gold,
+        emissive: COLORS.gold,
+        emissiveIntensity: 0.35,
+        metalness: 0.4,
+        roughness: 0.35,
+      }),
+      boost: new MeshStandardMaterial({
+        color: ACCENTS.green.base,
+        emissive: ACCENTS.green.base,
+        emissiveIntensity: 0.4,
+      }),
+    }),
+    [],
+  );
+  const scenery = SCENERY[theme.id];
+
+  // A coin newly in consumedIds → fire the spark burst from the car.
+  const coinIds = useMemo(
+    () => new Set(level.entities.filter((e) => e.kind === 'coin').map((e) => e.id)),
+    [level.entities],
+  );
+  const seen = useRef(new Set<number>());
+  const burstAt = useRef(-1);
+  const clockRef = useRef(0);
+  useEffect(() => {
+    for (const id of ui.consumedIds) {
+      if (seen.current.has(id)) continue;
+      seen.current.add(id);
+      if (coinIds.has(id)) burstAt.current = clockRef.current;
+    }
+  }, [ui.consumedIds, coinIds]);
+
   // Spike instrumentation: average frame rate, logged in dev every ~3 s.
   const fps = useRef({ frames: 0, time: 0 });
+  const fov = useRef(58);
 
-  useFrame(({ camera }, delta) => {
+  useFrame(({ camera, clock }, delta) => {
+    const t = clock.getElapsedTime();
+    clockRef.current = t;
     if (__DEV__) {
       fps.current.frames += 1;
       fps.current.time += delta;
@@ -228,11 +325,22 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
     }
 
     const dist = read(anim.dist);
-    const lx = laneX(read(anim.playerLaneX) + read(anim.shake));
+    const shake = read(anim.shake);
+    const lx = laneX(read(anim.playerLaneX) + shake);
 
     if (world.current) world.current.position.z = dist * S;
-    if (dashes.current) dashes.current.position.z = ((dist * S) % DASH_PERIOD);
-    if (trees.current) trees.current.position.z = ((dist * S) % TREE_PERIOD);
+    if (dashes.current) dashes.current.position.z = (dist * S) % DASH_PERIOD;
+    if (trees.current) trees.current.position.z = (dist * S) % TREE_PERIOD;
+
+    // Pickups come alive.
+    motion.spinners.forEach((o) => {
+      o.rotation.y = t * 3;
+    });
+    motion.bobbers.forEach((o) => {
+      o.position.y = 1.1 + Math.sin(t * 3) * 0.18;
+      o.rotation.y = t * 1.5;
+    });
+    materials.boost.emissiveIntensity = 0.35 + Math.sin(t * 6) * 0.25;
 
     if (player.current) {
       player.current.position.x = lx;
@@ -254,9 +362,35 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
       g.visible = g.position.z < 1.5;
     });
 
-    // Chase camera: trails the car's lane softly so steering feels weighty.
-    camera.position.x += (lx * 0.6 - camera.position.x) * 0.12;
-    camera.lookAt(lx * 0.4, 0.6, -12);
+    // Coin sparks: fly up and out from the car, fade, then hide.
+    if (sparks.current) {
+      const age = t - burstAt.current;
+      const live = burstAt.current >= 0 && age < SPARK_LIFE;
+      sparks.current.visible = live;
+      if (live) {
+        const k = age / SPARK_LIFE;
+        sparks.current.position.set(lx, 1.2, -0.5);
+        sparks.current.children.forEach((c, i) => {
+          const a = (i / SPARK_COUNT) * Math.PI * 2;
+          c.position.set(Math.cos(a) * 2.2 * k, 2.4 * k - 2 * k * k, Math.sin(a) * 1.2 * k);
+          c.rotation.set(t * 8 + i, t * 6, 0);
+          c.scale.setScalar(1 - k);
+        });
+      }
+    }
+
+    // Chase camera: trails the lane softly; a crash shakes it, a boost widens
+    // the lens for a rush of speed.
+    const cam = camera as PerspectiveCamera;
+    cam.position.x += (lx * 0.6 - cam.position.x) * 0.12 + shake * 0.35;
+    cam.position.y = 4.6 + Math.abs(shake) * 0.4;
+    const targetFov = ui.boostActive ? 70 : 58;
+    fov.current += (targetFov - fov.current) * Math.min(1, delta * 4);
+    if (Math.abs(cam.fov - fov.current) > 0.05) {
+      cam.fov = fov.current;
+      cam.updateProjectionMatrix();
+    }
+    cam.lookAt(lx * 0.4, 0.6, -12);
   });
 
   return (
@@ -291,14 +425,18 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
         )}
       </group>
 
+      {/* Roadside scenery for this level's theme, alternated along both verges. */}
       <group ref={trees}>
         {Array.from({ length: TREE_COUNT }, (_, i) =>
           [-1, 1].map((side) => (
             <group
-              key={`${i}-${side}`}
+              key={`${theme.id}-${i}-${side}`}
               position={[side * (ROAD_W / 2 + 2.5 + (i % 3)), 0, 8 - i * TREE_PERIOD - (side > 0 ? 4 : 0)]}
             >
-              <Tree color={theme.groundPatch} large={(i + (side > 0 ? 1 : 0)) % 2 === 0} />
+              <Scenery
+                item={scenery[(i + (side > 0 ? 1 : 0)) % scenery.length]}
+                color={theme.groundPatch}
+              />
             </group>
           )),
         )}
@@ -309,7 +447,7 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
         {level.entities.map((e) =>
           consumed.has(e.id) ? null : (
             <group key={e.id} position={[laneX(e.lane), 0, -e.dist * S]}>
-              <EntityMesh kind={e.kind} />
+              <EntityMesh kind={e.kind} motion={motion} materials={materials} />
             </group>
           ),
         )}
@@ -344,9 +482,30 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
         {ui.shieldActive ? (
           <mesh position={[0, 0.9, 0]}>
             <sphereGeometry args={[2, 16, 12]} />
-            <meshLambertMaterial color={ACCENTS.blue.base} transparent opacity={0.25} />
+            <meshStandardMaterial
+              color={ACCENTS.blue.base}
+              emissive={ACCENTS.blue.base}
+              emissiveIntensity={0.4}
+              transparent
+              opacity={0.25}
+            />
           </mesh>
         ) : null}
+        {ui.boostActive ? (
+          // Exhaust glow while boosting.
+          <mesh position={[0, 0.5, 1.9]}>
+            <coneGeometry args={[0.35, 1.4, 10]} />
+            <meshBasicMaterial color={ACCENTS.orange.base} transparent opacity={0.8} />
+          </mesh>
+        ) : null}
+      </group>
+
+      <group ref={sparks} visible={false}>
+        {Array.from({ length: SPARK_COUNT }, (_, i) => (
+          <mesh key={i} material={materials.coin}>
+            <tetrahedronGeometry args={[0.18]} />
+          </mesh>
+        ))}
       </group>
     </>
   );
@@ -362,8 +521,15 @@ export function Playfield3D({
 }: PlayfieldProps & { carId: CarId }) {
   // Fetch every model this race uses during the countdown.
   useEffect(() => {
-    preloadModels([CAR_MODEL[carId], ...RIVAL_MODELS, TRAFFIC_MODEL, 'cone', 'treeLarge', 'treeSmall', 'finishArch']);
-  }, [carId]);
+    preloadModels([
+      CAR_MODEL[carId],
+      ...RIVAL_MODELS,
+      TRAFFIC_MODEL,
+      'cone',
+      'finishArch',
+      ...SCENERY[theme.id].map((s) => s.name),
+    ]);
+  }, [carId, theme.id]);
 
   // Finger x across the whole width → continuous lane 0..2 (same contract as 2D).
   const width = useRef(1);

@@ -75,6 +75,7 @@ Shared audio assets — soft CC0 clips from Kenney in `src/sdk/assets/audio/cc0/
 - `sfx.transition` — tags: `transition`, `teleport`, `whoosh`, `appear`, `next`
 - `sfx.balloon` — tags: `balloon` (soft pentatonic bloop per pop)
 - `sfx.hit` — tags: `hit`, `bump`, `thud`, `hurt`, `damage`
+- `sfx.crash` — tags: `crash` (Turbo Road collision); `sfx.turbo` — tags: `turbo` (boost whoosh)
 - `jingle.*` — 12 per-game win jingles `jingle.{pizzi,steel,sax}-{02,06,10,15}` (no tags; chosen by id in a game's `sounds` config). **Every game sets its own distinct `sounds: { 'sfx.win': 'jingle.…' }`** — guarded by `src/games/__tests__/winJingles.test.ts`.
 
 To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged entry to `manifest.ts` with a `modules: [...]` list (one or more variants).

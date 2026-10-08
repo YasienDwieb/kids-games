@@ -12,7 +12,7 @@ import { Asset } from 'expo-asset';
 import { File } from 'expo-file-system';
 import { Box3, Vector3, type Object3D } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import type { CarId } from '../types';
+import type { CarId, ThemeId } from '../types';
 
 export const MODELS = {
   race: require('../assets/models/race.glb'),
@@ -30,6 +30,16 @@ export const MODELS = {
   treeLarge: require('../assets/models/treeLarge.glb'),
   treeSmall: require('../assets/models/treeSmall.glb'),
   finishArch: require('../assets/models/overheadRoundColored.glb'),
+  // Roadside scenery per theme (Kenney Nature Kit).
+  oak: require('../assets/models/tree_oak.glb'),
+  roundTree: require('../assets/models/tree_default.glb'),
+  palm: require('../assets/models/tree_palm.glb'),
+  palmTall: require('../assets/models/tree_palmTall.glb'),
+  cactusTall: require('../assets/models/cactus_tall.glb'),
+  cactusShort: require('../assets/models/cactus_short.glb'),
+  rock: require('../assets/models/rock_largeA.glb'),
+  pine: require('../assets/models/tree_pineDefaultA.glb'),
+  pineRound: require('../assets/models/tree_pineRoundA.glb'),
 } as const;
 
 export type ModelName = keyof typeof MODELS;
@@ -65,6 +75,29 @@ if (typeof globalThis.TextDecoder === 'undefined') {
   }
   (globalThis as { TextDecoder?: unknown }).TextDecoder = Utf8Decoder;
 }
+
+export type SceneryItem = { name: ModelName; size: number; fit: 'length' | 'height' };
+
+/** Roadside props for each road theme, alternated along the verge. */
+export const SCENERY: Record<ThemeId, readonly SceneryItem[]> = {
+  meadow: [
+    { name: 'oak', size: 4.2, fit: 'height' },
+    { name: 'roundTree', size: 3.4, fit: 'height' },
+  ],
+  beach: [
+    { name: 'palmTall', size: 5, fit: 'height' },
+    { name: 'palm', size: 4, fit: 'height' },
+  ],
+  desert: [
+    { name: 'cactusTall', size: 3, fit: 'height' },
+    { name: 'rock', size: 2.2, fit: 'length' },
+    { name: 'cactusShort', size: 1.8, fit: 'height' },
+  ],
+  snow: [
+    { name: 'pine', size: 4.6, fit: 'height' },
+    { name: 'pineRound', size: 3.6, fit: 'height' },
+  ],
+};
 
 const cache = new Map<ModelName, Promise<Object3D>>();
 

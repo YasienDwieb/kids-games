@@ -50,8 +50,8 @@ const DECOR_PERIOD = DECOR_BANDS * DECOR_SPACING;
 const EVENT_SOUND: Record<GameEvent, string> = {
   go: 'transition',
   coin: 'success',
-  hit: 'hit',
-  boost: 'powerup',
+  hit: 'crash',
+  boost: 'turbo',
   shield: 'powerup',
   magnet: 'powerup',
   shieldBlock: 'pop', // absorbed — a thump, not a crash
@@ -102,7 +102,11 @@ export function useRaceGame({ level, car, onFinish }: Args): {
   pause: () => void;
   resume: () => void;
 } {
-  const { play } = useSound();
+  const { play, prewarm } = useSound();
+  // Load every race sound up front so the first crash/boost isn't late.
+  useEffect(() => {
+    prewarm(Object.values(EVENT_SOUND));
+  }, [prewarm]);
   const { settings } = useSettings();
 
   // Gentle pacing per age band (scales player AND rivals via baseSpeed),
