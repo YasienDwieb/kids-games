@@ -9,6 +9,8 @@ import {
 
 export type UseFlowResult = {
   status: 'loading' | 'playing' | 'done';
+  /** Game that owns the current unit (null when not playing). */
+  gameId: string | null;
   step: number;
   total: number;
   unit: FlowUnit | null;
@@ -80,10 +82,11 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
   }, [position, sequence]);
 
   if (position == null) {
-    return { status: 'loading', step: 0, total, unit: null, advance, reset };
+    return { status: 'loading', gameId: null, step: 0, total, unit: null, advance, reset };
   }
   if (position.done) {
-    return { status: 'done', step: total, total, unit: null, advance, reset };
+    return { status: 'done', gameId: null, step: total, total, unit: null, advance, reset };
   }
-  return { status: 'playing', step: position.step, total, unit, advance, reset };
+  const gameId = sequence[position.step]?.gameId ?? null;
+  return { status: 'playing', gameId, step: position.step, total, unit, advance, reset };
 }

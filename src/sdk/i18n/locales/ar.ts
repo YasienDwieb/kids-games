@@ -63,6 +63,19 @@ export const ar: CoreTranslations = {
     early: 'السنوات الأولى',
     kids: 'الكبار',
   },
+  stickers: {
+    title: 'ملصقاتي',
+    open: 'افتح كتاب الملصقات',
+    count: '{{have}} / {{total}}',
+    stars: '{{n}} نجمة',
+    nextIn: '{{n}} ⭐ أخرى لملصق جديد!',
+    new: 'ملصق جديد!',
+    addedToBook: 'أُضيف إلى كتاب ملصقاتك',
+    newBadge: 'جديد',
+    locked: 'لم تجده بعد',
+    general: 'مفاجآت',
+    complete: 'وجدتها كلها! 🏆',
+  },
   celebrate: {
     praise: {
       1: 'أحسنت!',

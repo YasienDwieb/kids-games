@@ -15,10 +15,20 @@ license. Add an entry **before** importing any new third-party asset.
 
 ## Audio assets
 
+### Higgsfield (Nano Banana) — Lulu the owl mascot
+
+- **Used for:** the mascot's four poses (`src/sdk/assets/images/mascot/owl-{wave,cheer,point,encourage}.png`),
+  drawn by the `Mascot` SDK component.
+- **Source:** generated with Higgsfield AI (Nano Banana) as one 2×2 character sheet, 2026-10-08,
+  on the project's Higgsfield account; cut into poses with the white background removed.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+
 ### Higgsfield (Seed Audio 1.0) — spoken praise
 
 - **Used for:** the voice that says the celebration praise lines
-  (`src/sdk/assets/audio/voice/praise-{en,ar}-{1..8}.m4a`), played by `useCelebrate()`.
+  (`src/sdk/assets/audio/voice/praise-{en,ar}-{1..8}.m4a`), played by `useCelebrate()`,
+  and the "new sticker" announcement (`sticker-new-{en,ar}.m4a`).
 - **Source:** generated with Higgsfield AI (model: Seed Audio 1.0, preset voice "Pixie"),
   2026-10-08, on the project's Higgsfield account.
 - **License:** generated content used under the Higgsfield account's terms, which the

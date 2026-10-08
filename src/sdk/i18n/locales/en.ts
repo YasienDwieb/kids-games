@@ -62,6 +62,19 @@ export const en = {
     early: 'Early years',
     kids: 'Big kids',
   },
+  stickers: {
+    title: 'My Stickers',
+    open: 'Open my sticker book',
+    count: '{{have}} / {{total}}',
+    stars: '{{n}} stars',
+    nextIn: '{{n}} more ⭐ for a new sticker!',
+    new: 'New sticker!',
+    addedToBook: 'Added to your sticker book',
+    newBadge: 'NEW',
+    locked: 'Not found yet',
+    general: 'Surprises',
+    complete: 'You found them all! 🏆',
+  },
   celebrate: {
     praise: {
       1: 'Great job!',

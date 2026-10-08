@@ -68,6 +68,31 @@ export type { HintStep } from './feedback/hints';
 export { useHintLadder } from './feedback/useHintLadder';
 export type { UseHintLadderResult } from './feedback/useHintLadder';
 
+// Rewards — app-wide stars & the sticker book
+export {
+  awardStars,
+  markStickersSeen,
+  onStickerUnlocked,
+  rewardsStore,
+  useRewards,
+  DEFAULT_REWARDS,
+} from './rewards/store';
+export type { Rewards } from './rewards/store';
+export {
+  STICKER_SETS,
+  STARS_PER_STICKER,
+  ALL_STICKERS,
+  nextSticker,
+  stickerEmoji,
+  stickerId,
+} from './rewards/stickers';
+export type { StickerSetId } from './rewards/stickers';
+export { Sticker } from './rewards/Sticker';
+
+// Mascot — Lulu the owl
+export { Mascot } from './mascot/Mascot';
+export type { MascotPose } from './mascot/Mascot';
+
 // Tutorials — first-run demos & idle hints
 export { DemoHand } from './tutorial/DemoHand';
 export type { DemoPoint } from './tutorial/DemoHand';

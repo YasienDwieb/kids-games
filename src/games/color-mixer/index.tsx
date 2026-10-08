@@ -17,6 +17,7 @@ import {
   IconButton,
   PressableButton,
   useScreenBack,
+  awardStars,
   useSound,
   useTranslation,
 } from '@/sdk';
@@ -128,7 +129,9 @@ export default function ColorMixerGame() {
 
   // Discovering a famous color is free play's reward moment — it gets a cue, not silence.
   useEffect(() => {
-    if (mixer.newDiscovery) play('success');
+    if (!mixer.newDiscovery) return;
+    play('success');
+    void awardStars('color-mixer');
   }, [mixer.newDiscovery, play]);
 
   const GHOST_SIZE = DIMENSIONS.PALETTE_ITEM_SIZE;
@@ -236,6 +239,7 @@ export default function ColorMixerGame() {
   const finishChallenge = useCallback(() => {
     if (!canFinishChallenge) return;
     play('win');
+    void awardStars('color-mixer');
     setShowSuccess(true);
   }, [canFinishChallenge, play]);
 

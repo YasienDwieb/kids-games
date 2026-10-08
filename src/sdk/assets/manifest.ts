@@ -294,6 +294,17 @@ export const ASSETS = {
     type: 'audio',
     tags: ['praise.ar.8'],
   },
+  // "New sticker!" announcement, one per language — played by the sticker toast.
+  'voice.sticker.en': {
+    modules: [require('./audio/voice/sticker-new-en.m4a')],
+    type: 'audio',
+    tags: ['sticker.new.en'],
+  },
+  'voice.sticker.ar': {
+    modules: [require('./audio/voice/sticker-new-ar.m4a')],
+    type: 'audio',
+    tags: ['sticker.new.ar'],
+  },
 } as const satisfies Record<string, AssetEntry>;
 
 export type AssetId = keyof typeof ASSETS;

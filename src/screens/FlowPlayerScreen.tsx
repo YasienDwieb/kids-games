@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
-  CelebrationProvider, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
+  awardStars, CelebrationProvider, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
   FONTS, FONT_SIZES, COLORS, SPACING, TOUCH_TARGET,
 } from '@/sdk';
 import { BackButton } from '../components/common';
@@ -35,7 +35,7 @@ export function FlowPlayerScreen({ navigation }: Props) {
     () => selectedAdapters(settings.flowGameIds),
     [settings.flowGameIds],
   );
-  const { status, unit, advance, step, total } = useFlow({ adapters });
+  const { status, unit, advance, step, total, gameId } = useFlow({ adapters });
   const progress = total > 0 ? step / total : 0;
 
   // Smooth cross-fade on the shared backdrop when the unit changes.
@@ -55,10 +55,12 @@ export function FlowPlayerScreen({ navigation }: Props) {
   const handleComplete = useCallback(() => {
     if (advancing.current) return;
     advancing.current = true;
+    // Journey rounds earn stickers just like playing the game directly.
+    if (gameId) void awardStars(gameId);
     Animated.timing(fade, { toValue: 0, duration: 250, useNativeDriver: true }).start(() => {
       timer.current = setTimeout(() => advance(), 80);
     });
-  }, [advance, fade]);
+  }, [advance, fade, gameId]);
 
   return (
     <View style={styles.root}>

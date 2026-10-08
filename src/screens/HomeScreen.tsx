@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   I18nManager,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +14,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
 import { GameCard, IconButton, JourneyCard } from '../components/common';
 import { computeHomeGrid, isTablet, homeRailWidth } from '../utils/responsive';
-import { COLORS, FONTS, SPACING } from '../constants';
+import { ACCENTS, BORDER_RADIUS, COLORS, FONTS, SHADOWS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
 import {
   useSettings,
@@ -29,6 +30,8 @@ import {
   sequenceLength,
   buildSequence,
   createFlowProgressStore,
+  Mascot,
+  useRewards,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
 import { PressableButton } from '../components/common';
@@ -55,6 +58,7 @@ export function HomeScreen({ navigation }: Props) {
   // Portrait grid columns: 2 on phones, 3–4 on tablets so it isn't two giant columns.
   const columns = isTablet(width, height) ? (width > 900 ? 4 : 3) : 2;
   const { settings, update } = useSettings();
+  const rewards = useRewards();
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
   // Language switching restarts the app, so it asks first. That confirmation is
@@ -144,10 +148,28 @@ export function HomeScreen({ navigation }: Props) {
     />
   );
 
+  // Sticker book: Lulu + the star total, with a dot when there's something new.
+  const stickerButton = (
+    <Pressable
+      onPress={() => navigation.navigate('StickerBook')}
+      accessibilityRole="button"
+      accessibilityLabel={t('stickers.open')}
+      hitSlop={8}
+      style={({ pressed }) => [styles.stickerBtn, SHADOWS.sm, pressed && styles.pressed]}
+    >
+      <Mascot pose="wave" size={40} bob={false} />
+      <Text style={styles.stickerBtnText}>⭐ {rewards.stars}</Text>
+      <Text style={styles.stickerBtnBook}>📒</Text>
+      {rewards.unseen.length > 0 ? <View style={styles.newDot} /> : null}
+    </Pressable>
+  );
+
   // No "All games" title: they are self-evidently games, and the heading cost a
   // full text row that a pre-reader gets nothing from.
   const gamesHeader = (
     <View style={styles.gamesHeader}>
+      {stickerButton}
+      <View style={styles.headerSpacer} />
       {soundButton}
       {languageButton}
       {settingsButton}
@@ -345,6 +367,31 @@ const styles = StyleSheet.create({
   switchScreen: { alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
   switchEmoji: { fontSize: 56 },
   switchText: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
+  stickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    height: 48,
+    paddingStart: SPACING.xs,
+    paddingEnd: SPACING.md,
+    borderRadius: BORDER_RADIUS.pill,
+    backgroundColor: COLORS.surface,
+  },
+  stickerBtnText: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
+  stickerBtnBook: { fontSize: 20 },
+  newDot: {
+    position: 'absolute',
+    top: 2,
+    end: 4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: ACCENTS.coral.deep,
+    borderWidth: 2,
+    borderColor: COLORS.surface,
+  },
+  pressed: { transform: [{ scale: 0.94 }] },
+  headerSpacer: { flex: 1 },
   gamesHeader: {
     height: GAMES_HEADER_H,
     flexDirection: 'row',

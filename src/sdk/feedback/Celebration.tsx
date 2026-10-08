@@ -17,6 +17,8 @@ import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
+import { Mascot } from '@/sdk/mascot/Mascot';
+import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { ACCENTS, COLORS } from '@/constants/colors';
 import { BORDER_RADIUS, FONT_SIZES, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
@@ -142,6 +144,7 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
           {bursts.map((b) => (
             <BurstView key={b.id} burst={b} onDone={finish} />
           ))}
+          <StickerToast />
         </View>
       </View>
     </CelebrationContext.Provider>
@@ -205,6 +208,22 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
           ]}
         />
       ))}
+      {burst.size === 'big' ? (
+        // Lulu jumps in to cheer on the big moments.
+        <Animated.View
+          style={[
+            styles.mascot,
+            {
+              opacity: bubble,
+              transform: [
+                { translateY: bubble.interpolate({ inputRange: [0, 1], outputRange: [140, 0] }) },
+              ],
+            },
+          ]}
+        >
+          <Mascot pose="cheer" size={140} />
+        </Animated.View>
+      ) : null}
       {burst.praiseKey ? (
         <Animated.View
           style={[
@@ -232,6 +251,7 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   center: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   piece: { position: 'absolute' },
+  mascot: { position: 'absolute', bottom: SPACING.sm, start: SPACING.lg },
   bubble: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,

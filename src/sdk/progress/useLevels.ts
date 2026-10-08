@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createProgressStore, DEFAULT_PROGRESS, type Progress } from './store';
 import { resumeStatusFor, type ResumeStatus } from './status';
 import type { LevelSource } from './source';
+import { awardStars } from '@/sdk/rewards/store';
 
 export type UseLevelsResult<T> = {
   status: ResumeStatus;
@@ -63,8 +64,10 @@ export function useLevels<T>(options: {
       const max = source.count;
       const nextLevel = max != null ? Math.min(cur.level + 1, max) : cur.level + 1;
       persist({ level: nextLevel, score: cur.score + deltaScore, updatedAt: Date.now() });
+      // Every finished level earns an app-wide star toward the sticker book.
+      void awardStars(gameId);
     },
-    [persist, source],
+    [persist, source, gameId],
   );
 
   const addScore = useCallback(

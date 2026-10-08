@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { DifficultySelect, GameBoard, GameHeader, MatchCelebration, WinScreen } from './components';
 import { useSimplePairs } from './hooks';
-import { useSound, useScreenBack } from '@/sdk';
+import { awardStars, useSound, useScreenBack } from '@/sdk';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from './constants';
 import type { Difficulty } from './types';
 
@@ -39,6 +39,7 @@ function GameContent({
       play('success');
       if (gameState.isComplete) {
         play('win');
+        void awardStars('simple-pairs');
       } else {
         setShowCelebration(true);
       }
