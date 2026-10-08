@@ -9,6 +9,7 @@ import {
   FONTS, FONT_SIZES, COLORS, SPACING, TOUCH_TARGET,
 } from '@/sdk';
 import { BackButton } from '../components/common';
+import { PlayLimitGate } from './PlayLimitGate';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'FlowPlayer'>;
 
@@ -65,18 +66,20 @@ export function FlowPlayerScreen({ navigation }: Props) {
   return (
     <View style={styles.root}>
       <CelebrationProvider>
-        <SceneCanvas progress={progress}>
-          {status === 'playing' && unit ? (
-            <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>
-              {unit.render(handleComplete)}
-            </Animated.View>
-          ) : null}
-          {status === 'done' ? (
-            <View style={styles.rest} pointerEvents="box-none">
-              <Text style={styles.restText}>{t('flow.allCaughtUp')}</Text>
-            </View>
-          ) : null}
-        </SceneCanvas>
+        <PlayLimitGate trackId="journey" onHome={() => navigation.goBack()}>
+          <SceneCanvas progress={progress}>
+            {status === 'playing' && unit ? (
+              <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>
+                {unit.render(handleComplete)}
+              </Animated.View>
+            ) : null}
+            {status === 'done' ? (
+              <View style={styles.rest} pointerEvents="box-none">
+                <Text style={styles.restText}>{t('flow.allCaughtUp')}</Text>
+              </View>
+            ) : null}
+          </SceneCanvas>
+        </PlayLimitGate>
       </CelebrationProvider>
       <BackButton onPress={() => navigation.goBack()} />
     </View>

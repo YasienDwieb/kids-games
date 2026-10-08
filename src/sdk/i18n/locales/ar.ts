@@ -43,6 +43,17 @@ export const ar: CoreTranslations = {
     tabs: {
       general: 'عام',
       journey: 'الرحلة',
+      parents: 'للأهل',
+    },
+    parents: {
+      today: 'وقت اللعب اليوم',
+      week: 'آخر 7 أيام',
+      minutes: '{{n}} دقيقة',
+      limit: 'حدّ اللعب اليومي',
+      off: 'بلا حدّ',
+      byGame: 'الوقت والنجوم لكل لعبة',
+      gameRow: '{{min}} دقيقة · ⭐ {{stars}}',
+      empty: 'لا يوجد وقت لعب بعد.',
     },
     gate: {
       title: 'اسأل شخصاً كبيراً',
@@ -80,6 +91,12 @@ export const ar: CoreTranslations = {
     locked: 'لم تجده بعد',
     general: 'مفاجآت',
     complete: 'وجدتها كلها! 🏆',
+  },
+  break: {
+    title: 'وقت الاستراحة!',
+    body: 'لعبت كثيراً اليوم. نراك غداً! 🌙',
+    home: 'العودة للرئيسية',
+    grownUp: 'للكبار: {{n}} دقيقة إضافية',
   },
   celebrate: {
     praise: {

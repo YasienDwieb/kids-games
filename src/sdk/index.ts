@@ -98,6 +98,21 @@ export { Mascot } from './mascot/Mascot';
 export type { MascotPose } from './mascot/Mascot';
 export { MascotHelper } from './mascot/MascotHelper';
 
+// Play time — the parent corner's log and the optional daily limit
+export {
+  playtimeStore,
+  usePlaytime,
+  usePlaytimeTracker,
+  addPlaytime,
+  grantExtraTime,
+  secondsToday,
+  secondsThisWeek,
+  overLimit,
+  EXTRA_MINUTES,
+  DEFAULT_PLAYTIME,
+} from './playtime/playtime';
+export type { Playtime } from './playtime/playtime';
+
 // Adaptive difficulty — a per-game skill tier that follows the child
 export { useAdaptive } from './adaptive/useAdaptive';
 export type { UseAdaptiveResult } from './adaptive/useAdaptive';

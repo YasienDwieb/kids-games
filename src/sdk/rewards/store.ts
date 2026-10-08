@@ -13,6 +13,8 @@ export type Rewards = {
   stickers: string[];
   unseen: string[];
   today: { date: string; stars: number };
+  /** Lifetime stars per game id (the parent corner's "stars by game"). */
+  byGame: Record<string, number>;
 };
 
 export const DEFAULT_REWARDS: Rewards = {
@@ -20,6 +22,7 @@ export const DEFAULT_REWARDS: Rewards = {
   stickers: [],
   unseen: [],
   today: { date: '', stars: 0 },
+  byGame: {},
 };
 
 /** Stars that fill today's goal on Home. */
@@ -86,6 +89,7 @@ export function awardStars(gameId: string, stars = 1): Promise<string[]> {
       stickers,
       unseen: [...cur.unseen, ...unlocked],
       today: { date: localDay(), stars: after },
+      byGame: { ...cur.byGame, [gameId]: (cur.byGame[gameId] ?? 0) + stars },
     });
     const events = [...unlocked];
     if (before < DAILY_GOAL && after >= DAILY_GOAL) events.push(DAILY_GOAL_EVENT);

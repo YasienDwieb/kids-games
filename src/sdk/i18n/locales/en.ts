@@ -42,6 +42,17 @@ export const en = {
     tabs: {
       general: 'General',
       journey: 'Journey',
+      parents: 'Parents',
+    },
+    parents: {
+      today: 'Played today',
+      week: 'Last 7 days',
+      minutes: '{{n}} min',
+      limit: 'Daily play limit',
+      off: 'Off',
+      byGame: 'Time and stars by game',
+      gameRow: '{{min}} min · ⭐ {{stars}}',
+      empty: 'No play time yet.',
     },
     gate: {
       title: 'Ask a grown-up',
@@ -79,6 +90,12 @@ export const en = {
     locked: 'Not found yet',
     general: 'Surprises',
     complete: 'You found them all! 🏆',
+  },
+  break: {
+    title: 'Time for a break!',
+    body: 'You played a lot today. See you tomorrow! 🌙',
+    home: 'Back home',
+    grownUp: 'Grown-ups: {{n}} more minutes',
   },
   celebrate: {
     praise: {
