@@ -23,6 +23,7 @@ import { GarageScreen } from './components/GarageScreen';
 import { Hud } from './components/Hud';
 import { PauseOverlay } from './components/PauseOverlay';
 import { Playfield } from './components/Playfield';
+import { Playfield3D } from './components/Playfield3D';
 import { ProgressBar } from './components/ProgressBar';
 import { StartScreen } from './components/StartScreen';
 import { WinOverlay } from './components/WinOverlay';
@@ -44,6 +45,7 @@ import type {
   CarDef,
   CarId,
   ControlMode,
+  ViewMode,
   LevelData,
   RoadTheme,
   ThemeId,
@@ -63,6 +65,7 @@ function Race({
   playerEmoji,
   car,
   control,
+  roadView,
   onFinish,
   onExit,
 }: {
@@ -72,6 +75,7 @@ function Race({
   playerEmoji: string;
   car: CarDef;
   control: ControlMode;
+  roadView: ViewMode;
   onFinish: (result: RaceResult) => void;
   onExit: () => void;
 }) {
@@ -108,14 +112,26 @@ function Race({
 
   return (
     <View style={styles.flex}>
-      <Playfield
-        theme={theme}
-        level={level}
-        ui={ui}
-        anim={anim}
-        playerEmoji={playerEmoji}
-        onSteerTo={steerTo}
-      />
+      {/* Same props either way: the 3D road is a renderer swap, not a new game. */}
+      {roadView === '3d' ? (
+        <Playfield3D
+          theme={theme}
+          level={level}
+          ui={ui}
+          anim={anim}
+          playerEmoji={playerEmoji}
+          onSteerTo={steerTo}
+        />
+      ) : (
+        <Playfield
+          theme={theme}
+          level={level}
+          ui={ui}
+          anim={anim}
+          playerEmoji={playerEmoji}
+          onSteerTo={steerTo}
+        />
+      )}
       {/* Hud is not inset-aware; float it inside the safe area over the
           full-bleed playfield. pointerEvents box-none keeps steering live. */}
       <SafeContainer backgroundColor="transparent" style={styles.hudLayer}>
@@ -142,7 +158,7 @@ export default function TurboRoadGame() {
     source,
   });
   const { garage, selectCar, selectTrim, unlockCar, addCoins } = useGarage();
-  const { prefs, setControl } = usePrefs();
+  const { prefs, setControl, setView: setRoadView } = usePrefs();
   const { missions, recordRace, claim } = useMissions();
 
   const [view, setView] = useState<ViewName>('start');
@@ -301,6 +317,7 @@ export default function TurboRoadGame() {
           playerEmoji={car.emoji}
           car={car}
           control={prefs.control}
+          roadView={prefs.view}
           onFinish={handleFinish}
           onExit={handleExitRace}
         />
@@ -331,6 +348,11 @@ export default function TurboRoadGame() {
         missions={missions}
         onClaimMission={handleClaimMission}
         onControlChange={handleControlChange}
+        view={prefs.view}
+        onViewChange={(v) => {
+          play('pop');
+          setRoadView(v);
+        }}
         onRace={handleRace}
         onGarage={handleGarage}
       />

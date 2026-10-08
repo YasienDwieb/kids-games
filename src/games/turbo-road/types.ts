@@ -230,8 +230,12 @@ export interface RaceStats {
 /** 'drag' = finger-follow steering (default); 'tilt' = motion steering. */
 export type ControlMode = 'drag' | 'tilt';
 
+export type ViewMode = '2d' | '3d';
+
 export interface PrefsState {
   control: ControlMode;
+  /** Road renderer; '3d' is the beta three.js playfield. */
+  view: ViewMode;
 }
 
 export interface RoadTheme {
@@ -322,9 +326,11 @@ export interface StartScreenProps {
   trim: TrimDef;
   walletCoins: number;
   control: ControlMode;
+  view: ViewMode;
   missions: Mission[];
   onClaimMission: (id: number) => void;
   onControlChange: (mode: ControlMode) => void;
+  onViewChange: (view: ViewMode) => void;
   onRace: () => void;
   onGarage: () => void;
 }

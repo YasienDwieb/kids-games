@@ -15,6 +15,7 @@ export const en = {
     label: 'Steering',
     drag: 'Finger',
     tilt: 'Tilt',
+    view3d: '3D (beta)',
   },
   pause: {
     title: 'Paused',
