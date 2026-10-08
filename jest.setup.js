@@ -30,3 +30,8 @@ jest.mock('@react-three/fiber/native', () => ({
   Canvas: () => null,
   useFrame: () => {},
 }));
+
+// three and its loaders ship as ESM; the 3D road's model helpers only touch
+// them at runtime, so tests get inert stand-ins.
+jest.mock('three', () => ({ Box3: class {}, Vector3: class {} }));
+jest.mock('three/addons/loaders/GLTFLoader.js', () => ({ GLTFLoader: class {} }));

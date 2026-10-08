@@ -15,4 +15,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return (resolveDefault ?? context.resolveRequest)(context, moduleName, platform);
 };
 
+// 3D models for Turbo Road's 3D road ship as bundled assets.
+config.resolver.assetExts.push('glb');
+
 module.exports = config;

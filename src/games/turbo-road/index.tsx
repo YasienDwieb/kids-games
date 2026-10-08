@@ -117,6 +117,7 @@ function Race({
       {/* Same props either way: the 3D road is a renderer swap, not a new game. */}
       {roadView === '3d' ? (
         <Playfield3D
+          carId={car.id}
           theme={theme}
           level={level}
           ui={ui}

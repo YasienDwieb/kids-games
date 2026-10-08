@@ -36,6 +36,17 @@ license. Add an entry **before** importing any new third-party asset.
 - **Processing:** trimmed of leading/trailing silence, converted to mono AAC, and
   loudness-normalized to the house level (≈ −25 dBFS RMS, peak ≤ −6 dBFS).
 
+### Kenney — Car Kit & Racing Kit (3D models)
+
+- **Used for:** Turbo Road's 3D road (`src/games/turbo-road/assets/models/`): the
+  player, rival and oncoming vehicles, traffic cones (Car Kit 3.1), and the trees and
+  finish arch (Racing Kit 2.0).
+- **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/car-kit,
+  https://kenney.nl/assets/racing-kit
+- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
+- **Processing:** the Car Kit's palette texture was baked into vertex colors and the
+  meshes deduplicated/welded (CC0 permits modification), so the app needs no textures.
+
 ### Kenney — feedback SFX
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:

@@ -4,8 +4,9 @@
  * A drop-in replacement for <Playfield> with the same props: the race engine,
  * HUD, overlays and steering contract are untouched; only the rendering moves
  * to a low-poly three.js scene (react-three-fiber + expo-gl) with a chase
- * camera. Everything is primitive geometry for now — real car / prop models
- * come later (3D-2) once this proves smooth on mid-range phones.
+ * camera. Cars, cones, trees and the finish arch are Kenney CC0 models (see
+ * utils/models3d.ts); coins, barrels and pads stay primitive shapes. Each model
+ * shows a primitive stand-in for the moment it takes to load.
  *
  * Per-frame values are read straight from the race loop's Animated.Value
  * channels inside useFrame (both run on the JS thread), so nothing re-renders
@@ -13,13 +14,48 @@
  * moved by the travelled distance; dashes and roadside trees are small pools
  * wrapped with the existing dash/decor phases.
  */
-import { useMemo, useRef } from 'react';
-import { PanResponder, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { LogBox, PanResponder, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
 import type { Group, Mesh } from 'three';
 import { ACCENTS, COLORS } from '@/sdk';
 import type { Animated } from 'react-native';
-import type { EntityKind, PlayfieldProps } from '../types';
+import type { CarId, EntityKind, PlayfieldProps } from '../types';
+import { CAR_MODEL, preloadModels, useModel, type ModelName } from '../utils/models3d';
+
+// three's internal Clock deprecation warning comes from react-three-fiber, not
+// our code; keep it out of the dev LogBox.
+LogBox.ignoreLogs(['THREE.Clock']);
+
+const CAR_LEN = 3.2;
+/** Rivals match their emoji: 🚙 → SUV, 🚕 → taxi. Oncoming trucks: delivery van. */
+const RIVAL_MODELS: ModelName[] = ['suv', 'taxi'];
+const TRAFFIC_MODEL: ModelName = 'delivery';
+/** Kenney vehicles face +z; the race drives toward −z. */
+const FACE_FORWARD = Math.PI;
+
+/** A loaded model, or `fallback` until it's ready. */
+function Model({
+  name,
+  length,
+  fit = 'length',
+  rotationY = 0,
+  fallback = null,
+}: {
+  name: ModelName;
+  length: number;
+  fit?: 'length' | 'height';
+  rotationY?: number;
+  fallback?: ReactNode;
+}) {
+  const obj = useModel(name, length, fit);
+  if (!obj) return <>{fallback}</>;
+  return (
+    <group rotation={[0, rotationY, 0]}>
+      <primitive object={obj} />
+    </group>
+  );
+}
 
 /** World units → metres. VIEW_DIST (900 units) ≈ 45 m of road ahead. */
 const S = 0.05;
@@ -59,10 +95,16 @@ function EntityMesh({ kind }: { kind: EntityKind }) {
       );
     case 'cone':
       return (
-        <mesh position={[0, 0.6, 0]}>
-          <coneGeometry args={[0.55, 1.2, 12]} />
-          <meshLambertMaterial color={color} />
-        </mesh>
+        <Model
+          name="cone"
+          length={1.1}
+          fallback={
+            <mesh position={[0, 0.6, 0]}>
+              <coneGeometry args={[0.55, 1.2, 12]} />
+              <meshLambertMaterial color={color} />
+            </mesh>
+          }
+        />
       );
     case 'barrel':
       return (
@@ -95,8 +137,20 @@ function EntityMesh({ kind }: { kind: EntityKind }) {
   }
 }
 
-/** A chunky toy car from boxes: body, cabin, four wheels. Faces -z. */
-function Car({ color }: { color: string }) {
+/** A car model facing −z, with a box-car stand-in while it loads. */
+function Car({ model, color, flip = false }: { model: ModelName; color: string; flip?: boolean }) {
+  return (
+    <Model
+      name={model}
+      length={CAR_LEN}
+      rotationY={flip ? 0 : FACE_FORWARD}
+      fallback={<BoxCar color={color} />}
+    />
+  );
+}
+
+/** A chunky toy car from boxes: body, cabin, four wheels. */
+function BoxCar({ color }: { color: string }) {
   return (
     <group>
       <mesh position={[0, 0.55, 0]}>
@@ -122,7 +176,18 @@ function Car({ color }: { color: string }) {
   );
 }
 
-function Tree({ color }: { color: string }) {
+function Tree({ color, large }: { color: string; large: boolean }) {
+  return (
+    <Model
+      name={large ? 'treeLarge' : 'treeSmall'}
+      length={large ? 4.2 : 3}
+      fit="height"
+      fallback={<ConeTree color={color} />}
+    />
+  );
+}
+
+function ConeTree({ color }: { color: string }) {
   return (
     <group>
       <mesh position={[0, 0.6, 0]}>
@@ -139,7 +204,9 @@ function Tree({ color }: { color: string }) {
 
 const RIVAL_COLORS = [ACCENTS.blue.base, ACCENTS.purple.base];
 
-function Scene({ theme, level, ui, anim }: Omit<PlayfieldProps, 'onSteerTo' | 'playerEmoji'>) {
+type SceneProps = Omit<PlayfieldProps, 'onSteerTo' | 'playerEmoji'> & { carId: CarId };
+
+function Scene({ theme, level, ui, anim, carId }: SceneProps) {
   const world = useRef<Group>(null);
   const dashes = useRef<Group>(null);
   const trees = useRef<Group>(null);
@@ -171,22 +238,25 @@ function Scene({ theme, level, ui, anim }: Omit<PlayfieldProps, 'onSteerTo' | 'p
       player.current.position.x = lx;
       player.current.rotation.z = (-read(anim.bank) * Math.PI) / 180;
     }
+    // Cars that drop behind the camera are hidden instead of filling the lens.
     anim.rivals.forEach((r, i) => {
       const g = rivals.current[i];
       if (!g) return;
       g.position.x = laneX(read(r.laneX));
       g.position.z = -read(r.gap) * S;
+      g.visible = g.position.z < 1.5;
     });
     anim.traffic.forEach((tr, i) => {
       const g = traffic.current[i];
       if (!g) return;
       g.position.x = laneX(read(tr.lane));
       g.position.z = -read(tr.gap) * S;
+      g.visible = g.position.z < 1.5;
     });
 
     // Chase camera: trails the car's lane softly so steering feels weighty.
     camera.position.x += (lx * 0.6 - camera.position.x) * 0.12;
-    camera.lookAt(lx * 0.4, 0.8, -14);
+    camera.lookAt(lx * 0.4, 0.6, -12);
   });
 
   return (
@@ -228,7 +298,7 @@ function Scene({ theme, level, ui, anim }: Omit<PlayfieldProps, 'onSteerTo' | 'p
               key={`${i}-${side}`}
               position={[side * (ROAD_W / 2 + 2.5 + (i % 3)), 0, 8 - i * TREE_PERIOD - (side > 0 ? 4 : 0)]}
             >
-              <Tree color={theme.groundPatch} />
+              <Tree color={theme.groundPatch} large={(i + (side > 0 ? 1 : 0)) % 2 === 0} />
             </group>
           )),
         )}
@@ -243,25 +313,34 @@ function Scene({ theme, level, ui, anim }: Omit<PlayfieldProps, 'onSteerTo' | 'p
             </group>
           ),
         )}
-        <mesh position={[0, 2.6, -level.raceLength * S]}>
-          <boxGeometry args={[ROAD_W + 1, 0.6, 0.3]} />
-          <meshLambertMaterial color={COLORS.surface} />
-        </mesh>
+        <group position={[0, 0, -level.raceLength * S]}>
+          <Model
+            name="finishArch"
+            length={ROAD_W + 2}
+            fallback={
+              <mesh position={[0, 2.6, 0]}>
+                <boxGeometry args={[ROAD_W + 1, 0.6, 0.3]} />
+                <meshLambertMaterial color={COLORS.surface} />
+              </mesh>
+            }
+          />
+        </group>
       </group>
 
       {level.rivals.map((r, i) => (
         <group key={r.id} ref={(g) => { rivals.current[i] = g; }}>
-          <Car color={RIVAL_COLORS[i % RIVAL_COLORS.length]} />
+          <Car model={RIVAL_MODELS[i % RIVAL_MODELS.length]} color={RIVAL_COLORS[i % RIVAL_COLORS.length]} />
         </group>
       ))}
       {level.traffic.map((_, i) => (
-        <group key={i} ref={(g) => { traffic.current[i] = g; }} rotation={[0, Math.PI, 0]}>
-          <Car color={ACCENTS.orange.base} />
+        <group key={i} ref={(g) => { traffic.current[i] = g; }}>
+          {/* Oncoming: faces the player. */}
+          <Car model={TRAFFIC_MODEL} color={ACCENTS.orange.base} flip />
         </group>
       ))}
 
       <group ref={player}>
-        <Car color={ui.slowActive ? ACCENTS.coral.tint : ACCENTS.coral.base} />
+        <Car model={CAR_MODEL[carId]} color={ui.slowActive ? ACCENTS.coral.tint : ACCENTS.coral.base} />
         {ui.shieldActive ? (
           <mesh position={[0, 0.9, 0]}>
             <sphereGeometry args={[2, 16, 12]} />
@@ -273,7 +352,19 @@ function Scene({ theme, level, ui, anim }: Omit<PlayfieldProps, 'onSteerTo' | 'p
   );
 }
 
-export function Playfield3D({ theme, level, ui, anim, onSteerTo }: PlayfieldProps) {
+export function Playfield3D({
+  theme,
+  level,
+  ui,
+  anim,
+  onSteerTo,
+  carId,
+}: PlayfieldProps & { carId: CarId }) {
+  // Fetch every model this race uses during the countdown.
+  useEffect(() => {
+    preloadModels([CAR_MODEL[carId], ...RIVAL_MODELS, TRAFFIC_MODEL, 'cone', 'treeLarge', 'treeSmall', 'finishArch']);
+  }, [carId]);
+
   // Finger x across the whole width → continuous lane 0..2 (same contract as 2D).
   const width = useRef(1);
   const steer = useRef(onSteerTo);
@@ -296,8 +387,8 @@ export function Playfield3D({ theme, level, ui, anim, onSteerTo }: PlayfieldProp
       }}
       {...pan.panHandlers}
     >
-      <Canvas camera={{ position: [0, 4.2, 7.5], fov: 60, near: 0.1, far: AHEAD + 10 }}>
-        <Scene theme={theme} level={level} ui={ui} anim={anim} />
+      <Canvas camera={{ position: [0, 4.6, 8.5], fov: 58, near: 0.1, far: AHEAD + 12 }}>
+        <Scene theme={theme} level={level} ui={ui} anim={anim} carId={carId} />
       </Canvas>
     </View>
   );

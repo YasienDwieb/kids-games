@@ -568,6 +568,7 @@ const styles = StyleSheet.create({
   claimText: { fontSize: 13 },
   controlsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.sm,
