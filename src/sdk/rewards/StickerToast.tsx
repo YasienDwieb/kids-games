@@ -1,6 +1,6 @@
 /**
  * "New sticker!" moment — when an award unlocks a sticker, Lulu pops up holding
- * it and says so. Rendered inside the CelebrationProvider overlay (above the
+ * it and says so (the same card announces reaching the daily goal). Rendered inside the CelebrationProvider overlay (above the
  * game, touch-transparent), so every game gets it for free.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -12,7 +12,7 @@ import { Mascot } from '@/sdk/mascot/Mascot';
 import { COLORS } from '@/constants/colors';
 import { BORDER_RADIUS, FONT_SIZES, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
-import { onStickerUnlocked } from './store';
+import { DAILY_GOAL, DAILY_GOAL_EVENT, onStickerUnlocked } from './store';
 import { Sticker } from './Sticker';
 
 /** Let the win's own celebration land first. */
@@ -46,7 +46,10 @@ export function StickerToast() {
       setCurrent(id);
       enter.setValue(0);
       spin.setValue(0);
-      play(`sticker.new.${currentLanguage()}`, { haptic: false });
+      play(
+        id === DAILY_GOAL_EVENT ? `praise.${currentLanguage()}.3` : `sticker.new.${currentLanguage()}`,
+        { haptic: false },
+      );
       Animated.parallel([
         Animated.spring(enter, { toValue: 1, friction: 6, tension: 90, useNativeDriver: true }),
         Animated.timing(spin, { toValue: 1, duration: 650, useNativeDriver: true }),
@@ -74,6 +77,7 @@ export function StickerToast() {
   }, [enter, play, spin]);
 
   if (!current) return null;
+  const daily = current === DAILY_GOAL_EVENT;
 
   return (
     <View style={styles.anchor} pointerEvents="none">
@@ -92,8 +96,8 @@ export function StickerToast() {
       >
         <Mascot pose="cheer" size={84} bob={false} />
         <View style={styles.text}>
-          <Text style={styles.title}>{t('stickers.new')}</Text>
-          <Text style={styles.sub}>{t('stickers.addedToBook')}</Text>
+          <Text style={styles.title}>{t(daily ? 'daily.done' : 'stickers.new')}</Text>
+          {daily ? null : <Text style={styles.sub}>{t('stickers.addedToBook')}</Text>}
         </View>
         <Animated.View
           style={{
@@ -103,7 +107,11 @@ export function StickerToast() {
             ],
           }}
         >
-          <Sticker id={current} size={76} />
+          {daily ? (
+            <Text style={styles.dailyStars}>{'⭐'.repeat(DAILY_GOAL)}</Text>
+          ) : (
+            <Sticker id={current} size={76} />
+          )}
         </Animated.View>
       </Animated.View>
     </View>
@@ -130,4 +138,5 @@ const styles = StyleSheet.create({
   text: { gap: 2 },
   title: { fontFamily: FONTS.displayBold, fontSize: FONT_SIZES.md, color: COLORS.ink },
   sub: { fontFamily: FONTS.body, fontSize: 15, color: COLORS.inkSoft },
+  dailyStars: { fontSize: 34 },
 });

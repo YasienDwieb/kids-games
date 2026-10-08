@@ -1,6 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ALL_STICKERS, STARS_PER_STICKER, STICKER_SETS, nextSticker, stickerEmoji } from '../stickers';
-import { awardStars, markStickersSeen, onStickerUnlocked, rewardsStore } from '../store';
+import {
+  DAILY_GOAL,
+  DAILY_GOAL_EVENT,
+  DEFAULT_REWARDS,
+  awardStars,
+  localDay,
+  markStickersSeen,
+  onStickerUnlocked,
+  rewardsStore,
+  starsToday,
+} from '../store';
 
 beforeEach(async () => {
   await AsyncStorage.clear();
@@ -37,7 +47,7 @@ describe('awardStars', () => {
     expect(r.stars).toBe(STARS_PER_STICKER);
     expect(r.stickers).toEqual(['count-and-pop:0']);
     expect(r.unseen).toEqual(['count-and-pop:0']);
-    expect(heard).toEqual(['count-and-pop:0']);
+    expect(heard.filter((id) => id !== DAILY_GOAL_EVENT)).toEqual(['count-and-pop:0']);
 
     await markStickersSeen();
     expect((await rewardsStore.get()).unseen).toEqual([]);
@@ -48,5 +58,27 @@ describe('awardStars', () => {
     const r = await rewardsStore.get();
     expect(r.stars).toBe(10);
     expect(r.stickers).toHaveLength(Math.floor(10 / STARS_PER_STICKER));
+  });
+});
+
+describe('daily goal', () => {
+  it('counts only today and announces the goal once', async () => {
+    const heard: string[] = [];
+    const off = onStickerUnlocked((id) => heard.push(id));
+    for (let i = 0; i < DAILY_GOAL + 2; i++) await awardStars('match-up');
+    off();
+
+    const r = await rewardsStore.get();
+    expect(starsToday(r)).toBe(DAILY_GOAL + 2);
+    expect(heard.filter((id) => id === DAILY_GOAL_EVENT)).toHaveLength(1);
+  });
+
+  it('starts fresh on a new day without touching the star total', async () => {
+    await rewardsStore.set({ ...DEFAULT_REWARDS, stars: 7, today: { date: '2000-01-01', stars: 5 } });
+    expect(starsToday(await rewardsStore.get())).toBe(0);
+    await awardStars('match-up');
+    const r = await rewardsStore.get();
+    expect(r.stars).toBe(8);
+    expect(r.today).toEqual({ date: localDay(), stars: 1 });
   });
 });

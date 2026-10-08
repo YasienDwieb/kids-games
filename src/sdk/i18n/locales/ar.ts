@@ -63,6 +63,11 @@ export const ar: CoreTranslations = {
     early: 'السنوات الأولى',
     kids: 'الكبار',
   },
+  daily: {
+    label: 'اليوم',
+    a11y: 'اليوم: {{n}} من {{goal}} نجوم',
+    done: 'أنجزت هدفك!',
+  },
   stickers: {
     title: 'ملصقاتي',
     open: 'افتح كتاب الملصقات',

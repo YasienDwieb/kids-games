@@ -76,6 +76,10 @@ export {
   rewardsStore,
   useRewards,
   DEFAULT_REWARDS,
+  DAILY_GOAL,
+  DAILY_GOAL_EVENT,
+  localDay,
+  starsToday,
 } from './rewards/store';
 export type { Rewards } from './rewards/store';
 export {

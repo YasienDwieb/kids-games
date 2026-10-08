@@ -12,7 +12,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
-import { GameCard, IconButton, JourneyCard } from '../components/common';
+import { GameCard, IconButton, JourneyCard, Star } from '../components/common';
 import { computeHomeGrid, isTablet, homeRailWidth } from '../utils/responsive';
 import { ACCENTS, BORDER_RADIUS, COLORS, FONTS, SHADOWS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
@@ -32,6 +32,8 @@ import {
   createFlowProgressStore,
   Mascot,
   useRewards,
+  DAILY_GOAL,
+  starsToday,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
 import { PressableButton } from '../components/common';
@@ -164,11 +166,27 @@ export function HomeScreen({ navigation }: Props) {
     </Pressable>
   );
 
+  // Gentle daily goal: today's stars fill up; nothing is lost on a missed day.
+  const todayStars = Math.min(starsToday(rewards), DAILY_GOAL);
+  const dailyPill = (
+    <View
+      style={[styles.dailyPill, SHADOWS.sm, todayStars >= DAILY_GOAL && styles.dailyDone]}
+      accessible
+      accessibilityLabel={t('daily.a11y', { n: todayStars, goal: DAILY_GOAL })}
+    >
+      <Text style={styles.dailyLabel}>{t('daily.label')}</Text>
+      {Array.from({ length: DAILY_GOAL }, (_, i) => (
+        <Star key={i} size={22} filled={i < todayStars} />
+      ))}
+    </View>
+  );
+
   // No "All games" title: they are self-evidently games, and the heading cost a
   // full text row that a pre-reader gets nothing from.
   const gamesHeader = (
     <View style={styles.gamesHeader}>
       {stickerButton}
+      {dailyPill}
       <View style={styles.headerSpacer} />
       {soundButton}
       {languageButton}
@@ -391,6 +409,17 @@ const styles = StyleSheet.create({
     borderColor: COLORS.surface,
   },
   pressed: { transform: [{ scale: 0.94 }] },
+  dailyPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    height: 48,
+    paddingHorizontal: SPACING.md,
+    borderRadius: BORDER_RADIUS.pill,
+    backgroundColor: COLORS.surface,
+  },
+  dailyDone: { backgroundColor: ACCENTS.green.tint },
+  dailyLabel: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.ink, marginEnd: SPACING.xs },
   headerSpacer: { flex: 1 },
   gamesHeader: {
     height: GAMES_HEADER_H,

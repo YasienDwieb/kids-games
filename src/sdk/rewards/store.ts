@@ -5,18 +5,50 @@ import { STARS_PER_STICKER, nextSticker } from './stickers';
 /**
  * App-wide rewards (kg:rewards). Stars are earned across every game; every
  * STARS_PER_STICKER stars unlocks a sticker for the sticker book. `unseen`
- * holds stickers the child hasn't opened the book to look at yet.
+ * holds stickers the child hasn't opened the book to look at yet. `today`
+ * counts stars toward the gentle daily goal (no streaks, nothing to lose).
  */
-export type Rewards = { stars: number; stickers: string[]; unseen: string[] };
+export type Rewards = {
+  stars: number;
+  stickers: string[];
+  unseen: string[];
+  today: { date: string; stars: number };
+};
 
-export const DEFAULT_REWARDS: Rewards = { stars: 0, stickers: [], unseen: [] };
+export const DEFAULT_REWARDS: Rewards = {
+  stars: 0,
+  stickers: [],
+  unseen: [],
+  today: { date: '', stars: 0 },
+};
+
+/** Stars that fill today's goal on Home. */
+export const DAILY_GOAL = 3;
+
+/** Local calendar day as YYYY-MM-DD — the day a child would call "today". */
+export function localDay(now: Date = new Date()): string {
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${m}-${d}`;
+}
+
+/** Stars earned today (0 if the stored day is not today). */
+export function starsToday(r: Rewards, now: Date = new Date()): number {
+  return r.today.date === localDay(now) ? r.today.stars : 0;
+}
 
 export const rewardsStore = createStore<Rewards>('rewards', DEFAULT_REWARDS);
+
+/** Sentinel id sent to unlock listeners when today's goal fills up. */
+export const DAILY_GOAL_EVENT = '__daily-goal__';
 
 type UnlockListener = (stickerId: string) => void;
 const unlockListeners = new Set<UnlockListener>();
 
-/** Be told whenever a new sticker is unlocked (the in-game "New sticker!" toast). */
+/**
+ * Be told whenever a new sticker is unlocked (the in-game "New sticker!" toast),
+ * and once a day with DAILY_GOAL_EVENT when the daily goal is reached.
+ */
 export function onStickerUnlocked(fn: UnlockListener): () => void {
   unlockListeners.add(fn);
   return () => {
@@ -47,12 +79,17 @@ export function awardStars(gameId: string, stars = 1): Promise<string[]> {
       stickers.push(id);
       unlocked.push(id);
     }
+    const before = starsToday(cur);
+    const after = before + stars;
     await rewardsStore.set({
       stars: total,
       stickers,
       unseen: [...cur.unseen, ...unlocked],
+      today: { date: localDay(), stars: after },
     });
-    unlocked.forEach((id) => unlockListeners.forEach((fn) => fn(id)));
+    const events = [...unlocked];
+    if (before < DAILY_GOAL && after >= DAILY_GOAL) events.push(DAILY_GOAL_EVENT);
+    events.forEach((id) => unlockListeners.forEach((fn) => fn(id)));
     return unlocked;
   });
   queue = run.catch(() => undefined);

@@ -62,6 +62,11 @@ export const en = {
     early: 'Early years',
     kids: 'Big kids',
   },
+  daily: {
+    label: 'Today',
+    a11y: 'Today: {{n}} of {{goal}} stars',
+    done: 'Goal done!',
+  },
   stickers: {
     title: 'My Stickers',
     open: 'Open my sticker book',
