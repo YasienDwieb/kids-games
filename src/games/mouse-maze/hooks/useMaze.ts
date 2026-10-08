@@ -35,6 +35,8 @@ export interface StepResult {
   cell: Pos | null;
   collected: boolean;
   reachedGoal: boolean;
+  /** The target was a neighbouring cell but a wall is in the way. */
+  blocked: boolean;
 }
 
 /** Place stars evenly along the solution path (excluding start and goal). */
@@ -88,11 +90,12 @@ export function useMaze(initial: MazeState) {
   const tryStep = useCallback(
     (target: Pos): StepResult => {
       const s = live.current;
-      const miss: StepResult = { cell: null, collected: false, reachedGoal: false };
+      const miss: StepResult = { cell: null, collected: false, reachedGoal: false, blocked: false };
       if (s.won) return miss;
 
       const dir = adjacentDir(s.player, target);
-      if (!dir || !canMove(s.grid, s.player, dir)) return miss;
+      if (!dir) return miss;
+      if (!canMove(s.grid, s.player, dir)) return { ...miss, blocked: true };
 
       const k = keyOf(target);
       const trail = new Set(s.trail).add(k);
@@ -109,7 +112,7 @@ export function useMaze(initial: MazeState) {
         won: reachedGoal,
       });
 
-      return { cell: target, collected, reachedGoal };
+      return { cell: target, collected, reachedGoal, blocked: false };
     },
     [commit],
   );

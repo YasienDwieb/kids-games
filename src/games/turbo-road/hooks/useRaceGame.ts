@@ -137,14 +137,14 @@ export function useRaceGame({ level, car, onFinish }: Args): {
     [],
   );
 
-  const world = useRef<WorldState>(createWorld(paced));
+  const world = useRef<WorldState>(createWorld(paced, { grip: car.stats.grip }));
   const consumed = useRef<number[]>([]);
   const [ui, setUi] = useState<RaceUiState>(() => uiFrom(world.current, paced, consumed.current));
   const lastUi = useRef(ui);
 
   // Latest dynamic values, read by the stable loop/steer closures.
-  const ref = useRef({ paced, onFinish, play });
-  ref.current = { paced, onFinish, play };
+  const ref = useRef({ paced, grip: car.stats.grip, onFinish, play });
+  ref.current = { paced, grip: car.stats.grip, onFinish, play };
 
   const lastIntent = useRef(1);
 
@@ -152,7 +152,7 @@ export function useRaceGame({ level, car, onFinish }: Args): {
   // intentionally do NOT restart the race — they just adjust pacing.)
   useEffect(() => {
     const lvl0 = ref.current.paced;
-    world.current = createWorld(lvl0);
+    world.current = createWorld(lvl0, { grip: ref.current.grip });
     consumed.current = [];
     lastIntent.current = 1;
     const first = uiFrom(world.current, lvl0, consumed.current);

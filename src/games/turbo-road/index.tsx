@@ -204,10 +204,13 @@ export default function TurboRoadGame() {
     setView('start');
   }, [advance, result]);
 
+  // Bank the finished race's stars before detouring to the garage, exactly as
+  // "Next race" does — otherwise the level never advances and the stars are lost.
   const handleGarage = useCallback(() => {
+    if (result) advance(result.stars);
     setResult(null);
     setView('garage');
-  }, []);
+  }, [advance, result]);
 
   const handleGarageDone = useCallback(() => {
     play('pop');

@@ -309,7 +309,7 @@ export function MatchBoard({
     <GestureDetector gesture={pan}>
       <View
         ref={surfaceRef}
-        style={[styles.surface, I18nManager.isRTL && styles.ltr]}
+        style={[styles.surface, styles.ltr]}
       >
         <Text style={styles.prompt}>{t(`match-up:${round.promptKey}`)}</Text>
 

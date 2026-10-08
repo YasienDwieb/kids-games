@@ -71,7 +71,9 @@ const styles = StyleSheet.create({
 
 registerFlowAdapter({
   gameId: 'letter-land',
-  count: LATIN_LETTERS.length,
+  // Registered at module load, when I18nManager.isRTL is already settled —
+  // so Arabic journeys cover all 28 letters, not just the 26 Latin ones.
+  count: (I18nManager.isRTL ? ARABIC_LETTERS : LATIN_LETTERS).length,
   unitAt: (i, seed) => ({
     key: `letter-land-${i}`,
     render: (onComplete) => (

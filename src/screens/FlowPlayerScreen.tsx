@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
-  SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
+  CelebrationProvider, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
   FONTS, FONT_SIZES, COLORS, SPACING, TOUCH_TARGET,
 } from '@/sdk';
 import { BackButton } from '../components/common';
@@ -62,18 +62,20 @@ export function FlowPlayerScreen({ navigation }: Props) {
 
   return (
     <View style={styles.root}>
-      <SceneCanvas progress={progress}>
-        {status === 'playing' && unit ? (
-          <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>
-            {unit.render(handleComplete)}
-          </Animated.View>
-        ) : null}
-        {status === 'done' ? (
-          <View style={styles.rest} pointerEvents="box-none">
-            <Text style={styles.restText}>{t('flow.allCaughtUp')}</Text>
-          </View>
-        ) : null}
-      </SceneCanvas>
+      <CelebrationProvider>
+        <SceneCanvas progress={progress}>
+          {status === 'playing' && unit ? (
+            <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>
+              {unit.render(handleComplete)}
+            </Animated.View>
+          ) : null}
+          {status === 'done' ? (
+            <View style={styles.rest} pointerEvents="box-none">
+              <Text style={styles.restText}>{t('flow.allCaughtUp')}</Text>
+            </View>
+          ) : null}
+        </SceneCanvas>
+      </CelebrationProvider>
       <BackButton onPress={() => navigation.goBack()} />
     </View>
   );

@@ -1,7 +1,7 @@
 export const en = {
   meta: {
     name: 'Mouse Maze',
-    description: 'Swipe to help the mouse find its cheese!',
+    description: 'Draw a path to help the mouse find its cheese!',
   },
   hud: {
     level: 'Level {{level}}',

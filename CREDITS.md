@@ -15,6 +15,17 @@ license. Add an entry **before** importing any new third-party asset.
 
 ## Audio assets
 
+### Higgsfield (Seed Audio 1.0) — spoken praise
+
+- **Used for:** the voice that says the celebration praise lines
+  (`src/sdk/assets/audio/voice/praise-{en,ar}-{1..8}.m4a`), played by `useCelebrate()`.
+- **Source:** generated with Higgsfield AI (model: Seed Audio 1.0, preset voice "Pixie"),
+  2026-10-08, on the project's Higgsfield account.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+- **Processing:** trimmed of leading/trailing silence, converted to mono AAC, and
+  loudness-normalized to the house level (≈ −25 dBFS RMS, peak ≤ −6 dBFS).
+
 ### Kenney — feedback SFX
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:

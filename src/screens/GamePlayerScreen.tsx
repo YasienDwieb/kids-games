@@ -3,6 +3,7 @@ import { BackHandler, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
+  CelebrationProvider,
   getGame,
   GameShell,
   ScreenBackContext,
@@ -58,21 +59,24 @@ export function GamePlayerScreen({ route, navigation }: Props) {
   return (
     <ScreenBackContext.Provider value={setInterceptor}>
       <SoundOverridesContext.Provider value={game.sounds ?? NO_OVERRIDES}>
-        {layout.mode === 'bare' ? (
-          // Bare mode: game composes its own canvas; we float a back button.
-          <View style={[styles.container, { backgroundColor: game.backgroundColor }]}>
-            <BackButton onPress={handleBack} />
-            <Game />
-          </View>
-        ) : (
-          <GameShell
-            background={game.backgroundColor}
-            showBack={layout.showBack ?? true}
-            onBack={handleBack}
-          >
-            <Game />
-          </GameShell>
-        )}
+        {/* Celebrations float over the whole screen, in both layout modes. */}
+        <CelebrationProvider>
+          {layout.mode === 'bare' ? (
+            // Bare mode: game composes its own canvas; we float a back button.
+            <View style={[styles.container, { backgroundColor: game.backgroundColor }]}>
+              <BackButton onPress={handleBack} />
+              <Game />
+            </View>
+          ) : (
+            <GameShell
+              background={game.backgroundColor}
+              showBack={layout.showBack ?? true}
+              onBack={handleBack}
+            >
+              <Game />
+            </GameShell>
+          )}
+        </CelebrationProvider>
       </SoundOverridesContext.Provider>
     </ScreenBackContext.Provider>
   );

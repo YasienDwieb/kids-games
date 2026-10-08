@@ -34,6 +34,9 @@ const KEYS: string[] = [
   'core:resume.welcomeBack',
   'core:resume.continueLevel',
   'core:resume.startOver',
+  'core:celebrate.praise.1',
+  'core:celebrate.praise.4',
+  'core:celebrate.praise.8',
   // simple-pairs
   'simple-pairs:meta.name',
   'simple-pairs:meta.description',

@@ -64,8 +64,14 @@ export default function App() {
         // effect next launch). On web, direction is CSS-driven — never reload,
         // or the app would blank/loop on first boot.
         if (needsReload && Platform.OS !== 'web') {
-          reloadApp();
-          return;
+          // reloadApp('boot') refuses to reload again right after a reload, so a
+          // native side that ignores forceRTL can't loop the app forever.
+          return reloadApp('boot').then((reloaded) => {
+            if (cancelled || reloaded) return;
+            // log, not warn: a dev-only Expo Go quirk shouldn't raise a LogBox banner.
+            console.log('RTL direction did not apply after reload; continuing without it');
+            setLangReady(true);
+          });
         }
         setLangReady(true);
       })

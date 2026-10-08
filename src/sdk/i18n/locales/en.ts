@@ -62,6 +62,18 @@ export const en = {
     early: 'Early years',
     kids: 'Big kids',
   },
+  celebrate: {
+    praise: {
+      1: 'Great job!',
+      2: 'Awesome!',
+      3: 'You did it!',
+      4: 'Super star!',
+      5: 'Brilliant!',
+      6: 'Wow!',
+      7: 'Well done!',
+      8: 'Amazing!',
+    },
+  },
   flow: {
     title: 'Your journey',
     start: 'Start your journey',

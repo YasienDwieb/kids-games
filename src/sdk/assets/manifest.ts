@@ -211,6 +211,89 @@ export const ASSETS = {
     type: 'audio',
     tags: ['bee'],
   },
+  // Spoken praise (Higgsfield Seed Audio, voice "Pixie"; see CREDITS.md). One clip per
+  // `core:celebrate.praise.<n>` line, per language, so the voice always says what the
+  // bubble shows. Played by useCelebrate() as `praise.<lang>.<n>`.
+  'voice.praise.en.1': {
+    modules: [require('./audio/voice/praise-en-1.m4a')],
+    type: 'audio',
+    tags: ['praise.en.1'],
+  },
+  'voice.praise.en.2': {
+    modules: [require('./audio/voice/praise-en-2.m4a')],
+    type: 'audio',
+    tags: ['praise.en.2'],
+  },
+  'voice.praise.en.3': {
+    modules: [require('./audio/voice/praise-en-3.m4a')],
+    type: 'audio',
+    tags: ['praise.en.3'],
+  },
+  'voice.praise.en.4': {
+    modules: [require('./audio/voice/praise-en-4.m4a')],
+    type: 'audio',
+    tags: ['praise.en.4'],
+  },
+  'voice.praise.en.5': {
+    modules: [require('./audio/voice/praise-en-5.m4a')],
+    type: 'audio',
+    tags: ['praise.en.5'],
+  },
+  'voice.praise.en.6': {
+    modules: [require('./audio/voice/praise-en-6.m4a')],
+    type: 'audio',
+    tags: ['praise.en.6'],
+  },
+  'voice.praise.en.7': {
+    modules: [require('./audio/voice/praise-en-7.m4a')],
+    type: 'audio',
+    tags: ['praise.en.7'],
+  },
+  'voice.praise.en.8': {
+    modules: [require('./audio/voice/praise-en-8.m4a')],
+    type: 'audio',
+    tags: ['praise.en.8'],
+  },
+  'voice.praise.ar.1': {
+    modules: [require('./audio/voice/praise-ar-1.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.1'],
+  },
+  'voice.praise.ar.2': {
+    modules: [require('./audio/voice/praise-ar-2.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.2'],
+  },
+  'voice.praise.ar.3': {
+    modules: [require('./audio/voice/praise-ar-3.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.3'],
+  },
+  'voice.praise.ar.4': {
+    modules: [require('./audio/voice/praise-ar-4.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.4'],
+  },
+  'voice.praise.ar.5': {
+    modules: [require('./audio/voice/praise-ar-5.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.5'],
+  },
+  'voice.praise.ar.6': {
+    modules: [require('./audio/voice/praise-ar-6.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.6'],
+  },
+  'voice.praise.ar.7': {
+    modules: [require('./audio/voice/praise-ar-7.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.7'],
+  },
+  'voice.praise.ar.8': {
+    modules: [require('./audio/voice/praise-ar-8.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.8'],
+  },
 } as const satisfies Record<string, AssetEntry>;
 
 export type AssetId = keyof typeof ASSETS;

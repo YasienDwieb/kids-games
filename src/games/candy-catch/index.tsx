@@ -13,7 +13,7 @@
  *     runOnJS. Never once per frame. */
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { I18nManager, LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   makeMutable,
@@ -419,7 +419,7 @@ export default function CandyCatchGame() {
           handler already on it. It is also the view Pan coordinates are relative
           to, so measuring it keeps `e.x` and `areaW` in one coordinate space. */}
       <GestureDetector gesture={pan}>
-        <View style={[styles.field, I18nManager.isRTL && styles.ltr]} onLayout={onLayout}>
+        <View style={[styles.field, styles.ltr]} onLayout={onLayout}>
           {slots.map((slot, i) => (
             <PooledItem key={i} slot={slot} content={contents[i]} />
           ))}

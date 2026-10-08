@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSound } from '../audio/useSound';
+import { useCelebrate } from '../feedback/Celebration';
 
 /**
  * Shared interaction host for a guided-flow round. Both games' flow adapters
@@ -9,6 +10,7 @@ import { useSound } from '../audio/useSound';
  */
 export function useFlowRound(onComplete: () => void) {
   const { play } = useSound();
+  const celebrate = useCelebrate();
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [solved, setSolved] = useState(false);
   const solveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -22,13 +24,15 @@ export function useFlowRound(onComplete: () => void) {
     [],
   );
 
-  /** Mark solved: success cue, then advance after a short beat. Idempotent. */
+  /** Mark solved: success cue + confetti, then advance after a short beat. Idempotent. */
   const complete = useCallback(() => {
     if (solved) return;
     setSolved(true);
     void play('success');
-    solveTimer.current = setTimeout(onComplete, 450);
-  }, [solved, play, onComplete]);
+    // The burst lives above the unit, so it keeps playing through the cross-fade.
+    void celebrate('small');
+    solveTimer.current = setTimeout(onComplete, 700);
+  }, [solved, play, celebrate, onComplete]);
 
   /** Tap-choice handler: correct → complete; wrong → cue + clear selection. */
   const pick = useCallback(

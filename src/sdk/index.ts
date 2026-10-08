@@ -60,6 +60,21 @@ export { useGameLoop } from './motion/useGameLoop';
 export type { GameLoopStep, GameLoopOptions } from './motion/useGameLoop';
 export { MAX_DT, clampDt, clamp, lerp, approach, wrap } from './motion/frame';
 
+// Feedback — celebrations & the shared hint policy
+export { CelebrationProvider, useCelebrate, PRAISE_COUNT } from './feedback/Celebration';
+export type { Celebrate, CelebrationSize, CelebrateOptions } from './feedback/Celebration';
+export { hintStepFor, starsForMisses } from './feedback/hints';
+export type { HintStep } from './feedback/hints';
+export { useHintLadder } from './feedback/useHintLadder';
+export type { UseHintLadderResult } from './feedback/useHintLadder';
+
+// Tutorials — first-run demos & idle hints
+export { DemoHand } from './tutorial/DemoHand';
+export type { DemoPoint } from './tutorial/DemoHand';
+export { useFirstRun, tutorialStore } from './tutorial/useFirstRun';
+export type { FirstRunStatus, TutorialProgress } from './tutorial/useFirstRun';
+export { useIdle } from './tutorial/useIdle';
+
 // Layout
 export { GameShell } from './layout/GameShell';
 export { GameOverlay } from './layout/GameOverlay';
