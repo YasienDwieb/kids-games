@@ -325,6 +325,37 @@ export const ASSETS = {
     type: 'audio',
     tags: ['sticker.new.ar'],
   },
+  // Lulu's lines when a child taps her (3D mascot), per language.
+  'voice.lulu.en.1': {
+    modules: [require('./audio/voice/lulu-tap-en-1.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.en.1'],
+  },
+  'voice.lulu.en.2': {
+    modules: [require('./audio/voice/lulu-tap-en-2.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.en.2'],
+  },
+  'voice.lulu.en.3': {
+    modules: [require('./audio/voice/lulu-tap-en-3.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.en.3'],
+  },
+  'voice.lulu.ar.1': {
+    modules: [require('./audio/voice/lulu-tap-ar-1.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.ar.1'],
+  },
+  'voice.lulu.ar.2': {
+    modules: [require('./audio/voice/lulu-tap-ar-2.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.ar.2'],
+  },
+  'voice.lulu.ar.3': {
+    modules: [require('./audio/voice/lulu-tap-ar-3.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.ar.3'],
+  },
 } as const satisfies Record<string, AssetEntry>;
 
 export type AssetId = keyof typeof ASSETS;

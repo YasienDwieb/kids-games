@@ -9,7 +9,7 @@ import type { RootStackParamList } from '../types';
 import { AppBar, EmojiImage, HudPill, hudTextStyle } from '../components/common';
 import {
   ALL_STICKERS,
-  Mascot,
+  Lulu3D,
   STARS_PER_STICKER,
   STICKER_SETS,
   Sticker,
@@ -59,7 +59,7 @@ export function StickerBookScreen({ navigation }: Props) {
       <View style={styles.body}>
         {/* Lulu + how close the next sticker is. */}
         <View style={[styles.side, SHADOWS.sm]}>
-          <Mascot pose={have === total ? 'cheer' : 'wave'} size={120} />
+          <Lulu3D size={140} mood={have === total ? 'cheer' : 'wave'} interactive />
           <Text style={styles.count}>{t('stickers.count', { have, total })}</Text>
           {have < total ? (
             <>

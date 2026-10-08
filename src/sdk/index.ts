@@ -97,6 +97,8 @@ export { Sticker } from './rewards/Sticker';
 export { Mascot } from './mascot/Mascot';
 export type { MascotPose } from './mascot/Mascot';
 export { MascotHelper } from './mascot/MascotHelper';
+export { Lulu3D, LULU_TAP_LINES } from './mascot/Lulu3D';
+export type { LuluMood } from './mascot/Lulu3D';
 
 // Play time — the parent corner's log and the optional daily limit
 export {

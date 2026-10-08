@@ -35,6 +35,7 @@ import {
   DEFAULT_FLOW_PROGRESS,
   type FlowProgress,
   Mascot,
+  Lulu3D,
   useRewards,
   DAILY_GOAL,
   starsToday,
@@ -196,7 +197,11 @@ export function HomeScreen({ navigation }: Props) {
     <View style={styles.gamesHeader}>
       {stickerButton}
       {dailyPill}
-      <View style={styles.headerSpacer} />
+      {/* Lulu in 3D lives between the pills and the controls: tap her to say
+          hi (she hops and giggles), drag to spin her round. */}
+      <View style={styles.headerSpacer}>
+        <Lulu3D size={104} interactive style={styles.homeLulu} />
+      </View>
       {soundButton}
       {languageButton}
       {settingsButton}
@@ -429,7 +434,8 @@ const styles = StyleSheet.create({
   },
   dailyDone: { backgroundColor: ACCENTS.green.tint },
   dailyLabel: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.ink, marginEnd: SPACING.xs },
-  headerSpacer: { flex: 1 },
+  headerSpacer: { flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'visible' },
+  homeLulu: { marginTop: 22 },
   gamesHeader: {
     height: GAMES_HEADER_H,
     flexDirection: 'row',

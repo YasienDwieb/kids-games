@@ -92,6 +92,9 @@ export const ar: CoreTranslations = {
     general: 'مفاجآت',
     complete: 'وجدتها كلها! 🏆',
   },
+  mascot: {
+    name: 'لولو',
+  },
   break: {
     title: 'وقت الاستراحة!',
     body: 'لعبت كثيراً اليوم. نراك غداً! 🌙',

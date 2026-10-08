@@ -44,6 +44,7 @@ const KEYS: string[] = [
   'core:settings.parents.byGame',
   'core:settings.parents.gameRow',
   'core:settings.parents.empty',
+  'core:mascot.name',
   'core:break.title',
   'core:break.body',
   'core:break.home',

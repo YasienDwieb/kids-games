@@ -91,6 +91,9 @@ export const en = {
     general: 'Surprises',
     complete: 'You found them all! 🏆',
   },
+  mascot: {
+    name: 'Lulu',
+  },
   break: {
     title: 'Time for a break!',
     body: 'You played a lot today. See you tomorrow! 🌙',

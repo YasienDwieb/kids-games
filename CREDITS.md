@@ -28,7 +28,8 @@ license. Add an entry **before** importing any new third-party asset.
 
 - **Used for:** the voice that says the celebration praise lines
   (`src/sdk/assets/audio/voice/praise-{en,ar}-{1..8}.m4a`), played by `useCelebrate()`,
-  and the "new sticker" announcement (`sticker-new-{en,ar}.m4a`).
+  the "new sticker" announcement (`sticker-new-{en,ar}.m4a`), and Lulu's tap lines
+  (`lulu-tap-{en,ar}-{1..3}.m4a`).
 - **Source:** generated with Higgsfield AI (model: Seed Audio 1.0, preset voice "Pixie"),
   2026-10-08, on the project's Higgsfield account.
 - **License:** generated content used under the Higgsfield account's terms, which the

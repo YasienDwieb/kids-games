@@ -17,7 +17,7 @@ import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
-import { Mascot } from '@/sdk/mascot/Mascot';
+import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { ACCENTS, COLORS } from '@/constants/colors';
 import { BORDER_RADIUS, FONT_SIZES, SHADOWS, SPACING } from '@/constants/dimensions';
@@ -144,10 +144,39 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
           {bursts.map((b) => (
             <BurstView key={b.id} burst={b} onDone={finish} />
           ))}
+          <CheeringLulu show={bursts.length > 0} big={bursts.some((b) => b.size === 'big')} />
           <StickerToast />
         </View>
       </View>
     </CelebrationContext.Provider>
+  );
+}
+
+/**
+ * 3D Lulu hops up from the corner to cheer every celebration. She stays mounted
+ * (one GL context per screen, not one per burst) and only renders while shown.
+ */
+function CheeringLulu({ show, big }: { show: boolean; big: boolean }) {
+  const enter = useMemo(() => new Animated.Value(0), []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    if (show) setMounted(true);
+    Animated.spring(enter, { toValue: show ? 1 : 0, friction: 7, tension: 70, useNativeDriver: true }).start();
+  }, [enter, show]);
+  if (!mounted) return null;
+  const size = big ? 170 : 130;
+  return (
+    <Animated.View
+      style={[
+        styles.mascot,
+        {
+          opacity: enter,
+          transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [size, 0] }) }],
+        },
+      ]}
+    >
+      <Lulu3D size={size} mood="cheer" active={show} />
+    </Animated.View>
   );
 }
 
@@ -208,22 +237,6 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
           ]}
         />
       ))}
-      {burst.size === 'big' ? (
-        // Lulu jumps in to cheer on the big moments.
-        <Animated.View
-          style={[
-            styles.mascot,
-            {
-              opacity: bubble,
-              transform: [
-                { translateY: bubble.interpolate({ inputRange: [0, 1], outputRange: [140, 0] }) },
-              ],
-            },
-          ]}
-        >
-          <Mascot pose="cheer" size={140} />
-        </Animated.View>
-      ) : null}
       {burst.praiseKey ? (
         <Animated.View
           style={[
