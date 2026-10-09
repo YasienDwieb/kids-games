@@ -79,27 +79,10 @@ export function resumeStep(sequence: readonly SeqStep[], saved: FlowProgress): n
   return firstOpenStep(sequence, doneCounts(sequence, saved));
 }
 
-/** Position within a journey of `total` units. */
+/** Position within the journey: a step index, or finished. */
 export type FlowPosition = { done: false; step: number } | { done: true };
 
 /** A fresh, non-zero session seed for deterministic-but-varied content. */
 export function newSeed(): number {
   return Math.floor(Math.random() * 0x7fffffff) + 1;
-}
-
-/**
- * Decide where to resume. Empty journey → done. Saved step is clamped into
- * range; a step at/after the end means the journey was finished (rest state).
- */
-export function resolveStart(total: number, saved: FlowProgress): FlowPosition {
-  if (total <= 0) return { done: true };
-  if (saved.step >= total) return { done: true };
-  const step = saved.step > 0 ? saved.step : 0;
-  return { done: false, step };
-}
-
-/** Advance one unit; past the last unit → done. */
-export function advanceStep(total: number, step: number): FlowPosition {
-  if (step + 1 >= total) return { done: true };
-  return { done: false, step: step + 1 };
 }
