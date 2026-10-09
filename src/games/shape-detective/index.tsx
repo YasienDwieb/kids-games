@@ -179,7 +179,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   const handleNext = useCallback(() => {
     shell.hideOverlay('win');
     if (isLast) {
-      startOver();
+      startOver({ finished: true });
     } else {
       advance();
     }

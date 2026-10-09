@@ -74,7 +74,7 @@ export default function BalloonArcherGame() {
     play('next');
     const stars = overlay?.stars ?? 0;
     setOverlay(null);
-    if (isLast) startOver();
+    if (isLast) startOver({ finished: true });
     else advance(stars);
   }, [advance, isLast, overlay, play, startOver]);
 

@@ -11,7 +11,7 @@ export type UseLevelsResult<T> = {
   score: number;
   isLast: boolean; // finite source && level >= count
   start: () => void; // resume from saved level → 'playing'
-  startOver: () => void; // reset to level 1, score 0 → 'playing'
+  startOver: (opts?: { finished?: boolean }) => void; // reset to level 1, score 0 → 'playing'; finished = last level won (earns its star)
   advance: (deltaScore?: number) => void; // next level (+ score), persist
   addScore: (delta: number) => void; // bump score, persist
   goTo: (level: number) => void; // jump, persist
@@ -53,10 +53,15 @@ export function useLevels<T>(options: {
 
   const start = useCallback(() => setStatus('playing'), []);
 
-  const startOver = useCallback(() => {
-    persist({ level: 1, score: 0, updatedAt: Date.now() });
-    setStatus('playing');
-  }, [persist]);
+  const startOver = useCallback(
+    (opts?: { finished?: boolean }) => {
+      persist({ level: 1, score: 0, updatedAt: Date.now() });
+      setStatus('playing');
+      // Looping back after the final level still counts as a finished level.
+      if (opts?.finished) void awardStars(gameId);
+    },
+    [persist, gameId],
+  );
 
   const advance = useCallback(
     (deltaScore = 0) => {

@@ -91,7 +91,7 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
   // handleNext reads isLast at call time (live closure).
   const handleNext = useCallback(() => {
     shell.hideOverlay('win');
-    if (isLast) startOver();
+    if (isLast) startOver({ finished: true });
     else advance();
   }, [isLast, advance, startOver, shell]);
 
