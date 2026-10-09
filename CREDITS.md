@@ -24,18 +24,29 @@ license. Add an entry **before** importing any new third-party asset.
 - **License:** generated content used under the Higgsfield account's terms, which the
   project owner confirmed permit commercial use in this app.
 
-### Higgsfield (Seed Audio 1.0) — spoken praise
+### Higgsfield (Seed Audio 1.0) — spoken praise (English)
 
-- **Used for:** the voice that says the celebration praise lines
-  (`src/sdk/assets/audio/voice/praise-{en,ar}-{1..8}.m4a`), played by `useCelebrate()`,
-  the "new sticker" announcement (`sticker-new-{en,ar}.m4a`), and Lulu's tap lines
-  (`lulu-tap-{en,ar}-{1..3}.m4a`).
+- **Used for:** the English voice that says the celebration praise lines
+  (`src/sdk/assets/audio/voice/praise-en-{1..8}.m4a`), played by `useCelebrate()`,
+  the "new sticker" announcement (`sticker-new-en.m4a`), and Lulu's tap lines
+  (`lulu-tap-en-{1..3}.m4a`).
 - **Source:** generated with Higgsfield AI (model: Seed Audio 1.0, preset voice "Pixie"),
   2026-10-08, on the project's Higgsfield account.
 - **License:** generated content used under the Higgsfield account's terms, which the
   project owner confirmed permit commercial use in this app.
 - **Processing:** trimmed of leading/trailing silence, converted to mono AAC, and
   loudness-normalized to the house level (≈ −25 dBFS RMS, peak ≤ −6 dBFS).
+
+### Google AI Studio (Gemini 3.8 Flash TTS) — spoken praise (Arabic)
+
+- **Used for:** the Arabic praise lines (`praise-ar-{1..8}.m4a`), the "new sticker"
+  announcement (`sticker-new-ar.m4a`), and Lulu's tap lines (`lulu-tap-ar-{1..3}.m4a`).
+- **Source:** generated in Google AI Studio (model `gemini-3.8-flash-tts`, voice "Sola",
+  cheerful kids'-owl style prompt, fully vowelled Arabic text), 2026-10-09.
+- **License:** generated output used under the Gemini API / Google AI Studio terms,
+  which assign no ownership claim to Google over generated content.
+- **Processing:** trimmed of silence, resampled to 44.1 kHz mono AAC 64 kbps, and
+  loudness-matched to the English clips (−23.7 LUFS integrated, peak ≤ −6 dBFS).
 
 ### Kenney — Car Kit & Racing Kit (3D models)
 
