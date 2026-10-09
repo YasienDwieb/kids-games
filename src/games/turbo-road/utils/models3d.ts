@@ -1,5 +1,5 @@
 /**
- * Low-poly 3D models for the 3D road (Kenney Car Kit / Racing Kit, CC0 — see
+ * Low-poly 3D models for the 3D road (Kenney Car Kit / Racing Kit / Nature Kit, CC0 — see
  * CREDITS.md). The car models' palette texture was baked into vertex colors
  * offline, so loading needs no image decoding (React Native has no DOM Image).
  *

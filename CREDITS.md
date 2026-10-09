@@ -59,6 +59,14 @@ license. Add an entry **before** importing any new third-party asset.
 - **Processing:** the Car Kit's palette texture was baked into vertex colors and the
   meshes deduplicated/welded (CC0 permits modification), so the app needs no textures.
 
+### Kenney — Nature Kit (3D models)
+
+- **Used for:** Turbo Road's per-theme roadside scenery
+  (`src/games/turbo-road/assets/models/`): oak, round, palm and pine trees, cacti and
+  rocks (`tree_*`, `cactus_*`, `rock_largeA`).
+- **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/nature-kit
+- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
+
 ### Kenney — feedback SFX
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:

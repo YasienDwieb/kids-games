@@ -9,12 +9,12 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
 import { GameCard, IconButton, JourneyCard, Star } from '../components/common';
 import { computeHomeGrid, isTablet, homeRailWidth } from '../utils/responsive';
-import { ACCENTS, BORDER_RADIUS, COLORS, FONTS, SHADOWS, SPACING } from '../constants';
+import { ACCENTS, BORDER_RADIUS, COLORS, FONTS, SHADOWS, SPACING, TOUCH_TARGET } from '../constants';
 import type { AccentName } from '../constants';
 import {
   useSettings,
@@ -57,11 +57,25 @@ const GAMES_HEADER_H = 56; // height reserved for the settings control above the
 const GRID_PAD_V = 14;
 const GRID_PAD_H = 12;
 const CELL_GAP = 12;
+// Below this games-pane width the header pills drop their decorations so the
+// controls always fit (≈396dp on a 640dp landscape phone beside the rail).
+const HEADER_COMPACT_BELOW = 560;
+// Height the landscape journey card needs; Lulu only gets what's left over.
+const JOURNEY_MIN_H = 220;
+const LULU_MAX = 120;
+const LULU_MIN = 64;
+const PORTRAIT_LULU = 96;
 
 export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const focused = useIsFocused();
   const landscape = width > height;
+  const railW = homeRailWidth(width, height);
+  const gamesPaneW = landscape ? width - insets.left - insets.right - railW : width;
+  const compactHeader = gamesPaneW < HEADER_COMPACT_BELOW;
+  const journeyPaneH = height - insets.top - insets.bottom - GRID_PAD_V * 2;
+  const railLuluSize = Math.min(LULU_MAX, journeyPaneH - JOURNEY_MIN_H - SPACING.sm);
   // Portrait grid columns: 2 on phones, 3–4 on tablets so it isn't two giant columns.
   const columns = isTablet(width, height) ? (width > 900 ? 4 : 3) : 2;
   const { settings, update } = useSettings();
@@ -169,9 +183,11 @@ export function HomeScreen({ navigation }: Props) {
       hitSlop={8}
       style={({ pressed }) => [styles.stickerBtn, SHADOWS.sm, pressed && styles.pressed]}
     >
-      <Mascot pose="wave" size={40} bob={false} />
-      <Text style={styles.stickerBtnText}>⭐ {rewards.stars}</Text>
-      <Text style={styles.stickerBtnBook}>📒</Text>
+      <Mascot pose="wave" size={compactHeader ? 32 : 40} bob={false} />
+      <Text style={styles.stickerBtnText} numberOfLines={1}>
+        ⭐ {rewards.stars}
+      </Text>
+      {compactHeader ? null : <Text style={styles.stickerBtnBook}>📒</Text>}
       {rewards.unseen.length > 0 ? <View style={styles.newDot} /> : null}
     </Pressable>
   );
@@ -180,13 +196,22 @@ export function HomeScreen({ navigation }: Props) {
   const todayStars = Math.min(starsToday(rewards), DAILY_GOAL);
   const dailyPill = (
     <View
-      style={[styles.dailyPill, SHADOWS.sm, todayStars >= DAILY_GOAL && styles.dailyDone]}
+      style={[
+        styles.dailyPill,
+        compactHeader && styles.dailyPillCompact,
+        SHADOWS.sm,
+        todayStars >= DAILY_GOAL && styles.dailyDone,
+      ]}
       accessible
       accessibilityLabel={t('daily.a11y', { n: todayStars, goal: DAILY_GOAL })}
     >
-      <Text style={styles.dailyLabel}>{t('daily.label')}</Text>
+      {compactHeader ? null : (
+        <Text style={styles.dailyLabel} numberOfLines={1}>
+          {t('daily.label')}
+        </Text>
+      )}
       {Array.from({ length: DAILY_GOAL }, (_, i) => (
-        <Star key={i} size={22} filled={i < todayStars} />
+        <Star key={i} size={compactHeader ? 18 : 22} filled={i < todayStars} />
       ))}
     </View>
   );
@@ -194,18 +219,21 @@ export function HomeScreen({ navigation }: Props) {
   // No "All games" title: they are self-evidently games, and the heading cost a
   // full text row that a pre-reader gets nothing from.
   const gamesHeader = (
-    <View style={styles.gamesHeader}>
+    <View style={[styles.gamesHeader, compactHeader && styles.gamesHeaderCompact]}>
       {stickerButton}
       {dailyPill}
-      {/* Lulu in 3D lives between the pills and the controls: tap her to say
-          hi (she hops and giggles), drag to spin her round. */}
-      <View style={styles.headerSpacer}>
-        <Lulu3D size={104} interactive style={styles.homeLulu} />
+      <View style={styles.headerSpacer} />
+      <View style={[styles.headerControls, compactHeader && styles.headerControlsCompact]}>
+        {soundButton}
+        {languageButton}
+        {settingsButton}
       </View>
-      {soundButton}
-      {languageButton}
-      {settingsButton}
     </View>
+  );
+
+  // Tap Lulu to say hi (she hops and giggles), drag sideways to spin her.
+  const lulu = (size: number) => (
+    <Lulu3D size={size} interactive active={focused} style={styles.lulu} />
   );
 
   const gamesGrid =
@@ -337,7 +365,8 @@ export function HomeScreen({ navigation }: Props) {
     return (
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.twoPane}>
-          <View style={[styles.journeyPaneLandscape, { width: homeRailWidth(width, height) }]}>
+          <View style={[styles.journeyPaneLandscape, { width: railW }]}>
+            {railLuluSize >= LULU_MIN ? lulu(railLuluSize) : null}
             {journeyCard(false)}
           </View>
           <View style={styles.gamesPane}>
@@ -354,6 +383,7 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        {lulu(PORTRAIT_LULU)}
         {journeyCard(true)}
         {gamesHeader}
         {gamesGrid}
@@ -403,13 +433,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.xs,
-    height: 48,
+    flexShrink: 1,
+    minWidth: TOUCH_TARGET.min,
+    height: TOUCH_TARGET.min,
     paddingStart: SPACING.xs,
     paddingEnd: SPACING.md,
     borderRadius: BORDER_RADIUS.pill,
     backgroundColor: COLORS.surface,
   },
-  stickerBtnText: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
+  stickerBtnText: { flexShrink: 1, fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
   stickerBtnBook: { fontSize: 20 },
   newDot: {
     position: 'absolute',
@@ -427,23 +459,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    height: 48,
+    flexShrink: 1,
+    height: TOUCH_TARGET.min,
     paddingHorizontal: SPACING.md,
     borderRadius: BORDER_RADIUS.pill,
     backgroundColor: COLORS.surface,
+    overflow: 'hidden',
   },
+  dailyPillCompact: { paddingHorizontal: SPACING.sm },
   dailyDone: { backgroundColor: ACCENTS.green.tint },
-  dailyLabel: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.ink, marginEnd: SPACING.xs },
-  headerSpacer: { flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'visible' },
-  homeLulu: { marginTop: 22 },
+  dailyLabel: {
+    flexShrink: 1,
+    fontFamily: FONTS.display,
+    fontSize: 16,
+    color: COLORS.ink,
+    marginEnd: SPACING.xs,
+  },
+  headerSpacer: { flexGrow: 1, flexShrink: 1 },
+  headerControls: { flexDirection: 'row', flexShrink: 0, gap: SPACING.sm },
+  headerControlsCompact: { gap: SPACING.xs },
   gamesHeader: {
     height: GAMES_HEADER_H,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     gap: SPACING.sm,
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.md,
   },
+  gamesHeaderCompact: { gap: SPACING.xs, paddingHorizontal: SPACING.sm },
+  lulu: { alignSelf: 'center' },
 
   grid: {
     flexDirection: 'row',
@@ -466,6 +509,7 @@ const styles = StyleSheet.create({
     // wider on tablets.
     paddingLeft: 16,
     paddingVertical: GRID_PAD_V,
+    gap: SPACING.sm,
   },
   journeyPortrait: { marginHorizontal: 16, marginTop: 4, marginBottom: SPACING.xs },
   gamesPane: { flex: 1 },

@@ -41,5 +41,6 @@ export type World = {
   lastSpawn: number;
   popped: number;
   arrowsLeft: number;
+  startArrows: number;
   phase: Phase;
 };

@@ -17,7 +17,12 @@
 import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { LogBox, PanResponder, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
-import { MeshStandardMaterial, type Group, type Object3D, type PerspectiveCamera } from 'three';
+import {
+  CylinderGeometry,
+  MeshStandardMaterial,
+  PlaneGeometry,
+  TetrahedronGeometry,
+  type Group, type Object3D, type PerspectiveCamera } from 'three';
 import { ACCENTS, COLORS } from '@/sdk';
 import type { Animated } from 'react-native';
 import type { CarId, EntityKind, PlayfieldProps } from '../types';
@@ -99,11 +104,11 @@ type Animated3D = { spinners: Set<Object3D>; bobbers: Set<Object3D> };
 function EntityMesh({
   kind,
   motion,
-  materials,
+  shared,
 }: {
   kind: EntityKind;
   motion: Animated3D;
-  materials: Materials;
+  shared: Shared;
 }) {
   const color = ENTITY_COLOR[kind];
   // React 19 ref cleanup: consumed pickups unmount and leave the set.
@@ -118,9 +123,12 @@ function EntityMesh({
     case 'coin':
       return (
         <group position={[0, 1, 0]} ref={track(motion.spinners)}>
-          <mesh rotation={[Math.PI / 2, 0, 0]} material={materials.coin}>
-            <cylinderGeometry args={[0.6, 0.6, 0.16, 20]} />
-          </mesh>
+          <mesh
+            rotation={[Math.PI / 2, 0, 0]}
+            geometry={shared.coinGeo}
+            material={shared.coin}
+            dispose={null}
+          />
         </group>
       );
     case 'cone':
@@ -154,9 +162,12 @@ function EntityMesh({
     case 'boost':
       return (
         <group position={[0, 0.03, 0]}>
-          <mesh rotation={[-Math.PI / 2, 0, 0]} material={materials.boost}>
-            <planeGeometry args={[LANE_W * 0.75, 2.6]} />
-          </mesh>
+          <mesh
+            rotation={[-Math.PI / 2, 0, 0]}
+            geometry={shared.boostGeo}
+            material={shared.boost}
+            dispose={null}
+          />
           {/* Chevrons point the way forward. */}
           {[-0.5, 0.5].map((z) => (
             <mesh key={z} rotation={[-Math.PI / 2, 0, Math.PI / 4]} position={[0, 0.01, z]}>
@@ -193,7 +204,19 @@ function EntityMesh({
   }
 }
 
-type Materials = { coin: MeshStandardMaterial; boost: MeshStandardMaterial };
+/**
+ * Built once per scene and handed to every coin, pad and spark. R3F would
+ * dispose a mesh's material/geometry when a consumed pickup unmounts, which
+ * would destroy these for everyone, so those meshes opt out (dispose={null})
+ * and the scene disposes them itself on unmount.
+ */
+type Shared = {
+  coin: MeshStandardMaterial;
+  boost: MeshStandardMaterial;
+  coinGeo: CylinderGeometry;
+  boostGeo: PlaneGeometry;
+  sparkGeo: TetrahedronGeometry;
+};
 
 /** Gold flecks that burst from the car when a coin is grabbed. */
 const SPARK_COUNT = 10;
@@ -273,7 +296,7 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
   const traffic = useRef<(Group | null)[]>([]);
   const consumed = useMemo(() => new Set(ui.consumedIds), [ui.consumedIds]);
   const motion = useMemo<Animated3D>(() => ({ spinners: new Set(), bobbers: new Set() }), []);
-  const materials = useMemo<Materials>(
+  const shared = useMemo<Shared>(
     () => ({
       coin: new MeshStandardMaterial({
         color: COLORS.gold,
@@ -287,8 +310,17 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
         emissive: ACCENTS.green.base,
         emissiveIntensity: 0.4,
       }),
+      coinGeo: new CylinderGeometry(0.6, 0.6, 0.16, 20),
+      boostGeo: new PlaneGeometry(LANE_W * 0.75, 2.6),
+      sparkGeo: new TetrahedronGeometry(0.18),
     }),
     [],
+  );
+  useEffect(
+    () => () => {
+      Object.values(shared).forEach((r) => r.dispose());
+    },
+    [shared],
   );
   const scenery = SCENERY[theme.id];
 
@@ -340,7 +372,7 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
       o.position.y = 1.1 + Math.sin(t * 3) * 0.18;
       o.rotation.y = t * 1.5;
     });
-    materials.boost.emissiveIntensity = 0.35 + Math.sin(t * 6) * 0.25;
+    shared.boost.emissiveIntensity = 0.35 + Math.sin(t * 6) * 0.25;
 
     if (player.current) {
       player.current.position.x = lx;
@@ -447,7 +479,7 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
         {level.entities.map((e) =>
           consumed.has(e.id) ? null : (
             <group key={e.id} position={[laneX(e.lane), 0, -e.dist * S]}>
-              <EntityMesh kind={e.kind} motion={motion} materials={materials} />
+              <EntityMesh kind={e.kind} motion={motion} shared={shared} />
             </group>
           ),
         )}
@@ -502,9 +534,7 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
 
       <group ref={sparks} visible={false}>
         {Array.from({ length: SPARK_COUNT }, (_, i) => (
-          <mesh key={i} material={materials.coin}>
-            <tetrahedronGeometry args={[0.18]} />
-          </mesh>
+          <mesh key={i} geometry={shared.sparkGeo} material={shared.coin} dispose={null} />
         ))}
       </group>
     </>

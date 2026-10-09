@@ -153,17 +153,15 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
 }
 
 /**
- * 3D Lulu hops up from the corner to cheer every celebration. She stays mounted
- * (one GL context per screen, not one per burst) and only renders while shown.
+ * 3D Lulu hops up from the corner to cheer every celebration. She is mounted up
+ * front (one GL context per screen, created before the first burst so it can't
+ * hitch the confetti) and only renders frames while shown.
  */
 function CheeringLulu({ show, big }: { show: boolean; big: boolean }) {
   const enter = useMemo(() => new Animated.Value(0), []);
-  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    if (show) setMounted(true);
     Animated.spring(enter, { toValue: show ? 1 : 0, friction: 7, tension: 70, useNativeDriver: true }).start();
   }, [enter, show]);
-  if (!mounted) return null;
   const size = big ? 170 : 130;
   return (
     <Animated.View

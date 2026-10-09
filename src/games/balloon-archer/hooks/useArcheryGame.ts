@@ -18,6 +18,7 @@ function makeWorld(data: LevelData): World {
     lastSpawn: 0,
     popped: 0,
     arrowsLeft: data.arrows,
+    startArrows: data.arrows,
     phase: 'aiming',
   };
 }
@@ -94,6 +95,23 @@ export function useArcheryGame({
     reset();
   }, [data.level, reset]);
 
+  // Adaptive tuning loads async; retune a world nobody has touched yet so the
+  // first level of a session starts with the tuned arrow count.
+  useEffect(() => {
+    const w = world.current;
+    const pristine =
+      w.phase === 'aiming' &&
+      w.popped === 0 &&
+      !w.arrow &&
+      !w.drawing &&
+      w.arrowsLeft === w.startArrows;
+    if (pristine && w.startArrows !== data.arrows) {
+      w.arrowsLeft = data.arrows;
+      w.startArrows = data.arrows;
+      tick();
+    }
+  }, [data.arrows, tick]);
+
   // Settle the resting lane once we know the play area.
   useEffect(() => {
     const w = world.current;
@@ -114,7 +132,7 @@ export function useArcheryGame({
       const d = ref.current.data;
       if (w.popped >= d.quota) {
         w.phase = 'cleared';
-        ref.current.onCleared(starsFor(d.arrows - w.arrowsLeft, d.quota));
+        ref.current.onCleared(starsFor(w.startArrows - w.arrowsLeft, d.quota));
       } else if (w.arrowsLeft <= 0) {
         w.phase = 'failed';
         ref.current.onFailed();

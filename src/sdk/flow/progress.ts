@@ -1,5 +1,6 @@
 import { createStore, type Store } from '@/sdk/storage/createStore';
-import type { SeqStep } from './sequence';
+import type { FlowAdapter } from './adapter';
+import { buildSequence, type SeqStep } from './sequence';
 
 /**
  * Guided-journey checkpoint. Scoreless by design — we persist how far the
@@ -27,13 +28,41 @@ export function createFlowProgressStore(): Store<FlowProgress> {
   return createStore<FlowProgress>('flow:progress', DEFAULT_FLOW_PROGRESS);
 }
 
-/** Units finished per game, read from a checkpoint against the current sequence. */
-export function doneCounts(sequence: readonly SeqStep[], saved: FlowProgress): Record<string, number> {
+/**
+ * The journey as it was before per-game `done` maps were saved. A step-only
+ * save indexes THIS sequence, not the current one: later releases appended
+ * games and letter-land grew to 28 units in Arabic. Never edit — it describes
+ * data already on devices.
+ */
+export const LEGACY_JOURNEY: readonly { gameId: string; count?: number }[] = [
+  { gameId: 'count-and-pop' },
+  { gameId: 'shape-detective' },
+  { gameId: 'match-up' },
+  { gameId: 'letter-land', count: 26 },
+  { gameId: 'numbers-land' },
+  { gameId: 'animal-safari' },
+];
+
+/** The legacy sequence for the given (selected) adapters — what a step-only save indexes. */
+export function legacySequence(adapters: readonly FlowAdapter[]): SeqStep[] {
+  const byId = new Map(adapters.map((a) => [a.gameId, a]));
+  return buildSequence(
+    LEGACY_JOURNEY.flatMap(({ gameId, count }) => {
+      const a = byId.get(gameId);
+      return a ? [{ ...a, count: count ?? a.count }] : [];
+    }),
+  );
+}
+
+/**
+ * Units finished per game. A step-only save (older app, or a "start over"
+ * write) credits the first `step` units of `stepSequence` — pass
+ * `legacySequence(adapters)` for real saves.
+ */
+export function doneCounts(stepSequence: readonly SeqStep[], saved: FlowProgress): Record<string, number> {
   if (saved.done) return saved.done;
-  // Older save (or a "start over" write): only a step index — credit the
-  // first `step` units of the sequence as done.
   const done: Record<string, number> = {};
-  for (const s of sequence.slice(0, Math.max(0, saved.step))) {
+  for (const s of stepSequence.slice(0, Math.max(0, saved.step))) {
     done[s.gameId] = Math.max(done[s.gameId] ?? 0, s.localIndex + 1);
   }
   return done;

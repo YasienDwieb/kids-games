@@ -14,7 +14,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { PanResponder, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
 import type { Group, Mesh } from 'three';
-import { COLORS } from '@/constants/colors';
+import { ACCENTS, COLORS } from '@/constants/colors';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { useTranslation } from 'react-i18next';
@@ -23,10 +23,12 @@ export type LuluMood = 'idle' | 'wave' | 'cheer' | 'encourage' | 'point';
 
 const PURPLE = COLORS.brand;
 const PURPLE_DEEP = COLORS.brandDeep;
-const CREAM = '#FBEFD9';
-const BELLY = '#F4E2C4';
-const ORANGE = '#F4A65A';
+const CREAM = ACCENTS.orange.tint;
+const BELLY = COLORS.canvas2;
+const ORANGE = ACCENTS.orange.base;
 const INK = COLORS.ink;
+const WHITE = COLORS.surface;
+const DRAG_SLOP = 8;
 
 /** Number of tap reaction lines per language (`lulu.tap.<lang>.<n>` in the manifest). */
 export const LULU_TAP_LINES = 3;
@@ -178,7 +180,7 @@ function Owl({
             <group key={x} position={[x, 0.15, 0.49]}>
               <mesh ref={(m) => { eyes.current[i] = m; }}>
                 <sphereGeometry args={[0.1, 20, 16]} />
-                <meshToonMaterial color="#FFFFFF" />
+                <meshToonMaterial color={WHITE} />
               </mesh>
               <group ref={(g) => { pupils.current[i] = g; }} position={[0, 0, 0.07]}>
                 <mesh>
@@ -187,7 +189,7 @@ function Owl({
                 </mesh>
                 <mesh position={[0.02, 0.025, 0.04]}>
                   <sphereGeometry args={[0.015, 8, 6]} />
-                  <meshBasicMaterial color="#FFFFFF" />
+                  <meshBasicMaterial color={WHITE} />
                 </mesh>
               </group>
             </group>
@@ -246,7 +248,10 @@ export function Lulu3D({ size = 140, mood = 'idle', interactive = false, active 
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => interactive,
-        onMoveShouldSetPanResponder: () => interactive,
+        // Claim only sideways drags so a parent ScrollView keeps vertical scrolls.
+        onMoveShouldSetPanResponder: (_, g) =>
+          interactive && Math.abs(g.dx) > DRAG_SLOP && Math.abs(g.dx) > Math.abs(g.dy),
+        onPanResponderTerminationRequest: () => !drag.current.moved,
         onPanResponderGrant: (e) => {
           drag.current = { x0: e.nativeEvent.locationX, spin0: spin.current, moved: false };
           pointer.current = {

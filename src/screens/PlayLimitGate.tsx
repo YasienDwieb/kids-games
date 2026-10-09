@@ -1,7 +1,7 @@
 // Wraps a play screen: logs play time while it's showing and, once the
 // parent-set daily limit is used up, swaps the game for a gentle break screen.
 // A grown-up can grant 15 more minutes behind the parent gate.
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ParentGate, PressableButton } from '../components/common';
 import {
@@ -9,10 +9,11 @@ import {
   Mascot,
   grantExtraTime,
   overLimit,
-  usePlaytime,
+  playtimeStore,
+  settingsStore,
   usePlaytimeTracker,
-  useSettings,
   useTranslation,
+  type Playtime,
 } from '@/sdk';
 import { COLORS, FONTS, FONT_SIZES, SPACING } from '../constants';
 
@@ -25,13 +26,31 @@ type Props = {
 
 export function PlayLimitGate({ trackId, onHome, children }: Props) {
   const { t } = useTranslation();
-  const { settings } = useSettings();
-  const playtime = usePlaytime();
+  const [playtime, setPlaytime] = useState<Playtime | null>(null);
+  const [limit, setLimit] = useState<number | null | undefined>(undefined);
   const [asking, setAsking] = useState(false);
-  const blocked = overLimit(playtime, settings.dailyLimitMin);
 
-  usePlaytimeTracker(blocked ? null : trackId);
+  // Both stores load async; mounting the game against defaults would let an
+  // over-limit child hear its sounds/tutorial before the break screen swaps in.
+  useEffect(() => {
+    let alive = true;
+    void playtimeStore.get().then((v) => alive && setPlaytime(v));
+    void settingsStore.get().then((s) => alive && setLimit(s.dailyLimitMin ?? null));
+    const unsubP = playtimeStore.subscribe((v) => alive && setPlaytime(v));
+    const unsubS = settingsStore.subscribe((s) => alive && setLimit(s.dailyLimitMin ?? null));
+    return () => {
+      alive = false;
+      unsubP();
+      unsubS();
+    };
+  }, []);
 
+  const ready = playtime !== null && limit !== undefined;
+  const blocked = ready && overLimit(playtime, limit);
+
+  usePlaytimeTracker(ready && !blocked ? trackId : null);
+
+  if (!ready) return <View style={styles.root} />;
   if (!blocked) return <>{children}</>;
 
   if (asking) {

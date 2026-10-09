@@ -113,6 +113,8 @@ export function CatchField({
   const contentsRef = useRef<(SlotContent | null)[]>(Array(ITEM_POOL).fill(null));
   const scoreRef = useRef(0);
   const livesRef = useRef(maxLives ?? 0);
+  // Catches queued via runOnJS can land after the round ended; settle it once.
+  const endedRef = useRef(false);
 
   // Animation channels — created once, never re-created.
   const slots = useMemo(() => Array.from({ length: ITEM_POOL }, makeSlot), []);
@@ -150,6 +152,7 @@ export function CatchField({
     clearField();
     scoreRef.current = 0;
     livesRef.current = maxLives ?? 0;
+    endedRef.current = false;
     setPops([]);
     basketX.value = areaW.value / 2 - BASKET_WIDTH / 2;
     basketTarget.value = basketX.value;
@@ -226,6 +229,7 @@ export function CatchField({
       const item = contentsRef.current[index];
       if (!item || item.uid !== uid) return; // stale event — slot already reused
       retire(index);
+      if (endedRef.current) return;
 
       const slot = slots[index];
       const x = slot.x.value;
@@ -237,7 +241,10 @@ export function CatchField({
         if (maxLives != null) {
           livesRef.current -= 1;
           onLives?.(livesRef.current);
-          if (livesRef.current <= 0) onLose?.(); // the hit sting already played
+          if (livesRef.current <= 0) {
+            endedRef.current = true;
+            onLose?.(); // the hit sting already played
+          }
         }
         return;
       }
@@ -246,7 +253,10 @@ export function CatchField({
       scoreRef.current += item.points;
       onScore?.(scoreRef.current);
       addPop(x, y, `+${item.points}`, '#E66FA0');
-      if (scoreRef.current >= data.target) onWin?.(scoreRef.current);
+      if (scoreRef.current >= data.target) {
+        endedRef.current = true;
+        onWin?.(scoreRef.current);
+      }
     },
     [slots, play, addPop, retire, data.target, maxLives, onLives, onLose, onScore, onWin],
   );

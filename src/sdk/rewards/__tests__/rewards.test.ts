@@ -61,6 +61,16 @@ describe('awardStars', () => {
   });
 });
 
+describe('markStickersSeen', () => {
+  it('does not wipe stars awarded right after it', async () => {
+    for (let i = 0; i < STARS_PER_STICKER; i++) await awardStars('mouse-maze');
+    await Promise.all([markStickersSeen(), awardStars('mouse-maze'), awardStars('mouse-maze')]);
+    const r = await rewardsStore.get();
+    expect(r.stars).toBe(STARS_PER_STICKER + 2);
+    expect(r.unseen).toEqual([]);
+  });
+});
+
 describe('daily goal', () => {
   it('counts only today and announces the goal once', async () => {
     const heard: string[] = [];

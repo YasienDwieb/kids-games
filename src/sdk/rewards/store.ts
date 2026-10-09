@@ -101,10 +101,13 @@ export function awardStars(gameId: string, stars = 1): Promise<string[]> {
 }
 
 /** Clear the "new" marks once the child has seen the book. */
-export async function markStickersSeen(): Promise<void> {
-  await queue;
-  const cur = await rewardsStore.get();
-  if (cur.unseen.length > 0) await rewardsStore.set({ ...cur, unseen: [] });
+export function markStickersSeen(): Promise<void> {
+  const run = queue.then(async () => {
+    const cur = await rewardsStore.get();
+    if (cur.unseen.length > 0) await rewardsStore.set({ ...cur, unseen: [] });
+  });
+  queue = run.catch(() => undefined);
+  return run;
 }
 
 /** Live rewards state for screens (Home pill, sticker book). */

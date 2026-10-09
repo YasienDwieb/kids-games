@@ -4,6 +4,7 @@
 import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import { AppBar, EmojiImage, HudPill, hudTextStyle } from '../components/common';
@@ -32,6 +33,7 @@ const TILTS = [-6, 4, -2, 7, -4, 3];
 export function StickerBookScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const rewards = useRewards();
+  const focused = useIsFocused();
   const owned = new Set(rewards.stickers);
   const unseen = new Set(rewards.unseen);
 
@@ -58,8 +60,17 @@ export function StickerBookScreen({ navigation }: Props) {
       />
       <View style={styles.body}>
         {/* Lulu + how close the next sticker is. */}
-        <View style={[styles.side, SHADOWS.sm]}>
-          <Lulu3D size={140} mood={have === total ? 'cheer' : 'wave'} interactive />
+        <ScrollView
+          style={[styles.side, SHADOWS.sm]}
+          contentContainerStyle={styles.sideContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Lulu3D
+            size={140}
+            mood={have === total ? 'cheer' : 'wave'}
+            interactive
+            active={focused}
+          />
           <Text style={styles.count}>{t('stickers.count', { have, total })}</Text>
           {have < total ? (
             <>
@@ -71,7 +82,7 @@ export function StickerBookScreen({ navigation }: Props) {
           ) : (
             <Text style={styles.hint}>{t('stickers.complete')}</Text>
           )}
-        </View>
+        </ScrollView>
 
         <ScrollView style={styles.pages} contentContainerStyle={styles.pagesContent}>
           {sets.map((set) => {
@@ -123,13 +134,14 @@ const styles = StyleSheet.create({
   body: { flex: 1, flexDirection: 'row', gap: SPACING.md, paddingHorizontal: SPACING.md },
   side: {
     width: 220,
+    flexGrow: 0,
     alignSelf: 'flex-start',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    padding: SPACING.md,
+    maxHeight: '100%',
+    marginBottom: SPACING.md,
     borderRadius: BORDER_RADIUS.card,
     backgroundColor: COLORS.surface,
   },
+  sideContent: { alignItems: 'center', gap: SPACING.sm, padding: SPACING.md },
   count: { fontFamily: FONTS.displayBold, fontSize: FONT_SIZES.md, color: COLORS.ink },
   bar: {
     width: '100%',

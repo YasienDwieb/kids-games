@@ -6,7 +6,7 @@
    progression is the SDK `useLevels` checkpoint; the coin wallet lives in the
    garage store and is banked exactly once per race in `handleFinish`. */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
 import {
   COLORS,
@@ -25,7 +25,6 @@ import { GarageScreen } from './components/GarageScreen';
 import { Hud } from './components/Hud';
 import { PauseOverlay } from './components/PauseOverlay';
 import { Playfield } from './components/Playfield';
-import { Playfield3D } from './components/Playfield3D';
 import { ProgressBar } from './components/ProgressBar';
 import { StartScreen } from './components/StartScreen';
 import { WinOverlay } from './components/WinOverlay';
@@ -56,6 +55,11 @@ import type {
 } from './types';
 
 type ViewName = 'start' | 'race' | 'garage';
+
+// three + react-three-fiber + expo-gl are only evaluated once a race actually uses the 3D road.
+const Playfield3D = lazy(() =>
+  import('./components/Playfield3D').then((m) => ({ default: m.Playfield3D })),
+);
 
 /* Inner race screen — keyed by level+attempt from the root so every entry
    into the race view gets a fresh world + rAF loop (useRaceGame restarts on
@@ -116,15 +120,17 @@ function Race({
     <View style={styles.flex}>
       {/* Same props either way: the 3D road is a renderer swap, not a new game. */}
       {roadView === '3d' ? (
-        <Playfield3D
-          carId={car.id}
-          theme={theme}
-          level={level}
-          ui={ui}
-          anim={anim}
-          playerEmoji={playerEmoji}
-          onSteerTo={steerTo}
-        />
+        <Suspense fallback={<View style={[styles.flex, { backgroundColor: theme.sky }]} />}>
+          <Playfield3D
+            carId={car.id}
+            theme={theme}
+            level={level}
+            ui={ui}
+            anim={anim}
+            playerEmoji={playerEmoji}
+            onSteerTo={steerTo}
+          />
+        </Suspense>
       ) : (
         <Playfield
           theme={theme}
