@@ -7,13 +7,26 @@ license. Add an entry **before** importing any new third-party asset.
 
 ### Google Noto Emoji — emoji artwork
 
-- **Used for:** match-up game tile icons (`src/sdk/assets/emoji/png/`), resolved
+- **Used for:** emoji drawn as images across the app's games and screens (`src/sdk/assets/emoji/png/`), resolved
   via `src/sdk/assets/emoji/images.ts` and rendered through the `EmojiImage` SDK primitive.
 - **Source:** https://github.com/googlefonts/noto-emoji — © Google Inc.
 - **License:** Apache License 2.0 (emoji images). https://www.apache.org/licenses/LICENSE-2.0
 - **Terms honored:** attribution (this entry). Commercial use permitted; no share-alike.
 
-## Audio assets
+### OpenMoji — Animal Safari illustrations
+
+- **Used for:** Animal Safari's animal pictures (`src/sdk/assets/images/animals/`).
+- **Source:** https://openmoji.org — all emojis designed by OpenMoji, the open-source emoji and icon project.
+- **License:** CC BY-SA 4.0. https://creativecommons.org/licenses/by-sa/4.0/
+- **Terms honored:** attribution required wherever the images are used (including in-app),
+  not yet shown in the app. Per-file sources: `src/sdk/assets/images/animals/CREDITS.md`.
+
+### Kenney — Background Elements (backdrop)
+
+- **Used for:** the parallax hills and clouds behind games (`src/sdk/assets/backdrop/png/`).
+- **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/background-elements
+- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
+- **Processing:** recolored (CC0 permits modification).
 
 ### Higgsfield (Nano Banana) — Lulu the owl mascot
 
@@ -23,6 +36,27 @@ license. Add an entry **before** importing any new third-party asset.
   on the project's Higgsfield account; cut into poses with the white background removed.
 - **License:** generated content used under the Higgsfield account's terms, which the
   project owner confirmed permit commercial use in this app.
+
+### Kenney — Car Kit & Racing Kit (3D models)
+
+- **Used for:** Turbo Road's 3D road (`src/games/turbo-road/assets/models/`): the
+  player, rival and oncoming vehicles, traffic cones (Car Kit 3.1), and the trees and
+  finish arch (Racing Kit 2.0).
+- **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/car-kit,
+  https://kenney.nl/assets/racing-kit
+- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
+- **Processing:** the Car Kit's palette texture was baked into vertex colors and the
+  meshes deduplicated/welded (CC0 permits modification), so the app needs no textures.
+
+### Kenney — Nature Kit (3D models)
+
+- **Used for:** Turbo Road's per-theme roadside scenery
+  (`src/games/turbo-road/assets/models/`): oak, round, palm and pine trees, cacti and
+  rocks (`tree_*`, `cactus_*`, `rock_largeA`).
+- **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/nature-kit
+- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
+
+## Audio assets
 
 ### Higgsfield (Seed Audio 1.0) — spoken praise (English)
 
@@ -48,25 +82,6 @@ license. Add an entry **before** importing any new third-party asset.
 - **Processing:** trimmed of silence, resampled to 44.1 kHz mono AAC 64 kbps, and
   loudness-matched to the English clips (−23.7 LUFS integrated, peak ≤ −6 dBFS).
 
-### Kenney — Car Kit & Racing Kit (3D models)
-
-- **Used for:** Turbo Road's 3D road (`src/games/turbo-road/assets/models/`): the
-  player, rival and oncoming vehicles, traffic cones (Car Kit 3.1), and the trees and
-  finish arch (Racing Kit 2.0).
-- **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/car-kit,
-  https://kenney.nl/assets/racing-kit
-- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
-- **Processing:** the Car Kit's palette texture was baked into vertex colors and the
-  meshes deduplicated/welded (CC0 permits modification), so the app needs no textures.
-
-### Kenney — Nature Kit (3D models)
-
-- **Used for:** Turbo Road's per-theme roadside scenery
-  (`src/games/turbo-road/assets/models/`): oak, round, palm and pine trees, cacti and
-  rocks (`tree_*`, `cactus_*`, `rock_largeA`).
-- **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/nature-kit
-- **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
-
 ### Kenney — feedback SFX
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:
@@ -81,3 +96,17 @@ license. Add an entry **before** importing any new third-party asset.
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 - **Terms honored:** no attribution required; credited here as a courtesy. Clips were
   converted to WAV, trimmed and loudness-normalized (CC0 permits modification).
+
+### Wikimedia Commons — animal sounds
+
+- **Used for:** Animal Safari's animal calls (`src/sdk/assets/audio/animals/`).
+- **Source:** Wikimedia Commons — per-clip files and URLs in `src/sdk/assets/audio/animals/CREDITS.md`.
+- **License:** CC0 1.0 or public domain (per clip). No attribution required.
+- **Processing:** trimmed and re-encoded to AAC (`.m4a`).
+
+## Original assets
+
+### Turbo Road engine loop
+
+- **Used for:** the engine rumble (`src/sdk/assets/audio/EngineLoop.wav`), via `useLoopSound`.
+- **Source:** synthesized for this project by `scripts/gen_engine_loop.py`. No third-party material.
