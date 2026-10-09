@@ -109,6 +109,7 @@ function NumbersLandRun({
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={lf.selectedIndex}
+        mascotPose={lf.mascotPose}
         onPick={(i) => lf.handlePick(i, round.correctIndex)}
         onReplay={speakTarget}
         disabled={lf.solved}

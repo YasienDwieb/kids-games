@@ -169,6 +169,7 @@ export const DEFAULT_GARAGE = {
 
 export const DEFAULT_PREFS = {
   control: 'drag' as const,
+  view: '2d' as const,
 };
 
 /* ---------------- track themes (Sunny Adventure) ---------------- */

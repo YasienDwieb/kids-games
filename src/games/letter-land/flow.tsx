@@ -8,11 +8,12 @@
  */
 
 import { useEffect } from 'react';
-import { I18nManager, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { registerFlowAdapter, useFlowRound, useSpeech, useTranslation } from '@/sdk';
 import { ListenFindBoard, buildRound, orderFor } from '@/games/_shared/listen-find';
 import { LetterHero } from './components/LetterHero';
-import { LATIN_LETTERS, ARABIC_LETTERS, CHOICES_PER_ROUND } from './constants';
+import { CHOICES_PER_ROUND } from './constants';
+import { letterSet } from './utils/letterSet';
 import type { Letter } from './types';
 
 function LetterFlowRound({
@@ -28,7 +29,7 @@ function LetterFlowRound({
   const { speak } = useSpeech();
   const { solved, selectedIndex, pick } = useFlowRound(onComplete);
 
-  const set = I18nManager.isRTL ? ARABIC_LETTERS : LATIN_LETTERS;
+  const set = letterSet();
   const order = orderFor(set.length, seed);
   const round = buildRound(set, order, index + 1, (index + 1) * 7919, CHOICES_PER_ROUND);
   const target: Letter = round.target;
@@ -71,7 +72,11 @@ const styles = StyleSheet.create({
 
 registerFlowAdapter({
   gameId: 'letter-land',
-  count: LATIN_LETTERS.length,
+  // A getter: registration runs before the persisted language is applied, so
+  // Arabic journeys must read the count late to cover all 28 letters.
+  get count() {
+    return letterSet().length;
+  },
   unitAt: (i, seed) => ({
     key: `letter-land-${i}`,
     render: (onComplete) => (

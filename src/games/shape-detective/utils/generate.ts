@@ -107,7 +107,7 @@ function shapesEqual(a: Shape, b: Shape): boolean {
  * Generates a "what comes next?" pattern puzzle.
  *
  * Strategy: build a repeating 2- or 3-element cycle using the active
- * attributes, show (cycleLen × reps) visible shapes, and ask for the next.
+ * attributes, show about two cycles (±1 shape) of it, and ask for the next.
  * Distractors differ from the correct answer on at least one active attribute.
  */
 export function buildPatternPuzzle(
@@ -134,16 +134,17 @@ export function buildPatternPuzzle(
     cycle.push(makeShape(i, i, i, pools, activeAttributes, baseline));
   }
 
-  // Full visible sequence = 2 complete cycles
-  const reps = 2;
+  // Visible sequence ≈ 2 cycles, give or take one shape. Exactly 2 full cycles
+  // would always make the answer equal the first shape in the row — a shortcut
+  // kids learn in one play. Its own PRNG keeps the rest of the puzzle unchanged.
+  const lenRand = mulberry32(seed + 500);
+  const visibleLen = 2 * cycleLen + (Math.floor(lenRand() * 3) - 1); // -1 | 0 | +1
   const sequence: Shape[] = [];
-  for (let r = 0; r < reps; r++) {
-    for (const s of cycle) {
-      sequence.push({ ...s });
-    }
+  for (let i = 0; i < visibleLen; i++) {
+    sequence.push({ ...cycle[i % cycleLen] });
   }
 
-  // Correct next = sequence[0] % cycle  (continues the cycle)
+  // Correct next continues the cycle from where the row stops.
   const correctShape: Shape = { ...cycle[sequence.length % cycleLen] };
 
   // Build distractors: mutate exactly one active attribute of the correct shape

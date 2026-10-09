@@ -60,6 +60,74 @@ export { useGameLoop } from './motion/useGameLoop';
 export type { GameLoopStep, GameLoopOptions } from './motion/useGameLoop';
 export { MAX_DT, clampDt, clamp, lerp, approach, wrap } from './motion/frame';
 
+// Feedback — celebrations & the shared hint policy
+export { CelebrationProvider, useCelebrate, PRAISE_COUNT } from './feedback/Celebration';
+export type { Celebrate, CelebrationSize, CelebrateOptions } from './feedback/Celebration';
+export { hintStepFor, starsForMisses } from './feedback/hints';
+export type { HintStep } from './feedback/hints';
+export { useHintLadder } from './feedback/useHintLadder';
+export type { UseHintLadderResult } from './feedback/useHintLadder';
+
+// Rewards — app-wide stars & the sticker book
+export {
+  awardStars,
+  markStickersSeen,
+  onStickerUnlocked,
+  rewardsStore,
+  useRewards,
+  DEFAULT_REWARDS,
+  DAILY_GOAL,
+  DAILY_GOAL_EVENT,
+  localDay,
+  starsToday,
+} from './rewards/store';
+export type { Rewards } from './rewards/store';
+export {
+  STICKER_SETS,
+  STARS_PER_STICKER,
+  ALL_STICKERS,
+  nextSticker,
+  stickerEmoji,
+  stickerId,
+} from './rewards/stickers';
+export type { StickerSetId } from './rewards/stickers';
+export { Sticker } from './rewards/Sticker';
+
+// Mascot — Lulu the owl
+export { Mascot } from './mascot/Mascot';
+export type { MascotPose } from './mascot/Mascot';
+export { MascotHelper } from './mascot/MascotHelper';
+export { Lulu3D, LULU_TAP_LINES } from './mascot/Lulu3D';
+export type { LuluMood } from './mascot/Lulu3D';
+
+// Play time — the parent corner's log and the optional daily limit
+export {
+  playtimeStore,
+  usePlaytime,
+  usePlaytimeTracker,
+  addPlaytime,
+  grantExtraTime,
+  secondsToday,
+  secondsThisWeek,
+  overLimit,
+  EXTRA_MINUTES,
+  DEFAULT_PLAYTIME,
+} from './playtime/playtime';
+export type { Playtime } from './playtime/playtime';
+
+// Adaptive difficulty — a per-game skill tier that follows the child
+export { useAdaptive } from './adaptive/useAdaptive';
+export type { UseAdaptiveResult } from './adaptive/useAdaptive';
+export { nextAdaptive, startingTier, tierFactor, MIN_TIER, MAX_TIER } from './adaptive/adaptive';
+export type { AdaptiveState } from './adaptive/adaptive';
+
+// Tutorials — first-run demos & idle hints
+export { DemoHand } from './tutorial/DemoHand';
+export type { DemoPoint } from './tutorial/DemoHand';
+export { useFirstRun, tutorialStore } from './tutorial/useFirstRun';
+export type { FirstRunStatus, TutorialProgress } from './tutorial/useFirstRun';
+export { useIdle } from './tutorial/useIdle';
+
 // Layout
 export { GameShell } from './layout/GameShell';
 export { GameOverlay } from './layout/GameOverlay';

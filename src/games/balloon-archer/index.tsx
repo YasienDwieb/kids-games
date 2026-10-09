@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import { useSound, useLevels, levelsFromGenerator, ResumePrompt } from '@/sdk';
+import {
+  useSound,
+  useLevels,
+  levelsFromGenerator,
+  ResumePrompt,
+  tierFactor,
+  useAdaptive,
+} from '@/sdk';
 import { Archer } from './components/Archer';
 import { Balloon } from './components/Balloon';
 import { Arrow } from './components/Arrow';
@@ -19,28 +26,45 @@ export default function BalloonArcherGame() {
     source,
   });
 
+  // Adaptive difficulty: struggling earns spare arrows and calmer balloons; a
+  // winning streak makes them rise a little faster. Applied from the next try.
+  const { tier, record } = useAdaptive('balloon-archer');
+  const tuned = useMemo(
+    () => ({
+      ...data,
+      arrows: data.arrows + Math.max(0, -tier) * 2,
+      riseSpeed: data.riseSpeed * tierFactor(tier, 0.1),
+    }),
+    [data, tier],
+  );
+
   const [area, setArea] = useState({ width: 0, height: 0 });
   const [overlay, setOverlay] = useState<{ variant: 'cleared' | 'failed'; stars: number } | null>(
     null,
   );
 
+  // Loosing an arrow gets its own whoosh so the core action never feels silent.
+  const onShoot = useCallback(() => play('whoosh'), [play]);
   const onPop = useCallback(() => play('balloon'), [play]);
   const onCleared = useCallback(
     (stars: number) => {
       play('win');
+      record(true);
       setOverlay({ variant: 'cleared', stars });
     },
-    [play],
+    [play, record],
   );
   const onFailed = useCallback(() => {
     play('wrong');
+    record(false);
     setOverlay({ variant: 'failed', stars: 0 });
-  }, [play]);
+  }, [play, record]);
 
   const game = useArcheryGame({
     area,
-    data,
+    data: tuned,
     enabled: status === 'playing' && overlay === null,
+    onShoot,
     onPop,
     onCleared,
     onFailed,
@@ -50,7 +74,7 @@ export default function BalloonArcherGame() {
     play('next');
     const stars = overlay?.stars ?? 0;
     setOverlay(null);
-    if (isLast) startOver();
+    if (isLast) startOver({ finished: true });
     else advance(stars);
   }, [advance, isLast, overlay, play, startOver]);
 

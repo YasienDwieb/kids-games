@@ -73,7 +73,34 @@ type HowManyProps = {
   onPick: (index: number) => void;
   /** Whether tapping should be ignored (post-answer cooldown or overlay). */
   disabled?: boolean;
+  /**
+   * Light the correct answer green when a wrong one is tapped (default true).
+   * The standalone game turns it off for early misses — see the SDK hint policy.
+   */
+  revealCorrect?: boolean;
+  /** Choice to point at with a gentle pulse (the hint policy's 'highlight' step). */
+  hintIndex?: number | null;
 };
+
+// Gentle "look here" pulse for a hinted choice.
+function HintPulse({ active, children }: { active: boolean; children: React.ReactNode }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (!active) {
+      scale.setValue(1);
+      return;
+    }
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scale, { toValue: 1.12, duration: 380, useNativeDriver: true }),
+        Animated.timing(scale, { toValue: 1, duration: 380, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [active, scale]);
+  return <Animated.View style={[styles.hintCell, { transform: [{ scale }] }]}>{children}</Animated.View>;
+}
 
 // ---------------------------------------------------------------------------
 // Swim animation for the flat howMany object group
@@ -133,6 +160,8 @@ export function HowMany({
   selectedIndex,
   onPick,
   disabled = false,
+  revealCorrect = true,
+  hintIndex = null,
 }: HowManyProps): React.JSX.Element {
   const { t } = useTranslation();
   const { mode, objectEmoji, choices, correctIndex } = round;
@@ -169,7 +198,7 @@ export function HowMany({
   // Build per-choice state
   const getChoiceState = (idx: number): NumberChoiceState => {
     if (selectedIndex === null) return 'default';
-    if (idx === correctIndex) return 'correct';
+    if (idx === correctIndex) return revealCorrect || idx === selectedIndex ? 'correct' : 'default';
     if (idx === selectedIndex) return 'wrong';
     return 'default';
   };
@@ -229,20 +258,21 @@ export function HowMany({
           const state = getChoiceState(idx);
           const isAnswered = selectedIndex !== null;
           return (
-            <NumberChoice
-              key={idx}
-              value={value}
-              state={state}
-              onPress={() => onPick(idx)}
-              disabled={disabled || isAnswered}
-              accessibilityLabel={t('count-and-pop:a11y.choiceButton', {
-                value,
-              })}
-              accessibilityState={{
-                disabled: disabled || isAnswered,
-                selected: state === 'correct',
-              }}
-            />
+            <HintPulse key={idx} active={hintIndex === idx && selectedIndex === null}>
+              <NumberChoice
+                value={value}
+                state={state}
+                onPress={() => onPick(idx)}
+                disabled={disabled || isAnswered}
+                accessibilityLabel={t('count-and-pop:a11y.choiceButton', {
+                  value,
+                })}
+                accessibilityState={{
+                  disabled: disabled || isAnswered,
+                  selected: state === 'correct',
+                }}
+              />
+            </HintPulse>
           );
         })}
       </View>
@@ -330,6 +360,9 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   // Choice row — centered, equal-width buttons
+  // Takes over NumberChoice's row-child sizing; row direction lets the choice's
+  // own flex:1 fill it without collapsing vertically.
+  hintCell: { flex: 1, minWidth: 72, flexDirection: 'row' },
   choiceRow: {
     flexDirection: 'row',
     justifyContent: 'center',

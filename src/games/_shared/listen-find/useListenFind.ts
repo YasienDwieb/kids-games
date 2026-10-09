@@ -17,7 +17,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useGameShell, useLevels, useSound, type LevelSource } from '@/sdk';
+import { useGameShell, useLevels, useSound, type LevelSource, type MascotPose } from '@/sdk';
 import type { FindItem, FindRound } from './types';
 
 /** The per-level shape both games produce. */
@@ -43,6 +43,9 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [solved, setSolved] = useState(false);
+  // Wrong picks this round: Lulu encourages after the first, and from the
+  // second on she points and the prompt is said again.
+  const [misses, setMisses] = useState(0);
 
   // Single timer ref — cleared before reassign and on unmount.
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -74,6 +77,7 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
     shellRef.current.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
+    setMisses(0);
     speakRef.current();
   }, [level, status]);
 
@@ -87,7 +91,7 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
   // handleNext reads isLast at call time (live closure).
   const handleNext = useCallback(() => {
     shell.hideOverlay('win');
-    if (isLast) startOver();
+    if (isLast) startOver({ finished: true });
     else advance();
   }, [isLast, advance, startOver, shell]);
 
@@ -105,11 +109,19 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
         }, SOLVE_DELAY);
       } else {
         void play('wrong');
-        setTimer(() => setSelectedIndex(null), WRONG_RESET_DELAY);
+        const nextMisses = misses + 1;
+        setMisses(nextMisses);
+        setTimer(() => {
+          setSelectedIndex(null);
+          if (nextMisses >= 2) speakRef.current();
+        }, WRONG_RESET_DELAY);
       }
     },
-    [selectedIndex, solved, status, isLast, play, addScore, setTimer, handleNext],
+    [selectedIndex, solved, status, isLast, misses, play, addScore, setTimer, handleNext],
   );
 
-  return { ...levels, selectedIndex, solved, handlePick, handleNext };
+  const mascotPose: MascotPose | null =
+    solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point';
+
+  return { ...levels, selectedIndex, solved, handlePick, handleNext, mascotPose };
 }

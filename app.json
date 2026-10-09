@@ -30,7 +30,8 @@
     "extra": {
       "eas": {
         "projectId": "9da83bd2-d191-4696-9770-b2bb066dd7ec"
-      }
+      },
+      "supportsRTL": true
     },
     "owner": "waybeyond",
     "plugins": [

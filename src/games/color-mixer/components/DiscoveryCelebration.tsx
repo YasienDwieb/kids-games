@@ -1,6 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton, useTranslation } from '@/sdk';
+import {
+  COLORS as TOKENS,
+  FONTS,
+  BORDER_RADIUS,
+  SHADOWS,
+  MascotHelper,
+  PressableButton,
+  useTranslation,
+} from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { Sparkles } from './Sparkles';
 import { COLORS, TIMING } from '../constants';
@@ -88,6 +96,7 @@ export function DiscoveryCelebration({
 
             <PressableButton label={t('color-mixer:discovery.yay')} accent="blue" onPress={onComplete} style={styles.cta} />
           </Animated.View>
+          <MascotHelper pose="cheer" size={120} />
         </Animated.View>
       </Pressable>
     </Modal>

@@ -25,6 +25,8 @@ import {
   EmojiFrame,
   FONT_SIZES,
   FONTS,
+  Mascot,
+  MascotHelper,
   PressableButton,
   ResumePrompt,
   SHADOWS,
@@ -55,12 +57,12 @@ function LevelSolvedOverlay({ isLast, onNext, t }: LevelSolvedOverlayProps): Rea
   return (
     <View style={overlayStyles.root}>
       <View style={[overlayStyles.card, SHADOWS.lg]}>
-        {/* Tinted emoji frame as the reward icon */}
-        <EmojiFrame
-          emoji={isLast ? '🏆' : '⭐️'}
-          size={72}
-          tint={ACCENTS.purple.tint}
-        />
+        {/* Lulu cheers the solve; the trophy marks the final case. */}
+        {isLast ? (
+          <EmojiFrame emoji="🏆" size={72} tint={ACCENTS.purple.tint} />
+        ) : (
+          <Mascot pose="cheer" size={96} />
+        )}
         {/* Star row — 3 stars as a kid-friendly reward cue */}
         <View style={overlayStyles.starsRow}>
           <Star size={28} filled />
@@ -137,6 +139,9 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   // Shake animation for wrong answer
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
+  // Wrong attempts this level — drives Lulu: encourage first, then point.
+  const [misses, setMisses] = useState(0);
+
   // Scale pop for correct answer — gentle bounce to 1.06 then back
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -155,6 +160,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
     shell.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
+    setMisses(0);
   }, [level, shell]);
 
   // Clear pending timers on unmount.
@@ -173,7 +179,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   const handleNext = useCallback(() => {
     shell.hideOverlay('win');
     if (isLast) {
-      startOver();
+      startOver({ finished: true });
     } else {
       advance();
     }
@@ -232,6 +238,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
         handleCorrect();
       } else {
         void play('wrong');
+        setMisses((m) => m + 1);
         triggerShake();
         if (timerRef.current !== null) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => setSelectedIndex(null), 900);
@@ -260,6 +267,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
         void play('success');
       } else {
         void play('wrong');
+        setMisses((m) => m + 1);
       }
     },
     [data.puzzle, play],
@@ -293,6 +301,10 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
 
   const puzzle = data.puzzle;
 
+  const helper = (
+    <MascotHelper pose={solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point'} />
+  );
+
   if (puzzle.type === 'oddOneOut') {
     return (
       <Animated.View
@@ -307,6 +319,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
           onPick={handlePick}
           disabled={selectedIndex !== null}
         />
+        {helper}
       </Animated.View>
     );
   }
@@ -321,6 +334,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
           onDrop={handleSortDrop}
           onSolved={handleSortSolved}
         />
+        {helper}
       </View>
     );
   }
@@ -339,6 +353,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
         onPick={handlePick}
         disabled={selectedIndex !== null}
       />
+      {helper}
     </Animated.View>
   );
 }

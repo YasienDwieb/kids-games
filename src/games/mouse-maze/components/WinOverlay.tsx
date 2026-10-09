@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
 import {
+  Mascot,
   PressableButton,
   Star,
   COLORS,
@@ -35,7 +36,10 @@ export function WinOverlay({ collected, total, onNext }: WinOverlayProps) {
   return (
     <View style={styles.backdrop}>
       <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
-        <Text style={styles.burst}>🎉 {EMOJI.goal} 🎉</Text>
+        <View style={styles.heroRow}>
+          <Mascot pose="cheer" size={88} />
+          <Text style={styles.burst}>{EMOJI.goal}</Text>
+        </View>
         <Text style={styles.title}>{t('mouse-maze:win.title')}</Text>
 
         <View style={styles.starsRow}>
@@ -75,6 +79,7 @@ const styles = StyleSheet.create({
     ...SHADOWS.lg,
   },
   burst: { fontSize: 44 },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   title: { fontFamily: FONTS.displayBold, fontSize: 28, color: COLORS.ink },
   starsRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: SPACING.xs },
   button: { alignSelf: 'stretch', marginTop: SPACING.xs },

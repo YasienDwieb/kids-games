@@ -16,6 +16,8 @@ export type Settings = {
   mode: 'free' | 'guided';
   /** Game ids whose content feeds the guided journey; null = all eligible games. */
   flowGameIds: string[] | null;
+  /** Parent-set daily play limit in minutes; null = no limit. */
+  dailyLimitMin: number | null;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -25,6 +27,7 @@ export const DEFAULT_SETTINGS: Settings = {
   language: null,
   mode: 'free',
   flowGameIds: null,
+  dailyLimitMin: null,
 };
 
 export const settingsStore = createStore<Settings>('settings', DEFAULT_SETTINGS);

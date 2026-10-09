@@ -64,7 +64,6 @@ import {
 } from 'react';
 import {
   Animated,
-  I18nManager,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -454,7 +453,7 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
     <GestureDetector gesture={panGesture}>
       <View
         ref={surfaceRef}
-        style={[styles.root, landscape && styles.rootLandscape, I18nManager.isRTL && styles.ltrSurface]}
+        style={[styles.root, landscape && styles.rootLandscape, styles.ltrSurface]}
       >
         {/* Instruction */}
         <Text style={styles.instruction}>{t('shape-detective:sort.instruction')}</Text>

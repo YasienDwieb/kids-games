@@ -2,6 +2,7 @@ module.exports = {
   preset: 'jest-expo',
   setupFiles: ['<rootDir>/jest.setup.js'],
   moduleNameMapper: {
+    '\\.glb$': '<rootDir>/jest/fileStub.js',
     '^@/sdk$': '<rootDir>/src/sdk/index.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
   },

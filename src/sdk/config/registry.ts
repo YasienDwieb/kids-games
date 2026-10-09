@@ -3,9 +3,19 @@ import { validateGameConfig } from './validate';
 
 const registry: GameRegistry = {};
 
+/**
+ * Fast Refresh re-runs an edited game's config.ts, which registers the same id a
+ * second time. In a running dev app that's an update, not a mistake, so the new
+ * config replaces the old one. Jest and release builds still reject duplicates.
+ */
+function isFastRefresh(): boolean {
+  const underJest = typeof process !== 'undefined' && process.env?.JEST_WORKER_ID !== undefined;
+  return __DEV__ && !underJest;
+}
+
 export function registerGame(config: GameConfig): GameRegistry {
   validateGameConfig(config);
-  if (registry[config.id]) {
+  if (registry[config.id] && !isFastRefresh()) {
     throw new Error(`Invalid game config: duplicate id "${config.id}"`);
   }
   registry[config.id] = config;

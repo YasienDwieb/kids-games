@@ -19,6 +19,7 @@ jest.mock('react-native-safe-area-context', () => {
 
 // useFocusEffect runs its effect once, immediately (no navigation container in tests).
 jest.mock('@react-navigation/native', () => ({
+  useIsFocused: () => true,
   useFocusEffect: (cb: () => void | (() => void)) => {
     const cleanup = cb();
     if (typeof cleanup === 'function') cleanup();
@@ -71,4 +72,10 @@ it('renders on an RTL tablet without throwing', () => {
   } finally {
     RN.I18nManager.isRTL = original;
   }
+});
+
+it('uses the compact header on a 640dp landscape phone', () => {
+  mockDims = { width: 640, height: 360, scale: 2, fontScale: 1 };
+  const texts = renderHome().root.findAllByType(Text).map((n: any) => n.props.children);
+  expect(texts).not.toContain('📒');
 });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
+import { LogBox, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -24,9 +24,12 @@ import {
 import { RootNavigator } from './src/app/navigation';
 import './src/sdk/i18n'; // side-effect: initializes i18next before anything reads it
 import { bootstrapLanguage } from './src/sdk/i18n/useLanguage';
-import { reloadApp } from './src/sdk/i18n/reload';
+import { reloadApp, settleReload } from './src/sdk/i18n/reload';
 import './src/games'; // side-effect: registers all games + their translations
 import './src/flow'; // side-effect: registers flow units + topics
+
+// @react-three/fiber 9 still uses THREE.Clock; three 0.18x warns on every Canvas mount.
+LogBox.ignoreLogs(['THREE.Clock: This module has been deprecated']);
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -64,9 +67,16 @@ export default function App() {
         // effect next launch). On web, direction is CSS-driven — never reload,
         // or the app would blank/loop on first boot.
         if (needsReload && Platform.OS !== 'web') {
-          reloadApp();
-          return;
+          // reloadApp('boot') tries one reload per attempt, so a
+          // native side that ignores forceRTL can't loop the app forever.
+          return reloadApp('boot').then((reloaded) => {
+            if (cancelled || reloaded) return;
+            // log, not warn: a dev-only Expo Go quirk shouldn't raise a LogBox banner.
+            console.log('RTL direction did not apply after reload; continuing without it');
+            setLangReady(true);
+          });
         }
+        void settleReload();
         setLangReady(true);
       })
       .catch((e) => {

@@ -1,6 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-import { PressableButton, Star, COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING, useTranslation } from '@/sdk';
+import {
+  Mascot,
+  PressableButton,
+  Star,
+  COLORS,
+  FONTS,
+  SHADOWS,
+  BORDER_RADIUS,
+  SPACING,
+  useTranslation,
+} from '@/sdk';
 
 type Props = {
   variant: 'cleared' | 'failed';
@@ -26,7 +36,7 @@ export function LevelOverlay({ variant, stars, isLast, popped, quota, onNext, on
       <Animated.View style={[styles.card, { transform: [{ scale }] }]}>
         {cleared ? (
           <>
-            <Text style={styles.burst}>{isLast ? '🏆' : '🎯'}</Text>
+            {isLast ? <Text style={styles.burst}>🏆</Text> : <Mascot pose="cheer" size={88} />}
             <Text style={styles.title}>
               {isLast ? t('balloon-archer:overlay.wonAll') : t('balloon-archer:overlay.niceShooting')}
             </Text>
@@ -44,7 +54,8 @@ export function LevelOverlay({ variant, stars, isLast, popped, quota, onNext, on
           </>
         ) : (
           <>
-            <Text style={styles.burst}>🎈</Text>
+            {/* Out of arrows is a "so close", not a scolding — Lulu cheers them on. */}
+            <Mascot pose="encourage" size={88} />
             <Text style={styles.title}>{t('balloon-archer:overlay.outOfArrows')}</Text>
             <Text style={styles.subtitle}>
               {t('balloon-archer:overlay.poppedCount', { popped, quota })}

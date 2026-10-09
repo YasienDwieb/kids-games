@@ -17,6 +17,7 @@ import {
   IconButton,
   PressableButton,
   useScreenBack,
+  awardStars,
   useSound,
   useTranslation,
 } from '@/sdk';
@@ -115,12 +116,23 @@ export default function ColorMixerGame() {
     (_instanceId: string, pos: { x: number; y: number }) => {
       if (dragColorRef.current && isInsideZone(pos)) {
         if (mixer.potFull) refuseDrop();
-        else mixer.addPigment(dragColorRef.current);
+        else {
+          // The core action of the game: every drop lands with a soft bloop.
+          mixer.addPigment(dragColorRef.current);
+          play('balloon');
+        }
       }
       dragColorRef.current = null;
     },
-    [isInsideZone, mixer.addPigment, mixer.potFull, refuseDrop],
+    [isInsideZone, mixer.addPigment, mixer.potFull, play, refuseDrop],
   );
+
+  // Discovering a famous color is free play's reward moment — it gets a cue, not silence.
+  useEffect(() => {
+    if (!mixer.newDiscovery) return;
+    play('success');
+    void awardStars('color-mixer');
+  }, [mixer.newDiscovery, play]);
 
   const GHOST_SIZE = DIMENSIONS.PALETTE_ITEM_SIZE;
 
@@ -227,6 +239,7 @@ export default function ColorMixerGame() {
   const finishChallenge = useCallback(() => {
     if (!canFinishChallenge) return;
     play('win');
+    void awardStars('color-mixer');
     setShowSuccess(true);
   }, [canFinishChallenge, play]);
 

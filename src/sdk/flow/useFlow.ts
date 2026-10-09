@@ -3,12 +3,17 @@ import type { FlowAdapter, FlowUnit } from './adapter';
 import { getFlowAdapter } from './adapter';
 import { buildSequence, sequenceLength } from './sequence';
 import {
-  createFlowProgressStore, resolveStart, advanceStep, newSeed,
+  createFlowProgressStore, doneCounts, firstOpenStep, legacySequence, newSeed,
   type FlowPosition, type FlowProgress,
 } from './progress';
 
+const samePosition = (a: FlowPosition, b: FlowPosition): boolean =>
+  a.done ? b.done : !b.done && a.step === b.step;
+
 export type UseFlowResult = {
   status: 'loading' | 'playing' | 'done';
+  /** Game that owns the current unit (null when not playing). */
+  gameId: string | null;
   step: number;
   total: number;
   unit: FlowUnit | null;
@@ -29,26 +34,57 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
   const total = useMemo(() => sequenceLength(adapters), [adapters]);
   const sequenceRef = useRef(sequence);
   sequenceRef.current = sequence;
+  const adaptersRef = useRef(adapters);
+  adaptersRef.current = adapters;
 
   const [position, setPosition] = useState<FlowPosition | null>(null); // null = loading
   const positionRef = useRef<FlowPosition | null>(null); // live value for advance()
   positionRef.current = position;
   const seedRef = useRef(0);
+  // Units finished per game — survives the game list changing between sessions.
+  const doneRef = useRef<Record<string, number>>({});
+  // A step-only save, until the child moves on: its credit depends on the game
+  // selection, which may still be loading, so it's re-derived on every change.
+  const legacySaveRef = useRef<FlowProgress | null>(null);
 
-  // Load the saved checkpoint once; resolve where to resume.
+  const positionAt = (step: number): FlowPosition =>
+    step >= sequenceRef.current.length ? { done: true } : { done: false, step };
+
+  // Load the saved checkpoint once; resume at the first unfinished unit of the
+  // CURRENT sequence (which may differ from the one it was saved against).
   useEffect(() => {
     let mounted = true;
     store.get().then((saved) => {
       if (!mounted) return;
       seedRef.current = saved.seed > 0 ? saved.seed : newSeed();
-      setPosition(resolveStart(sequenceRef.current.length, saved));
+      legacySaveRef.current = saved.done ? null : saved;
+      doneRef.current = doneCounts(legacySequence(adaptersRef.current), saved);
+      setPosition(positionAt(firstOpenStep(sequenceRef.current, doneRef.current)));
     });
     return () => { mounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store]);
+
+  // Settings (the parent's game subset) load async and may land after the
+  // checkpoint — re-place the child in whatever the sequence now is.
+  useEffect(() => {
+    if (positionRef.current == null) return;
+    const legacy = legacySaveRef.current;
+    if (legacy) doneRef.current = doneCounts(legacySequence(adapters), legacy);
+    const next = positionAt(firstOpenStep(sequence, doneRef.current));
+    // Bail out when unchanged — callers may pass a fresh (equal) adapters array each render.
+    setPosition((prev) => (prev && samePosition(prev, next) ? prev : next));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sequence]);
 
   const persist = useCallback(
     (step: number) => {
-      const next: FlowProgress = { step, seed: seedRef.current, updatedAt: Date.now() };
+      const next: FlowProgress = {
+        step,
+        seed: seedRef.current,
+        updatedAt: Date.now(),
+        done: doneRef.current,
+      };
       store.set(next);
     },
     [store],
@@ -57,18 +93,27 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
   const advance = useCallback(() => {
     const cur = positionRef.current;
     if (!cur || cur.done) return;
-    const next = advanceStep(sequenceRef.current.length, cur.step);
-    // Persist the furthest step reached (done → one past the last unit).
-    persist(next.done ? sequenceRef.current.length : next.step);
-    setPosition(next);
+    legacySaveRef.current = null;
+    const finished = sequenceRef.current[cur.step];
+    if (finished) {
+      doneRef.current = {
+        ...doneRef.current,
+        [finished.gameId]: Math.max(doneRef.current[finished.gameId] ?? 0, finished.localIndex + 1),
+      };
+    }
+    const nextStep = firstOpenStep(sequenceRef.current, doneRef.current);
+    persist(nextStep);
+    setPosition(positionAt(nextStep));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persist]);
 
   const reset = useCallback(() => {
     seedRef.current = newSeed();
-    const pos: FlowPosition =
-      sequenceRef.current.length > 0 ? { done: false, step: 0 } : { done: true };
+    doneRef.current = {};
+    legacySaveRef.current = null;
     persist(0);
-    setPosition(pos);
+    setPosition(positionAt(0));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persist]);
 
   const unit = useMemo<FlowUnit | null>(() => {
@@ -79,11 +124,12 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
     return adapter ? adapter.unitAt(seqStep.localIndex, seedRef.current) : null;
   }, [position, sequence]);
 
-  if (position == null) {
-    return { status: 'loading', step: 0, total, unit: null, advance, reset };
+  if (position == null || (!position.done && position.step >= sequence.length)) {
+    return { status: 'loading', gameId: null, step: 0, total, unit: null, advance, reset };
   }
   if (position.done) {
-    return { status: 'done', step: total, total, unit: null, advance, reset };
+    return { status: 'done', gameId: null, step: total, total, unit: null, advance, reset };
   }
-  return { status: 'playing', step: position.step, total, unit, advance, reset };
+  const gameId = sequence[position.step]?.gameId ?? null;
+  return { status: 'playing', gameId, step: position.step, total, unit, advance, reset };
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
 import {
+  Mascot,
   PressableButton,
   COLORS,
   FONTS,
@@ -51,7 +52,7 @@ export function WinOverlay({ score, onNext }: { score: number; onNext: () => voi
     : `${t('candy-catch:win.next')} →`;
   return (
     <Card>
-      <Text style={styles.burst}>🎉🍬🎉</Text>
+      <Mascot pose="cheer" size={88} />
       <Text style={styles.title}>{t('candy-catch:win.title')}</Text>
       <Text style={styles.sub}>{t('candy-catch:hud.score', { score })}</Text>
       <PressableButton label={nextLabel} accent="pink" onPress={onNext} style={styles.button} />
@@ -63,7 +64,7 @@ export function LoseOverlay({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (
     <Card>
-      <Text style={styles.burst}>😵🌶️</Text>
+      <Mascot pose="encourage" size={88} />
       <Text style={styles.title}>{t('candy-catch:lose.title')}</Text>
       <Text style={styles.sub}>{t('candy-catch:lose.subtitle')}</Text>
       <PressableButton

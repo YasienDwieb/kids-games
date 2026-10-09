@@ -43,6 +43,17 @@ export const ar: CoreTranslations = {
     tabs: {
       general: 'عام',
       journey: 'الرحلة',
+      parents: 'للأهل',
+    },
+    parents: {
+      today: 'وقت اللعب اليوم',
+      week: 'آخر 7 أيام',
+      minutes: '{{n}} دقيقة',
+      limit: 'حدّ اللعب اليومي',
+      off: 'بلا حدّ',
+      byGame: 'الوقت والنجوم لكل لعبة',
+      gameRow: '{{min}} دقيقة · ⭐ {{stars}}',
+      empty: 'لا يوجد وقت لعب بعد.',
     },
     gate: {
       title: 'اسأل شخصاً كبيراً',
@@ -62,6 +73,45 @@ export const ar: CoreTranslations = {
     preschool: 'ما قبل المدرسة',
     early: 'السنوات الأولى',
     kids: 'الكبار',
+  },
+  daily: {
+    label: 'اليوم',
+    a11y: 'اليوم: {{n}} من {{goal}} نجوم',
+    done: 'أنجزت هدفك!',
+  },
+  stickers: {
+    title: 'ملصقاتي',
+    open: 'افتح كتاب الملصقات',
+    count: '{{have}} / {{total}}',
+    stars: '{{n}} نجمة',
+    nextIn: '{{n}} ⭐ أخرى لملصق جديد!',
+    new: 'ملصق جديد!',
+    addedToBook: 'أُضيف إلى كتاب ملصقاتك',
+    newBadge: 'جديد',
+    locked: 'لم تجده بعد',
+    general: 'مفاجآت',
+    complete: 'وجدتها كلها! 🏆',
+  },
+  mascot: {
+    name: 'لولو',
+  },
+  break: {
+    title: 'وقت الاستراحة!',
+    body: 'لعبت كثيراً اليوم. نراك غداً! 🌙',
+    home: 'العودة للرئيسية',
+    grownUp: 'للكبار: {{n}} دقيقة إضافية',
+  },
+  celebrate: {
+    praise: {
+      1: 'أحسنت!',
+      2: 'رائع!',
+      3: 'لقد فعلتها!',
+      4: 'يا نجم!',
+      5: 'ممتاز!',
+      6: 'واو!',
+      7: 'عمل جميل!',
+      8: 'مذهل!',
+    },
   },
   flow: {
     title: 'رحلتك',

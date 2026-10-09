@@ -5,7 +5,7 @@ import MouseMazeGame from './index';
 registerGame({
   id: 'mouse-maze',
   name: 'Mouse Maze',
-  description: 'Swipe to help the mouse find its cheese!',
+  description: 'Draw a path to help the mouse find its cheese!',
   icon: '🐭',
   ageRange: { min: 3, max: 8 },
   component: MouseMazeGame,

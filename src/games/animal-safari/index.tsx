@@ -155,6 +155,7 @@ export default function AnimalSafari(): React.JSX.Element {
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={lf.selectedIndex}
+        mascotPose={lf.mascotPose}
         onPick={(i) => lf.handlePick(i, round.correctIndex)}
         onReplay={present}
         disabled={lf.solved}

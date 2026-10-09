@@ -75,6 +75,26 @@ export const ASSETS = {
     type: 'audio',
     tags: ['balloon'],
   },
+  // Turbo Road: a car-crash crunch (Kenney impact + sci-fi crunch layered) and a
+  // thruster whoosh for boosts — louder and more specific than hit/powerup.
+  'sfx.crash': {
+    modules: [
+      require('./audio/cc0/crash_000.wav'),
+      require('./audio/cc0/crash_001.wav'),
+      require('./audio/cc0/crash_002.wav'),
+    ],
+    type: 'audio',
+    tags: ['crash'],
+  },
+  'sfx.turbo': {
+    modules: [
+      require('./audio/cc0/turbo_thruster_000.wav'),
+      require('./audio/cc0/turbo_thruster_002.wav'),
+      require('./audio/cc0/turbo_thruster_004.wav'),
+    ],
+    type: 'audio',
+    tags: ['turbo'],
+  },
   'sfx.hit': {
     modules: [
       require('./audio/cc0/impactGeneric_light_000.wav'),
@@ -210,6 +230,131 @@ export const ASSETS = {
     modules: [require('./audio/animals/bee.m4a')],
     type: 'audio',
     tags: ['bee'],
+  },
+  // Spoken praise (Higgsfield Seed Audio, voice "Pixie"; see CREDITS.md). One clip per
+  // `core:celebrate.praise.<n>` line, per language, so the voice always says what the
+  // bubble shows. Played by useCelebrate() as `praise.<lang>.<n>`.
+  'voice.praise.en.1': {
+    modules: [require('./audio/voice/praise-en-1.m4a')],
+    type: 'audio',
+    tags: ['praise.en.1'],
+  },
+  'voice.praise.en.2': {
+    modules: [require('./audio/voice/praise-en-2.m4a')],
+    type: 'audio',
+    tags: ['praise.en.2'],
+  },
+  'voice.praise.en.3': {
+    modules: [require('./audio/voice/praise-en-3.m4a')],
+    type: 'audio',
+    tags: ['praise.en.3'],
+  },
+  'voice.praise.en.4': {
+    modules: [require('./audio/voice/praise-en-4.m4a')],
+    type: 'audio',
+    tags: ['praise.en.4'],
+  },
+  'voice.praise.en.5': {
+    modules: [require('./audio/voice/praise-en-5.m4a')],
+    type: 'audio',
+    tags: ['praise.en.5'],
+  },
+  'voice.praise.en.6': {
+    modules: [require('./audio/voice/praise-en-6.m4a')],
+    type: 'audio',
+    tags: ['praise.en.6'],
+  },
+  'voice.praise.en.7': {
+    modules: [require('./audio/voice/praise-en-7.m4a')],
+    type: 'audio',
+    tags: ['praise.en.7'],
+  },
+  'voice.praise.en.8': {
+    modules: [require('./audio/voice/praise-en-8.m4a')],
+    type: 'audio',
+    tags: ['praise.en.8'],
+  },
+  'voice.praise.ar.1': {
+    modules: [require('./audio/voice/praise-ar-1.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.1'],
+  },
+  'voice.praise.ar.2': {
+    modules: [require('./audio/voice/praise-ar-2.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.2'],
+  },
+  'voice.praise.ar.3': {
+    modules: [require('./audio/voice/praise-ar-3.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.3'],
+  },
+  'voice.praise.ar.4': {
+    modules: [require('./audio/voice/praise-ar-4.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.4'],
+  },
+  'voice.praise.ar.5': {
+    modules: [require('./audio/voice/praise-ar-5.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.5'],
+  },
+  'voice.praise.ar.6': {
+    modules: [require('./audio/voice/praise-ar-6.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.6'],
+  },
+  'voice.praise.ar.7': {
+    modules: [require('./audio/voice/praise-ar-7.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.7'],
+  },
+  'voice.praise.ar.8': {
+    modules: [require('./audio/voice/praise-ar-8.m4a')],
+    type: 'audio',
+    tags: ['praise.ar.8'],
+  },
+  // "New sticker!" announcement, one per language — played by the sticker toast.
+  'voice.sticker.en': {
+    modules: [require('./audio/voice/sticker-new-en.m4a')],
+    type: 'audio',
+    tags: ['sticker.new.en'],
+  },
+  'voice.sticker.ar': {
+    modules: [require('./audio/voice/sticker-new-ar.m4a')],
+    type: 'audio',
+    tags: ['sticker.new.ar'],
+  },
+  // Lulu's lines when a child taps her (3D mascot), per language.
+  'voice.lulu.en.1': {
+    modules: [require('./audio/voice/lulu-tap-en-1.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.en.1'],
+  },
+  'voice.lulu.en.2': {
+    modules: [require('./audio/voice/lulu-tap-en-2.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.en.2'],
+  },
+  'voice.lulu.en.3': {
+    modules: [require('./audio/voice/lulu-tap-en-3.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.en.3'],
+  },
+  'voice.lulu.ar.1': {
+    modules: [require('./audio/voice/lulu-tap-ar-1.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.ar.1'],
+  },
+  'voice.lulu.ar.2': {
+    modules: [require('./audio/voice/lulu-tap-ar-2.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.ar.2'],
+  },
+  'voice.lulu.ar.3': {
+    modules: [require('./audio/voice/lulu-tap-ar-3.m4a')],
+    type: 'audio',
+    tags: ['lulu.tap.ar.3'],
   },
 } as const satisfies Record<string, AssetEntry>;
 

@@ -50,8 +50,8 @@ const DECOR_PERIOD = DECOR_BANDS * DECOR_SPACING;
 const EVENT_SOUND: Record<GameEvent, string> = {
   go: 'transition',
   coin: 'success',
-  hit: 'hit',
-  boost: 'powerup',
+  hit: 'crash',
+  boost: 'turbo',
   shield: 'powerup',
   magnet: 'powerup',
   shieldBlock: 'pop', // absorbed — a thump, not a crash
@@ -102,7 +102,11 @@ export function useRaceGame({ level, car, onFinish }: Args): {
   pause: () => void;
   resume: () => void;
 } {
-  const { play } = useSound();
+  const { play, prewarm } = useSound();
+  // Load every race sound up front so the first crash/boost isn't late.
+  useEffect(() => {
+    prewarm(Object.values(EVENT_SOUND));
+  }, [prewarm]);
   const { settings } = useSettings();
 
   // Gentle pacing per age band (scales player AND rivals via baseSpeed),
@@ -137,14 +141,14 @@ export function useRaceGame({ level, car, onFinish }: Args): {
     [],
   );
 
-  const world = useRef<WorldState>(createWorld(paced));
+  const world = useRef<WorldState>(createWorld(paced, { grip: car.stats.grip }));
   const consumed = useRef<number[]>([]);
   const [ui, setUi] = useState<RaceUiState>(() => uiFrom(world.current, paced, consumed.current));
   const lastUi = useRef(ui);
 
   // Latest dynamic values, read by the stable loop/steer closures.
-  const ref = useRef({ paced, onFinish, play });
-  ref.current = { paced, onFinish, play };
+  const ref = useRef({ paced, grip: car.stats.grip, onFinish, play });
+  ref.current = { paced, grip: car.stats.grip, onFinish, play };
 
   const lastIntent = useRef(1);
 
@@ -152,7 +156,7 @@ export function useRaceGame({ level, car, onFinish }: Args): {
   // intentionally do NOT restart the race — they just adjust pacing.)
   useEffect(() => {
     const lvl0 = ref.current.paced;
-    world.current = createWorld(lvl0);
+    world.current = createWorld(lvl0, { grip: ref.current.grip });
     consumed.current = [];
     lastIntent.current = 1;
     const first = uiFrom(world.current, lvl0, consumed.current);

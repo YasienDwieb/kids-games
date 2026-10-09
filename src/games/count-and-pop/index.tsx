@@ -13,7 +13,11 @@
  *   playing   → current round + score HUD via GameShell
  *
  * Win/celebration (endless — there is no last level):
- *   Every solve → 'success' sound + LevelSolvedOverlay (⭐️ + "Next").
+ *   Every solve → 'success' sound + a short SDK celebration, then auto-advance.
+ *   Every MILESTONE_EVERY-th level → big confetti + LevelSolvedOverlay (⭐️ + "Next").
+ *
+ * Mistakes follow the SDK hint policy (useHintLadder): 1st miss = try again,
+ * 2nd = the right numeral pulses, 3rd = it's revealed. First-try solves score more.
  *
  * Juice (Sprint 3.4 — RN Animated only, no Reanimated):
  *   - Wrong answer: board shake (triggerShake) reused from Sprint 2.
@@ -37,12 +41,15 @@ import {
   EmojiFrame,
   FONT_SIZES,
   FONTS,
+  Mascot,
   PressableButton,
   ResumePrompt,
   SHADOWS,
   SPACING,
   Star,
+  useCelebrate,
   useGameShell,
+  useHintLadder,
   useLevels,
   useSound,
   useTranslation,
@@ -50,6 +57,11 @@ import {
 import { CountThisMany } from './components/CountThisMany';
 import { HowMany } from './components/HowMany';
 import { makeCountAndPopLevels } from './utils/levels';
+
+// A tap-to-continue card only on milestones; every other solve auto-advances.
+const MILESTONE_EVERY = 5;
+const POINTS_FIRST_TRY = 10;
+const POINTS_WITH_HELP = 5;
 
 // ---------------------------------------------------------------------------
 // Level-solved overlay — rendered via GameShell 'win' slot.
@@ -169,6 +181,16 @@ export default function CountAndPopGame(): React.JSX.Element {
   // Prevents double-advance after the level is already won.
   const [solved, setSolved] = useState(false);
 
+  // Shared hint policy for wrong answers, reset every level.
+  const hints = useHintLadder(level);
+  const [revealCorrect, setRevealCorrect] = useState(false);
+  const [hintIndex, setHintIndex] = useState<number | null>(null);
+  const celebrate = useCelebrate();
+  const mounted = useRef(true);
+  useEffect(() => () => {
+    mounted.current = false;
+  }, []);
+
   // Shake animation for wrong answers (translateX on round view)
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
@@ -193,6 +215,8 @@ export default function CountAndPopGame(): React.JSX.Element {
     shell.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
+    setRevealCorrect(false);
+    setHintIndex(null);
     // Reset juice anims for fresh level
     shakeAnim.setValue(0);
     solvePopAnim.setValue(1);
@@ -264,17 +288,29 @@ export default function CountAndPopGame(): React.JSX.Element {
   // In endless mode isLast is always false; always play 'success'.
   const handleCorrect = useCallback(() => {
     void play('success');
-    addScore(10);
+    addScore(hints.firstTry ? POINTS_FIRST_TRY : POINTS_WITH_HELP);
     setSolved(true);
+    setHintIndex(null);
     triggerSolvePop();
     if (timerRef.current !== null) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      shell.showOverlay(
-        'win',
-        <LevelSolvedOverlay onNext={handleNext} t={t} />,
-      );
-    }, 600);
-  }, [play, addScore, shell, handleNext, t, triggerSolvePop]);
+
+    if (level % MILESTONE_EVERY === 0) {
+      // Milestone: big confetti, then the tap-to-continue card.
+      void celebrate('big', { praise: false });
+      timerRef.current = setTimeout(() => {
+        shell.showOverlay(
+          'win',
+          <LevelSolvedOverlay onNext={handleNext} t={t} />,
+        );
+      }, 600);
+      return;
+    }
+
+    // Ordinary solve: a quick burst + praise, then straight on — no modal.
+    void celebrate('small').then(() => {
+      if (mounted.current) advance();
+    });
+  }, [play, addScore, hints.firstTry, level, celebrate, shell, handleNext, t, triggerSolvePop, advance]);
 
   // handlePick: used by HowMany (choice-row modes).
   // Guards on `selectedIndex !== null || solved` to prevent double-advance.
@@ -291,13 +327,19 @@ export default function CountAndPopGame(): React.JSX.Element {
       if (idx === round.correctIndex) {
         handleCorrect();
       } else {
+        const step = hints.miss();
         void play('wrong');
         triggerShake();
+        setRevealCorrect(step === 'reveal');
         if (timerRef.current !== null) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => setSelectedIndex(null), 900);
+        timerRef.current = setTimeout(() => {
+          setSelectedIndex(null);
+          // From the 2nd miss on, keep pointing at the answer until it's tapped.
+          if (step !== 'retry') setHintIndex(round.correctIndex);
+        }, 900);
       }
     },
-    [selectedIndex, solved, data, handleCorrect, play, triggerShake],
+    [selectedIndex, solved, data, handleCorrect, hints, play, triggerShake],
   );
 
   // handlePop: called by CountThisMany on each individual tile pop.
@@ -341,6 +383,15 @@ export default function CountAndPopGame(): React.JSX.Element {
 
   const { round } = data;
 
+  // Lulu reacts to mistakes: encourages after the first miss, then points at the
+  // answer once the hint ladder starts helping. She stays out of the way otherwise.
+  const helper =
+    hints.step && !solved ? (
+      <View style={styles.helper} pointerEvents="none">
+        <Mascot pose={hints.step === 'retry' ? 'encourage' : 'point'} size={110} />
+      </View>
+    ) : null;
+
   if (round.mode === 'countThisMany') {
     return (
       <Animated.View
@@ -382,7 +433,10 @@ export default function CountAndPopGame(): React.JSX.Element {
         selectedIndex={selectedIndex}
         onPick={handlePick}
         disabled={solved}
+        revealCorrect={revealCorrect}
+        hintIndex={hintIndex}
       />
+      {helper}
     </Animated.View>
   );
 }
@@ -395,6 +449,11 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: COLORS.canvas,
+  },
+  helper: {
+    position: 'absolute',
+    start: SPACING.md,
+    bottom: SPACING.sm,
   },
   center: {
     flex: 1,

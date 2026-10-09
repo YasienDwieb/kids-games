@@ -172,6 +172,8 @@ export function StartScreen({
   missions,
   onClaimMission,
   onControlChange,
+  view,
+  onViewChange,
   onRace,
   onGarage,
 }: StartScreenProps) {
@@ -303,6 +305,11 @@ export function StartScreen({
         label={`📱 ${t('turbo-road:controls.tilt')}`}
         active={control === 'tilt'}
         onPress={() => onControlChange('tilt')}
+      />
+      <Chip
+        label={`🧊 ${t('turbo-road:controls.view3d')}`}
+        active={view === '3d'}
+        onPress={() => onViewChange(view === '3d' ? '2d' : '3d')}
       />
     </View>
   );
@@ -561,6 +568,7 @@ const styles = StyleSheet.create({
   claimText: { fontSize: 13 },
   controlsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.sm,

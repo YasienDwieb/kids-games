@@ -42,6 +42,17 @@ export const en = {
     tabs: {
       general: 'General',
       journey: 'Journey',
+      parents: 'Parents',
+    },
+    parents: {
+      today: 'Played today',
+      week: 'Last 7 days',
+      minutes: '{{n}} min',
+      limit: 'Daily play limit',
+      off: 'Off',
+      byGame: 'Time and stars by game',
+      gameRow: '{{min}} min · ⭐ {{stars}}',
+      empty: 'No play time yet.',
     },
     gate: {
       title: 'Ask a grown-up',
@@ -61,6 +72,45 @@ export const en = {
     preschool: 'Preschool',
     early: 'Early years',
     kids: 'Big kids',
+  },
+  daily: {
+    label: 'Today',
+    a11y: 'Today: {{n}} of {{goal}} stars',
+    done: 'Goal done!',
+  },
+  stickers: {
+    title: 'My Stickers',
+    open: 'Open my sticker book',
+    count: '{{have}} / {{total}}',
+    stars: '{{n}} stars',
+    nextIn: '{{n}} more ⭐ for a new sticker!',
+    new: 'New sticker!',
+    addedToBook: 'Added to your sticker book',
+    newBadge: 'NEW',
+    locked: 'Not found yet',
+    general: 'Surprises',
+    complete: 'You found them all! 🏆',
+  },
+  mascot: {
+    name: 'Lulu',
+  },
+  break: {
+    title: 'Time for a break!',
+    body: 'You played a lot today. See you tomorrow! 🌙',
+    home: 'Back home',
+    grownUp: 'Grown-ups: {{n}} more minutes',
+  },
+  celebrate: {
+    praise: {
+      1: 'Great job!',
+      2: 'Awesome!',
+      3: 'You did it!',
+      4: 'Super star!',
+      5: 'Brilliant!',
+      6: 'Wow!',
+      7: 'Well done!',
+      8: 'Amazing!',
+    },
   },
   flow: {
     title: 'Your journey',

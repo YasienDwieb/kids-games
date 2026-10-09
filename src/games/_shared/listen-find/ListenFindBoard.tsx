@@ -27,9 +27,11 @@ import {
   BORDER_RADIUS,
   COLORS,
   FONTS,
+  MascotHelper,
   SHADOWS,
   SPACING,
   type AccentName,
+  type MascotPose,
 } from '@/sdk';
 import type { FindItem } from './types';
 
@@ -64,6 +66,8 @@ export type ListenFindBoardProps = {
    * `item.id` or keep it generic.
    */
   choiceLabel: (item: FindItem) => string;
+  /** Lulu's reaction in the end corner (null/omitted = hidden). */
+  mascotPose?: MascotPose | null;
 };
 
 type TileState = 'default' | 'correct' | 'wrong';
@@ -187,6 +191,7 @@ export function ListenFindBoard({
   accent = 'blue',
   background = COLORS.canvas,
   choiceLabel,
+  mascotPose = null,
 }: ListenFindBoardProps): React.JSX.Element {
   const answered = selectedIndex !== null;
 
@@ -234,6 +239,7 @@ export function ListenFindBoard({
           })}
         </View>
       </View>
+      <MascotHelper pose={mascotPose} side="end" size={96} />
     </View>
   );
 }

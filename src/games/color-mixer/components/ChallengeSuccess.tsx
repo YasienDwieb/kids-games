@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, EmojiImage, FONTS, PressableButton, Star, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, FONTS, Mascot, PressableButton, Star, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { Sparkles } from './Sparkles';
 
@@ -56,7 +56,7 @@ export function ChallengeSuccess({
         <View style={styles.overlay}>
           <Animated.View style={[styles.content, { transform: [{ scale }] }]}>
             <Sparkles color={targetHex} radius={100} />
-            <EmojiImage emoji="🎉" size={44} style={styles.emoji} />
+            <Mascot pose="cheer" size={80} style={styles.emoji} />
             <Text style={styles.text}>{t('color-mixer:challenge.success')}</Text>
 
             <View style={styles.stars}>

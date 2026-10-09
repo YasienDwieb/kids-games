@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   I18nManager,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -8,12 +9,12 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
-import { GameCard, IconButton, JourneyCard } from '../components/common';
+import { GameCard, IconButton, JourneyCard, Star } from '../components/common';
 import { computeHomeGrid, isTablet, homeRailWidth } from '../utils/responsive';
-import { COLORS, FONTS, SPACING } from '../constants';
+import { ACCENTS, BORDER_RADIUS, COLORS, FONTS, SHADOWS, SPACING, TOUCH_TARGET } from '../constants';
 import type { AccentName } from '../constants';
 import {
   useSettings,
@@ -29,6 +30,15 @@ import {
   sequenceLength,
   buildSequence,
   createFlowProgressStore,
+  doneCounts,
+  firstOpenStep,
+  DEFAULT_FLOW_PROGRESS,
+  type FlowProgress,
+  Mascot,
+  Lulu3D,
+  useRewards,
+  DAILY_GOAL,
+  starsToday,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
 import { PressableButton } from '../components/common';
@@ -47,14 +57,29 @@ const GAMES_HEADER_H = 56; // height reserved for the settings control above the
 const GRID_PAD_V = 14;
 const GRID_PAD_H = 12;
 const CELL_GAP = 12;
+// Below this games-pane width the header pills drop their decorations so the
+// controls always fit (≈396dp on a 640dp landscape phone beside the rail).
+const HEADER_COMPACT_BELOW = 560;
+// Height the landscape journey card needs; Lulu only gets what's left over.
+const JOURNEY_MIN_H = 220;
+const LULU_MAX = 120;
+const LULU_MIN = 64;
+const PORTRAIT_LULU = 96;
 
 export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const focused = useIsFocused();
   const landscape = width > height;
+  const railW = homeRailWidth(width, height);
+  const gamesPaneW = landscape ? width - insets.left - insets.right - railW : width;
+  const compactHeader = gamesPaneW < HEADER_COMPACT_BELOW;
+  const journeyPaneH = height - insets.top - insets.bottom - GRID_PAD_V * 2;
+  const railLuluSize = Math.min(LULU_MAX, journeyPaneH - JOURNEY_MIN_H - SPACING.sm);
   // Portrait grid columns: 2 on phones, 3–4 on tablets so it isn't two giant columns.
   const columns = isTablet(width, height) ? (width > 900 ? 4 : 3) : 2;
   const { settings, update } = useSettings();
+  const rewards = useRewards();
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
   // Language switching restarts the app, so it asks first. That confirmation is
@@ -71,7 +96,7 @@ export function HomeScreen({ navigation }: Props) {
   const adapters = selectedAdapters(settings.flowGameIds);
   const journeyTotal = sequenceLength(adapters);
   const railRef = useRef<ScrollView>(null);
-  const [savedStep, setSavedStep] = useState(0);
+  const [savedFlow, setSavedFlow] = useState<FlowProgress>(DEFAULT_FLOW_PROGRESS);
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   // Re-read the checkpoint each time Home regains focus so the card reflects
   // progress made (or completion) inside the journey before returning here.
@@ -79,7 +104,7 @@ export function HomeScreen({ navigation }: Props) {
     useCallback(() => {
       let active = true;
       flowStore.get().then((p) => {
-        if (active) setSavedStep(p.step);
+        if (active) setSavedFlow(p);
       });
       return () => {
         active = false;
@@ -87,14 +112,19 @@ export function HomeScreen({ navigation }: Props) {
     }, [flowStore]),
   );
 
-  // The game whose unit comes next in the interleaved journey.
+  // Progress is counted per game, so it stays right when the journey's game
+  // list changes (an update adds a game, a parent toggles one in Settings).
   const sequence = journeyTotal > 0 ? buildSequence(adapters) : [];
-  const nextStep = sequence[Math.min(savedStep, sequence.length - 1)];
+  const done = doneCounts(sequence, savedFlow);
+  const savedStep = sequence.filter((s) => s.localIndex < (done[s.gameId] ?? 0)).length;
+  // The game whose unit comes next in the interleaved journey.
+  const nextStep = sequence[Math.min(firstOpenStep(sequence, done), sequence.length - 1)];
   const nextGame = nextStep ? getGame(nextStep.gameId) : undefined;
 
   const startOver = () => {
-    flowStore.set({ step: 0, seed: 0, updatedAt: Date.now() }).then(() => {
-      setSavedStep(0);
+    const fresh: FlowProgress = { step: 0, seed: 0, updatedAt: Date.now(), done: {} };
+    flowStore.set(fresh).then(() => {
+      setSavedFlow(fresh);
       navigation.navigate('FlowPlayer');
     });
   };
@@ -144,14 +174,66 @@ export function HomeScreen({ navigation }: Props) {
     />
   );
 
+  // Sticker book: Lulu + the star total, with a dot when there's something new.
+  const stickerButton = (
+    <Pressable
+      onPress={() => navigation.navigate('StickerBook')}
+      accessibilityRole="button"
+      accessibilityLabel={t('stickers.open')}
+      hitSlop={8}
+      style={({ pressed }) => [styles.stickerBtn, SHADOWS.sm, pressed && styles.pressed]}
+    >
+      <Mascot pose="wave" size={compactHeader ? 32 : 40} bob={false} />
+      <Text style={styles.stickerBtnText} numberOfLines={1}>
+        ⭐ {rewards.stars}
+      </Text>
+      {compactHeader ? null : <Text style={styles.stickerBtnBook}>📒</Text>}
+      {rewards.unseen.length > 0 ? <View style={styles.newDot} /> : null}
+    </Pressable>
+  );
+
+  // Gentle daily goal: today's stars fill up; nothing is lost on a missed day.
+  const todayStars = Math.min(starsToday(rewards), DAILY_GOAL);
+  const dailyPill = (
+    <View
+      style={[
+        styles.dailyPill,
+        compactHeader && styles.dailyPillCompact,
+        SHADOWS.sm,
+        todayStars >= DAILY_GOAL && styles.dailyDone,
+      ]}
+      accessible
+      accessibilityLabel={t('daily.a11y', { n: todayStars, goal: DAILY_GOAL })}
+    >
+      {compactHeader ? null : (
+        <Text style={styles.dailyLabel} numberOfLines={1}>
+          {t('daily.label')}
+        </Text>
+      )}
+      {Array.from({ length: DAILY_GOAL }, (_, i) => (
+        <Star key={i} size={compactHeader ? 18 : 22} filled={i < todayStars} />
+      ))}
+    </View>
+  );
+
   // No "All games" title: they are self-evidently games, and the heading cost a
   // full text row that a pre-reader gets nothing from.
   const gamesHeader = (
-    <View style={styles.gamesHeader}>
-      {soundButton}
-      {languageButton}
-      {settingsButton}
+    <View style={[styles.gamesHeader, compactHeader && styles.gamesHeaderCompact]}>
+      {stickerButton}
+      {dailyPill}
+      <View style={styles.headerSpacer} />
+      <View style={[styles.headerControls, compactHeader && styles.headerControlsCompact]}>
+        {soundButton}
+        {languageButton}
+        {settingsButton}
+      </View>
     </View>
+  );
+
+  // Tap Lulu to say hi (she hops and giggles), drag sideways to spin her.
+  const lulu = (size: number) => (
+    <Lulu3D size={size} interactive active={focused} style={styles.lulu} />
   );
 
   const gamesGrid =
@@ -283,7 +365,8 @@ export function HomeScreen({ navigation }: Props) {
     return (
       <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.twoPane}>
-          <View style={[styles.journeyPaneLandscape, { width: homeRailWidth(width, height) }]}>
+          <View style={[styles.journeyPaneLandscape, { width: railW }]}>
+            {railLuluSize >= LULU_MIN ? lulu(railLuluSize) : null}
             {journeyCard(false)}
           </View>
           <View style={styles.gamesPane}>
@@ -300,6 +383,7 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+        {lulu(PORTRAIT_LULU)}
         {journeyCard(true)}
         {gamesHeader}
         {gamesGrid}
@@ -345,14 +429,64 @@ const styles = StyleSheet.create({
   switchScreen: { alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
   switchEmoji: { fontSize: 56 },
   switchText: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
+  stickerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    flexShrink: 1,
+    minWidth: TOUCH_TARGET.min,
+    height: TOUCH_TARGET.min,
+    paddingStart: SPACING.xs,
+    paddingEnd: SPACING.md,
+    borderRadius: BORDER_RADIUS.pill,
+    backgroundColor: COLORS.surface,
+  },
+  stickerBtnText: { flexShrink: 1, fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
+  stickerBtnBook: { fontSize: 20 },
+  newDot: {
+    position: 'absolute',
+    top: 2,
+    end: 4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: ACCENTS.coral.deep,
+    borderWidth: 2,
+    borderColor: COLORS.surface,
+  },
+  pressed: { transform: [{ scale: 0.94 }] },
+  dailyPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    flexShrink: 1,
+    height: TOUCH_TARGET.min,
+    paddingHorizontal: SPACING.md,
+    borderRadius: BORDER_RADIUS.pill,
+    backgroundColor: COLORS.surface,
+    overflow: 'hidden',
+  },
+  dailyPillCompact: { paddingHorizontal: SPACING.sm },
+  dailyDone: { backgroundColor: ACCENTS.green.tint },
+  dailyLabel: {
+    flexShrink: 1,
+    fontFamily: FONTS.display,
+    fontSize: 16,
+    color: COLORS.ink,
+    marginEnd: SPACING.xs,
+  },
+  headerSpacer: { flexGrow: 1, flexShrink: 1 },
+  headerControls: { flexDirection: 'row', flexShrink: 0, gap: SPACING.sm },
+  headerControlsCompact: { gap: SPACING.xs },
   gamesHeader: {
     height: GAMES_HEADER_H,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     gap: SPACING.sm,
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.md,
   },
+  gamesHeaderCompact: { gap: SPACING.xs, paddingHorizontal: SPACING.sm },
+  lulu: { alignSelf: 'center' },
 
   grid: {
     flexDirection: 'row',
@@ -375,6 +509,7 @@ const styles = StyleSheet.create({
     // wider on tablets.
     paddingLeft: 16,
     paddingVertical: GRID_PAD_V,
+    gap: SPACING.sm,
   },
   journeyPortrait: { marginHorizontal: 16, marginTop: 4, marginBottom: SPACING.xs },
   gamesPane: { flex: 1 },

@@ -5,13 +5,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createStore } from '@/sdk';
 import { DEFAULT_PREFS } from '../constants';
-import type { ControlMode, PrefsState } from '../types';
+import type { ControlMode, PrefsState, ViewMode } from '../types';
 
 const prefsStore = createStore<PrefsState>('turbo-road:prefs', DEFAULT_PREFS);
 
 export function usePrefs(): {
   prefs: PrefsState;
   setControl: (mode: ControlMode) => void;
+  setView: (view: ViewMode) => void;
 } {
   const [prefs, setPrefs] = useState<PrefsState>(DEFAULT_PREFS);
   const latest = useRef<PrefsState>(prefs);
@@ -41,5 +42,13 @@ export function usePrefs(): {
     prefsStore.set(next).catch(() => {});
   }, []);
 
-  return { prefs, setControl };
+  const setView = useCallback((view: ViewMode) => {
+    if (latest.current.view === view) return;
+    const next = { ...latest.current, view };
+    latest.current = next;
+    setPrefs(next);
+    prefsStore.set(next).catch(() => {});
+  }, []);
+
+  return { prefs, setControl, setView };
 }
