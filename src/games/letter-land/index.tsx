@@ -18,7 +18,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import {
   COLORS,
   FONTS,
@@ -31,7 +31,7 @@ import {
 import { ListenFindBoard, useListenFind, makeOrderSeed } from '@/games/_shared/listen-find';
 import { LetterHero } from './components/LetterHero';
 import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
-import { LATIN_LETTERS, ARABIC_LETTERS } from './constants';
+import { letterSet } from './utils/letterSet';
 import { makeLetterLandLevels } from './utils/levels';
 import type { Letter } from './types';
 
@@ -74,8 +74,7 @@ function LetterLandRun({
   const { t } = useTranslation();
   const { speak } = useSpeech();
 
-  // Letter set by language: Arabic under RTL, Latin otherwise.
-  const set = useMemo(() => (I18nManager.isRTL ? ARABIC_LETTERS : LATIN_LETTERS), []);
+  const set = useMemo(() => letterSet(), []);
   const source = useMemo(() => makeLetterLandLevels(set, seed), [set, seed]);
 
   // The hook fires speakTarget on level-change via its own ref (after render),

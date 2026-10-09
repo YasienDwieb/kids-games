@@ -3,17 +3,17 @@ import * as Updates from 'expo-updates';
 import { createStore } from '@/sdk/storage/createStore';
 
 /**
- * When the app last reloaded itself to change layout direction. Lets the boot
- * check tell "this launch IS the reload" apart from a fresh launch.
+ * Boot-reload bookkeeping. `pending`: we reloaded to apply a direction and
+ * haven't booted since. `ignored`: that reload didn't take (e.g. Expo Go), so
+ * boot must stop retrying until the user picks a language again.
+ *
+ * Deliberately not time-based: a slow device can take longer than any window
+ * to come back from a reload, which turned a time guard into a reload loop.
  */
-const lastReloadStore = createStore<{ at: number }>('rtl-reload', { at: 0 });
-
-/**
- * A boot-time direction mismatch this soon after a reload means the native side
- * ignored forceRTL (e.g. Expo Go without RTL support). Reloading again would
- * loop forever, so the boot check gives up and runs in the current direction.
- */
-const BOOT_RELOAD_GUARD_MS = 15_000;
+const reloadStateStore = createStore<{ pending: boolean; ignored: boolean }>('rtl-reload', {
+  pending: false,
+  ignored: false,
+});
 
 /**
  * Reload the entire JS app. Required after an RTL direction change
@@ -21,20 +21,24 @@ const BOOT_RELOAD_GUARD_MS = 15_000;
  *
  * `reason` matters for loop safety:
  *   - 'switch' — the user just picked a language: always reload.
- *   - 'boot'   — App.tsx found a mismatch at startup: reload only if we
- *                didn't just reload, so a native side that won't flip can't
- *                trap the app in a reload loop.
+ *   - 'boot'   — App.tsx found a mismatch at startup: reload at most once
+ *                per attempt, so a native side that won't flip can't trap
+ *                the app in a reload loop.
  *
  * Returns whether a reload was triggered. In production we use expo-updates'
  * reloadAsync(); in dev (where Updates is disabled) we fall back to
  * DevSettings.reload().
  */
 export async function reloadApp(reason: 'switch' | 'boot' = 'switch'): Promise<boolean> {
-  const last = await lastReloadStore.get();
-  if (reason === 'boot' && Date.now() - last.at < BOOT_RELOAD_GUARD_MS) {
-    return false;
+  if (reason === 'boot') {
+    const state = await reloadStateStore.get();
+    if (state.ignored) return false;
+    if (state.pending) {
+      await reloadStateStore.set({ pending: false, ignored: true });
+      return false;
+    }
   }
-  await lastReloadStore.set({ at: Date.now() });
+  await reloadStateStore.set({ pending: true, ignored: false });
 
   try {
     await Updates.reloadAsync();
@@ -45,4 +49,10 @@ export async function reloadApp(reason: 'switch' | 'boot' = 'switch'): Promise<b
     }
   }
   return true;
+}
+
+/** Boot found the direction already correct: forget any pending reload. */
+export async function settleReload(): Promise<void> {
+  const state = await reloadStateStore.get();
+  if (state.pending || state.ignored) await reloadStateStore.set({ pending: false, ignored: false });
 }
