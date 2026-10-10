@@ -4,7 +4,7 @@
  * just unlocked with a "Try it on" button. Mounted inside CelebrationProvider,
  * so every play screen (and the quest board) gets it.
  */
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { NavigationContext } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,7 @@ import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { unlocksAt } from '@/sdk/quests/outfits';
 import { wear } from '@/sdk/quests/outfitStore';
 import { onLevelUp } from '@/sdk/rewards/store';
+import { overlayClosed, overlayOpened } from '@/sdk/layout/overlayGate';
 
 /** Let the win's own confetti land first. */
 const SHOW_DELAY_MS = 1300;
@@ -32,10 +33,23 @@ export function LevelUp() {
   const [level, setLevel] = useState<number | null>(null);
   const enter = useMemo(() => new Animated.Value(0), []);
   const beat = useLoop(1100, { enabled: level != null });
+  // Claim the overlay gate from the moment the level-up fires (not after the
+  // delay), so the sticker toast and its voice wait until this card closes.
+  const gated = useRef(false);
+  const releaseGate = () => {
+    if (!gated.current) return;
+    gated.current = false;
+    overlayClosed();
+  };
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const off = onLevelUp((l) => {
+      if (!gated.current) {
+        gated.current = true;
+        overlayOpened();
+      }
+      clearTimeout(timer);
       timer = setTimeout(() => {
         setLevel(l);
         play('sfx.win', { haptic: true });
@@ -46,6 +60,7 @@ export function LevelUp() {
     return () => {
       off();
       clearTimeout(timer);
+      releaseGate();
     };
   }, [enter, play]);
 
@@ -53,11 +68,15 @@ export function LevelUp() {
   const item = unlocksAt(level)[0];
 
   const close = () => {
-    Animated.timing(enter, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => setLevel(null));
+    Animated.timing(enter, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+      setLevel(null);
+      releaseGate();
+    });
   };
   const tryOn = () => {
     if (item) void wear(item.slot, item.id);
     setLevel(null);
+    releaseGate();
     // Typed loosely: this overlay lives in the SDK, outside the app's route types.
     (navigation as { navigate: (name: string) => void } | undefined)?.navigate('Wardrobe');
   };
@@ -97,7 +116,9 @@ export function LevelUp() {
 
       <View style={styles.actions}>
         {item && navigation ? <PressableButton label={t('levelUp.tryOn')} variant="ghost" onPress={tryOn} /> : null}
-        <PressableButton label={t('levelUp.keepPlaying')} color={ACCENTS.green.base} onPress={close} />
+        <Animated.View style={pulse(beat, 0.08)}>
+          <PressableButton label={t('levelUp.keepPlaying')} color={ACCENTS.green.base} onPress={close} />
+        </Animated.View>
       </View>
     </Animated.View>
   );

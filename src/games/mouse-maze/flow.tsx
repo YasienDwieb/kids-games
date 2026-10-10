@@ -10,6 +10,7 @@ import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { registerFlowAdapter, useFlowRound, useIdle } from '@/sdk';
 import { MazeView } from './components/MazeView';
 import { buildLevel, useMaze, type MazeState } from './hooks/useMaze';
+import { FRAME_PAD } from './constants';
 
 // Sizes stay small: a journey step, not a marathon. Level 1 = 5×5, 2 = 6×6.
 const LADDER = [1, 1, 2, 1, 2, 2];
@@ -23,7 +24,7 @@ function MazeFlowRound({ initial, onComplete }: { initial: MazeState; onComplete
 
   const cellSize = useMemo(() => {
     if (!area.width || !area.height) return 0;
-    return Math.floor((Math.min(area.width, area.height) * 0.92) / maze.state.cols);
+    return Math.floor((Math.min(area.width, area.height) * 0.92 - FRAME_PAD * 2 - 8) / maze.state.cols);
   }, [area, maze.state.cols]);
 
   const onLayout = (e: LayoutChangeEvent) => {

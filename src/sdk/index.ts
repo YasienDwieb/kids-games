@@ -51,10 +51,12 @@ export { useSound } from './audio/useSound';
 export { SoundOverridesContext } from './audio/SoundOverridesContext';
 export type { PlayOptions } from './audio/useSound';
 export { useLoopSound } from './audio/useLoopSound';
+export { useLoop, pulse } from '@/components/pop/motion';
 
 // Speech
 export { useSpeech } from './speech/useSpeech';
 export type { SpeakOptions } from './speech/useSpeech';
+export { voiceHoldRemaining } from './speech/voiceGate';
 
 // Motion & orientation
 export { useTilt } from './motion/useTilt';

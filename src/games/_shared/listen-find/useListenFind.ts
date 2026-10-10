@@ -17,7 +17,14 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useGameShell, useLevels, useSound, type LevelSource, type MascotPose } from '@/sdk';
+import {
+  useGameShell,
+  useLevels,
+  useSound,
+  voiceHoldRemaining,
+  type LevelSource,
+  type MascotPose,
+} from '@/sdk';
 import type { FindItem, FindRound } from './types';
 
 /** The per-level shape both games produce. */
@@ -78,7 +85,9 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
     setSelectedIndex(null);
     setSolved(false);
     setMisses(0);
-    speakRef.current();
+    // Wait out a "New sticker!" voice so the prompt isn't talked over.
+    const id = setTimeout(() => speakRef.current(), voiceHoldRemaining());
+    return () => clearTimeout(id);
   }, [level, status]);
 
   // Clear any pending timer on unmount.

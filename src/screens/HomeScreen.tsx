@@ -56,6 +56,7 @@ function accentForGame(game: GameConfig, index: number): AccentName {
 // Layout tokens (landscape).
 const PAD = 14;
 const GAP = 10;
+const TILE_GAP = 18;
 const TOP_BAR_H = 52;
 const CHIPS_H = 54;
 const CARD_MIN_H = 92;
@@ -276,8 +277,8 @@ export function HomeScreen({ navigation }: Props) {
     const railEstimate =
       height - insets.top - insets.bottom - PAD * 2 - TOP_BAR_H - GAP - (chips ? CHIPS_H + GAP : 0);
     const railH = Math.max(CARD_MIN_H, (railBox || railEstimate) - 8); // room for the hard shadow
-    const rows = railH >= CARD_MIN_H * 2 + GAP ? 2 : 1;
-    const cardH = Math.floor((railH - GAP * (rows - 1)) / rows);
+    const rows = railH >= CARD_MIN_H * 2 + TILE_GAP ? 2 : 1;
+    const cardH = Math.floor((railH - TILE_GAP * (rows - 1)) / rows);
     const cardW = Math.round(Math.max(112, Math.min(150, cardH * 0.9)));
     const emoji = Math.round(Math.max(30, Math.min(56, cardH * 0.34)));
     const featW = Math.round(Math.max(230, Math.min(360, railH * 1.2)));
@@ -441,7 +442,7 @@ const styles = StyleSheet.create({
   // The rail clips nothing: hard shadows and the press offset need the room.
   rail: { flexGrow: 0, overflow: 'visible' },
   railContent: {
-    gap: GAP + 4,
+    gap: TILE_GAP + 6,
     paddingEnd: 8,
     paddingBottom: 6,
     alignItems: 'flex-start',
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     flexWrap: 'wrap',
     alignContent: 'flex-start',
-    gap: GAP,
+    gap: TILE_GAP,
   },
   chipsRow: { height: CHIPS_H, marginTop: GAP, justifyContent: 'center' },
   chips: {
@@ -471,7 +472,7 @@ const styles = StyleSheet.create({
 
   portrait: { padding: PAD, gap: 14, paddingBottom: 40 },
   portraitRow: { flexDirection: 'row', alignItems: 'center', gap: GAP },
-  wrapGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: GAP },
+  wrapGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: TILE_GAP },
 
   dialogScrim: {
     ...StyleSheet.absoluteFill,

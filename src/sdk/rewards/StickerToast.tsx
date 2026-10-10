@@ -15,10 +15,13 @@ import { FONTS } from '@/constants/typography';
 import { DAILY_GOAL, DAILY_GOAL_EVENT, onStickerUnlocked } from './store';
 import { Sticker } from './Sticker';
 import { whenOverlayClear } from '@/sdk/layout/overlayGate';
+import { holdVoice } from '@/sdk/speech/voiceGate';
 
 /** Let the win's own celebration land first. */
 const SHOW_DELAY_MS = 900;
 const VISIBLE_MS = 2600;
+/** Longest toast clip per language (Arabic runs ~3.3s) plus a short breath. */
+const VOICE_MS = { en: 2400, ar: 4000 } as const;
 
 export function StickerToast() {
   const { t } = useTranslation();
@@ -48,6 +51,7 @@ export function StickerToast() {
       }
       busy.current = true;
       setCurrent(id);
+      holdVoice(VOICE_MS[currentLanguage()] ?? VOICE_MS.ar);
       enter.setValue(0);
       spin.setValue(0);
       play(

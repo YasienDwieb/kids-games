@@ -28,7 +28,7 @@ export function BackButton({ onPress }: BackButtonProps) {
       style={({ pressed }) => [
         styles.button,
         { top: insets.top + SPACING.xs, start: startInset + SPACING.md },
-        pressed ? styles.pressed : SHADOWS.md,
+        pressed ? styles.pressed : SHADOWS.sm,
       ]}
     >
       <Icon name="chevron-back" size={30} />
@@ -45,11 +45,11 @@ const styles = StyleSheet.create({
     width: SIZE,
     height: SIZE,
     borderRadius: SIZE / 2,
-    borderWidth: OUTLINE.base,
+    borderWidth: OUTLINE.thin,
     borderColor: OUTLINE.color,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pressed: { transform: [{ translateX: 3 }, { translateY: 3 }] },
+  pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
 });

@@ -3,6 +3,7 @@ import * as Speech from 'expo-speech';
 import { currentLanguage } from '@/sdk/i18n';
 import type { LanguageCode } from '@/sdk/i18n/types';
 import { settingsStore } from '@/sdk/settings/store';
+import { voiceHoldRemaining } from './voiceGate';
 
 export type SpeakOptions = { rate?: number; pitch?: number };
 
@@ -41,7 +42,9 @@ export function useSpeech() {
   }, []);
 
   const speak = useCallback(async (text: string, options: SpeakOptions = {}) => {
-    const settings = await settingsStore.get();
+    await settingsStore.get();
+    const wait = voiceHoldRemaining();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
 
     // Bail if we unmounted during the AsyncStorage await — otherwise the
     // unmount's Speech.stop() would race ahead and this would speak on the

@@ -54,7 +54,7 @@ export function GameCard({
         styles.card,
         { backgroundColor: a.base },
         fill && styles.cardFill,
-        pressed ? styles.pressed : SHADOWS.md,
+        pressed ? styles.pressed : SHADOWS.sm,
         style,
       ]}
     >
@@ -91,7 +91,7 @@ export function GameCard({
 const styles = StyleSheet.create({
   card: {
     borderRadius: BORDER_RADIUS.tile,
-    borderWidth: OUTLINE.base,
+    borderWidth: OUTLINE.thin,
     borderColor: OUTLINE.color,
     padding: 12,
     gap: 8,
@@ -101,13 +101,11 @@ const styles = StyleSheet.create({
     padding: 9,
     gap: 6,
   },
-  pressed: { transform: [{ translateX: 4 }, { translateY: 4 }] },
+  pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
   window: {
     width: '100%',
     aspectRatio: 1.35,
     borderRadius: BORDER_RADIUS.card - 4,
-    borderWidth: OUTLINE.thin,
-    borderColor: OUTLINE.color,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',

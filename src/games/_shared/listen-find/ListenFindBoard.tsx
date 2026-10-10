@@ -31,6 +31,8 @@ import {
   OUTLINE,
   SHADOWS,
   SPACING,
+  pulse,
+  useLoop,
   type AccentName,
   type MascotPose,
 } from '@/sdk';
@@ -194,6 +196,8 @@ export function ListenFindBoard({
   mascotPose = null,
 }: ListenFindBoardProps): React.JSX.Element {
   const answered = selectedIndex !== null;
+  // Pulse the speaker so a child knows they can tap to hear it again.
+  const beat = useLoop(1200, { enabled: !disabled });
 
   const tileState = (idx: number): TileState => {
     if (selectedIndex === null) return 'default';
@@ -213,9 +217,9 @@ export function ListenFindBoard({
           style={[styles.heroPress, SHADOWS.md, { backgroundColor: ACCENTS[accent].tint }]}
         >
           {hero}
-          <View style={[styles.speakerBadge, { backgroundColor: ACCENTS[accent].base }]}>
+          <Animated.View style={[styles.speakerBadge, { backgroundColor: ACCENTS[accent].base }, pulse(beat, 0.15)]}>
             <Text style={styles.speakerGlyph}>🔊</Text>
-          </View>
+          </Animated.View>
         </Pressable>
       </View>
 

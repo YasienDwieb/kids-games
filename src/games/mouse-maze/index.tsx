@@ -13,7 +13,7 @@ import {
 import { Hud } from './components/Hud';
 import { MazeView } from './components/MazeView';
 import { WinOverlay } from './components/WinOverlay';
-import { HINT_MS, MAZE_COLORS } from './constants';
+import { FRAME_PAD, HINT_MS, MAZE_COLORS } from './constants';
 import { useMaze, buildLevel, type StepResult } from './hooks/useMaze';
 
 // Show the hand again after this long without a successful step.
@@ -48,7 +48,7 @@ export default function MouseMazeGame() {
     if (!area.width || !area.height) return 0;
     // Cap by the smaller dimension so the board stays square; in landscape the
     // measured area is already just the maze column (not the full screen width).
-    const usable = Math.min(area.width, area.height) * 0.9;
+    const usable = Math.min(area.width, area.height) * 0.92 - FRAME_PAD * 2 - 8;
     return Math.floor(usable / state.cols);
   }, [area, state.cols]);
 

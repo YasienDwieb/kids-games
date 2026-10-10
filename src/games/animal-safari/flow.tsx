@@ -24,6 +24,7 @@ import {
   useSound,
   useSpeech,
   useTranslation,
+  voiceHoldRemaining,
 } from '@/sdk';
 import { ListenFindBoard, type FindItem } from '@/games/_shared/listen-find';
 import { ANIMAL_IMAGES } from './animalImages';
@@ -59,7 +60,8 @@ function AnimalSafariFlowRound({
   const presentRef = useRef(present);
   presentRef.current = present;
   useEffect(() => {
-    presentRef.current();
+    const id = setTimeout(() => presentRef.current(), voiceHoldRemaining());
+    return () => clearTimeout(id);
   }, []);
 
   const instruction =
