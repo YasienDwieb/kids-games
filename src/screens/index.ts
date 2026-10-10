@@ -2,4 +2,5 @@ export { HomeScreen } from './HomeScreen';
 export { GamePlayerScreen } from './GamePlayerScreen';
 export { SettingsScreen } from './SettingsScreen';
 export { FlowPlayerScreen } from './FlowPlayerScreen';
-export { StickerBookScreen } from './StickerBookScreen';
+export { WardrobeScreen } from './WardrobeScreen';
+export { QuestsScreen } from './QuestsScreen';

@@ -8,7 +8,7 @@
  *   wrong    — coral tint bg + coral border
  *   disabled — same visual, pointer events off
  *
- * Typography: FONTS.display for the numeral (Fredoka/IBM Plex Arabic), Western digits.
+ * Typography: FONTS.display for the numeral (Lilita One/Baloo Bhaijaan 2), Western digits.
  * Touch target: 72px height minimum, flex-stretch width.
  */
 

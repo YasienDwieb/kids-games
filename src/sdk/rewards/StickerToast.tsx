@@ -10,7 +10,7 @@ import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { Mascot } from '@/sdk/mascot/Mascot';
 import { COLORS } from '@/constants/colors';
-import { BORDER_RADIUS, FONT_SIZES, SHADOWS, SPACING } from '@/constants/dimensions';
+import { BORDER_RADIUS, FONT_SIZES, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
 import { DAILY_GOAL, DAILY_GOAL_EVENT, onStickerUnlocked } from './store';
 import { Sticker } from './Sticker';
@@ -133,6 +133,8 @@ const styles = StyleSheet.create({
     paddingStart: SPACING.sm,
     paddingEnd: SPACING.lg,
     borderRadius: BORDER_RADIUS.tile,
+    borderWidth: OUTLINE.thick,
+    borderColor: OUTLINE.color,
     backgroundColor: COLORS.surface,
   },
   text: { gap: 2 },

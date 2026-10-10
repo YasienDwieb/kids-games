@@ -1,25 +1,32 @@
+import { type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
-import { COLORS, SHADOWS, FONT_SIZES } from '../../constants';
+import { COLORS, FONTS, OUTLINE, SHADOWS, FONT_SIZES } from '../../constants';
 
 type IconButtonProps = {
-  glyph: string;
+  glyph?: string;
+  /** Custom content (e.g. an icon) instead of a text glyph. */
+  children?: ReactNode;
   onPress: () => void;
   accessibilityLabel: string;
   size?: number;
   glyphSize?: number;
+  /** Fill colour (default white surface). */
+  color?: string;
   style?: ViewStyle;
   /** When true, ignores presses and dims the control. */
   disabled?: boolean;
 };
 
-// The canonical circular surface control — back / restart / action.
-// Mirrors `.iconbtn` from design/tokens.css.
+// The canonical round control — back / sound / settings. An ink-outlined
+// circle with a hard shadow; it drops onto the shadow while pressed.
 export function IconButton({
   glyph,
+  children,
   onPress,
   accessibilityLabel,
   size = 48,
   glyphSize = FONT_SIZES.md,
+  color = COLORS.surface,
   style,
   disabled = false,
 }: IconButtonProps) {
@@ -33,30 +40,33 @@ export function IconButton({
       hitSlop={8}
       style={({ pressed }) => [
         styles.button,
-        { width: size, height: size, borderRadius: size / 2 },
-        SHADOWS.sm,
-        pressed && styles.pressed,
+        { width: size, height: size, borderRadius: size / 2, backgroundColor: color },
+        pressed ? styles.pressed : SHADOWS.sm,
         disabled && styles.disabled,
         style,
       ]}
     >
-      <Text style={[styles.glyph, { fontSize: glyphSize, lineHeight: glyphSize + 2 }]}>
-        {glyph}
-      </Text>
+      {children ?? (
+        <Text style={[styles.glyph, { fontSize: glyphSize, lineHeight: glyphSize * 1.25 }]}>
+          {glyph}
+        </Text>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.surface,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pressed: { transform: [{ scale: 0.92 }] },
+  pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
   disabled: { opacity: 0.5 },
   glyph: {
+    fontFamily: FONTS.display,
     color: COLORS.ink,
-    fontWeight: '600',
+    textAlign: 'center',
   },
 });

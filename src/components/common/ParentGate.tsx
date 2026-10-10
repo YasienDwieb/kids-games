@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { COLORS, FONTS, SPACING, SHADOWS, BORDER_RADIUS } from '../../constants';
+import { COLORS, FONTS, SPACING, SHADOWS, BORDER_RADIUS, OUTLINE } from '../../constants';
 import { PressableButton } from './PressableButton';
 
 // Operands stay in the 6-9 range: trivial for an adult, out of reach for the
@@ -103,6 +103,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.tile,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.xl,
     alignItems: 'center',

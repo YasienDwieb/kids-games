@@ -7,19 +7,22 @@ import {
   Text,
   View,
   useWindowDimensions,
+  type LayoutChangeEvent,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
-import { GameCard, IconButton, JourneyCard, Star } from '../components/common';
-import { computeHomeGrid, isTablet, homeRailWidth } from '../utils/responsive';
-import { ACCENTS, BORDER_RADIUS, COLORS, FONTS, SHADOWS, SPACING, TOUCH_TARGET } from '../constants';
+import { Chip, GameCard, Icon, IconButton, PressableButton } from '../components/common';
+import { FeaturedCard, LevelPill, PopBackdrop, QuestCard } from '../components/pop';
+import { isTablet } from '../utils/responsive';
+import { BORDER_RADIUS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
 import {
   useSettings,
   useLanguage,
   LANGUAGES,
+  GAME_CATEGORIES,
   getGame,
   getAllGames,
   gamesForBand,
@@ -34,14 +37,12 @@ import {
   firstOpenStep,
   DEFAULT_FLOW_PROGRESS,
   type FlowProgress,
-  Mascot,
+  type GameCategory,
   Lulu3D,
   useRewards,
-  DAILY_GOAL,
-  starsToday,
+  useQuests,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
-import { PressableButton } from '../components/common';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
@@ -52,34 +53,23 @@ function accentForGame(game: GameConfig, index: number): AccentName {
   return game.accent ?? ACCENT_CYCLE[index % ACCENT_CYCLE.length];
 }
 
-// Layout tokens.
-const GAMES_HEADER_H = 56; // height reserved for the settings control above the rail
-const GRID_PAD_V = 14;
-const GRID_PAD_H = 12;
-const CELL_GAP = 12;
-// Below this games-pane width the header pills drop their decorations so the
-// controls always fit (≈396dp on a 640dp landscape phone beside the rail).
-const HEADER_COMPACT_BELOW = 560;
-// Height the landscape journey card needs; Lulu only gets what's left over.
-const JOURNEY_MIN_H = 220;
-const LULU_MAX = 120;
+// Layout tokens (landscape).
+const PAD = 14;
+const GAP = 10;
+const TOP_BAR_H = 52;
+const CHIPS_H = 54;
+const CARD_MIN_H = 92;
 const LULU_MIN = 64;
-const PORTRAIT_LULU = 96;
+const LULU_MAX = 160;
 
 export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const focused = useIsFocused();
   const landscape = width > height;
-  const railW = homeRailWidth(width, height);
-  const gamesPaneW = landscape ? width - insets.left - insets.right - railW : width;
-  const compactHeader = gamesPaneW < HEADER_COMPACT_BELOW;
-  const journeyPaneH = height - insets.top - insets.bottom - GRID_PAD_V * 2;
-  const railLuluSize = Math.min(LULU_MAX, journeyPaneH - JOURNEY_MIN_H - SPACING.sm);
-  // Portrait grid columns: 2 on phones, 3–4 on tablets so it isn't two giant columns.
-  const columns = isTablet(width, height) ? (width > 900 ? 4 : 3) : 2;
   const { settings, update } = useSettings();
   const rewards = useRewards();
+  const questDay = useQuests();
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
   // Language switching restarts the app, so it asks first. That confirmation is
@@ -87,15 +77,21 @@ export function HomeScreen({ navigation }: Props) {
   // toddler tapping around does not.
   const [pendingLang, setPendingLang] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
-  // Games shown on Home are filtered by the parent-set age band ("Show games for"
-  // in Settings); null = all. The old kid-facing age chips were removed from Home,
-  // so this is now driven solely from Settings.
-  const games = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
+  const [category, setCategory] = useState<GameCategory | null>(null);
+  const [luluBox, setLuluBox] = useState(0);
+  // Measured, not derived from insets: system bars differ per device and the
+  // rail must fill exactly what's left above the chips.
+  const [railBox, setRailBox] = useState(0);
+  const railRef = useRef<ScrollView>(null);
 
-  // --- Guided journey state (persistent card beside the games) ---
+  // Games shown on Home are filtered by the parent-set age band (Settings).
+  const visible = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
+  const categories = GAME_CATEGORIES.filter((c) => visible.some((g) => g.category === c));
+  const games = category ? visible.filter((g) => g.category === category) : visible;
+
+  // --- Guided adventure (the featured card) ---
   const adapters = selectedAdapters(settings.flowGameIds);
   const journeyTotal = sequenceLength(adapters);
-  const railRef = useRef<ScrollView>(null);
   const [savedFlow, setSavedFlow] = useState<FlowProgress>(DEFAULT_FLOW_PROGRESS);
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   // Re-read the checkpoint each time Home regains focus so the card reflects
@@ -117,201 +113,103 @@ export function HomeScreen({ navigation }: Props) {
   const sequence = journeyTotal > 0 ? buildSequence(adapters) : [];
   const done = doneCounts(sequence, savedFlow);
   const savedStep = sequence.filter((s) => s.localIndex < (done[s.gameId] ?? 0)).length;
-  // The game whose unit comes next in the interleaved journey.
   const nextStep = sequence[Math.min(firstOpenStep(sequence, done), sequence.length - 1)];
   const nextGame = nextStep ? getGame(nextStep.gameId) : undefined;
 
   const startOver = () => {
-    const fresh: FlowProgress = { step: 0, seed: 0, updatedAt: Date.now(), done: {} };
+    const fresh: FlowProgress = {
+      step: 0,
+      seed: 0,
+      updatedAt: Date.now(),
+      done: {},
+    };
     flowStore.set(fresh).then(() => {
       setSavedFlow(fresh);
       navigation.navigate('FlowPlayer');
     });
   };
 
-  const journeyCard = (compact: boolean) => (
-    <JourneyCard
+  const openGame = (id: string) => navigation.navigate('GamePlayer', { gameId: id });
+
+  // --- Top bar ---
+  // Sound and language live here, not behind the parent gate: muting is the
+  // most urgent control in the app and both are trivially reversible.
+  const otherLang = LANGUAGES.find((l) => l.code !== language) ?? LANGUAGES[0];
+  const compactBar = width < 700;
+
+  const starsPill = (
+    <Pressable
+      onPress={() => navigation.navigate('Wardrobe')}
+      accessibilityRole="button"
+      accessibilityLabel={t('home.wardrobeA11y', { n: rewards.stars })}
+      hitSlop={6}
+      style={({ pressed }) => [styles.starsPill, pressed ? styles.pressed : SHADOWS.sm]}
+    >
+      <Text style={styles.starGlyph}>★</Text>
+      <Text style={styles.starsText}>{rewards.stars}</Text>
+      {rewards.unseen.length > 0 ? <View style={styles.newDot} /> : null}
+    </Pressable>
+  );
+
+  const topBar = (
+    <View style={styles.topBar}>
+      <LevelPill stars={rewards.stars} compact={compactBar} onPress={() => navigation.navigate('Quests')} />
+      {starsPill}
+      <View style={styles.flex} />
+      <IconButton
+        onPress={() => update({ soundEnabled: !settings.soundEnabled })}
+        accessibilityLabel={t(settings.soundEnabled ? 'home.muteOn' : 'home.muteOff')}
+      >
+        <Icon name={settings.soundEnabled ? 'volume-high' : 'volume-mute'} size={24} />
+      </IconButton>
+      <IconButton
+        glyph={otherLang.code === 'ar' ? 'ع' : 'EN'}
+        glyphSize={otherLang.code === 'ar' ? 22 : 16}
+        onPress={() => setPendingLang(otherLang.code)}
+        accessibilityLabel={t('home.changeLanguage')}
+      />
+      <IconButton onPress={() => navigation.navigate('Settings')} accessibilityLabel={t('home.grownUps')}>
+        <Icon name="settings-sharp" size={22} />
+      </IconButton>
+    </View>
+  );
+
+  const chips =
+    categories.length > 1 ? (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+        <Chip label={t('home.categories.all')} active={category === null} onPress={() => setCategory(null)} />
+        {categories.map((c) => (
+          <Chip
+            key={c}
+            label={t(`home.categories.${c}`)}
+            active={category === c}
+            onPress={() => setCategory(category === c ? null : c)}
+          />
+        ))}
+      </ScrollView>
+    ) : null;
+
+  const quests = <QuestCard quests={questDay.quests} onPress={() => navigation.navigate('Quests')} />;
+
+  // Tap Lulu to say hi (she hops and giggles), drag sideways to spin her.
+  const luluSize = Math.max(0, Math.min(LULU_MAX, luluBox));
+  const lulu =
+    luluSize >= LULU_MIN ? <Lulu3D size={luluSize} interactive active={focused} style={styles.lulu} /> : null;
+
+  const featured = (w: number, h: number) => (
+    <FeaturedCard
+      width={w}
+      height={h}
       total={journeyTotal}
       savedStep={savedStep}
       nextIcon={nextGame?.icon}
       nextName={nextGame ? gameName(nextGame) : undefined}
       nextAccent={nextGame?.accent}
-      onContinue={() => navigation.navigate('FlowPlayer')}
+      onPlay={() => navigation.navigate('FlowPlayer')}
       onStartOver={startOver}
       onSetup={() => navigation.navigate('Settings')}
-      compact={compact}
-      style={compact ? styles.journeyPortrait : undefined}
     />
   );
-
-  const settingsButton = (
-    <IconButton
-      glyph="⚙️"
-      onPress={() => navigation.navigate('Settings')}
-      accessibilityLabel={t('settings.title')}
-    />
-  );
-
-  // Sound and language live here, not behind the parent gate: muting is the
-  // most urgent control in the app and both are trivially reversible, so making
-  // a parent solve arithmetic for them was the wrong trade.
-  const otherLang = LANGUAGES.find((l) => l.code !== language) ?? LANGUAGES[0];
-
-  const soundButton = (
-    <IconButton
-      glyph={settings.soundEnabled ? '🔊' : '🔇'}
-      onPress={() => update({ soundEnabled: !settings.soundEnabled })}
-      accessibilityLabel={t(settings.soundEnabled ? 'home.muteOn' : 'home.muteOff')}
-    />
-  );
-
-  const languageButton = (
-    <IconButton
-      glyph={otherLang.code === 'ar' ? 'ع' : 'EN'}
-      glyphSize={otherLang.code === 'ar' ? 24 : 16}
-      onPress={() => setPendingLang(otherLang.code)}
-      accessibilityLabel={t('home.changeLanguage')}
-    />
-  );
-
-  // Sticker book: Lulu + the star total, with a dot when there's something new.
-  const stickerButton = (
-    <Pressable
-      onPress={() => navigation.navigate('StickerBook')}
-      accessibilityRole="button"
-      accessibilityLabel={t('stickers.open')}
-      hitSlop={8}
-      style={({ pressed }) => [styles.stickerBtn, SHADOWS.sm, pressed && styles.pressed]}
-    >
-      <Mascot pose="wave" size={compactHeader ? 32 : 40} bob={false} />
-      <Text style={styles.stickerBtnText} numberOfLines={1}>
-        ⭐ {rewards.stars}
-      </Text>
-      {compactHeader ? null : <Text style={styles.stickerBtnBook}>📒</Text>}
-      {rewards.unseen.length > 0 ? <View style={styles.newDot} /> : null}
-    </Pressable>
-  );
-
-  // Gentle daily goal: today's stars fill up; nothing is lost on a missed day.
-  const todayStars = Math.min(starsToday(rewards), DAILY_GOAL);
-  const dailyPill = (
-    <View
-      style={[
-        styles.dailyPill,
-        compactHeader && styles.dailyPillCompact,
-        SHADOWS.sm,
-        todayStars >= DAILY_GOAL && styles.dailyDone,
-      ]}
-      accessible
-      accessibilityLabel={t('daily.a11y', { n: todayStars, goal: DAILY_GOAL })}
-    >
-      {compactHeader ? null : (
-        <Text style={styles.dailyLabel} numberOfLines={1}>
-          {t('daily.label')}
-        </Text>
-      )}
-      {Array.from({ length: DAILY_GOAL }, (_, i) => (
-        <Star key={i} size={compactHeader ? 18 : 22} filled={i < todayStars} />
-      ))}
-    </View>
-  );
-
-  // No "All games" title: they are self-evidently games, and the heading cost a
-  // full text row that a pre-reader gets nothing from.
-  const gamesHeader = (
-    <View style={[styles.gamesHeader, compactHeader && styles.gamesHeaderCompact]}>
-      {stickerButton}
-      {dailyPill}
-      <View style={styles.headerSpacer} />
-      <View style={[styles.headerControls, compactHeader && styles.headerControlsCompact]}>
-        {soundButton}
-        {languageButton}
-        {settingsButton}
-      </View>
-    </View>
-  );
-
-  // Tap Lulu to say hi (she hops and giggles), drag sideways to spin her.
-  const lulu = (size: number) => (
-    <Lulu3D size={size} interactive active={focused} style={styles.lulu} />
-  );
-
-  const gamesGrid =
-    games.length === 0 ? (
-      <Text style={styles.empty}>{t('home.empty')}</Text>
-    ) : (
-      <View style={styles.grid}>
-        {games.map((game, i) => (
-          <View key={game.id} style={[styles.cell, { width: `${100 / columns}%` }]}>
-            <GameCard
-              icon={game.icon}
-              name={gameName(game)}
-              accent={accentForGame(game, i)}
-              onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
-            />
-          </View>
-        ))}
-      </View>
-    );
-
-  // Landscape rail metrics: pick a row count that fills the height under the
-  // header, size cells to it, and pack games column-major so overflow flows into
-  // new columns reached by HORIZONTAL scroll (never vertical).
-  const railUsableH = height - insets.top - insets.bottom - GRID_PAD_V * 2 - GAMES_HEADER_H;
-  const grid = computeHomeGrid({
-    width,
-    height,
-    count: games.length,
-    insetsTop: insets.top,
-    insetsBottom: insets.bottom,
-  });
-  const railCardW = grid.cardW;
-  const railCardH = grid.cardH;
-  const railEmoji = grid.emojiSize;
-
-  const gameCells = games.map((game, i) => (
-    <View key={game.id} style={{ width: railCardW, height: railCardH, margin: CELL_GAP / 2 }}>
-      <GameCard
-        fill
-        emojiSize={railEmoji}
-        icon={game.icon}
-        // Short label so the icon gets the space; full name still goes to
-        // screen readers.
-        name={gameShortName(game)}
-        accessibilityLabel={gameName(game)}
-        accent={accentForGame(game, i)}
-        onPress={() => navigation.navigate('GamePlayer', { gameId: game.id })}
-      />
-    </View>
-  ));
-
-  const gamesRail =
-    games.length === 0 ? (
-      <View style={[styles.mainPane, styles.mainPaneContent]}>
-        <Text style={styles.empty}>{t('home.empty')}</Text>
-      </View>
-    ) : grid.scroll ? (
-      <ScrollView
-        ref={railRef}
-        horizontal
-        style={styles.mainPane}
-        contentContainerStyle={styles.rail}
-        showsHorizontalScrollIndicator={false}
-        // The column-major grid mirrors natively under RTL: game 0 sits at the
-        // content's RIGHT edge (largest x), beside the journey card. But the native
-        // horizontal ScrollView initializes at x:0 (the LEFT edge = the last games),
-        // leaving the rail "scrolled to the end". Once content is measured, scroll to
-        // the right edge (x = full content width, clamped) so game 0 is flush first.
-        onContentSizeChange={(w) => {
-          if (I18nManager.isRTL) railRef.current?.scrollTo({ x: w, animated: false });
-        }}
-      >
-        <View style={[styles.railGrid, { height: railUsableH }]}>{gameCells}</View>
-      </ScrollView>
-    ) : (
-      // Tablet fit-all: everything visible in a centered wrapping grid, no scroll.
-      <View style={[styles.mainPane, styles.fitGrid]}>{gameCells}</View>
-    );
 
   const confirmLanguage = async () => {
     if (!pendingLang) return;
@@ -326,7 +224,7 @@ export function HomeScreen({ navigation }: Props) {
   // Rendered above everything so it reads as a decision, not a suggestion.
   const languageDialog = pendingLang ? (
     <View style={styles.dialogScrim}>
-      <View style={styles.dialog}>
+      <View style={[styles.dialog, SHADOWS.lg]}>
         <Text style={styles.dialogTitle}>{t('home.switchTitle')}</Text>
         <Text style={styles.dialogBody}>{t('home.switchBody')}</Text>
         <View style={styles.dialogRow}>
@@ -353,49 +251,217 @@ export function HomeScreen({ navigation }: Props) {
   if (switching) {
     return (
       <SafeAreaView style={[styles.safe, styles.switchScreen]} edges={['top', 'bottom']}>
-        <Text style={styles.switchEmoji}>🌍</Text>
+        <Icon name="globe-outline" size={64} />
         <Text style={styles.switchText}>{t('settings.switching')}</Text>
       </SafeAreaView>
     );
   }
 
-  // Landscape (primary): the journey rail and the games live side by side — no
-  // mode toggle. The journey card fills its column; the games pane fills the rest.
+  const empty = <Text style={styles.empty}>{t('home.empty')}</Text>;
+
   if (landscape) {
+    // Body under the top bar: a quests + Lulu column, then one horizontal rail
+    // that opens with the featured card and continues into the game tiles.
+    const leftW = Math.round(Math.max(196, Math.min(260, width * 0.25)));
+    const railH = Math.max(CARD_MIN_H, railBox - 8); // room for the hard shadow
+    const rows = railH >= CARD_MIN_H * 2 + GAP ? 2 : 1;
+    const cardH = Math.floor((railH - GAP * (rows - 1)) / rows);
+    const cardW = Math.round(Math.max(112, Math.min(150, cardH * 0.9)));
+    const emoji = Math.round(Math.max(30, Math.min(56, cardH * 0.34)));
+    const featW = Math.round(Math.max(230, Math.min(360, railH * 1.2)));
+
     return (
-      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
-        <View style={styles.twoPane}>
-          <View style={[styles.journeyPaneLandscape, { width: railW }]}>
-            {railLuluSize >= LULU_MIN ? lulu(railLuluSize) : null}
-            {journeyCard(false)}
+      <View style={styles.safe}>
+        <PopBackdrop color={POP.zap} stripe={POP.zapDeep} />
+        <SafeAreaView style={styles.flex} edges={['top', 'left', 'right', 'bottom']}>
+          <View style={styles.page}>
+            {topBar}
+            <View style={styles.body}>
+              <View style={[styles.left, { width: leftW }]}>
+                {quests}
+                <View
+                  style={styles.luluBox}
+                  onLayout={(e: LayoutChangeEvent) =>
+                    setLuluBox(Math.floor(Math.min(e.nativeEvent.layout.height, e.nativeEvent.layout.width)))
+                  }
+                >
+                  {lulu}
+                </View>
+              </View>
+
+              <View style={styles.flex}>
+                <View
+                  style={styles.flex}
+                  onLayout={(e: LayoutChangeEvent) => setRailBox(Math.floor(e.nativeEvent.layout.height))}
+                >
+                  {railBox > 0 ? (
+                    <ScrollView
+                      ref={railRef}
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.rail}
+                      contentContainerStyle={styles.railContent}
+                      // The rail mirrors natively under RTL, but a horizontal
+                      // ScrollView still starts at x:0 (the far end). Snap to the
+                      // reading start once the content is measured.
+                      onContentSizeChange={(w) => {
+                        if (I18nManager.isRTL) railRef.current?.scrollTo({ x: w, animated: false });
+                      }}
+                    >
+                      {category === null ? featured(featW, railH) : null}
+                      {games.length === 0 ? (
+                        empty
+                      ) : (
+                        <View style={[styles.grid, { height: railH }]}>
+                          {games.map((game, i) => (
+                            <View key={game.id} style={{ width: cardW, height: cardH }}>
+                              <GameCard
+                                fill
+                                emojiSize={emoji}
+                                icon={game.icon}
+                                // Short label so the icon gets the space; the full
+                                // name still goes to screen readers.
+                                name={gameShortName(game)}
+                                accessibilityLabel={gameName(game)}
+                                accent={accentForGame(game, i)}
+                                onPress={() => openGame(game.id)}
+                              />
+                            </View>
+                          ))}
+                        </View>
+                      )}
+                    </ScrollView>
+                  ) : null}
+                </View>
+                {chips ? <View style={styles.chipsRow}>{chips}</View> : null}
+              </View>
+            </View>
           </View>
-          <View style={styles.gamesPane}>
-            {gamesHeader}
-            {gamesRail}
-          </View>
-        </View>
+        </SafeAreaView>
         {languageDialog}
-      </SafeAreaView>
+      </View>
     );
   }
 
-  // Portrait fallback: journey card on top, then the games grid.
+  // Portrait fallback: stacked, with a wrapping grid.
+  const columns = isTablet(width, height) ? (width > 900 ? 4 : 3) : 2;
+  const contentW = width - insets.left - insets.right - PAD * 2;
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {lulu(PORTRAIT_LULU)}
-        {journeyCard(true)}
-        {gamesHeader}
-        {gamesGrid}
-      </ScrollView>
+    <View style={styles.safe}>
+      <PopBackdrop color={POP.zap} stripe={POP.zapDeep} />
+      <SafeAreaView style={styles.flex} edges={['top', 'left', 'right']}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.portrait}>
+          {topBar}
+          {featured(contentW, 300)}
+          <View style={styles.portraitRow}>
+            <View style={styles.flex}>{quests}</View>
+            <Lulu3D size={130} interactive active={focused} />
+          </View>
+          {chips}
+          {games.length === 0 ? (
+            empty
+          ) : (
+            <View style={styles.wrapGrid}>
+              {games.map((game, i) => (
+                <View key={game.id} style={{ width: (contentW - GAP * (columns - 1)) / columns }}>
+                  <GameCard
+                    icon={game.icon}
+                    name={gameName(game)}
+                    accent={accentForGame(game, i)}
+                    onPress={() => openGame(game.id)}
+                  />
+                </View>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
       {languageDialog}
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
-  scroll: { paddingTop: SPACING.sm, paddingBottom: SPACING.xl },
+  safe: { flex: 1, backgroundColor: POP.zap },
+  flex: { flex: 1 },
+  page: { flex: 1, padding: PAD, gap: GAP },
+  pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
+
+  topBar: {
+    height: TOP_BAR_H,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  starsPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    height: 50,
+    paddingHorizontal: 14,
+    borderRadius: BORDER_RADIUS.pill,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
+    backgroundColor: COLORS.surface,
+  },
+  starGlyph: { fontSize: 24, lineHeight: 28, color: COLORS.gold },
+  starsText: {
+    fontFamily: FONTS.display,
+    fontSize: 20,
+    color: COLORS.ink,
+    direction: 'ltr',
+  },
+  newDot: {
+    position: 'absolute',
+    top: -4,
+    end: -4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: POP.bubblegum,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
+  },
+
+  body: { flex: 1, flexDirection: 'row', gap: GAP + 4 },
+  left: { gap: GAP },
+  luluBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  lulu: { alignSelf: 'center' },
+
+  // The rail clips nothing: hard shadows and the press offset need the room.
+  rail: { flexGrow: 0, overflow: 'visible' },
+  railContent: {
+    gap: GAP + 4,
+    paddingEnd: 8,
+    paddingBottom: 6,
+    alignItems: 'flex-start',
+  },
+  // Column-major grid: overflow flows into new columns reached by sideways scroll.
+  grid: {
+    flexDirection: 'column',
+    flexWrap: 'wrap',
+    alignContent: 'flex-start',
+    gap: GAP,
+  },
+  chipsRow: { height: CHIPS_H, marginTop: GAP, justifyContent: 'center' },
+  chips: {
+    gap: SPACING.sm,
+    paddingEnd: 8,
+    paddingBottom: 4,
+    alignItems: 'center',
+  },
+
+  empty: {
+    fontFamily: FONTS.display,
+    fontSize: 18,
+    color: COLORS.ink,
+    textAlign: 'center',
+    padding: 40,
+  },
+
+  portrait: { padding: PAD, gap: 14, paddingBottom: 40 },
+  portraitRow: { flexDirection: 'row', alignItems: 'center', gap: GAP },
+  wrapGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: GAP },
 
   dialogScrim: {
     ...StyleSheet.absoluteFill,
@@ -406,137 +472,32 @@ const styles = StyleSheet.create({
   },
   dialog: {
     backgroundColor: COLORS.surface,
-    borderRadius: 22,
+    borderRadius: 24,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     padding: SPACING.lg,
     gap: SPACING.md,
     alignItems: 'center',
-    maxWidth: 420,
+    maxWidth: 440,
   },
   dialogTitle: {
     fontFamily: FONTS.display,
-    fontSize: 20,
+    fontSize: 24,
     color: COLORS.ink,
     textAlign: 'center',
   },
   dialogBody: {
     fontFamily: FONTS.body,
-    fontSize: 15,
+    fontSize: 16,
     color: COLORS.inkSoft,
     textAlign: 'center',
   },
   dialogRow: { flexDirection: 'row', gap: SPACING.sm },
   dialogBtn: { minWidth: 130 },
-  switchScreen: { alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
-  switchEmoji: { fontSize: 56 },
-  switchText: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
-  stickerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    flexShrink: 1,
-    minWidth: TOUCH_TARGET.min,
-    height: TOUCH_TARGET.min,
-    paddingStart: SPACING.xs,
-    paddingEnd: SPACING.md,
-    borderRadius: BORDER_RADIUS.pill,
-    backgroundColor: COLORS.surface,
-  },
-  stickerBtnText: { flexShrink: 1, fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink },
-  stickerBtnBook: { fontSize: 20 },
-  newDot: {
-    position: 'absolute',
-    top: 2,
-    end: 4,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: ACCENTS.coral.deep,
-    borderWidth: 2,
-    borderColor: COLORS.surface,
-  },
-  pressed: { transform: [{ scale: 0.94 }] },
-  dailyPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    flexShrink: 1,
-    height: TOUCH_TARGET.min,
-    paddingHorizontal: SPACING.md,
-    borderRadius: BORDER_RADIUS.pill,
-    backgroundColor: COLORS.surface,
-    overflow: 'hidden',
-  },
-  dailyPillCompact: { paddingHorizontal: SPACING.sm },
-  dailyDone: { backgroundColor: ACCENTS.green.tint },
-  dailyLabel: {
-    flexShrink: 1,
-    fontFamily: FONTS.display,
-    fontSize: 16,
-    color: COLORS.ink,
-    marginEnd: SPACING.xs,
-  },
-  headerSpacer: { flexGrow: 1, flexShrink: 1 },
-  headerControls: { flexDirection: 'row', flexShrink: 0, gap: SPACING.sm },
-  headerControlsCompact: { gap: SPACING.xs },
-  gamesHeader: {
-    height: GAMES_HEADER_H,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-  },
-  gamesHeaderCompact: { gap: SPACING.xs, paddingHorizontal: SPACING.sm },
-  lulu: { alignSelf: 'center' },
-
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 11,
-  },
-  cell: { padding: 7 },
-  empty: {
-    fontFamily: FONTS.display,
-    fontSize: 16,
-    color: COLORS.inkSoft,
-    textAlign: 'center',
-    paddingVertical: 40,
-  },
-
-  // --- Landscape two-pane ---
-  twoPane: { flex: 1, flexDirection: 'row' },
-  journeyPaneLandscape: {
-    // width is applied inline via homeRailWidth(width, height) — 244 on phones,
-    // wider on tablets.
-    paddingLeft: 16,
-    paddingVertical: GRID_PAD_V,
-    gap: SPACING.sm,
-  },
-  journeyPortrait: { marginHorizontal: 16, marginTop: 4, marginBottom: SPACING.xs },
-  gamesPane: { flex: 1 },
-  mainPane: { flex: 1 },
-  // Tablet fit-all grid: center the wrapping cells in the games pane.
-  fitGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  switchScreen: {
     alignItems: 'center',
     justifyContent: 'center',
-    alignContent: 'center',
+    gap: SPACING.lg,
   },
-  mainPaneContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.xs,
-  },
-  // Horizontal games rail: a column-major grid that fills the height. Mirrors
-  // natively under RTL; the ScrollView's onContentSizeChange snaps the initial
-  // offset to the RTL start so game 0 sits flush beside the journey card.
-  rail: { paddingHorizontal: GRID_PAD_H, alignItems: 'center', flexGrow: 1 },
-  railGrid: {
-    flexDirection: 'column',
-    flexWrap: 'wrap',
-    alignContent: 'flex-start',
-    justifyContent: 'flex-start',
-  },
+  switchText: { fontFamily: FONTS.display, fontSize: 20, color: COLORS.ink },
 });

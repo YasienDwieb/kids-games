@@ -1,57 +1,69 @@
 /* ============================================================
-   Kids Games — unified design system colors
-   One warm cream canvas, warm-brown ink, friendly violet brand.
-   Per-game accent colors are the only thing that varies.
-   Ported from design/tokens.css.
+   Kids Games — "Pop Quest" design system colors
+   Comic-pop: loud flat colour, one dark ink for every outline,
+   hard offset shadow and label. Per-game accents are the only
+   thing that varies; each game owns one full-bleed colour.
    ============================================================ */
 
-// Per-game accent families (harmonized: L~0.74 C~0.13, hue varies).
-// `base` = the accent, `deep` = pressed/edge shade, `tint` = soft fill.
+// Per-game accent families. `base` = the full-bleed colour, `deep` = pressed /
+// edge shade, `tint` = soft fill for cells and backgrounds behind play.
 export const ACCENTS = {
-  green: { base: '#6FC27B', deep: '#54A862', tint: '#E4F4E6' },
-  orange: { base: '#F4A65A', deep: '#E08D3C', tint: '#FCEED9' },
-  coral: { base: '#F47C6E', deep: '#E0604F', tint: '#FCE5E1' },
-  purple: { base: '#A48BF2', deep: '#8A6FE6', tint: '#EEE8FD' },
-  blue: { base: '#5CB8E4', deep: '#3A9FD1', tint: '#E0F2FB' },
-  pink: { base: '#F58FB8', deep: '#E66FA0', tint: '#FCE5EF' },
+  green: { base: '#7DDB3C', deep: '#5CB81E', tint: '#E8F8DA' }, // lime
+  orange: { base: '#FFA51F', deep: '#E58600', tint: '#FFEFCF' }, // tangerine
+  coral: { base: '#FF6B5E', deep: '#E84B3D', tint: '#FFE3DF' }, // tomato
+  purple: { base: '#9B7BFF', deep: '#7B4DFF', tint: '#EEE7FF' }, // grape
+  blue: { base: '#2EC4F1', deep: '#0FA5D4', tint: '#DDF5FD' }, // splash
+  pink: { base: '#FF6FB4', deep: '#FF4FA3', tint: '#FFE3F1' }, // bubblegum
 } as const;
 
 export type AccentName = keyof typeof ACCENTS;
 
+// Named pop colours for chrome (Home, celebrations, quests).
+export const POP = {
+  zap: '#FFE135', // sunny yellow — Home, level-up headers, combo badges
+  zapDeep: '#F5C400',
+  grape: '#7B4DFF', // brand
+  bubblegum: '#FF4FA3',
+  splash: '#2EC4F1',
+  lime: '#7DDB3C',
+  night: '#2A2160', // recharge break
+  nightSoft: '#D9D3FF',
+} as const;
+
 export const COLORS = {
-  // --- canvas & surfaces (warm cream) ---
-  canvas: '#FBF3E6',
-  canvas2: '#F6EAD7',
+  // --- canvas & surfaces ---
+  canvas: '#FFF7E0', // soft zap cream behind play
+  canvas2: '#FFEFC2',
   surface: '#FFFFFF',
-  surface2: '#FFFAF1',
+  surface2: '#FFFBEF',
 
-  // --- ink (warm dark brown, never pure black) ---
+  // --- ink (one dark navy for every outline, shadow and label) ---
   // inkSoft carries secondary labels at 12-13px, so it must clear WCAG AA (4.5:1)
-  // on both surface and canvas: 5.86:1 on #FFFFFF, 5.32:1 on the cream canvas.
-  ink: '#3B3026',
-  inkSoft: '#6E6357',
-  inkFaint: '#B7AD9F',
-  line: 'rgba(59, 48, 38, 0.08)',
-  line2: 'rgba(59, 48, 38, 0.14)',
+  // on both surface and canvas.
+  ink: '#1B1B2F',
+  inkSoft: '#55516B',
+  inkFaint: '#A9A5BC',
+  line: 'rgba(27, 27, 47, 0.10)',
+  line2: 'rgba(27, 27, 47, 0.18)',
 
-  // --- brand (friendly violet — the hub's own color) ---
-  brand: '#8B7CF0',
-  brandDeep: '#6E5DE0',
-  brandTint: '#ECE8FE',
+  // --- brand (grape) ---
+  brand: '#7B4DFF',
+  brandDeep: '#5A2FE0',
+  brandTint: '#EEE7FF',
 
-  gold: '#F6C747',
+  gold: '#FFC61A',
 
   // --- accent families (also available structured via ACCENTS) ---
   accent: ACCENTS,
 
   // ----------------------------------------------------------------
   // Backwards-compatible groups (games import these via @/sdk).
-  // Retuned to the warm system; keys preserved so games keep working.
+  // Retuned to the pop system; keys preserved so games keep working.
   // ----------------------------------------------------------------
   primary: {
     red: ACCENTS.coral.base,
     blue: ACCENTS.blue.base,
-    yellow: '#F6C747',
+    yellow: POP.zap,
     green: ACCENTS.green.base,
     purple: ACCENTS.purple.base,
     orange: ACCENTS.orange.base,
@@ -59,28 +71,28 @@ export const COLORS = {
   },
 
   background: {
-    light: '#FBF3E6', // canvas
-    warm: '#F6EAD7', // canvas2
+    light: '#FFF7E0', // canvas
+    warm: '#FFEFC2', // canvas2
     cool: ACCENTS.blue.tint,
     white: '#FFFFFF',
   },
 
   text: {
-    primary: '#3B3026', // ink
-    secondary: '#6E6357', // inkSoft
-    light: '#B7AD9F', // inkFaint
+    primary: '#1B1B2F', // ink
+    secondary: '#55516B', // inkSoft
+    light: '#A9A5BC', // inkFaint
     inverse: '#FFFFFF',
   },
 
   // UI states
   success: ACCENTS.green.base,
-  warning: '#F6C747',
+  warning: POP.zap,
   error: ACCENTS.coral.base,
-  disabled: '#E7DECF',
+  disabled: '#E6E2F0',
 
   // Overlays / shadows
-  overlay: 'rgba(59, 48, 38, 0.34)',
-  shadow: 'rgba(74, 52, 28, 0.16)',
+  overlay: 'rgba(27, 27, 47, 0.45)',
+  shadow: 'rgba(27, 27, 47, 0.2)',
 } as const;
 
 /* ------------------------------------------------------------------

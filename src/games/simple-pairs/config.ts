@@ -11,6 +11,7 @@ registerGame({
   component: SimplePairsGame,
   backgroundColor: '#FBF3E6',
   accent: 'green',
+  category: 'puzzles',
   sounds: { 'sfx.win': 'jingle.pizzi-10' },
   order: 60,
   layout: { mode: 'bare' },

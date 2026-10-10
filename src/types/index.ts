@@ -7,7 +7,8 @@ export type RootStackParamList = {
   GamePlayer: { gameId: string };
   Settings: undefined;
   FlowPlayer: undefined;
-  StickerBook: undefined;
+  Wardrobe: undefined;
+  Quests: undefined;
 };
 
 /** Player profile (for future use) */

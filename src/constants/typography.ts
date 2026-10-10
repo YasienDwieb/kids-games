@@ -3,8 +3,9 @@ import { I18nManager } from 'react-native';
 // Font family tokens. Names match the @expo-google-fonts exports loaded in
 // App.tsx via useFonts.
 //
-// Latin (en): Fredoka = playful display; Nunito = friendly body.
-// Arabic (ar): IBM Plex Sans Arabic — one family, weighted by role.
+// Latin (en): Lilita One = loud comic display; Nunito (heavy) = friendly body.
+// Arabic (ar): Baloo Bhaijaan 2 = rounded playful display; IBM Plex Sans
+// Arabic = body.
 //
 // FONTS is language-aware WITHOUT changing any `FONTS.display` call site. The
 // family is keyed off `I18nManager.isRTL`, NOT i18n.language: RTL is persisted
@@ -14,18 +15,18 @@ import { I18nManager } from 'react-native';
 // through a full app reload, so isRTL is stable within a session.
 
 const LATIN = {
-  display: 'Fredoka_600SemiBold',
-  displayBold: 'Fredoka_700Bold',
-  displayMedium: 'Fredoka_500Medium',
-  body: 'Nunito_700Bold',
-  bodySemi: 'Nunito_600SemiBold',
-  bodyExtra: 'Nunito_800ExtraBold',
+  display: 'LilitaOne_400Regular',
+  displayBold: 'LilitaOne_400Regular',
+  displayMedium: 'LilitaOne_400Regular',
+  body: 'Nunito_800ExtraBold',
+  bodySemi: 'Nunito_700Bold',
+  bodyExtra: 'Nunito_900Black',
 } as const;
 
 const ARABIC = {
-  display: 'IBMPlexSansArabic_600SemiBold',
-  displayBold: 'IBMPlexSansArabic_700Bold',
-  displayMedium: 'IBMPlexSansArabic_500Medium',
+  display: 'BalooBhaijaan2_700Bold',
+  displayBold: 'BalooBhaijaan2_800ExtraBold',
+  displayMedium: 'BalooBhaijaan2_600SemiBold',
   body: 'IBMPlexSansArabic_700Bold',
   bodySemi: 'IBMPlexSansArabic_600SemiBold',
   bodyExtra: 'IBMPlexSansArabic_700Bold',

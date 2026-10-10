@@ -41,7 +41,7 @@ import {
   EmojiFrame,
   FONT_SIZES,
   FONTS,
-  Mascot,
+  MascotHelper,
   PressableButton,
   ResumePrompt,
   SHADOWS,
@@ -385,12 +385,9 @@ export default function CountAndPopGame(): React.JSX.Element {
 
   // Lulu reacts to mistakes: encourages after the first miss, then points at the
   // answer once the hint ladder starts helping. She stays out of the way otherwise.
-  const helper =
-    hints.step && !solved ? (
-      <View style={styles.helper} pointerEvents="none">
-        <Mascot pose={hints.step === 'retry' ? 'encourage' : 'point'} size={110} />
-      </View>
-    ) : null;
+  const helper = (
+    <MascotHelper pose={hints.step && !solved ? (hints.step === 'retry' ? 'encourage' : 'point') : null} size={110} />
+  );
 
   if (round.mode === 'countThisMany') {
     return (
@@ -449,11 +446,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: COLORS.canvas,
-  },
-  helper: {
-    position: 'absolute',
-    start: SPACING.md,
-    bottom: SPACING.sm,
   },
   center: {
     flex: 1,

@@ -1,6 +1,16 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS, type AccentName } from '../../constants';
-import { EmojiFrame } from './EmojiFrame';
+import {
+  ACCENTS,
+  COLORS,
+  FONTS,
+  OUTLINE,
+  POP,
+  SHADOWS,
+  BORDER_RADIUS,
+  bestTextOn,
+  type AccentName,
+} from '../../constants';
+import { EmojiImage } from './EmojiImage';
 import { Star } from './Star';
 
 type GameCardProps = {
@@ -12,14 +22,15 @@ type GameCardProps = {
   onPress: () => void;
   style?: ViewStyle;
   // Fill mode: stretch to fill a fixed-size cell (landscape rail) — the emoji
-  // frame flexes to absorb leftover height so cards stay a uniform size.
+  // window flexes to absorb leftover height so cards stay a uniform size.
   fill?: boolean;
   emojiSize?: number;
   /** Full game name for screen readers when `name` is an abbreviated tile label. */
   accessibilityLabel?: string;
 };
 
-// Game tile for the home grid. Mirrors GameTile in design/home.jsx.
+// Home tile: the game's own loud colour, an ink outline and hard shadow, the
+// icon in a white window and the name in the display face underneath.
 export function GameCard({
   icon,
   name,
@@ -33,113 +44,99 @@ export function GameCard({
   accessibilityLabel,
 }: GameCardProps) {
   const a = ACCENTS[accent];
+  const label = bestTextOn(a.base);
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
+      accessibilityLabel={accessibilityLabel ?? name}
       style={({ pressed }) => [
         styles.card,
+        { backgroundColor: a.base },
         fill && styles.cardFill,
-        SHADOWS.md,
-        pressed && styles.pressed,
+        pressed ? styles.pressed : SHADOWS.md,
         style,
       ]}
     >
-      {tag ? (
-        <View style={[styles.tag, { backgroundColor: a.base }]}>
-          <Text style={styles.tagText}>{tag}</Text>
-        </View>
-      ) : null}
-
-      <EmojiFrame
-        emoji={icon}
-        tint={a.tint}
-        style={[styles.emoji, fill && styles.emojiFill]}
-        fontSize={emojiSize ?? 52}
-      />
+      <View style={[styles.window, fill && styles.windowFill]}>
+        <EmojiImage emoji={icon} size={emojiSize ?? 52} />
+      </View>
 
       <View style={styles.meta}>
-        {/* One line in the landscape rail: two wrapped lines ate 33% of the tile
-            height, and the emoji frame (flex: 1) reclaims every point the label
-            gives back. The portrait grid keeps two lines, where there is room. */}
         <Text
-          style={[styles.name, fill && styles.nameFill]}
+          style={[styles.name, fill && styles.nameFill, { color: label }]}
           numberOfLines={fill ? 1 : 2}
+          adjustsFontSizeToFit={fill}
+          minimumFontScale={0.75}
         >
           {name}
         </Text>
         {progress > 0 ? (
-          <View style={styles.row}>
-            <View style={styles.progress}>
-              <Star size={13} />
-              <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
-            </View>
+          <View style={styles.progress}>
+            <Star size={13} />
+            <Text style={[styles.progressText, { color: label }]}>{Math.round(progress * 100)}%</Text>
           </View>
         ) : null}
       </View>
+
+      {tag ? (
+        <View style={styles.tag}>
+          <Text style={styles.tagText}>{tag}</Text>
+        </View>
+      ) : null}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.tile,
-    padding: 16,
-    gap: 12,
-  },
-  cardFill: {
-    height: '100%',
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     padding: 12,
     gap: 8,
   },
-  pressed: { transform: [{ scale: 0.97 }] },
-  tag: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 2,
-    paddingVertical: 4,
-    paddingHorizontal: 9,
-    borderRadius: BORDER_RADIUS.pill,
+  cardFill: {
+    height: '100%',
+    padding: 9,
+    gap: 6,
   },
-  tagText: {
-    fontFamily: FONTS.display,
-    fontSize: 11,
-    letterSpacing: 0.4,
-    color: COLORS.surface,
-  },
-  emoji: {
+  pressed: { transform: [{ translateX: 4 }, { translateY: 4 }] },
+  window: {
     width: '100%',
     aspectRatio: 1.35,
-    height: undefined,
+    borderRadius: BORDER_RADIUS.card - 4,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  // Fill mode: drop the fixed aspect so the frame flexes to fill leftover height.
-  emojiFill: {
-    aspectRatio: undefined,
-    height: undefined,
-    flex: 1,
-    minHeight: 44,
-  },
-  meta: { gap: 8, paddingHorizontal: 4 },
+  // Fill mode: drop the fixed aspect so the window flexes to fill leftover height.
+  windowFill: { aspectRatio: undefined, flex: 1, minHeight: 44 },
+  meta: { gap: 4, paddingHorizontal: 2 },
   name: {
     fontFamily: FONTS.display,
-    fontSize: 18,
-    color: COLORS.ink,
-    lineHeight: 21,
+    fontSize: 19,
+    lineHeight: 23,
+    textAlign: 'center',
   },
-  // Rail tiles are ~116dp wide, so the label has to come down a step to hold a
-  // full name on one line. Still well above the 12dp caption floor.
-  nameFill: {
-    fontSize: 14,
-    lineHeight: 17,
+  // Rail tiles are ~116dp wide, so the label comes down a step to hold a full
+  // short name on one line. Still well above the 12dp caption floor.
+  nameFill: { fontSize: 16, lineHeight: 20 },
+  progress: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
+  progressText: { fontFamily: FONTS.display, fontSize: 12 },
+  tag: {
+    position: 'absolute',
+    top: -10,
+    end: -6,
+    paddingVertical: 2,
+    paddingHorizontal: 10,
+    borderRadius: BORDER_RADIUS.pill,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
+    backgroundColor: POP.zap,
+    transform: [{ rotate: '6deg' }],
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  progress: { flexDirection: 'row', alignItems: 'center', gap: 3, marginLeft: 'auto' },
-  progressText: {
-    fontFamily: FONTS.display,
-    fontSize: 12,
-    color: COLORS.inkSoft,
-  },
+  tagText: { fontFamily: FONTS.display, fontSize: 13, color: COLORS.ink },
 });

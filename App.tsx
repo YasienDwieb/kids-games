@@ -5,19 +5,19 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { useFonts } from 'expo-font';
+import { LilitaOne_400Regular } from '@expo-google-fonts/lilita-one';
 import {
-  useFonts,
-  Fredoka_500Medium,
-  Fredoka_600SemiBold,
-  Fredoka_700Bold,
-} from '@expo-google-fonts/fredoka';
-import {
-  Nunito_600SemiBold,
   Nunito_700Bold,
   Nunito_800ExtraBold,
+  Nunito_900Black,
 } from '@expo-google-fonts/nunito';
 import {
-  IBMPlexSansArabic_500Medium,
+  BalooBhaijaan2_600SemiBold,
+  BalooBhaijaan2_700Bold,
+  BalooBhaijaan2_800ExtraBold,
+} from '@expo-google-fonts/baloo-bhaijaan-2';
+import {
   IBMPlexSansArabic_600SemiBold,
   IBMPlexSansArabic_700Bold,
 } from '@expo-google-fonts/ibm-plex-sans-arabic';
@@ -33,13 +33,13 @@ LogBox.ignoreLogs(['THREE.Clock: This module has been deprecated']);
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    Fredoka_500Medium,
-    Fredoka_600SemiBold,
-    Fredoka_700Bold,
-    Nunito_600SemiBold,
+    LilitaOne_400Regular,
     Nunito_700Bold,
     Nunito_800ExtraBold,
-    IBMPlexSansArabic_500Medium,
+    Nunito_900Black,
+    BalooBhaijaan2_600SemiBold,
+    BalooBhaijaan2_700Bold,
+    BalooBhaijaan2_800ExtraBold,
     IBMPlexSansArabic_600SemiBold,
     IBMPlexSansArabic_700Bold,
   });

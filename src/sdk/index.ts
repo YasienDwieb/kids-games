@@ -7,8 +7,8 @@ export { registerGame, getGame, getAllGames, getGamesForAge } from './config/reg
 export { validateGameConfig } from './config/validate';
 
 // Design tokens (re-exported so games have one surface)
-export { COLORS, ACCENTS, bestTextOn, contrastRatio, type AccentName } from '@/constants/colors';
-export { SPACING, BORDER_RADIUS, TOUCH_TARGET, FONT_SIZES, SHADOWS } from '@/constants/dimensions';
+export { COLORS, ACCENTS, POP, bestTextOn, contrastRatio, type AccentName } from '@/constants/colors';
+export { SPACING, BORDER_RADIUS, TOUCH_TARGET, FONT_SIZES, SHADOWS, OUTLINE } from '@/constants/dimensions';
 export { FONTS } from '@/constants/typography';
 
 // Design-system UI primitives — always prefer these over hand-rolled controls.
@@ -26,7 +26,9 @@ export {
   GameCard,
   BackButton,
   SafeContainer,
+  Icon,
 } from '@/components/common';
+export type { IconName } from '@/components/common';
 
 // Assets
 export { ASSETS } from './assets/manifest';
@@ -80,6 +82,8 @@ export {
   DAILY_GOAL_EVENT,
   localDay,
   starsToday,
+  onStarsAwarded,
+  onLevelUp,
 } from './rewards/store';
 export type { Rewards } from './rewards/store';
 export {
@@ -92,6 +96,9 @@ export {
 } from './rewards/stickers';
 export type { StickerSetId } from './rewards/stickers';
 export { Sticker } from './rewards/Sticker';
+
+// Quests, player level & Lulu's wardrobe
+export * from './quests';
 
 // Mascot — Lulu the owl
 export { Mascot } from './mascot/Mascot';
