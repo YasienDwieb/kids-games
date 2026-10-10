@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
-import { ACCENTS, COLORS, FONTS, BORDER_RADIUS, type AccentName } from '../../constants';
+import { ACCENTS, COLORS, FONTS, BORDER_RADIUS, OUTLINE, type AccentName } from '../../constants';
 
 type HoldToConfirmProps = {
   label: string;
@@ -23,16 +23,13 @@ export function HoldToConfirm({
 }: HoldToConfirmProps) {
   const fill = useRef(new Animated.Value(0)).current;
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const [holding, setHolding] = useState(false);
   const family = ACCENTS[accent];
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const start = () => {
-    setHolding(true);
     Animated.timing(fill, { toValue: 1, duration, useNativeDriver: false }).start();
     timer.current = setTimeout(() => {
-      setHolding(false);
       fill.setValue(0);
       onConfirm();
     }, duration);
@@ -40,7 +37,6 @@ export function HoldToConfirm({
 
   const cancel = () => {
     clearTimeout(timer.current);
-    setHolding(false);
     Animated.timing(fill, { toValue: 0, duration: 180, useNativeDriver: false }).start();
   };
 
@@ -56,17 +52,19 @@ export function HoldToConfirm({
     >
       <Animated.View
         pointerEvents="none"
-        style={[styles.fillBar, { width, backgroundColor: family.tint }]}
+        style={[styles.fillBar, { width, backgroundColor: family.base }]}
       />
-      <Text style={[styles.label, holding && { color: family.deep }]}>{label}</Text>
+      <Text style={styles.label}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   btn: {
-    height: 44,
+    height: 48,
     borderRadius: BORDER_RADIUS.pill,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     backgroundColor: COLORS.surface,
     overflow: 'hidden',
     alignItems: 'center',
@@ -74,5 +72,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   fillBar: { position: 'absolute', start: 0, top: 0, bottom: 0 },
-  label: { fontFamily: FONTS.bodySemi, fontSize: 14, color: COLORS.inkSoft },
+  label: { fontFamily: FONTS.display, fontSize: 17, color: COLORS.ink },
 });

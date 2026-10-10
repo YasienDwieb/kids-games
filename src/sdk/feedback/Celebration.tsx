@@ -19,8 +19,11 @@ import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
-import { ACCENTS, COLORS } from '@/constants/colors';
-import { BORDER_RADIUS, FONT_SIZES, SHADOWS, SPACING } from '@/constants/dimensions';
+import { QuestToast } from './QuestToast';
+import { LevelUp } from './LevelUp';
+import { bumpCombo } from './combo';
+import { ACCENTS, COLORS, POP } from '@/constants/colors';
+import { FONT_SIZES, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
 
 export type CelebrationSize = 'small' | 'big';
@@ -65,6 +68,8 @@ type Burst = {
   id: number;
   size: CelebrationSize;
   praiseKey: string | null;
+  /** Wins in a row so far (shown as "x3 COMBO!" from 2 up). */
+  combo: number;
   pieces: Piece[];
   resolve: () => void;
 };
@@ -118,7 +123,14 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
       // success cue already buzzed.
       if (options.voice !== false) play(praiseIntent(n), { haptic: false });
 
-      const burst: Burst = { id: nextId.current++, size, praiseKey, pieces: makePieces(size), resolve };
+      const burst: Burst = {
+        id: nextId.current++,
+        size,
+        praiseKey,
+        combo: bumpCombo(),
+        pieces: makePieces(size),
+        resolve,
+      };
       setBursts((b) => [...b, burst]);
     });
   }, [play]);
@@ -146,7 +158,9 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
           ))}
           <CheeringLulu show={bursts.length > 0} big={bursts.some((b) => b.size === 'big')} />
           <StickerToast />
+          <QuestToast />
         </View>
+        <LevelUp />
       </View>
     </CelebrationContext.Provider>
   );
@@ -235,23 +249,31 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
           ]}
         />
       ))}
-      {burst.praiseKey ? (
+      {burst.praiseKey || burst.combo >= 2 ? (
         <Animated.View
           style={[
-            styles.bubble,
-            burst.size === 'big' && styles.bubbleBig,
-            SHADOWS.md,
+            styles.pop,
             {
               opacity: bubble,
               transform: [
                 { scale: bubble.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) },
+                { rotate: '-4deg' },
               ],
             },
           ]}
         >
-          <Text style={[styles.praise, burst.size === 'big' && styles.praiseBig]}>
-            {t(burst.praiseKey)}
-          </Text>
+          {burst.combo >= 2 ? (
+            <View style={[styles.combo, SHADOWS.sm]}>
+              <Text style={styles.comboText}>{t('combo.label', { n: burst.combo })}</Text>
+            </View>
+          ) : null}
+          {burst.praiseKey ? (
+            <View style={[styles.bubble, burst.size === 'big' && styles.bubbleBig, SHADOWS.lg]}>
+              <Text style={[styles.praise, burst.size === 'big' && styles.praiseBig]}>
+                {t(burst.praiseKey)}
+              </Text>
+            </View>
+          ) : null}
         </Animated.View>
       ) : null}
     </View>
@@ -263,12 +285,26 @@ const styles = StyleSheet.create({
   center: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   piece: { position: 'absolute' },
   mascot: { position: 'absolute', bottom: SPACING.sm, start: SPACING.lg },
+  pop: { alignItems: 'center', gap: SPACING.sm },
+  // Comic speech-burst: zap yellow, thick ink edge, hard shadow, slight tilt.
   bubble: {
     paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.pill,
-    backgroundColor: COLORS.surface,
+    paddingVertical: SPACING.xs,
+    borderRadius: 20,
+    borderWidth: OUTLINE.thick,
+    borderColor: OUTLINE.color,
+    backgroundColor: POP.zap,
   },
+  combo: {
+    paddingHorizontal: 14,
+    paddingVertical: 2,
+    borderRadius: 14,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
+    backgroundColor: POP.bubblegum,
+    transform: [{ rotate: '6deg' }],
+  },
+  comboText: { fontFamily: FONTS.display, fontSize: 24, color: COLORS.ink },
   bubbleBig: { paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md },
   praise: {
     fontFamily: FONTS.displayBold,

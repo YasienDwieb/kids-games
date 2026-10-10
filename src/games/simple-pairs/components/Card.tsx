@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text } from 'react-native';
 import type { Card as CardType } from '../types';
 import { LAYOUT, TIMING, GAME_COLORS } from '../constants';
-import { COLORS, SHADOWS } from '../../../constants';
+import { COLORS, SHADOWS, OUTLINE } from '../../../constants';
 import { EmojiImage } from '@/sdk';
 
 type CardProps = {
@@ -115,17 +115,19 @@ const styles = StyleSheet.create({
   },
   cardBack: {
     backgroundColor: GAME_COLORS.cardBack,
-    borderBottomWidth: 5,
-    borderBottomColor: GAME_COLORS.cardBackDeep,
-    ...SHADOWS.sm,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
+    ...SHADOWS.md,
   },
   cardFront: {
     backgroundColor: GAME_COLORS.cardFace,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.md,
   },
   cardMatched: {
     backgroundColor: GAME_COLORS.matched,
-    borderWidth: 2.5,
+    // Green outline carries the "matched" state, so it replaces the ink one.
     borderColor: GAME_COLORS.matchedBorder,
     shadowOpacity: 0,
     elevation: 0,

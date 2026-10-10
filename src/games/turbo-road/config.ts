@@ -11,6 +11,7 @@ registerGame({
   component: TurboRoad,
   backgroundColor: '#FCE5E1',
   accent: 'coral',
+  category: 'action',
   sounds: { 'sfx.win': 'jingle.sax-10' },
   order: 40,
   tags: ['racing', 'cars', 'action', 'reflexes'],

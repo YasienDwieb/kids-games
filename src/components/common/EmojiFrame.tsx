@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
-import { COLORS, BORDER_RADIUS } from '../../constants';
+import { COLORS, BORDER_RADIUS, OUTLINE } from '../../constants';
 
 type EmojiFrameProps = {
   emoji: string;
@@ -7,6 +7,8 @@ type EmojiFrameProps = {
   fontSize?: number;
   tint?: string;
   radius?: number;
+  /** Ink outline around the frame (Pop Quest tiles). */
+  outlined?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -17,6 +19,7 @@ export function EmojiFrame({
   fontSize,
   tint = COLORS.surface2,
   radius = BORDER_RADIUS.card,
+  outlined = false,
   style,
 }: EmojiFrameProps) {
   return (
@@ -24,6 +27,7 @@ export function EmojiFrame({
       style={[
         styles.frame,
         { width: size, height: size, borderRadius: radius, backgroundColor: tint },
+        outlined && styles.outlined,
         style,
       ]}
     >
@@ -37,4 +41,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  outlined: { borderWidth: OUTLINE.thin, borderColor: OUTLINE.color },
 });

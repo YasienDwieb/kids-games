@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { BORDER_RADIUS, COLORS, EmojiImage, FONTS, SHADOWS } from '@/sdk';
+import { BORDER_RADIUS, COLORS, EmojiImage, FONTS, OUTLINE, SHADOWS } from '@/sdk';
 import type { MatchItem } from '../types';
 
 export type TileState = 'idle' | 'active' | 'matched';
@@ -29,8 +29,8 @@ export function Tile({ item, size, state, accentColor, lineColor }: TileProps) {
           height: size,
           borderRadius: BORDER_RADIUS.card,
           backgroundColor: item.kind === 'color' ? item.color : COLORS.surface,
-          borderColor: active ? accentColor : matched ? matchColor : COLORS.line2,
-          borderWidth: active ? 4 : matched ? 3 : 2,
+          borderColor: active ? accentColor : matched ? matchColor : OUTLINE.color,
+          borderWidth: active ? OUTLINE.thick : OUTLINE.base,
           opacity: matched ? 0.92 : 1,
         },
       ]}
@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.surface,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
   },
-  checkGlyph: { color: COLORS.surface, fontSize: 14, fontWeight: '900' },
+  checkGlyph: { color: COLORS.ink, fontSize: 14, fontWeight: '900' },
 });

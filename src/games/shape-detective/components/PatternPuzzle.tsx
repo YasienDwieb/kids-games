@@ -29,6 +29,7 @@ import {
   COLORS,
   FONTS,
   FONT_SIZES,
+  OUTLINE,
   PressableButton,
   SHADOWS,
   SPACING,
@@ -147,7 +148,9 @@ export function PatternPuzzle({
             ? ACCENTS.green.base
             : revealed && isSelected && !isCorrect
             ? ACCENTS.coral.base
-            : COLORS.line2;
+            // Default: no extra ring — PressableButton's face already wears
+            // the ink outline. Transparent keeps the width so nothing jumps.
+            : 'transparent';
 
           const borderWidth = isSelected || (revealed && isCorrect) ? 3 : 2;
 
@@ -240,6 +243,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.canvas2,
     borderRadius: BORDER_RADIUS.soft,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     padding: SPACING.sm,
     ...SHADOWS.sm,
   },
@@ -248,8 +253,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.surface2,
     borderStyle: 'dashed',
-    borderWidth: 2.5,
-    borderColor: ACCENTS.purple.base,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
   },
   questionMark: {
     fontFamily: FONTS.displayBold,

@@ -68,7 +68,7 @@ For full setup, testing on a phone via Expo Go, and local/EAS cloud builds acros
 - `react-native-safe-area-context`, `react-native-gesture-handler`, `expo-audio`, `expo-haptics`, `expo-speech`, `expo-screen-orientation`
 - `react-native-reanimated` + `react-native-worklets` — UI-thread game motion (needs a native/EAS build, not OTA)
 - i18n: `i18next` + `react-i18next` + `expo-localization` — English + Arabic with full RTL
-- Fonts: Fredoka (display) + Nunito (body), IBM Plex Sans Arabic (RTL) via `@expo-google-fonts/*`
+- Fonts: Lilita One (display) + Nunito (body); Baloo Bhaijaan 2 + IBM Plex Sans Arabic (RTL) via `@expo-google-fonts/*`
 
 ## Architecture
 
@@ -130,10 +130,10 @@ Games import **only** from `@/sdk` — never from another game or deep `src/` pa
 
 ## Design system
 
-One warm cream design system (ported from `design/`): cream canvas, warm-brown ink, friendly violet brand, and per-game **accent** families. Use tokens + primitives — no raw hex, system fonts, or hand-rolled controls.
+One "Pop Quest" comic-pop design system: loud flat colour, a single navy ink for every outline and hard offset shadow, grape brand, and per-game **accent** families. Use tokens + primitives — no raw hex, system fonts, or hand-rolled controls.
 
-- **Tokens** (`@/sdk`): `COLORS`, `ACCENTS` (`green`/`orange`/`coral`/`purple`/`blue`/`pink`), `FONTS` (`display`=Fredoka, `body*`=Nunito), `SHADOWS`, `SPACING`, `BORDER_RADIUS`, `FONT_SIZES`, `TOUCH_TARGET`
-- **Primitives** (`components/common`, re-exported from `@/sdk`): `PressableButton` (chunky CTA), `BigButton`, `IconButton`, `AppBar`, `Chip`, `HudPill`, `EmojiFrame`, `Star`, `GameCard`, `BackButton`, `SafeContainer`
+- **Tokens** (`@/sdk`): `COLORS`, `POP`, `ACCENTS` (`green`/`orange`/`coral`/`purple`/`blue`/`pink`), `FONTS` (`display`=Lilita One, `body*`=Nunito), `OUTLINE`, `SHADOWS`, `SPACING`, `BORDER_RADIUS`, `FONT_SIZES`, `TOUCH_TARGET`
+- **Primitives** (`components/common`, re-exported from `@/sdk`): `PressableButton` (chunky CTA), `BigButton`, `IconButton`, `AppBar`, `Chip`, `HudPill`, `EmojiFrame`, `Star`, `GameCard`, `BackButton`, `SafeContainer`, `Icon`
 
 See `CLAUDE.md` (Design-system adherence) and the `kids-games-dev` skill for the full contract.
 

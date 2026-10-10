@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { breakCombo } from './combo';
 import { hintStepFor, starsForMisses, type HintStep } from './hints';
 
 export type UseHintLadderResult = {
@@ -31,6 +32,7 @@ export function useHintLadder(roundKey: unknown): UseHintLadderResult {
 
   const miss = useCallback((): HintStep => {
     missesRef.current += 1;
+    breakCombo();
     setMisses(missesRef.current);
     return hintStepFor(missesRef.current);
   }, []);

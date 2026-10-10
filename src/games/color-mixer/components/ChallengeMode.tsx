@@ -6,6 +6,7 @@ import {
   FONTS,
   BORDER_RADIUS,
   IconButton,
+  OUTLINE,
   Star,
   useTranslation,
 } from '@/sdk';
@@ -215,6 +216,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: TOKENS.surface2,
     borderRadius: BORDER_RADIUS.soft,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
   },
   hintText: {
     flexShrink: 1,
@@ -235,6 +238,8 @@ const styles = StyleSheet.create({
     height: 10,
     backgroundColor: TOKENS.line2,
     borderRadius: BORDER_RADIUS.pill,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     overflow: 'hidden',
   },
   meterFill: {

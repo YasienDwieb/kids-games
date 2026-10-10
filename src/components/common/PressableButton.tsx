@@ -1,9 +1,11 @@
 import { useRef, type ReactNode } from 'react';
 import {
   Animated,
+  I18nManager,
   Pressable,
   StyleSheet,
   Text,
+  View,
   type TextStyle,
   type ViewStyle,
 } from 'react-native';
@@ -11,100 +13,84 @@ import {
   ACCENTS,
   COLORS,
   FONTS,
-  SHADOWS,
   BORDER_RADIUS,
+  OUTLINE,
   bestTextOn,
   type AccentName,
 } from '../../constants';
 
-const EDGE = 5; // depth of the solid bottom edge that compresses on press
-
-// Mix a hex color toward black to derive the pressed/edge shade.
-function darken(hex: string, amount = 0.18): string {
-  const h = hex.replace('#', '');
-  const full = h.length === 3 ? h.replace(/./g, (c) => c + c) : h;
-  const n = parseInt(full.slice(0, 6), 16);
-  if (Number.isNaN(n)) return hex;
-  const f = 1 - amount;
-  const r = Math.round(((n >> 16) & 255) * f);
-  const g = Math.round(((n >> 8) & 255) * f);
-  const b = Math.round((n & 255) * f);
-  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-}
+const DROP = 4; // offset of the hard ink shadow the face presses down onto
 
 type PressableButtonProps = {
   label?: string;
   children?: ReactNode;
   onPress: () => void;
   accent?: AccentName;
-  color?: string; // explicit base color (overrides accent); edge auto-darkened
+  color?: string; // explicit fill (overrides accent)
+  /** @deprecated The edge is always ink now; kept so existing call sites compile. */
   colorDeep?: string;
   variant?: 'solid' | 'ghost';
   disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
   align?: 'center' | 'flex-start';
+  accessibilityLabel?: string;
 };
 
-// Chunky, kid-friendly button with a solid bottom edge that compresses on
-// press (design/tokens.css `.btn`). The face sits above a deeper edge color;
-// pressing translates the face down to "sink" it into the socket.
+// Pop Quest CTA: a loud fill wearing an ink outline and a hard ink shadow.
+// Pressing drops the face onto its shadow, so the button visibly "clicks".
 export function PressableButton({
   label,
   children,
   onPress,
   accent,
   color,
-  colorDeep,
   variant = 'solid',
   disabled = false,
   style,
   textStyle,
   align = 'center',
+  accessibilityLabel,
 }: PressableButtonProps) {
-  const translate = useRef(new Animated.Value(0)).current;
+  const sink = useRef(new Animated.Value(0)).current;
 
   const isGhost = variant === 'ghost';
-  // Default fill is the purple accent, not COLORS.brand: brand (#8B7CF0) sits in
-  // the contrast dead zone where neither ink (3.81:1) nor white (3.37:1) clears
-  // AA. The purple accent is the same violet family and reads 4.62:1 with ink.
-  const base = isGhost
-    ? COLORS.surface
-    : color ?? ACCENTS[accent ?? 'purple'].base;
-  const deep = isGhost
-    ? COLORS.line2
-    : colorDeep ?? (color ? darken(color) : ACCENTS[accent ?? 'purple'].deep);
+  const base = isGhost ? COLORS.surface : color ?? ACCENTS[accent ?? 'green'].base;
   // Label colour follows the fill so game-supplied colors stay legible.
   const labelColor = isGhost ? COLORS.ink : bestTextOn(base);
+  // The shadow sits toward the reading end; the face follows it when pressed.
+  const dropX = I18nManager.isRTL ? -DROP : DROP;
 
   const press = (to: number) =>
-    Animated.spring(translate, {
+    Animated.spring(sink, {
       toValue: to,
       useNativeDriver: true,
-      speed: 40,
+      speed: 50,
       bounciness: 0,
     }).start();
 
   return (
     <Pressable
       onPress={disabled ? undefined : onPress}
-      onPressIn={() => !disabled && press(EDGE)}
+      onPressIn={() => !disabled && press(1)}
       onPressOut={() => press(0)}
       disabled={disabled}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
-      style={[
-        styles.socket,
-        SHADOWS.sm,
-        { backgroundColor: deep, opacity: disabled ? 0.5 : 1 },
-        style,
-      ]}
+      style={[styles.socket, { opacity: disabled ? 0.5 : 1 }, style]}
     >
+      <View style={styles.shadow} />
       <Animated.View
         style={[
           styles.face,
           { backgroundColor: base, justifyContent: align === 'center' ? 'center' : 'flex-start' },
-          { transform: [{ translateY: translate }] },
+          {
+            transform: [
+              { translateX: sink.interpolate({ inputRange: [0, 1], outputRange: [0, dropX] }) },
+              { translateY: sink.interpolate({ inputRange: [0, 1], outputRange: [0, DROP] }) },
+            ],
+          },
         ]}
       >
         {children ?? (
@@ -117,21 +103,39 @@ export function PressableButton({
 
 const styles = StyleSheet.create({
   socket: {
+    paddingEnd: DROP,
+    paddingBottom: DROP,
+  },
+  shadow: {
+    position: 'absolute',
+    top: DROP,
+    start: DROP,
+    end: 0,
+    bottom: 0,
     borderRadius: BORDER_RADIUS.btn,
-    paddingBottom: EDGE,
+    backgroundColor: OUTLINE.color,
   },
   face: {
     borderRadius: BORDER_RADIUS.btn,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: 56,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 22,
     gap: 10,
   },
+  // Pinned line box: Arabic display glyphs carry a much taller font box than
+  // Latin, which would otherwise make every Arabic button half again as tall.
   label: {
     fontFamily: FONTS.display,
-    fontSize: 19,
+    fontSize: 21,
+    lineHeight: 28,
+    includeFontPadding: false,
     textAlign: 'center',
+    // Android rounds custom-font text widths down and wraps the last word
+    // ("Tap to" / "start"); a hair of padding absorbs the rounding.
+    paddingHorizontal: 2,
   },
 });

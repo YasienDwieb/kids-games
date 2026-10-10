@@ -1,42 +1,35 @@
 import { type ReactNode } from 'react';
-import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS, FONTS, SPACING } from '../../constants';
 import { IconButton } from './IconButton';
-
-// Back chevron points toward the reading origin — left in LTR, right in RTL.
-// Read at render: `I18nManager.isRTL` is false at module-evaluation time, so a
-// captured constant keeps the LTR glyph for the whole Arabic session.
-const backGlyph = () => (I18nManager.isRTL ? '›' : '‹');
+import { Icon } from './Icon';
 
 type AppBarProps = {
   title?: string;
   onBack?: () => void;
   right?: ReactNode;
   left?: ReactNode;
+  /** Title colour — white on loud full-bleed screens. */
+  titleColor?: string;
 };
 
-// Unified header: back · centered title · action slot. Mirrors design AppBar.
-export function AppBar({ title, onBack, right, left }: AppBarProps) {
+// Header: round back button · big start-aligned title · action slot.
+export function AppBar({ title, onBack, right, left, titleColor = COLORS.ink }: AppBarProps) {
   const { t } = useTranslation();
   return (
     <View style={styles.bar}>
-      <View style={styles.side}>
-        {left !== undefined ? (
-          left
-        ) : onBack ? (
-          <IconButton
-            glyph={backGlyph()}
-            glyphSize={32}
-            onPress={onBack}
-            accessibilityLabel={t('common.back')}
-          />
-        ) : null}
-      </View>
-      <Text style={styles.title} numberOfLines={1}>
+      {left !== undefined ? (
+        left
+      ) : onBack ? (
+        <IconButton onPress={onBack} accessibilityLabel={t('common.back')}>
+          <Icon name="chevron-back" size={26} />
+        </IconButton>
+      ) : null}
+      <Text style={[styles.title, { color: titleColor }]} numberOfLines={1}>
         {title ?? ''}
       </Text>
-      <View style={[styles.side, styles.right]}>{right}</View>
+      {right != null ? <View style={styles.right}>{right}</View> : null}
     </View>
   );
 }
@@ -45,22 +38,16 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.md,
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.sm,
-    paddingBottom: SPACING.xs,
+    paddingBottom: SPACING.sm,
   },
-  side: {
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-  },
-  right: { alignItems: 'flex-end' },
+  right: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   title: {
     flex: 1,
     fontFamily: FONTS.display,
-    fontSize: 22,
-    color: COLORS.ink,
-    textAlign: 'center',
+    fontSize: 28,
+    textAlign: 'left',
   },
 });

@@ -14,21 +14,169 @@ import { useEffect, useMemo, useRef } from 'react';
 import { PanResponder, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
 import type { Group, Mesh } from 'three';
-import { ACCENTS, COLORS } from '@/constants/colors';
+import { ACCENTS, COLORS, POP } from '@/constants/colors';
+import { useWearing, type Wearing } from '@/sdk/quests/outfitStore';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { useTranslation } from 'react-i18next';
 
 export type LuluMood = 'idle' | 'wave' | 'cheer' | 'encourage' | 'point';
 
-const PURPLE = COLORS.brand;
-const PURPLE_DEEP = COLORS.brandDeep;
+const PURPLE = ACCENTS.purple.base;
+const PURPLE_DEEP = ACCENTS.purple.deep;
 const CREAM = ACCENTS.orange.tint;
 const BELLY = COLORS.canvas2;
 const ORANGE = ACCENTS.orange.base;
 const INK = COLORS.ink;
 const WHITE = COLORS.surface;
+const GOLD = COLORS.gold;
+const PINK = POP.bubblegum;
+const BLUE = POP.splash;
 const DRAG_SLOP = 8;
+
+/** Hats that sit on top of the head hide the crown feathers under them. */
+const COVERS_FEATHERS = new Set(['party-hat', 'cap', 'crown', 'top-hat']);
+
+/** Lulu's wardrobe in 3D: each item hangs off the head so it turns with her. */
+function Hat({ id }: { id: string | null }) {
+  switch (id) {
+    case 'party-hat':
+      return (
+        <group position={[0.05, 0.66, 0.04]} rotation={[0, 0, -0.22]}>
+          <mesh>
+            <coneGeometry args={[0.17, 0.4, 20]} />
+            <meshToonMaterial color={PINK} />
+          </mesh>
+          <mesh position={[0, -0.08, 0]}>
+            <torusGeometry args={[0.13, 0.02, 8, 24]} />
+            <meshToonMaterial color={GOLD} />
+          </mesh>
+          <mesh position={[0, 0.22, 0]}>
+            <sphereGeometry args={[0.06, 12, 10]} />
+            <meshToonMaterial color={GOLD} />
+          </mesh>
+        </group>
+      );
+    case 'cap':
+      return (
+        <group position={[0, 0.5, 0.02]}>
+          <mesh>
+            <sphereGeometry args={[0.31, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2]} />
+            <meshToonMaterial color={BLUE} />
+          </mesh>
+          <mesh position={[0, 0.01, 0.3]} scale={[1, 0.12, 0.7]}>
+            <cylinderGeometry args={[0.22, 0.22, 0.2, 20]} />
+            <meshToonMaterial color={BLUE} />
+          </mesh>
+          <mesh position={[0, 0.31, 0]}>
+            <sphereGeometry args={[0.04, 10, 8]} />
+            <meshToonMaterial color={GOLD} />
+          </mesh>
+        </group>
+      );
+    case 'crown':
+      return (
+        <group position={[0, 0.62, 0.03]}>
+          <mesh>
+            <cylinderGeometry args={[0.2, 0.2, 0.14, 24, 1, true]} />
+            <meshToonMaterial color={GOLD} side={2} />
+          </mesh>
+          {[0, 1, 2, 3, 4].map((i) => {
+            const a = (i / 5) * Math.PI * 2;
+            return (
+              <mesh key={i} position={[Math.sin(a) * 0.2, 0.12, Math.cos(a) * 0.2]}>
+                <coneGeometry args={[0.045, 0.12, 8]} />
+                <meshToonMaterial color={GOLD} />
+              </mesh>
+            );
+          })}
+          <mesh position={[0, 0, 0.2]}>
+            <sphereGeometry args={[0.04, 10, 8]} />
+            <meshToonMaterial color={PINK} />
+          </mesh>
+        </group>
+      );
+    case 'flower':
+      return (
+        <group position={[0.27, 0.48, 0.2]} rotation={[0.3, 0.4, 0]}>
+          {[0, 1, 2, 3, 4].map((i) => {
+            const a = (i / 5) * Math.PI * 2;
+            return (
+              <mesh key={i} position={[Math.cos(a) * 0.08, Math.sin(a) * 0.08, 0]} scale={[1, 1, 0.5]}>
+                <sphereGeometry args={[0.065, 12, 10]} />
+                <meshToonMaterial color={PINK} />
+              </mesh>
+            );
+          })}
+          <mesh position={[0, 0, 0.03]}>
+            <sphereGeometry args={[0.05, 12, 10]} />
+            <meshToonMaterial color={GOLD} />
+          </mesh>
+        </group>
+      );
+    case 'top-hat':
+      return (
+        <group position={[0, 0.6, 0.02]} rotation={[0, 0, 0.12]}>
+          <mesh>
+            <cylinderGeometry args={[0.32, 0.32, 0.03, 28]} />
+            <meshToonMaterial color={INK} />
+          </mesh>
+          <mesh position={[0, 0.18, 0]}>
+            <cylinderGeometry args={[0.19, 0.19, 0.34, 24]} />
+            <meshToonMaterial color={INK} />
+          </mesh>
+          <mesh position={[0, 0.06, 0]}>
+            <cylinderGeometry args={[0.195, 0.195, 0.06, 24]} />
+            <meshToonMaterial color={PINK} />
+          </mesh>
+        </group>
+      );
+    case 'bow':
+      return (
+        <group position={[0, 0.6, 0.12]}>
+          {[-1, 1].map((sgn) => (
+            <mesh key={sgn} position={[sgn * 0.1, 0, 0]} rotation={[0, 0, sgn * Math.PI / 2]}>
+              <coneGeometry args={[0.08, 0.18, 12]} />
+              <meshToonMaterial color={PINK} />
+            </mesh>
+          ))}
+          <mesh>
+            <sphereGeometry args={[0.05, 12, 10]} />
+            <meshToonMaterial color={PINK} />
+          </mesh>
+        </group>
+      );
+    default:
+      return null;
+  }
+}
+
+function Glasses({ id }: { id: string | null }) {
+  if (id !== 'round-glasses' && id !== 'sunglasses') return null;
+  const dark = id === 'sunglasses';
+  return (
+    <group position={[0, 0.15, 0.58]}>
+      {[-0.15, 0.15].map((x) => (
+        <group key={x} position={[x, 0, 0]}>
+          <mesh>
+            <torusGeometry args={[0.115, 0.02, 8, 28]} />
+            <meshToonMaterial color={dark ? INK : BLUE} />
+          </mesh>
+          {dark ? (
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.11, 0.11, 0.01, 24]} />
+              <meshBasicMaterial color={INK} transparent opacity={0.85} />
+            </mesh>
+          ) : null}
+        </group>
+      ))}
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[0.015, 0.015, 0.08, 8]} />
+        <meshToonMaterial color={dark ? INK : BLUE} />
+      </mesh>
+    </group>
+  );
+}
 
 /** Number of tap reaction lines per language (`lulu.tap.<lang>.<n>` in the manifest). */
 export const LULU_TAP_LINES = 3;
@@ -39,11 +187,13 @@ type Pointer = { x: number; y: number; active: boolean };
 
 function Owl({
   mood,
+  wearing,
   pointer,
   reaction,
   spin,
 }: {
   mood: LuluMood;
+  wearing: Wearing;
   pointer: React.MutableRefObject<Pointer>;
   reaction: React.MutableRefObject<Reaction>;
   spin: React.MutableRefObject<number>;
@@ -206,12 +356,16 @@ function Owl({
               <meshToonMaterial color={PURPLE} />
             </mesh>
           ))}
-          {[-0.06, 0, 0.06].map((x, i) => (
-            <mesh key={x} position={[x, 0.55 + (i === 1 ? 0.04 : 0), 0.05]} rotation={[0, 0, -x * 4]}>
-              <coneGeometry args={[0.04, 0.16, 8]} />
-              <meshToonMaterial color={PURPLE} />
-            </mesh>
-          ))}
+          {COVERS_FEATHERS.has(wearing.hat ?? '')
+            ? null
+            : [-0.06, 0, 0.06].map((x, i) => (
+                <mesh key={x} position={[x, 0.55 + (i === 1 ? 0.04 : 0), 0.05]} rotation={[0, 0, -x * 4]}>
+                  <coneGeometry args={[0.04, 0.16, 8]} />
+                  <meshToonMaterial color={PURPLE} />
+                </mesh>
+              ))}
+          <Hat id={wearing.hat} />
+          <Glasses id={wearing.glasses} />
         </group>
       </group>
     </group>
@@ -225,10 +379,20 @@ type Lulu3DProps = {
   interactive?: boolean;
   /** Pause rendering while she's off screen. */
   active?: boolean;
+  /** What she wears; defaults to the child's saved outfit. */
+  wearing?: Wearing;
   style?: ViewStyle;
 };
 
-export function Lulu3D({ size = 140, mood = 'idle', interactive = false, active = true, style }: Lulu3DProps) {
+export function Lulu3D({
+  size = 140,
+  mood = 'idle',
+  interactive = false,
+  active = true,
+  wearing,
+  style,
+}: Lulu3DProps) {
+  const saved = useWearing();
   const { t } = useTranslation();
   const { play, prewarm } = useSound();
   const pointer = useRef<Pointer>({ x: 0, y: 0, active: false });
@@ -302,12 +466,12 @@ export function Lulu3D({ size = 140, mood = 'idle', interactive = false, active 
         style={StyleSheet.absoluteFill}
         frameloop={active ? 'always' : 'never'}
         gl={{ alpha: true }}
-        camera={{ position: [0, 0.15, 3.1], fov: 34 }}
+        camera={{ position: [0, 0.22, 3.4], fov: 34 }}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
       >
         <ambientLight intensity={0.9} />
         <directionalLight position={[2, 3, 4]} intensity={1.2} />
-        <Owl mood={mood} pointer={pointer} reaction={reaction} spin={spin} />
+        <Owl mood={mood} wearing={wearing ?? saved} pointer={pointer} reaction={reaction} spin={spin} />
       </Canvas>
     </View>
   );

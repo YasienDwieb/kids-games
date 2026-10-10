@@ -51,7 +51,7 @@ export function ChallengeSuccess({
   if (!visible) return null;
 
   return (
-    <Modal visible transparent animationType="none" statusBarTranslucent onRequestClose={onDismiss}>
+    <Modal visible transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={onDismiss}>
       <Pressable style={styles.touchArea} onPress={onDismiss} accessibilityRole="button">
         <View style={styles.overlay}>
           <Animated.View style={[styles.content, { transform: [{ scale }] }]}>

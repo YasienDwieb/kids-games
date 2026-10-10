@@ -1,5 +1,5 @@
 import './i18n';
-import { registerGame } from '@/sdk';
+import { COLORS, registerGame } from '@/sdk';
 import SimplePairsGame from './index';
 
 registerGame({
@@ -9,8 +9,9 @@ registerGame({
   icon: '🃏',
   ageRange: { min: 2, max: 5 },
   component: SimplePairsGame,
-  backgroundColor: '#FBF3E6',
+  backgroundColor: COLORS.canvas,
   accent: 'green',
+  category: 'puzzles',
   sounds: { 'sfx.win': 'jingle.pizzi-10' },
   order: 60,
   layout: { mode: 'bare' },

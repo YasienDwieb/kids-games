@@ -25,6 +25,7 @@ import {
   EmojiFrame,
   FONT_SIZES,
   FONTS,
+  OUTLINE,
   Mascot,
   MascotHelper,
   PressableButton,
@@ -101,6 +102,8 @@ const overlayStyles = StyleSheet.create({
     padding: SPACING.xl,
     borderRadius: BORDER_RADIUS.tile,
     backgroundColor: COLORS.surface,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
   },
   starsRow: {
     flexDirection: 'row',

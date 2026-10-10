@@ -1,5 +1,5 @@
 import './i18n';
-import { registerGame } from '@/sdk';
+import { COLORS, registerGame } from '@/sdk';
 import MouseMazeGame from './index';
 
 registerGame({
@@ -9,8 +9,9 @@ registerGame({
   icon: '🐭',
   ageRange: { min: 3, max: 8 },
   component: MouseMazeGame,
-  backgroundColor: '#FBF3E6',
+  backgroundColor: COLORS.canvas,
   accent: 'orange',
+  category: 'puzzles',
   sounds: { 'sfx.win': 'jingle.pizzi-15' },
   order: 20,
   tags: ['maze', 'puzzle', 'logic'],

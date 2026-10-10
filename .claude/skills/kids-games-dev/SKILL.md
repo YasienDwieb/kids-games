@@ -72,18 +72,20 @@ This skill covers how to build, scaffold, and extend games in the Kids Games Exp
 - `AssetEntry` (type) — `{ modules: number[], type: AssetType, tags: readonly string[] }` — `modules` is a list of interchangeable variants played at random
 - `AssetType` (type) — `'audio'` (currently; images will be added here)
 
-**Design tokens** (warm cream design system, ported from `design/tokens.css`)
+**Design tokens** ("Pop Quest" comic-pop design system: loud flat colour, ink outlines, hard offset shadows)
 - `COLORS` — palette: `canvas`/`surface`, `ink`/`inkSoft`/`inkFaint`, `brand`/`brandDeep`/`brandTint`, `gold`, plus backward-compatible `primary`/`background`/`text` groups
+- `POP` — named chrome colours (`zap`, `grape`, `bubblegum`, `splash`, `lime`, `night`)
+- `OUTLINE` — ink border widths (`thin`/`base`/`thick`) + `color`; every card/panel/tile wears one
 - `ACCENTS` — per-game accent families (`green`/`orange`/`coral`/`purple`/`blue`/`pink`), each `{ base, deep, tint }`; `AccentName` (type)
 - `SPACING` — spacing scale (`xs`, `sm`, `md`, `lg`, `xl`, `xxl`)
 - `BORDER_RADIUS` — radii incl. `tile`/`card`/`btn`/`pill`
 - `TOUCH_TARGET` — touch target sizes (`recommended` = 64)
 - `FONT_SIZES` — font size scale (`sm`, `md`, `lg`, `xl`, `xxl`)
-- `SHADOWS` — soft warm RN shadow fragments (`sm`/`md`/`lg`) — spread into a style, don't hand-roll shadows
-- `FONTS` — font families: `display`/`displayBold`/`displayMedium` (headings/buttons), `body`/`bodySemi`/`bodyExtra` (body text); loaded in `App.tsx`. **Language-aware:** resolves to Fredoka/Nunito in LTR and IBM Plex Sans Arabic in RTL automatically — just use `FONTS.display` etc. as always; never hardcode a font-family string.
+- `SHADOWS` — hard offset ink `boxShadow` fragments (`sm`/`md`/`lg`) — spread into a style, don't hand-roll shadows
+- `FONTS` — font families: `display`/`displayBold`/`displayMedium` (headings/buttons), `body`/`bodySemi`/`bodyExtra` (body text); loaded in `App.tsx`. **Language-aware:** resolves to Lilita One/Nunito in LTR and Baloo Bhaijaan 2/IBM Plex Sans Arabic in RTL automatically — just use `FONTS.display` etc. as always; never hardcode a font-family string.
 
 **UI primitives** — build UI from these; never hardcode hex/system-fonts/ad-hoc buttons
-- `PressableButton` — the chunky tactile CTA (solid bottom edge that compresses). Props: `label`/`children`, `accent?`, `color?`, `variant?: 'solid'|'ghost'`, `align?`. The default button.
+- `PressableButton` — the tactile CTA (ink outline + hard shadow it drops onto when pressed). Props: `label`/`children`, `accent?`, `color?`, `variant?: 'solid'|'ghost'`, `align?`. The default button.
 - `BigButton` — thin `title`/`onPress` wrapper over `PressableButton` (accepts `accent` or `color`)
 - `IconButton` — circular surface control (`glyph`, `glyphSize?`); `AppBar` — header (back · centered title · `right` slot)
 - `Chip` — pill filter (`label`, `active`); `HudPill` + `hudTextStyle` — in-game counters
@@ -340,6 +342,7 @@ A game whose `ageRange` overlaps a band appears in that band's filter. To overri
 |-------|------|---------|
 | `accent` | `AccentName` | Design-system accent for the home tile + themable controls (falls back to a derived accent) |
 | `tags` | `string[]` | Searchable tags |
+| `category` | `'numbers' \| 'words' \| 'action' \| 'puzzles'` | Home filter chip the game appears under |
 | `layout` | `GameLayoutOptions` | `mode: 'shell'|'bare'`, `title`, `showBack` |
 | `sounds` | `SoundOverrides` | Per-game asset swaps, e.g. `{ 'sfx.win': 'jingle.sax-10' }` — set a unique win jingle for every game |
 | `bands` | `string[]` | Override auto-derived age bands |
