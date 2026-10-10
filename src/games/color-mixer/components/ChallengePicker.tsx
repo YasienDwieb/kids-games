@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, EmojiImage, FONTS, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
+import { COLORS, EmojiImage, FONTS, OUTLINE, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
 import { ChallengeCard } from './ChallengeCard';
 import type { Challenge } from '../types';
 
@@ -100,6 +100,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: BORDER_RADIUS.pill,
     backgroundColor: COLORS.surface,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     ...SHADOWS.sm,
   },
   pressed: { opacity: 0.7 },

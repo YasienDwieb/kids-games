@@ -14,6 +14,7 @@ import { BORDER_RADIUS, FONT_SIZES, OUTLINE, SHADOWS, SPACING } from '@/constant
 import { FONTS } from '@/constants/typography';
 import { DAILY_GOAL, DAILY_GOAL_EVENT, onStickerUnlocked } from './store';
 import { Sticker } from './Sticker';
+import { whenOverlayClear } from '@/sdk/layout/overlayGate';
 
 /** Let the win's own celebration land first. */
 const SHOW_DELAY_MS = 900;
@@ -36,7 +37,10 @@ export function StickerToast() {
   useEffect(() => {
     const later = (fn: () => void, ms: number) => timers.current.push(setTimeout(fn, ms));
 
-    const showNext = () => {
+    // Wait out any modal game overlay: a toast behind it would expire unseen.
+    const cancels: (() => void)[] = [];
+    const showNext = () => cancels.push(whenOverlayClear(present));
+    const present = () => {
       const id = queue.current.shift();
       if (!id) {
         busy.current = false;
@@ -73,6 +77,7 @@ export function StickerToast() {
     return () => {
       unsub();
       pending.forEach(clearTimeout);
+      cancels.forEach((c) => c());
     };
   }, [enter, play, spin]);
 

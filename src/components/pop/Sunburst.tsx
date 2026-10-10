@@ -9,7 +9,7 @@ type SunburstProps = {
 };
 
 /** Slowly turning comic rays behind a big win. Reduce-motion keeps them still. */
-export function Sunburst({ color, size, rays = 10 }: SunburstProps) {
+export function Sunburst({ color, size, rays = 9 }: SunburstProps) {
   const spin = useLoop(16000, { mode: 'repeat' });
   const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
   return (
@@ -20,8 +20,8 @@ export function Sunburst({ color, size, rays = 10 }: SunburstProps) {
           style={[
             styles.ray,
             {
-              left: size / 2 - size * 0.06,
-              width: size * 0.12,
+              left: size / 2 - size * 0.025,
+              width: size * 0.05,
               height: size,
               backgroundColor: color,
               transform: [{ rotate: `${(i * 180) / rays}deg` }],

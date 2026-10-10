@@ -28,6 +28,7 @@ import {
   COLORS,
   FONTS,
   MascotHelper,
+  OUTLINE,
   SHADOWS,
   SPACING,
   type AccentName,
@@ -72,7 +73,7 @@ export type ListenFindBoardProps = {
 
 type TileState = 'default' | 'correct' | 'wrong';
 
-const EDGE = 6; // depth of the 3D bottom edge
+const EDGE = 6; // depth of the hard ink edge under each tile (the face sinks into it)
 
 // ---------------------------------------------------------------------------
 // ChoiceTile — one chunky tappable glyph (ported from letter-land HearAndFind)
@@ -130,7 +131,6 @@ function ChoiceTile({
   };
 
   const faceColor = isCorrect ? ACCENTS.green.base : isWrong ? ACCENTS.coral.base : COLORS.surface;
-  const edgeColor = isCorrect ? ACCENTS.green.deep : isWrong ? ACCENTS.coral.deep : COLORS.line2;
   const glyphColor = isCorrect || isWrong ? COLORS.surface : COLORS.ink;
 
   return (
@@ -144,7 +144,7 @@ function ChoiceTile({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={accessibilityState}
-        style={[styles.socket, SHADOWS.md, { backgroundColor: edgeColor }]}
+        style={styles.socket}
       >
         <Animated.View
           style={[styles.face, { backgroundColor: faceColor, transform: [{ translateY: pressTranslate }] }]}
@@ -239,7 +239,8 @@ export function ListenFindBoard({
           })}
         </View>
       </View>
-      <MascotHelper pose={mascotPose} side="end" size={96} />
+      {/* No speech bubble here: at the end corner it would cover an answer tile. */}
+      <MascotHelper pose={mascotPose} side="end" size={96} say={false} />
     </View>
   );
 }
@@ -275,6 +276,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: SPACING.lg,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
   },
   speakerBadge: {
     position: 'absolute',
@@ -285,8 +288,9 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.full,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: COLORS.surface,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
+    ...SHADOWS.sm,
   },
   speakerGlyph: { fontSize: 26 },
 
@@ -309,14 +313,15 @@ const styles = StyleSheet.create({
 
   // Choice tile (ported)
   tileWrap: { flex: 1, maxWidth: 150 },
-  socket: { borderRadius: BORDER_RADIUS.card, paddingBottom: EDGE },
+  // Ink socket = the hard comic shadow under the face; pressing sinks the face into it.
+  socket: { borderRadius: BORDER_RADIUS.card, paddingBottom: EDGE, backgroundColor: OUTLINE.color },
   face: {
     borderRadius: BORDER_RADIUS.card,
     aspectRatio: 0.82,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: COLORS.surface,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
   },
   glyph: {
     fontFamily: FONTS.displayBold,
@@ -334,13 +339,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gold,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.surface,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
   },
   badgeCheck: {
     fontFamily: FONTS.displayBold,
     fontSize: 18,
-    color: COLORS.surface,
+    color: COLORS.ink,
     lineHeight: 22,
   },
 });

@@ -29,7 +29,11 @@ import './src/games'; // side-effect: registers all games + their translations
 import './src/flow'; // side-effect: registers flow units + topics
 
 // @react-three/fiber 9 still uses THREE.Clock; three 0.18x warns on every Canvas mount.
-LogBox.ignoreLogs(['THREE.Clock: This module has been deprecated']);
+// Remounting a Lulu Canvas logs this on Android GL; harmless.
+LogBox.ignoreLogs([
+  'THREE.Clock: This module has been deprecated',
+  'WEBGL_lose_context extension not supported',
+]);
 
 export default function App() {
   const [fontsLoaded] = useFonts({

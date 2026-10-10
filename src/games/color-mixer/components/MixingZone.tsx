@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, EmojiImage, FONTS, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, EmojiImage, FONTS, OUTLINE, useTranslation } from '@/sdk';
 import { DraggableResult } from './DraggableResult';
 import { DIMENSIONS } from '../constants';
 
@@ -151,8 +151,8 @@ export function MixingZone({
 
 const styles = StyleSheet.create({
   zone: {
-    borderWidth: 2.5,
-    borderColor: TOKENS.line2,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     borderStyle: 'dashed',
     backgroundColor: TOKENS.surface,
     alignItems: 'center',
@@ -175,6 +175,8 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 999,
     backgroundColor: TOKENS.surface2,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
   },
   counterText: {
     fontFamily: FONTS.bodySemi,

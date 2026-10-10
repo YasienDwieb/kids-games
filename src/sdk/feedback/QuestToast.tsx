@@ -12,6 +12,7 @@ import { ACCENTS, COLORS } from '@/constants/colors';
 import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
 import { onQuestDone, type Quest } from '@/sdk/quests/quests';
+import { whenOverlayClear } from '@/sdk/layout/overlayGate';
 
 const SHOW_DELAY_MS = 700;
 const VISIBLE_MS = 2400;
@@ -26,7 +27,10 @@ export function QuestToast() {
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
-    const showNext = () => {
+    // Wait out any modal game overlay: a toast behind it would expire unseen.
+    const cancels: (() => void)[] = [];
+    const showNext = () => cancels.push(whenOverlayClear(present));
+    const present = () => {
       const q = queue.current.shift();
       if (!q) {
         busy.current = false;
@@ -54,6 +58,7 @@ export function QuestToast() {
     return () => {
       off();
       timers.forEach(clearTimeout);
+      cancels.forEach((c) => c());
     };
   }, [enter]);
 

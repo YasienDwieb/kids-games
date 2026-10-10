@@ -65,7 +65,7 @@ export function LevelUp() {
   return (
     <Animated.View style={[StyleSheet.absoluteFill, styles.root, { opacity: enter }]}>
       <View style={styles.burst} pointerEvents="none">
-        <Sunburst color="#9877FF" size={1400} rays={12} />
+        <Sunburst color={ACCENTS.purple.base} size={1400} />
       </View>
 
       <Animated.View style={[styles.header, SHADOWS.md, pulse(beat, 0.06)]}>

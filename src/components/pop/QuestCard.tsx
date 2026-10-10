@@ -65,7 +65,10 @@ export function QuestCard({ quests, onPress }: QuestCardProps) {
       {quests.map((q) => (
         <View key={q.id} style={styles.row}>
           <QuestPip quest={q} />
-          <Text style={[styles.rowText, questDone(q) && styles.rowDone]} numberOfLines={1}>
+          <Text
+            style={[styles.rowText, questDone(q) && styles.rowDone]}
+            numberOfLines={2}
+          >
             {label(q)}
           </Text>
         </View>
@@ -86,7 +89,7 @@ const styles = StyleSheet.create({
   pressed: { transform: [{ translateX: 3 }, { translateY: 3 }] },
   title: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink, textAlign: 'left' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  rowText: { flex: 1, fontFamily: FONTS.body, fontSize: 13, color: COLORS.ink, textAlign: 'left' },
+  rowText: { flex: 1, fontFamily: FONTS.body, fontSize: 13, lineHeight: 17, color: COLORS.ink, textAlign: 'left' },
   rowDone: { color: COLORS.inkSoft, textDecorationLine: 'line-through' },
   pip: {
     borderWidth: OUTLINE.thin,

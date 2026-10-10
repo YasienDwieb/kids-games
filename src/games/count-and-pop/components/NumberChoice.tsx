@@ -2,7 +2,7 @@
  * NumberChoice — chunky tappable numeral button for choice-row puzzles.
  *
  * States:
- *   default  — surface bg + line2 deep-edge shadow, press compresses 4px
+ *   default  — surface bg + ink outline + ink deep-edge, press compresses the edge
  *   selected — same as default (selection acknowledged but not yet revealed)
  *   correct  — green tint bg + green border + "✓" badge top-right, pop scale 1.08
  *   wrong    — coral tint bg + coral border
@@ -25,7 +25,7 @@ import {
   BORDER_RADIUS,
   COLORS,
   FONTS,
-  SHADOWS,
+  OUTLINE,
   SPACING,
 } from '@/sdk';
 import { CORRECT_COLOR, WRONG_COLOR } from '../constants';
@@ -135,17 +135,15 @@ export function NumberChoice({
     ? ACCENTS.coral.tint
     : COLORS.surface;
 
-  const edgeColor = isCorrect
-    ? ACCENTS.green.deep
-    : isWrong
-    ? ACCENTS.coral.deep
-    : COLORS.line2;
+  // Pop Quest: the deep edge is always hard ink (same as PressableButton);
+  // only the face outline changes colour to carry the correct/wrong state.
+  const edgeColor = OUTLINE.color;
 
   const borderColor = isCorrect
     ? CORRECT_COLOR
     : isWrong
     ? WRONG_COLOR
-    : 'transparent';
+    : OUTLINE.color;
 
   const numeralColor = isCorrect
     ? ACCENTS.green.deep
@@ -164,11 +162,7 @@ export function NumberChoice({
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
         accessibilityState={accessibilityState}
-        style={[
-          styles.socket,
-          SHADOWS.sm,
-          { backgroundColor: edgeColor },
-        ]}
+        style={[styles.socket, { backgroundColor: edgeColor }]}
       >
         <Animated.View
           style={[
@@ -221,7 +215,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: OUTLINE.base,
   },
   numeral: {
     fontFamily: FONTS.displayBold,
@@ -241,13 +235,13 @@ const styles = StyleSheet.create({
     backgroundColor: CORRECT_COLOR,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.surface,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
   },
   badgeCheck: {
     fontFamily: FONTS.displayBold,
     fontSize: 14,
-    color: COLORS.surface,
+    color: COLORS.ink,
     lineHeight: 16,
   },
 });

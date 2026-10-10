@@ -79,6 +79,7 @@ import {
   COLORS,
   FONTS,
   FONT_SIZES,
+  OUTLINE,
   SHADOWS,
   SPACING,
   useTranslation,
@@ -519,7 +520,7 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
                 ? ACCENTS.green.base
                 : flash === 'wrong'
                 ? ACCENTS.coral.base
-                : COLORS.line2;
+                : OUTLINE.color;
 
             const bgColor: string =
               flash === 'correct'
@@ -647,9 +648,9 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 140,
     borderRadius: BORDER_RADIUS.card,
-    borderWidth: 2.5,
+    borderWidth: OUTLINE.base,
     borderStyle: 'dashed',
-    borderColor: ACCENTS.purple.base,
+    borderColor: OUTLINE.color,
     backgroundColor: ACCENTS.purple.tint,
     alignItems: 'center',
     padding: SPACING.sm,
@@ -674,6 +675,8 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.soft,
     padding: SPACING.xs,
     backgroundColor: COLORS.surface,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     ...SHADOWS.sm,
   },
   binPlaceholder: {
@@ -696,7 +699,7 @@ const styles = StyleSheet.create({
     width: SHAPE_CELL,
     height: SHAPE_CELL,
     borderRadius: BORDER_RADIUS.card,
-    borderWidth: 2,
+    borderWidth: OUTLINE.base,
     alignItems: 'center',
     justifyContent: 'center',
     ...SHADOWS.sm,
@@ -718,6 +721,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: BORDER_RADIUS.card,
     backgroundColor: COLORS.surface,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.lg,
   },
 });

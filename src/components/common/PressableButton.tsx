@@ -126,9 +126,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     gap: 10,
   },
+  // Pinned line box: Arabic display glyphs carry a much taller font box than
+  // Latin, which would otherwise make every Arabic button half again as tall.
   label: {
     fontFamily: FONTS.display,
     fontSize: 21,
+    lineHeight: 28,
+    includeFontPadding: false,
     textAlign: 'center',
+    // Android rounds custom-font text widths down and wraps the last word
+    // ("Tap to" / "start"); a hair of padding absorbs the rounding.
+    paddingHorizontal: 2,
   },
 });

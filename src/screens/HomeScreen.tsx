@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   I18nManager,
   Pressable,
@@ -96,6 +96,12 @@ export function HomeScreen({ navigation }: Props) {
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   // Re-read the checkpoint each time Home regains focus so the card reflects
   // progress made (or completion) inside the journey before returning here.
+  // Lulu's GL surface comes back blank after another screen covered Home, so
+  // she is remounted each time Home becomes focused again.
+  const [visit, setVisit] = useState(0);
+  useEffect(() => {
+    if (focused) setVisit((v) => v + 1);
+  }, [focused]);
   useFocusEffect(
     useCallback(() => {
       let active = true;
@@ -194,7 +200,9 @@ export function HomeScreen({ navigation }: Props) {
   // Tap Lulu to say hi (she hops and giggles), drag sideways to spin her.
   const luluSize = Math.max(0, Math.min(LULU_MAX, luluBox));
   const lulu =
-    luluSize >= LULU_MIN ? <Lulu3D size={luluSize} interactive active={focused} style={styles.lulu} /> : null;
+    luluSize >= LULU_MIN ? (
+      <Lulu3D key={visit} size={luluSize} interactive active={focused} style={styles.lulu} />
+    ) : null;
 
   const featured = (w: number, h: number) => (
     <FeaturedCard
@@ -263,7 +271,11 @@ export function HomeScreen({ navigation }: Props) {
     // Body under the top bar: a quests + Lulu column, then one horizontal rail
     // that opens with the featured card and continues into the game tiles.
     const leftW = Math.round(Math.max(196, Math.min(260, width * 0.25)));
-    const railH = Math.max(CARD_MIN_H, railBox - 8); // room for the hard shadow
+    // Until the rail is measured, estimate it from the window so the first
+    // frame already lays out (and tests, which never fire onLayout, render it).
+    const railEstimate =
+      height - insets.top - insets.bottom - PAD * 2 - TOP_BAR_H - GAP - (chips ? CHIPS_H + GAP : 0);
+    const railH = Math.max(CARD_MIN_H, (railBox || railEstimate) - 8); // room for the hard shadow
     const rows = railH >= CARD_MIN_H * 2 + GAP ? 2 : 1;
     const cardH = Math.floor((railH - GAP * (rows - 1)) / rows);
     const cardW = Math.round(Math.max(112, Math.min(150, cardH * 0.9)));
@@ -294,44 +306,42 @@ export function HomeScreen({ navigation }: Props) {
                   style={styles.flex}
                   onLayout={(e: LayoutChangeEvent) => setRailBox(Math.floor(e.nativeEvent.layout.height))}
                 >
-                  {railBox > 0 ? (
-                    <ScrollView
-                      ref={railRef}
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      style={styles.rail}
-                      contentContainerStyle={styles.railContent}
-                      // The rail mirrors natively under RTL, but a horizontal
-                      // ScrollView still starts at x:0 (the far end). Snap to the
-                      // reading start once the content is measured.
-                      onContentSizeChange={(w) => {
-                        if (I18nManager.isRTL) railRef.current?.scrollTo({ x: w, animated: false });
-                      }}
-                    >
-                      {category === null ? featured(featW, railH) : null}
-                      {games.length === 0 ? (
-                        empty
-                      ) : (
-                        <View style={[styles.grid, { height: railH }]}>
-                          {games.map((game, i) => (
-                            <View key={game.id} style={{ width: cardW, height: cardH }}>
-                              <GameCard
-                                fill
-                                emojiSize={emoji}
-                                icon={game.icon}
-                                // Short label so the icon gets the space; the full
-                                // name still goes to screen readers.
-                                name={gameShortName(game)}
-                                accessibilityLabel={gameName(game)}
-                                accent={accentForGame(game, i)}
-                                onPress={() => openGame(game.id)}
-                              />
-                            </View>
-                          ))}
-                        </View>
-                      )}
-                    </ScrollView>
-                  ) : null}
+                  <ScrollView
+                    ref={railRef}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.rail}
+                    contentContainerStyle={styles.railContent}
+                    // The rail mirrors natively under RTL, but a horizontal
+                    // ScrollView still starts at x:0 (the far end). Snap to the
+                    // reading start once the content is measured.
+                    onContentSizeChange={(w) => {
+                      if (I18nManager.isRTL) railRef.current?.scrollTo({ x: w, animated: false });
+                    }}
+                  >
+                    {category === null ? featured(featW, railH) : null}
+                    {games.length === 0 ? (
+                      empty
+                    ) : (
+                      <View style={[styles.grid, { height: railH }]}>
+                        {games.map((game, i) => (
+                          <View key={game.id} style={{ width: cardW, height: cardH }}>
+                            <GameCard
+                              fill
+                              emojiSize={emoji}
+                              icon={game.icon}
+                              // Short label so the icon gets the space; the full
+                              // name still goes to screen readers.
+                              name={gameShortName(game)}
+                              accessibilityLabel={gameName(game)}
+                              accent={accentForGame(game, i)}
+                              onPress={() => openGame(game.id)}
+                            />
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </ScrollView>
                 </View>
                 {chips ? <View style={styles.chipsRow}>{chips}</View> : null}
               </View>
@@ -355,7 +365,7 @@ export function HomeScreen({ navigation }: Props) {
           {featured(contentW, 300)}
           <View style={styles.portraitRow}>
             <View style={styles.flex}>{quests}</View>
-            <Lulu3D size={130} interactive active={focused} />
+            <Lulu3D key={visit} size={130} interactive active={focused} />
           </View>
           {chips}
           {games.length === 0 ? (

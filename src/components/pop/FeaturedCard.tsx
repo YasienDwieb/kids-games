@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { ACCENTS, COLORS, FONTS, OUTLINE, POP, SHADOWS, type AccentName } from '../../constants';
@@ -44,7 +45,9 @@ export function FeaturedCard({
   const beat = useLoop(1100);
   const shake = useLoop(900);
   const done = total > 0 && savedStep >= total;
-  const big = Math.min(height * 0.36, width * 0.38);
+  // The preview sizes to whatever room the text and button leave it.
+  const [stageH, setStageH] = useState(0);
+  const big = Math.max(0, Math.min(stageH * 0.86, width * 0.34));
 
   if (total === 0) {
     return (
@@ -69,18 +72,22 @@ export function FeaturedCard({
       </View>
 
       {/* Live preview: the next game's icon bobbing, plus two smaller echoes. */}
-      <View style={styles.stage} pointerEvents="none">
-        <Animated.View style={[styles.echoA, bob(float2, 10)]}>
-          <EmojiImage emoji={nextIcon ?? '⭐'} size={big * 0.45} />
-        </Animated.View>
-        <Animated.View style={[styles.echoB, wiggle(shake, 8)]}>
-          <EmojiImage emoji={nextIcon ?? '⭐'} size={big * 0.38} />
-        </Animated.View>
-        <Animated.View style={[styles.hero, bob(float1, 12)]}>
-          <View style={[styles.heroWindow, { width: big, height: big, borderRadius: big * 0.28 }]}>
-            <EmojiImage emoji={nextIcon ?? '⭐'} size={big * 0.68} />
-          </View>
-        </Animated.View>
+      <View style={styles.stage} pointerEvents="none" onLayout={(e) => setStageH(e.nativeEvent.layout.height)}>
+        {big >= 24 ? (
+          <>
+          <Animated.View style={[styles.echoA, bob(float2, 10)]}>
+            <EmojiImage emoji={nextIcon ?? '⭐'} size={big * 0.45} />
+          </Animated.View>
+          <Animated.View style={[styles.echoB, wiggle(shake, 8)]}>
+            <EmojiImage emoji={nextIcon ?? '⭐'} size={big * 0.38} />
+          </Animated.View>
+          <Animated.View style={[styles.hero, bob(float1, 12)]}>
+            <View style={[styles.heroWindow, { width: big, height: big, borderRadius: big * 0.28 }]}>
+              <EmojiImage emoji={nextIcon ?? '⭐'} size={big * 0.68} />
+            </View>
+          </Animated.View>
+          </>
+        ) : null}
       </View>
 
       <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit>
@@ -124,8 +131,11 @@ const styles = StyleSheet.create({
   pressed: { transform: [{ translateX: 4 }, { translateY: 4 }] },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 12 },
   emptyText: { fontFamily: FONTS.display, fontSize: 20, color: COLORS.ink, textAlign: 'center' },
+  // Floats over the preview so it costs the stage no height.
   tag: {
-    alignSelf: 'flex-start',
+    position: 'absolute',
+    top: 12,
+    start: 12,
     paddingVertical: 3,
     paddingHorizontal: 12,
     borderRadius: 999,
@@ -135,7 +145,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   tagText: { fontFamily: FONTS.display, fontSize: 14, color: COLORS.ink },
-  stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  stage: { flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   hero: { alignItems: 'center', justifyContent: 'center' },
   heroWindow: {
     borderWidth: OUTLINE.base,
@@ -152,9 +162,13 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: FONTS.display,
     fontSize: 26,
-    lineHeight: 30,
+    // Fixed box: Arabic display glyphs run much taller than Latin and would
+    // otherwise squeeze the preview stage to nothing.
+    height: 38,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
     color: COLORS.ink,
     textAlign: 'left',
   },
-  playText: { fontFamily: FONTS.display, fontSize: 24, color: COLORS.ink },
+  playText: { fontFamily: FONTS.display, fontSize: 24, lineHeight: 30, includeFontPadding: false, color: COLORS.ink },
 });

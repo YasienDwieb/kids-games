@@ -131,6 +131,8 @@ export default function MouseMazeGame() {
           side="end"
           size={100}
           pointTo={I18nManager.isRTL ? 'right' : 'left'}
+          // Her bubble would cover the hint button in this corner.
+          say={false}
         />
         {showWin && (
           <WinOverlay collected={state.collected} total={state.total} onNext={handleNext} />
