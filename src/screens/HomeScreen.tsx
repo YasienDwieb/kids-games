@@ -14,7 +14,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
 import { Chip, GameCard, Icon, IconButton, PressableButton } from '../components/common';
-import { FeaturedCard, LevelPill, PopBackdrop, QuestCard } from '../components/pop';
+import { FeaturedCard, LevelPill, PopBackdrop } from '../components/pop';
 import { isTablet } from '../utils/responsive';
 import { BORDER_RADIUS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
@@ -40,7 +40,6 @@ import {
   type GameCategory,
   Lulu3D,
   useRewards,
-  useQuests,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
 
@@ -61,7 +60,7 @@ const TOP_BAR_H = 52;
 const CHIPS_H = 54;
 const CARD_MIN_H = 92;
 const LULU_MIN = 64;
-const LULU_MAX = 160;
+const LULU_MAX = 200;
 
 export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
@@ -70,7 +69,6 @@ export function HomeScreen({ navigation }: Props) {
   const landscape = width > height;
   const { settings, update } = useSettings();
   const rewards = useRewards();
-  const questDay = useQuests();
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
   // Language switching restarts the app, so it asks first. That confirmation is
@@ -160,7 +158,7 @@ export function HomeScreen({ navigation }: Props) {
 
   const topBar = (
     <View style={styles.topBar}>
-      <LevelPill stars={rewards.stars} compact={compactBar} onPress={() => navigation.navigate('Quests')} />
+      <LevelPill stars={rewards.stars} compact={compactBar} onPress={() => navigation.navigate('Wardrobe')} />
       {starsPill}
       <View style={styles.flex} />
       <IconButton
@@ -195,8 +193,6 @@ export function HomeScreen({ navigation }: Props) {
         ))}
       </ScrollView>
     ) : null;
-
-  const quests = <QuestCard quests={questDay.quests} onPress={() => navigation.navigate('Quests')} />;
 
   // Tap Lulu to say hi (she hops and giggles), drag sideways to spin her.
   const luluSize = Math.max(0, Math.min(LULU_MAX, luluBox));
@@ -269,9 +265,9 @@ export function HomeScreen({ navigation }: Props) {
   const empty = <Text style={styles.empty}>{t('home.empty')}</Text>;
 
   if (landscape) {
-    // Body under the top bar: a quests + Lulu column, then one horizontal rail
+    // Body under the top bar: a Lulu column, then one horizontal rail
     // that opens with the featured card and continues into the game tiles.
-    const leftW = Math.round(Math.max(196, Math.min(260, width * 0.25)));
+    const leftW = Math.round(Math.max(160, Math.min(220, width * 0.2)));
     // Until the rail is measured, estimate it from the window so the first
     // frame already lays out (and tests, which never fire onLayout, render it).
     const railEstimate =
@@ -291,7 +287,6 @@ export function HomeScreen({ navigation }: Props) {
             {topBar}
             <View style={styles.body}>
               <View style={[styles.left, { width: leftW }]}>
-                {quests}
                 <View
                   style={styles.luluBox}
                   onLayout={(e: LayoutChangeEvent) =>
@@ -365,7 +360,6 @@ export function HomeScreen({ navigation }: Props) {
           {topBar}
           {featured(contentW, 300)}
           <View style={styles.portraitRow}>
-            <View style={styles.flex}>{quests}</View>
             <Lulu3D key={visit} size={130} interactive active={focused} />
           </View>
           {chips}
@@ -471,7 +465,7 @@ const styles = StyleSheet.create({
   },
 
   portrait: { padding: PAD, gap: 14, paddingBottom: 40 },
-  portraitRow: { flexDirection: 'row', alignItems: 'center', gap: GAP },
+  portraitRow: { alignItems: 'center' },
   wrapGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: TILE_GAP },
 
   dialogScrim: {

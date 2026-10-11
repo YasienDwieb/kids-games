@@ -8,7 +8,6 @@ export type RootStackParamList = {
   Settings: undefined;
   FlowPlayer: undefined;
   Wardrobe: undefined;
-  Quests: undefined;
 };
 
 /** Player profile (for future use) */

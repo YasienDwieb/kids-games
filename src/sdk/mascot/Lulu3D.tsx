@@ -15,7 +15,7 @@ import { PanResponder, StyleSheet, View, type LayoutChangeEvent, type ViewStyle 
 import { Canvas, useFrame } from '@react-three/fiber/native';
 import type { Group, Mesh } from 'three';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
-import { useWearing, type Wearing } from '@/sdk/quests/outfitStore';
+import { useWearing, type Wearing } from '@/sdk/player/outfitStore';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { useTranslation } from 'react-i18next';

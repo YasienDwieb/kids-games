@@ -19,7 +19,6 @@ import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
-import { QuestToast } from './QuestToast';
 import { LevelUp } from './LevelUp';
 import { bumpCombo } from './combo';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
@@ -158,7 +157,6 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
           ))}
           <CheeringLulu show={bursts.length > 0} big={bursts.some((b) => b.size === 'big')} />
           <StickerToast />
-          <QuestToast />
         </View>
         <LevelUp />
       </View>
