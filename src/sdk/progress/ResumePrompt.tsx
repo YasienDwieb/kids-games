@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 // SDK-internal module and importing the barrel back would create a cycle.
 import { useTranslation } from 'react-i18next';
 import { BigButton } from '@/components/common/BigButton';
-import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING } from '@/constants';
+import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING, OUTLINE } from '@/constants';
 
 export type ResumePromptProps = {
   level: number;
@@ -53,6 +53,8 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     borderRadius: BORDER_RADIUS.tile,
     backgroundColor: COLORS.surface,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.lg,
   },
   title: {

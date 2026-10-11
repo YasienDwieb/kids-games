@@ -25,7 +25,11 @@ import {
   usePlaytime,
   useRewards,
 } from '@/sdk';
-import { COLORS, FONTS, SPACING } from '../constants';
+import { COLORS, FONTS, OUTLINE, SPACING } from '../constants';
+
+// Grown-up screens keep the Pop Quest ink and type but drop the motion, the
+// loud colour and the hard shadows: calm surfaces for reading numbers.
+const CALM_BG = '#F3F0FF';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
@@ -127,7 +131,7 @@ function ToggleRow({
       <Switch
         value={value}
         onValueChange={onChange}
-        trackColor={{ false: COLORS.line2, true: COLORS.brand }}
+        trackColor={{ false: COLORS.line2, true: COLORS.accent.green.base }}
         thumbColor={COLORS.surface}
         ios_backgroundColor={COLORS.line2}
       />
@@ -272,7 +276,7 @@ export function SettingsScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.canvas },
+  safe: { flex: 1, backgroundColor: CALM_BG },
   tabs: {
     flexDirection: 'row',
     gap: SPACING.sm,
@@ -287,7 +291,9 @@ const styles = StyleSheet.create({
   columnLandscape: { flex: 1 },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: 22,
+    borderRadius: 18,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     paddingHorizontal: 18,
   },
   row: {
@@ -301,7 +307,7 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: COLORS.line },
   statsCard: { flexDirection: 'row', paddingVertical: SPACING.md, gap: SPACING.md },
   stat: { flex: 1, alignItems: 'center', gap: 2 },
-  statValue: { fontFamily: FONTS.displayBold, fontSize: 24, color: COLORS.ink },
+  statValue: { fontFamily: FONTS.display, fontSize: 28, color: COLORS.ink },
   statLabel: { fontFamily: FONTS.bodySemi, fontSize: 14, color: COLORS.inkSoft },
   gameStat: { fontFamily: FONTS.bodySemi, fontSize: 15, color: COLORS.inkSoft },
   emptyRow: { paddingVertical: SPACING.md },

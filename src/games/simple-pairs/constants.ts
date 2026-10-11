@@ -1,4 +1,5 @@
 import type { Difficulty } from './types';
+import { ACCENTS, COLORS } from '@/sdk';
 
 export const CARD_IMAGES = ['🐱', '🐶', '🐰', '🦊', '🐼', '🐸', '🦁', '🐮', '🐵', '🦄', '🐧'];
 
@@ -23,10 +24,9 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, { pairs: number; columns: num
 
 // Aligned to the design system green accent.
 export const GAME_COLORS = {
-  background: '#FBF3E6', // canvas
-  cardFace: '#FFFFFF', // surface
-  cardBack: '#6FC27B', // green base
-  cardBackDeep: '#54A862', // green deep (bottom edge)
-  matched: '#E4F4E6', // green tint
-  matchedBorder: '#6FC27B',
+  background: COLORS.canvas,
+  cardFace: COLORS.surface,
+  cardBack: ACCENTS.green.base,
+  matched: ACCENTS.green.tint,
+  matchedBorder: ACCENTS.green.deep,
 };

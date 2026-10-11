@@ -23,6 +23,7 @@ import {
   hudTextStyle,
   Mascot,
   MascotHelper,
+  OUTLINE,
   PressableButton,
   ResumePrompt,
   SHADOWS,
@@ -130,7 +131,7 @@ export default function MatchUpGame(): React.JSX.Element {
       {solved ? (
         <View style={styles.overlay}>
           <View style={[styles.card, SHADOWS.lg]}>
-            <Mascot pose="cheer" size={110} />
+            <Mascot pose="cheer" size={90} />
             <View style={styles.starsRow}>
               <Star size={26} filled />
               <Star size={34} filled />
@@ -170,16 +171,20 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.18)',
+    backgroundColor: COLORS.overlay,
     padding: SPACING.lg,
   },
   card: {
-    maxWidth: 360,
+    // Wide and short: landscape phones have ~360dp of height to spare.
+    maxWidth: 480,
     alignItems: 'center',
-    gap: SPACING.md,
-    padding: SPACING.xl,
+    gap: SPACING.sm,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
     borderRadius: BORDER_RADIUS.tile,
     backgroundColor: COLORS.surface,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
   },
   starsRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
   cardTitle: {

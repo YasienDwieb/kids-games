@@ -40,6 +40,7 @@ import {
   EmojiImage,
   FONT_SIZES,
   FONTS,
+  OUTLINE,
   SHADOWS,
   SPACING,
 } from '@/sdk';
@@ -146,6 +147,8 @@ const tileStyles = StyleSheet.create({
     width: TILE_SIZE,
     height: TILE_SIZE,
     borderRadius: BORDER_RADIUS.soft,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -320,6 +323,8 @@ const styles = StyleSheet.create({
     maxWidth: 420,
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.card,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     padding: SPACING.md,
   },
   // Landscape: wider card so each group's tiles fit on one row (shorter card).

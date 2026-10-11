@@ -11,6 +11,7 @@ registerGame({
   component: MatchUpGame,
   backgroundColor: '#F1ECFB', // soft violet (ACCENTS.purple.tint)
   accent: 'purple',
+  category: 'puzzles',
   sounds: { 'sfx.win': 'jingle.steel-15' },
   order: 70,
   tags: ['matching', 'logic', 'educational'],

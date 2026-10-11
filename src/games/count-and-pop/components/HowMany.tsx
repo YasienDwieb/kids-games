@@ -45,6 +45,7 @@ import {
   EmojiImage,
   FONT_SIZES,
   FONTS,
+  OUTLINE,
   SHADOWS,
   SPACING,
   useTranslation,
@@ -319,8 +320,8 @@ const styles = StyleSheet.create({
     maxWidth: 420,
     borderRadius: BORDER_RADIUS.card,
     backgroundColor: ACCENTS.pink.tint,
-    borderWidth: 2,
-    borderColor: ACCENTS.pink.base,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     padding: SPACING.lg,
     alignItems: 'center',
     gap: SPACING.xs,
@@ -351,6 +352,8 @@ const styles = StyleSheet.create({
   groupInner: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.card,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     padding: SPACING.md,
   },
   emojiGrid: {

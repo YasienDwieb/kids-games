@@ -10,14 +10,18 @@ import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { Mascot } from '@/sdk/mascot/Mascot';
 import { COLORS } from '@/constants/colors';
-import { BORDER_RADIUS, FONT_SIZES, SHADOWS, SPACING } from '@/constants/dimensions';
+import { BORDER_RADIUS, FONT_SIZES, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
 import { DAILY_GOAL, DAILY_GOAL_EVENT, onStickerUnlocked } from './store';
 import { Sticker } from './Sticker';
+import { whenOverlayClear } from '@/sdk/layout/overlayGate';
+import { holdVoice } from '@/sdk/speech/voiceGate';
 
 /** Let the win's own celebration land first. */
 const SHOW_DELAY_MS = 900;
 const VISIBLE_MS = 2600;
+/** Longest toast clip per language (Arabic runs ~3.3s) plus a short breath. */
+const VOICE_MS = { en: 2400, ar: 4000 } as const;
 
 export function StickerToast() {
   const { t } = useTranslation();
@@ -36,7 +40,10 @@ export function StickerToast() {
   useEffect(() => {
     const later = (fn: () => void, ms: number) => timers.current.push(setTimeout(fn, ms));
 
-    const showNext = () => {
+    // Wait out any modal game overlay: a toast behind it would expire unseen.
+    const cancels: (() => void)[] = [];
+    const showNext = () => cancels.push(whenOverlayClear(present));
+    const present = () => {
       const id = queue.current.shift();
       if (!id) {
         busy.current = false;
@@ -44,6 +51,7 @@ export function StickerToast() {
       }
       busy.current = true;
       setCurrent(id);
+      holdVoice(VOICE_MS[currentLanguage()] ?? VOICE_MS.ar);
       enter.setValue(0);
       spin.setValue(0);
       play(
@@ -73,6 +81,7 @@ export function StickerToast() {
     return () => {
       unsub();
       pending.forEach(clearTimeout);
+      cancels.forEach((c) => c());
     };
   }, [enter, play, spin]);
 
@@ -133,6 +142,8 @@ const styles = StyleSheet.create({
     paddingStart: SPACING.sm,
     paddingEnd: SPACING.lg,
     borderRadius: BORDER_RADIUS.tile,
+    borderWidth: OUTLINE.thick,
+    borderColor: OUTLINE.color,
     backgroundColor: COLORS.surface,
   },
   text: { gap: 2 },

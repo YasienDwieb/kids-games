@@ -120,7 +120,9 @@ const styles = StyleSheet.create({
   levelName: {
     fontFamily: FONTS.display,
     fontSize: 20,
-    color: COLORS.surface,
+    // Ink, not white: the pop accents are bright enough that white labels
+    // fall far below AA.
+    color: COLORS.ink,
   },
   levelNameLandscape: {
     fontSize: 16,
@@ -128,6 +130,6 @@ const styles = StyleSheet.create({
   levelMeta: {
     fontFamily: FONTS.body,
     fontSize: 13,
-    color: 'rgba(255,255,255,0.92)',
+    color: COLORS.ink,
   },
 });

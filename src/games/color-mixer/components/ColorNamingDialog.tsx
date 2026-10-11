@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Modal, StyleSheet, Text, TextInput, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, OUTLINE, SHADOWS, PressableButton, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 
 interface ColorNamingDialogProps {
@@ -27,7 +27,9 @@ export function ColorNamingDialog({ visible, colorHex, onSave, onCancel }: Color
   if (!colorHex) return null;
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    // Translucent bars: the scrim must cover the status and navigation bars too,
+    // or a light strip of the game shows around it on Android.
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
       <View style={styles.overlay}>
         <View style={styles.dialog}>
           <Text style={styles.title}>{t('color-mixer:namingDialog.title')}</Text>
@@ -80,6 +82,8 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '85%',
     maxWidth: 340,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.lg,
   },
   title: {
@@ -100,8 +104,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    borderWidth: 2,
-    borderColor: TOKENS.line2,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     borderRadius: BORDER_RADIUS.soft,
     padding: 12,
     fontFamily: FONTS.body,

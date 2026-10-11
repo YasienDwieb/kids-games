@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { ColorBlob } from './ColorBlob';
-import { ACCENTS, COLORS, FONTS, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
+import { ACCENTS, COLORS, FONTS, OUTLINE, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
 import { COLORS as PALETTE } from '../constants';
 import type { Challenge } from '../types';
 
@@ -79,6 +79,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.card,
     padding: 14,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.sm,
   },
   cardComplete: {
@@ -118,13 +120,15 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     backgroundColor: ACCENTS.green.base,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkMark: {
     fontSize: 13,
     fontFamily: FONTS.displayBold,
-    color: COLORS.surface,
+    color: COLORS.ink,
   },
   info: {
     flex: 1,

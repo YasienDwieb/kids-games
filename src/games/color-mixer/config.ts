@@ -11,6 +11,7 @@ registerGame({
   component: ColorMixerGame,
   backgroundColor: '#FBF3E6',
   accent: 'blue',
+  category: 'puzzles',
   sounds: { 'sfx.win': 'jingle.steel-02' },
   order: 30,
   layout: { mode: 'bare' },

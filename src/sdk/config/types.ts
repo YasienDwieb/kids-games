@@ -9,6 +9,11 @@ export type GameLayoutOptions = {
   showBack?: boolean;
 };
 
+/** Home-screen filter group. */
+export type GameCategory = 'numbers' | 'words' | 'action' | 'puzzles';
+
+export const GAME_CATEGORIES: readonly GameCategory[] = ['numbers', 'words', 'action', 'puzzles'];
+
 export type GameConfig = {
   id: string;
   name: string;
@@ -28,6 +33,8 @@ export type GameConfig = {
    */
   order?: number;
   tags?: string[];
+  /** Home filter chip this game shows under (it always shows under "All"). */
+  category?: GameCategory;
   layout?: GameLayoutOptions;
   /**
    * Swap shared sounds for this game only, e.g. `{ 'sfx.win': 'jingle.sax-10' }`

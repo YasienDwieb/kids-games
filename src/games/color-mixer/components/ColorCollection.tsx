@@ -1,5 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, BORDER_RADIUS, SHADOWS, PressableButton, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, OUTLINE, SHADOWS, PressableButton, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { COLORS, DISCOVERY_HINTS } from '../constants';
 import { FAMOUS_IDS } from '../utils';
@@ -166,6 +166,8 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.card,
     paddingVertical: 12,
     paddingHorizontal: 6,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.sm,
   },
   colorName: {
@@ -183,6 +185,8 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     backgroundColor: TOKENS.line2,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,

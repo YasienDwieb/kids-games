@@ -34,6 +34,7 @@ import {
   COLORS,
   FONT_SIZES,
   FONTS,
+  OUTLINE,
   SHADOWS,
   SPACING,
   useTranslation,
@@ -134,6 +135,8 @@ const pipStyles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: BORDER_RADIUS.full,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
   },
   pipDone: {
     backgroundColor: ACCENTS.green.base,
@@ -329,14 +332,14 @@ const styles = StyleSheet.create({
   },
   promptCardLandscape: { maxWidth: 560 },
   gridLandscape: { maxWidth: 760 },
-  // Prompt card — pink gradient bg approximated with ACCENTS.pink.tint + border
+  // Prompt card — pink tint panel with the Pop Quest ink outline
   promptCard: {
     width: '100%',
     maxWidth: 420,
     borderRadius: BORDER_RADIUS.card,
     backgroundColor: ACCENTS.pink.tint,
-    borderWidth: 2,
-    borderColor: ACCENTS.pink.base,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     padding: SPACING.lg,
     alignItems: 'center',
     gap: SPACING.sm,
@@ -367,13 +370,15 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: BORDER_RADIUS.soft,
     backgroundColor: ACCENTS.pink.base,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },
   numeralText: {
     fontFamily: FONTS.displayBold,
     fontSize: FONT_SIZES.xl,
-    color: COLORS.surface,
+    color: COLORS.ink,
     lineHeight: FONT_SIZES.xl + 4,
   },
   // Progress

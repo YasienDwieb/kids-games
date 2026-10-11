@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createStore } from '@/sdk/storage/createStore';
+import { levelInfo } from '@/sdk/player/levels';
 import { STARS_PER_STICKER, nextSticker } from './stickers';
 
 /**
@@ -59,6 +60,17 @@ export function onStickerUnlocked(fn: UnlockListener): () => void {
   };
 }
 
+type LevelListener = (level: number) => void;
+const levelListeners = new Set<LevelListener>();
+
+/** Be told when lifetime stars cross into a new player level (the "Level up!" card). */
+export function onLevelUp(fn: LevelListener): () => void {
+  levelListeners.add(fn);
+  return () => {
+    levelListeners.delete(fn);
+  };
+}
+
 // Awards are read-modify-write on one AsyncStorage key; chain them so two quick
 // wins can't both read the same total and lose a star.
 let queue: Promise<unknown> = Promise.resolve();
@@ -94,6 +106,9 @@ export function awardStars(gameId: string, stars = 1): Promise<string[]> {
     const events = [...unlocked];
     if (before < DAILY_GOAL && after >= DAILY_GOAL) events.push(DAILY_GOAL_EVENT);
     events.forEach((id) => unlockListeners.forEach((fn) => fn(id)));
+    const levelBefore = levelInfo(cur.stars).level;
+    const levelAfter = levelInfo(total).level;
+    if (levelAfter > levelBefore) levelListeners.forEach((fn) => fn(levelAfter));
     return unlocked;
   });
   queue = run.catch(() => undefined);

@@ -3,6 +3,7 @@ import {
   BORDER_RADIUS,
   COLORS,
   FONTS,
+  OUTLINE,
   PressableButton,
   SHADOWS,
   SPACING,
@@ -57,6 +58,8 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
     alignItems: 'center',
     gap: SPACING.md,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.lg,
   },
   // Landscape is short: trim the padding and lay the two CTAs side by side so

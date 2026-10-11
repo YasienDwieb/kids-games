@@ -13,10 +13,10 @@ export const BORDER_RADIUS = {
   md: 16,
   lg: 24,
   full: 9999,
-  // design-system radii (design/tokens.css)
-  tile: 30,
+  // Pop Quest radii
+  tile: 28,
   card: 22,
-  btn: 20,
+  btn: 26,
   soft: 14,
   pill: 9999,
 } as const;
@@ -37,27 +37,18 @@ export const FONT_SIZES = {
   title: 48,
 } as const;
 
-// Soft warm shadows (RN style fragments) — ported from --sh-* in tokens.css.
+// Ink outline widths — every Pop Quest surface wears one.
+export const OUTLINE = {
+  thin: 2,
+  base: 3,
+  thick: 4,
+  color: '#1B1B2F',
+} as const;
+
+// Hard, offset comic shadows in ink (no blur). `boxShadow` renders the same on
+// iOS and Android under the New Architecture, unlike shadow*/elevation.
 export const SHADOWS = {
-  sm: {
-    shadowColor: '#4A341C',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  md: {
-    shadowColor: '#4A341C',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 5,
-  },
-  lg: {
-    shadowColor: '#4A341C',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.18,
-    shadowRadius: 30,
-    elevation: 12,
-  },
+  sm: { boxShadow: '2px 2px 0px #1B1B2F' },
+  md: { boxShadow: '4px 4px 0px #1B1B2F' },
+  lg: { boxShadow: '6px 6px 0px #1B1B2F' },
 } as const;

@@ -4,6 +4,7 @@ import {
   COLORS as TOKENS,
   FONTS,
   BORDER_RADIUS,
+  OUTLINE,
   SHADOWS,
   MascotHelper,
   PressableButton,
@@ -77,7 +78,7 @@ export function DiscoveryCelebration({
   const colorData = COLORS[colorId];
 
   return (
-    <Modal visible transparent animationType="none" statusBarTranslucent>
+    <Modal visible transparent animationType="none" statusBarTranslucent navigationBarTranslucent>
       <Pressable style={styles.touchArea} onPress={onComplete}>
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
           <Animated.View style={[styles.card, { transform: [{ scale: cardScale }] }]}>
@@ -119,6 +120,8 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.tile,
     paddingHorizontal: 32,
     paddingVertical: 28,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.lg,
   },
   title: {

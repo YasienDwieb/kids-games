@@ -11,6 +11,7 @@ registerGame({
   component: NumbersLand,
   backgroundColor: COLORS.canvas,
   accent: 'orange',
+  category: 'numbers',
   sounds: { 'sfx.win': 'jingle.sax-06' },
   order: 110,
   tags: ['numbers', 'counting', 'educational'],

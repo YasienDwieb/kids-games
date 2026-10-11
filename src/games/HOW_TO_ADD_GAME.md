@@ -31,6 +31,7 @@ registerGame({
   backgroundColor: '#FF6B6B',
   // optional:
   tags: ['matching', 'colors'],
+  category: 'puzzles', // Home filter chip: numbers | words | action | puzzles
   version: '1.0.0',
   layout: { mode: 'shell' },  // or 'bare' — see Layout section below
   sounds: { 'sfx.win': 'jingle.sax-10' }, // this game's own win jingle — pick one no other game uses

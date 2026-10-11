@@ -1,6 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, SHADOWS, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, FONTS, OUTLINE, SHADOWS, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
@@ -41,8 +41,6 @@ export function ColorPalette({
 
   return (
     <View style={[styles.container, landscape && styles.containerLandscape]}>
-      {/* Portrait-only decorative edge bar */}
-      {!landscape && <View style={styles.paletteEdge} />}
       <View style={[styles.palette, landscape && styles.paletteLandscape]}>
         <Text style={styles.title}>{t('color-mixer:palette.colorsTitle')}</Text>
         <View style={[styles.slotsRow, dimmed && styles.slotsRowDimmed]}>
@@ -287,13 +285,6 @@ const styles = StyleSheet.create({
     flex: 1,
     width: undefined,
   },
-  paletteEdge: {
-    height: 4,
-    backgroundColor: TOKENS.line2,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    marginHorizontal: 8,
-  },
   palette: {
     backgroundColor: TOKENS.surface,
     borderTopLeftRadius: 20,
@@ -301,18 +292,18 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 20,
     paddingHorizontal: 8,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.sm,
     overflow: 'visible',
   },
-  // Landscape: remove top-sheet rounding; use a left border separator instead
+  // Landscape: remove top-sheet rounding; the ink outline frames the panel
   paletteLandscape: {
     flex: 1,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     borderTopEndRadius: 0,
     borderTopStartRadius: 0,
-    borderStartWidth: 2,
-    borderStartColor: TOKENS.line2,
     justifyContent: 'center',
   },
   title: {

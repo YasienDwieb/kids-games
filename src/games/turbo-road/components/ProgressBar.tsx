@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { ACCENTS, COLORS, SHADOWS } from '@/sdk';
+import { ACCENTS, COLORS, OUTLINE, SHADOWS } from '@/sdk';
 import type { ProgressBarProps } from '../types';
 
 const RAIL_W = 4;
@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     height: DOT_SIZE,
     borderRadius: DOT_SIZE / 2,
     backgroundColor: ACCENTS.coral.base,
-    borderWidth: 3,
-    borderColor: COLORS.surface,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     ...SHADOWS.sm,
   },
 });

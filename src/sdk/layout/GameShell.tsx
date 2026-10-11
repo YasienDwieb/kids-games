@@ -6,7 +6,8 @@ import { SafeContainer } from '@/components/common/SafeContainer';
 import { BackButton } from '@/components/common/BackButton';
 import { HudPill, hudTextStyle } from '@/components/common/HudPill';
 import { Star } from '@/components/common/Star';
-import { COLORS, FONT_SIZES, SPACING } from '@/constants';
+import { Icon } from '@/components/common/Icon';
+import { COLORS, SPACING } from '@/constants';
 import { GameShellContext, type GameShellApi } from './GameShellContext';
 import { GameOverlay } from './GameOverlay';
 import type { GameShellProps, OverlaySlot } from './types';
@@ -94,7 +95,7 @@ export function GameShell({
                 hitSlop={8}
               >
                 <HudPill>
-                  <Text style={styles.pause}>⏸️</Text>
+                  <Icon name="pause" size={22} />
                 </HudPill>
               </TouchableOpacity>
             ) : null}
@@ -120,5 +121,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.sm,
   },
-  pause: { fontSize: FONT_SIZES.md },
 });

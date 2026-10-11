@@ -11,6 +11,7 @@ registerGame({
   component: BalloonArcherGame,
   backgroundColor: '#E0F2FB', // sky (ACCENTS.blue.tint)
   accent: 'green',
+  category: 'action',
   sounds: { 'sfx.win': 'jingle.steel-10' },
   order: 50,
   tags: ['archery', 'aim', 'arcade'],

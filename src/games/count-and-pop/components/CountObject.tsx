@@ -25,6 +25,7 @@ import {
   COLORS,
   EmojiImage,
   FONTS,
+  OUTLINE,
   SHADOWS,
   SPACING,
 } from '@/sdk';
@@ -203,6 +204,8 @@ const styles = StyleSheet.create({
     height: TILE_SIZE,
     borderRadius: BORDER_RADIUS.soft,
     backgroundColor: COLORS.surface,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },

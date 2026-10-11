@@ -28,7 +28,6 @@ import {
   FONTS,
   FONT_SIZES,
   PressableButton,
-  SHADOWS,
   SPACING,
   useTranslation,
 } from '@/sdk';
@@ -77,13 +76,14 @@ export function OddOneOutPuzzle({
           const isCorrect = idx === puzzle.correctIndex;
           const revealed = selectedIndex !== null;
 
-          // Border feedback: correct = green, selected-wrong = coral, neutral = line2
+          // Border feedback: correct = green, selected-wrong = coral, neutral =
+          // transparent (PressableButton's face already wears the ink outline).
           const borderColor: string =
             revealed && isCorrect
               ? ACCENTS.green.base
               : revealed && isSelected && !isCorrect
               ? ACCENTS.coral.base
-              : COLORS.line2;
+              : 'transparent';
 
           const borderWidth = isSelected || (revealed && isCorrect) ? 3 : 2;
 
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     // No padding here: this style lands on PressableButton's outer socket, and
     // padding makes the darker edge shade ring the face on all four sides
     // instead of showing only as the intended bottom lip.
+    // No SHADOWS here: PressableButton draws its own hard ink drop.
     borderRadius: BORDER_RADIUS.card,
-    ...SHADOWS.sm,
   },
 });

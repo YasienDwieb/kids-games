@@ -11,6 +11,7 @@ registerGame({
   component: CountAndPopGame,
   backgroundColor: COLORS.canvas, // soft pink (ACCENTS.pink.tint)
   accent: 'pink',
+  category: 'numbers',
   order: 90,
   tags: ['numbers', 'math', 'counting', 'educational'],
   layout: { mode: 'shell' },

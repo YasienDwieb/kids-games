@@ -40,7 +40,7 @@ export function Sticker({ id, size = 72, locked = false, tilt = 0, style }: Stic
           width: size,
           height: size,
           borderRadius: radius,
-          borderWidth: Math.max(3, size * 0.06),
+          borderWidth: Math.max(2, size * 0.045),
           transform: [{ rotate: `${tilt}deg` }],
         },
         style,
@@ -53,8 +53,8 @@ export function Sticker({ id, size = 72, locked = false, tilt = 0, style }: Stic
 
 const styles = StyleSheet.create({
   backing: {
-    backgroundColor: COLORS.surface2,
-    borderColor: COLORS.surface,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.ink,
     alignItems: 'center',
     justifyContent: 'center',
   },

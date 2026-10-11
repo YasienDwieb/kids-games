@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Animated, Dimensions, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { PressableButton, Star } from '../../../components/common';
-import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING } from '../../../constants';
+import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING, OUTLINE } from '../../../constants';
 import { Mascot, useTranslation } from '@/sdk';
 
 type WinScreenProps = {
@@ -162,6 +162,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     maxWidth: 320,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.lg,
   },
   cardLandscape: {

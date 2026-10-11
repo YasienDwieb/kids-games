@@ -17,6 +17,7 @@ import {
   FONTS,
   HudPill,
   hudTextStyle,
+  OUTLINE,
   PressableButton,
   SHADOWS,
   SPACING,
@@ -347,7 +348,7 @@ export function StartScreen({
             style={[
               styles.pedestalLandscape,
               SHADOWS.md,
-              { backgroundColor: trim.tint, borderColor: trim.base },
+              { backgroundColor: trim.tint },
             ]}
           >
             <Text style={styles.carLandscape}>{playerEmoji}</Text>
@@ -394,7 +395,7 @@ export function StartScreen({
           style={[
             styles.pedestal,
             SHADOWS.md,
-            { backgroundColor: trim.tint, borderColor: trim.base },
+            { backgroundColor: trim.tint },
           ]}
         >
           <Text style={styles.car}>{playerEmoji}</Text>
@@ -483,6 +484,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs + 2,
     paddingHorizontal: SPACING.sm,
     gap: SPACING.xs,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.sm,
   },
   missionTileHead: {
@@ -507,7 +510,8 @@ const styles = StyleSheet.create({
     width: 176,
     height: 100,
     borderRadius: BORDER_RADIUS.card,
-    borderWidth: 3,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -528,6 +532,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
     gap: SPACING.xs,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     ...SHADOWS.sm,
   },
   missionsTitle: {
@@ -613,6 +619,8 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: 14,
     borderRadius: BORDER_RADIUS.pill,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -621,8 +629,6 @@ const styles = StyleSheet.create({
   },
   themeChip: {
     backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.line2,
   },
   chipText: {
     fontFamily: FONTS.display,
@@ -660,6 +666,8 @@ const styles = StyleSheet.create({
   },
   node: {
     position: 'absolute',
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -668,13 +676,11 @@ const styles = StyleSheet.create({
   },
   nodeFuture: {
     backgroundColor: COLORS.surface,
-    borderWidth: 2,
-    borderColor: COLORS.line2,
   },
   nodeDigit: {
     fontFamily: FONTS.display,
     fontSize: 12,
-    color: COLORS.surface,
+    color: COLORS.ink,
   },
   nodeDigitFuture: {
     color: COLORS.inkFaint,
@@ -687,7 +693,8 @@ const styles = StyleSheet.create({
     width: 200,
     height: 168,
     borderRadius: 28,
-    borderWidth: 3,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },

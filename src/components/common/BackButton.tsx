@@ -1,21 +1,18 @@
-import { I18nManager, Pressable, StyleSheet, Text } from 'react-native';
+import { I18nManager, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { COLORS, SPACING, SHADOWS, TOUCH_TARGET } from '../../constants';
+import { COLORS, OUTLINE, SPACING, SHADOWS } from '../../constants';
+import { Icon } from './Icon';
 
 type BackButtonProps = {
   onPress: () => void;
 };
 
-// Back chevron points toward the reading origin — left in LTR, right in RTL.
-// Read at render, never at module scope: `I18nManager.isRTL` is still false when
-// modules are first evaluated and only becomes true later, so a captured
-// constant renders the LTR glyph for the whole Arabic session.
-const backGlyph = () => (I18nManager.isRTL ? '›' : '‹');
+const SIZE = 56;
 
-// Floating circular back control (top-left), used by bare-mode games and the
+// Floating round back control (top-start), used by bare-mode games and the
 // game player. Sits just below the status bar (safe-area inset) so it lines up
-// with the games' top bars. Surface circle with a chevron — design iconbtn.
+// with the games' top bars. The chevron points toward the reading origin.
 export function BackButton({ onPress }: BackButtonProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
@@ -31,11 +28,10 @@ export function BackButton({ onPress }: BackButtonProps) {
       style={({ pressed }) => [
         styles.button,
         { top: insets.top + SPACING.xs, start: startInset + SPACING.md },
-        SHADOWS.sm,
-        pressed && styles.pressed,
+        pressed ? styles.pressed : SHADOWS.sm,
       ]}
     >
-      <Text style={styles.text}>{backGlyph()}</Text>
+      <Icon name="chevron-back" size={30} />
     </Pressable>
   );
 }
@@ -46,19 +42,14 @@ const styles = StyleSheet.create({
     // `start` mirrors to the right edge under RTL (absolute `left` would not).
     start: SPACING.md,
     zIndex: 10,
-    width: TOUCH_TARGET.recommended,
-    height: TOUCH_TARGET.recommended,
-    borderRadius: TOUCH_TARGET.recommended / 2,
+    width: SIZE,
+    height: SIZE,
+    borderRadius: SIZE / 2,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pressed: { transform: [{ scale: 0.92 }] },
-  text: {
-    fontSize: 34,
-    lineHeight: 38,
-    color: COLORS.ink,
-    fontWeight: '600',
-    marginTop: -4,
-  },
+  pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
 });
