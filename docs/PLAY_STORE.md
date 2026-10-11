@@ -25,13 +25,13 @@ fastlane/
     │   ├── full_description.txt
     │   ├── video.txt
     │   ├── changelogs/default.txt
-    │   └── images/{icon,featureGraphic,phoneScreenshots,sevenInchScreenshots,tenInchScreenshots}
+    │   └── images/{icon.png,featureGraphic.png,phoneScreenshots,sevenInchScreenshots,tenInchScreenshots}
     └── ar/             # Arabic listing (full RTL)
         ├── title.txt
         ├── short_description.txt
         ├── full_description.txt
         ├── changelogs/default.txt
-        └── images/{icon,featureGraphic,phoneScreenshots,tenInchScreenshots}
+        └── images/{icon.png,featureGraphic.png,phoneScreenshots,tenInchScreenshots}
 ```
 
 ## Character limits (enforced by Play Console)
@@ -76,8 +76,13 @@ so the working invocation is `track:alpha version_code:4`.
 Current set (already accepted by Google for closed testing — do not "fix" to
 match nominal specs):
 
-- `icon/` — 512×512 PNG (alpha allowed for the hi-res icon)
-- `featureGraphic/` — 1024×500 PNG (this asset carries alpha and was accepted as-is)
+- `icon.png` — 512×512 PNG (alpha allowed for the hi-res icon)
+- `featureGraphic.png` — 1024×500 PNG (this asset carries alpha and was accepted as-is)
+
+`icon` and `featureGraphic` are files directly in `images/`, never folders: supply
+only looks for `images/<type>.<ext>`, so `images/featureGraphic/featureGraphic.png`
+uploads nothing while still reporting success. `check-listing.sh` fails on the
+folder form.
 - `phoneScreenshots/` — 6 per locale (1080×2340 / 540×1170; the 20:9 ratio was accepted)
 - `tenInchScreenshots/` — 6 per locale (1600×2560 tablet)
 - `sevenInchScreenshots/` — empty (optional)
