@@ -29,7 +29,7 @@ fastlane/
     │   ├── full_description.txt  # ≤ 4000 chars
     │   ├── changelogs/default.txt# release notes, ≤ 500 chars
     │   └── images/
-    │       ├── icon/ featureGraphic/
+    │       ├── icon.png featureGraphic.png   # FILES, not folders — a folder uploads nothing
     │       ├── phoneScreenshots/      # 2–8 images
     │       └── tenInchScreenshots/    # tablet
     └── ar/  … same structure

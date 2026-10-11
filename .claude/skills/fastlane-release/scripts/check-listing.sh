@@ -7,6 +7,14 @@
 #   - full_description.txt   ≤ 4000 chars
 #   - changelogs/default.txt exists and ≤ 500 chars
 #   - phoneScreenshots/      2–8 images, no duplicate numeric index
+#   - featureGraphic.<ext>   present, exactly 1024x500
+#   - icon.<ext>             present, exactly 512x512
+#
+# Note on layout: supply globs single images as images/<type>.<ext> — a FILE
+# directly in images/, not images/<type>/<type>.<ext> (supply/uploader.rb
+# #upload_images). It does `next unless path`, so the subdirectory layout
+# uploads NOTHING and still reports success. Only screenshots use a
+# subdirectory. This script fails on the subdirectory form for that reason.
 #
 # Char counts ignore a single trailing newline. Exits non-zero on any failure.
 set -uo pipefail
@@ -59,6 +67,29 @@ check_screenshots() { # <dir>
   fi
 }
 
+dimensions() {
+  file -b "$1" | grep -oE '[0-9]+ ?x ?[0-9]+' | tail -1 | tr -d ' '
+}
+
+check_image() { # <images-dir> <type> <expected-WxH>
+  local dir="$1" type="$2" want="$3" path got
+  path=$(find "$dir" -maxdepth 1 -type f \( -iname "$type.jpg" -o -iname "$type.jpeg" -o -iname "$type.png" \) | sort | tail -1)
+  if [[ -z "$path" ]]; then
+    if [[ -d "$dir/$type" ]]; then
+      echo "  ✗ $type: found images/$type/ — supply ignores that; move it to images/$type.<ext>"
+    else
+      echo "  ✗ $type: MISSING (expected $dir/$type.{png,jpg,jpeg})"
+    fi
+    fail=1; return
+  fi
+  got=$(dimensions "$path")
+  if [[ "$got" != "$want" ]]; then
+    echo "  ✗ $type: ${got:-unknown} (Play requires exactly $want)"; fail=1
+  else
+    echo "  ✓ $type: $got — $(basename "$path")"
+  fi
+}
+
 for loc in "${LOCALES[@]}"; do
   echo "[$loc]"
   d="$META/$loc"
@@ -67,6 +98,8 @@ for loc in "${LOCALES[@]}"; do
   check_limit "$d/full_description.txt"  4000 "full_description"
   check_limit "$d/changelogs/default.txt" 500 "changelog (default)"
   check_screenshots "$d/images/phoneScreenshots"
+  check_image "$d/images" featureGraphic 1024x500
+  check_image "$d/images" icon           512x512
   echo
 done
 
