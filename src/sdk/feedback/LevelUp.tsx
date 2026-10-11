@@ -2,7 +2,7 @@
  * "LEVEL UP!" — the big moment when lifetime stars cross into a new level.
  * Full-screen sunburst, Lulu jumping, the new level, and whatever wardrobe item
  * just unlocked with a "Try it on" button. Mounted inside CelebrationProvider,
- * so every play screen (and the quest board) gets it.
+ * so every play screen gets it.
  */
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
@@ -17,8 +17,8 @@ import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
 import { useSound } from '@/sdk/audio/useSound';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
-import { unlocksAt } from '@/sdk/quests/outfits';
-import { wear } from '@/sdk/quests/outfitStore';
+import { unlocksAt } from '@/sdk/player/outfits';
+import { wear } from '@/sdk/player/outfitStore';
 import { onLevelUp } from '@/sdk/rewards/store';
 import { overlayClosed, overlayOpened } from '@/sdk/layout/overlayGate';
 

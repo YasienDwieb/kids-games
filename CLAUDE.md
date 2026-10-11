@@ -40,10 +40,10 @@ All games import exclusively from `@/sdk`. The SDK exports:
 - **Audio**: `useSound()` → `{ play(intent, options?) }` — plays assets by intent string, respects settings/haptics; `PlayOptions` type. Per-game swaps via `GameConfig.sounds` (`{ 'sfx.win': 'jingle.sax-10' }`), provided to `useSound` through `SoundOverridesContext` by `GamePlayerScreen`; `SoundOverrides` type
 - **Storage**: `createStore<T>(namespace, defaultValue)` → `Store<T>` with `get`/`set`/`subscribe`
 - **Progress & levels**: `levelsFromList`/`levelsFromGenerator` → `LevelSource<T>`; `useLevels({ gameId, source })` → `{ status, level, data, score, isLast, start, startOver, advance, addScore, goTo }`; `createProgressStore`, `DEFAULT_PROGRESS`, `Progress`; `resumeStatusFor`, `ResumeStatus`; `ResumePrompt` (Continue/Start-over UI). Opt-in; coarse `{ level, score }` checkpoint persisted under `kg:progress:<gameId>`.
-- **Feedback**: `useCelebrate()` → `celebrate('small'|'big', { praise? })` (confetti + random praise over the game, resolves when done; `CelebrationProvider` is mounted by `GamePlayerScreen`/`FlowPlayerScreen`, no-op without one) — use instead of a tap-to-continue modal after small wins. The provider also shows the comic praise burst, the `xN COMBO!` streak (`bumpCombo`/`breakCombo` in `feedback/combo.ts`; a miss through `useHintLadder` breaks it), the "Quest done!" toast and the full-screen "LEVEL UP!" card; `useHintLadder(roundKey)` → `{ miss(), step, firstTry, stars }` implementing the shared hint policy (`hintStepFor`: 1st miss `retry`, 2nd `highlight`, 3rd `reveal`; `starsForMisses`)
+- **Feedback**: `useCelebrate()` → `celebrate('small'|'big', { praise? })` (confetti + random praise over the game, resolves when done; `CelebrationProvider` is mounted by `GamePlayerScreen`/`FlowPlayerScreen`, no-op without one) — use instead of a tap-to-continue modal after small wins. The provider also shows the comic praise burst, the `xN COMBO!` streak (`bumpCombo`/`breakCombo` in `feedback/combo.ts`; a miss through `useHintLadder` breaks it) and the full-screen "LEVEL UP!" card; `useHintLadder(roundKey)` → `{ miss(), step, firstTry, stars }` implementing the shared hint policy (`hintStepFor`: 1st miss `retry`, 2nd `highlight`, 3rd `reveal`; `starsForMisses`)
 - **Tutorials**: `useFirstRun(id)` → `{ status: 'loading'|'show'|'done', complete }` (persisted under `kg:tutorial`); `<DemoHand mode="tap"|"drag" points={[{x,y}]} />` ghost-hand demo in the parent's physical coordinates (RTL-safe); `useIdle(ms, active)` → `{ idle, poke }` to re-show help when a child is stuck. Reference integrations: `mouse-maze` (first-run drag demo + idle hint), `count-and-pop` (hint ladder + celebrations)
 - **Mascot (Lulu the owl)**: `Mascot` (2D poses `wave`/`cheer`/`point`/`encourage`), `MascotHelper` (corner pop-in by pose, null hides), `Lulu3D` (procedural three.js owl: `mood` idle/wave/cheer/encourage/point, `interactive` = tap to hop + giggle in EN/AR, drag to spin, eyes follow the finger; `active={false}` pauses rendering). 3D Lulu cheers on every celebration and lives on Home and in the wardrobe; she wears the child's saved outfit (`wearing` prop overrides)
-- **Quests, levels & wardrobe** (`src/sdk/quests/`): `levelInfo(stars)` (player level derived from lifetime stars; `onLevelUp` in rewards fires when it rises), `useQuests()` / `claimQuest` / `openChest` (three daily quests built from awarded stars — `game-stars`, `variety`, `stars` — so games need no extra wiring; claims give 1 bonus star, the chest 3), `OUTFITS` / `useWearing()` / `wear(slot, id)` (hats and glasses unlocked by level, drawn on `Lulu3D`)
+- **Levels & wardrobe** (`src/sdk/player/`): `levelInfo(stars)` (player level derived from lifetime stars; `onLevelUp` in rewards fires when it rises), `OUTFITS` / `useWearing()` / `wear(slot, id)` (hats and glasses unlocked by level, drawn on `Lulu3D`)
 - **Settings**: `useSettings()` hook, `settingsStore`, `DEFAULT_SETTINGS`, `Settings` type (`soundEnabled`, `hapticsEnabled`, `ageBand`, `language`)
 - **i18n**: `useTranslation()` → `{ t }` (call `t('<namespace>:key')`); `registerTranslations(namespace, { en, ar })` (mirrors `registerGame` — register from a per-game `i18n.ts` side-effect imported in that game's `config.ts`); `useLanguage()` → `{ language, meta, changeLanguage }`; `LANGUAGES`, `DEFAULT_LANGUAGE`, `languageMeta`, `isRTL`, `LanguageCode`; `gameName(config)`/`gameDescription(config)` (resolve `<id>:meta.name`/`meta.description`, fall back to config); `applyLanguage`/`bootstrapLanguage`/`currentLanguage`. See **Internationalization** below.
 - **Age**: `AGE_BANDS` (toddler 2–3, preschool 3–5, early 5–7, kids 7–10), `bandsForGame(config)`, `gamesForBand(bandId)`, `AgeBand` type — band labels are translated via `t('ageBands.<id>')`, not the `label` field
@@ -84,7 +84,7 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 **Core types (`src/types/index.ts`):**
 
-- `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`, `FlowPlayer`, `Wardrobe`, `Quests`
+- `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`, `FlowPlayer`, `Wardrobe`
 - `ChildProfile` — player profile (for future use)
 
 `GameConfig` and `GameRegistry` are defined in `src/sdk/config/types.ts` and re-exported from `@/sdk`.
@@ -120,8 +120,8 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 ## HomeScreen
 
-- Zap-yellow `PopBackdrop`; top bar: `LevelPill` (→ Quests), stars pill (→ Wardrobe), sound, language, grown-ups (→ Settings)
-- Start column: `QuestCard` (today's quests → Quests) and interactive `Lulu3D`, sized from the leftover height
+- Zap-yellow `PopBackdrop`; top bar: `LevelPill` (→ Wardrobe), stars pill (→ Wardrobe), sound, language, grown-ups (→ Settings)
+- Start column: interactive `Lulu3D`, sized to the column
 - One horizontal rail (sized by `onLayout`): the `FeaturedCard` "PLAY NOW" guided adventure, then column-major `GameCard` tiles; category `Chip`s (`GameConfig.category`: numbers/words/action/puzzles) filter it
 - Portrait falls back to a stacked layout with a wrapping grid
 - Navigation props typed via `NativeStackScreenProps<RootStackParamList, 'Home'>`

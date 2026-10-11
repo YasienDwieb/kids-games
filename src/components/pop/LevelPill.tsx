@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS, FONTS, OUTLINE, POP, SHADOWS } from '../../constants';
-import { levelInfo } from '../../sdk/quests/levels';
+import { levelInfo } from '../../sdk/player/levels';
 import { ProgressBar } from './ProgressBar';
 
 type LevelPillProps = {

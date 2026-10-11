@@ -84,7 +84,6 @@ export {
   DAILY_GOAL_EVENT,
   localDay,
   starsToday,
-  onStarsAwarded,
   onLevelUp,
 } from './rewards/store';
 export type { Rewards } from './rewards/store';
@@ -99,8 +98,8 @@ export {
 export type { StickerSetId } from './rewards/stickers';
 export { Sticker } from './rewards/Sticker';
 
-// Quests, player level & Lulu's wardrobe
-export * from './quests';
+// Player level & Lulu's wardrobe
+export * from './player';
 
 // Mascot — Lulu the owl
 export { Mascot } from './mascot/Mascot';

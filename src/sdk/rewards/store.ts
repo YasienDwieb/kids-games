@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createStore } from '@/sdk/storage/createStore';
-import { levelInfo } from '@/sdk/quests/levels';
+import { levelInfo } from '@/sdk/player/levels';
 import { STARS_PER_STICKER, nextSticker } from './stickers';
 
 /**
@@ -60,17 +60,6 @@ export function onStickerUnlocked(fn: UnlockListener): () => void {
   };
 }
 
-type AwardListener = (gameId: string, stars: number) => void;
-const awardListeners = new Set<AwardListener>();
-
-/** Be told after every award lands (daily quests count progress this way). */
-export function onStarsAwarded(fn: AwardListener): () => void {
-  awardListeners.add(fn);
-  return () => {
-    awardListeners.delete(fn);
-  };
-}
-
 type LevelListener = (level: number) => void;
 const levelListeners = new Set<LevelListener>();
 
@@ -120,7 +109,6 @@ export function awardStars(gameId: string, stars = 1): Promise<string[]> {
     const levelBefore = levelInfo(cur.stars).level;
     const levelAfter = levelInfo(total).level;
     if (levelAfter > levelBefore) levelListeners.forEach((fn) => fn(levelAfter));
-    awardListeners.forEach((fn) => fn(gameId, stars));
     return unlocked;
   });
   queue = run.catch(() => undefined);

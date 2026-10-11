@@ -6,7 +6,6 @@ import {
   SettingsScreen,
   FlowPlayerScreen,
   WardrobeScreen,
-  QuestsScreen,
 } from '../../screens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -20,7 +19,6 @@ export function RootNavigator() {
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="FlowPlayer" component={FlowPlayerScreen} options={{ gestureEnabled: false }} />
       <Stack.Screen name="Wardrobe" component={WardrobeScreen} />
-      <Stack.Screen name="Quests" component={QuestsScreen} />
     </Stack.Navigator>
   );
 }

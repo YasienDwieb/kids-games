@@ -18,7 +18,7 @@ export const ACCENTS = {
 
 export type AccentName = keyof typeof ACCENTS;
 
-// Named pop colours for chrome (Home, celebrations, quests).
+// Named pop colours for chrome (Home, celebrations).
 export const POP = {
   zap: '#FFE135', // sunny yellow — Home, level-up headers, combo badges
   zapDeep: '#F5C400',
