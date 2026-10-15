@@ -4,9 +4,10 @@ import { ARROW_COLOR, PHYSICS } from '../constants';
 type Props = { x: number; y: number; angle: number };
 
 // Under RTL the playfield is mirrored, so the arrow visually flies right→left.
-// The arrow is drawn as [shaft][►head] in a row; RTL auto-mirrors the row order
-// but NOT the border-triangle head, leaving it pointing backward. Mirror the
-// whole arrow with scaleX:-1 (outermost transform) so head + flight align. World
+// The arrow is drawn as [shaft][►head] in a row pinned to LTR (otherwise RTL
+// reverses the row and swaps the head's left border, flipping it on its own and
+// double-flipping with the transform). Mirror the whole arrow with scaleX:-1
+// (outermost transform) so head + flight align. World
 // coordinates/physics are unchanged — this only flips the rendered glyph facing.
 // Read at render, not module scope: `I18nManager.isRTL` is false when modules
 // are first evaluated, which would leave the sprite facing LTR in Arabic.
@@ -30,14 +31,17 @@ export function Arrow({ x, y, angle }: Props) {
         },
       ]}
     >
-      <View style={styles.shaft} />
-      <View style={styles.head} />
+      <View style={styles.glyph}>
+        <View style={styles.shaft} />
+        <View style={styles.head} />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { position: 'absolute', height: 8, flexDirection: 'row', alignItems: 'center' },
+  root: { position: 'absolute', height: 8 },
+  glyph: { flex: 1, flexDirection: 'row', alignItems: 'center', direction: 'ltr' },
   shaft: { flex: 1, height: 4, borderRadius: 2, backgroundColor: ARROW_COLOR },
   head: {
     width: 0,
