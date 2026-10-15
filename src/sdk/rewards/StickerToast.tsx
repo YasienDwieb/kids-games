@@ -15,7 +15,7 @@ import { FONTS } from '@/constants/typography';
 import { DAILY_GOAL, DAILY_GOAL_EVENT, onStickerUnlocked } from './store';
 import { Sticker } from './Sticker';
 import { whenOverlayClear } from '@/sdk/layout/overlayGate';
-import { holdVoice } from '@/sdk/speech/voiceGate';
+import { holdVoice, reserveVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 
 /** Let the win's own celebration land first. */
 const SHOW_DELAY_MS = 900;
@@ -74,7 +74,11 @@ export function StickerToast() {
       queue.current.push(id);
       if (!busy.current) {
         busy.current = true;
-        later(showNext, SHOW_DELAY_MS);
+        // Let the praise finish, and book the voice now so the next round's
+        // prompt (which may start before the toast) waits for it too.
+        const start = Math.max(SHOW_DELAY_MS, voiceBusyRemaining());
+        reserveVoice(start + (VOICE_MS[currentLanguage()] ?? VOICE_MS.ar));
+        later(showNext, start);
       }
     });
     const pending = timers.current;

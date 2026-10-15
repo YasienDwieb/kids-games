@@ -21,9 +21,12 @@ import { unlocksAt } from '@/sdk/player/outfits';
 import { wear } from '@/sdk/player/outfitStore';
 import { onLevelUp } from '@/sdk/rewards/store';
 import { overlayClosed, overlayOpened } from '@/sdk/layout/overlayGate';
+import { reserveVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 
 /** Let the win's own confetti land first. */
 const SHOW_DELAY_MS = 1300;
+/** Longest win jingle plus a breath. */
+const JINGLE_MS = 1600;
 
 export function LevelUp() {
   const { t } = useTranslation();
@@ -50,12 +53,15 @@ export function LevelUp() {
         overlayOpened();
       }
       clearTimeout(timer);
+      // Wait out the praise voice, and keep the next prompt off the jingle.
+      const delay = Math.max(SHOW_DELAY_MS, voiceBusyRemaining());
+      reserveVoice(delay + JINGLE_MS);
       timer = setTimeout(() => {
         setLevel(l);
         play('sfx.win', { haptic: true });
         enter.setValue(0);
         Animated.spring(enter, { toValue: 1, friction: 6, tension: 70, useNativeDriver: true }).start();
-      }, SHOW_DELAY_MS);
+      }, delay);
     });
     return () => {
       off();
