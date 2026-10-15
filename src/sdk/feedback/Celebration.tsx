@@ -6,7 +6,7 @@
  *
  *   const celebrate = useCelebrate();
  *   await celebrate('small');               // ~1.2 s, then advance
- *   celebrate('big', { praise: false });    // confetti behind a win card
+ *   celebrate('big', { praise: false });    // confetti behind a win card (silent)
  *
  * The provider is mounted once by the player screens (GamePlayer, FlowPlayer),
  * so both `shell` and `bare` games get it. Without a provider, celebrate() is a
@@ -17,6 +17,7 @@ import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
+import { holdVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { LevelUp } from './LevelUp';
@@ -29,7 +30,10 @@ export type CelebrationSize = 'small' | 'big';
 export type CelebrateOptions = {
   /** Show the praise bubble (default true). Turn off when a win card already says it. */
   praise?: boolean;
-  /** Speak the praise line (default true). Follows the sound setting like every SFX. */
+  /**
+   * Speak the praise line. Defaults to `praise` — with no bubble a win card and
+   * its jingle carry the moment, so the voice would only talk over them.
+   */
   voice?: boolean;
 };
 export type Celebrate = (size?: CelebrationSize, options?: CelebrateOptions) => Promise<void>;
@@ -41,6 +45,13 @@ export type Celebrate = (size?: CelebrationSize, options?: CelebrateOptions) => 
 export const PRAISE_COUNT = 8;
 
 const praiseIntent = (n: number) => `praise.${currentLanguage()}.${n}`;
+/** Length of each praise clip (ms, index n-1) — update when a recording changes. */
+const PRAISE_MS: Record<string, readonly number[]> = {
+  en: [2270, 1460, 2715, 1250, 1105, 1640, 2075, 1850],
+  ar: [1125, 1190, 1540, 1060, 1255, 1135, 1600, 1030],
+};
+/** A short breath after the praise before anyone else speaks. */
+const PRAISE_TAIL_MS = 250;
 
 const DURATION: Record<CelebrationSize, number> = { small: 1150, big: 1900 };
 const PIECES: Record<CelebrationSize, number> = { small: 18, big: 36 };
@@ -69,6 +80,8 @@ type Burst = {
   praiseKey: string | null;
   /** Wins in a row so far (shown as "x3 COMBO!" from 2 up). */
   combo: number;
+  /** How long the praise voice runs (0 when silent) — the bubble stays up for it. */
+  voiceMs: number;
   pieces: Piece[];
   resolve: () => void;
 };
@@ -120,13 +133,21 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
       const praiseKey = options.praise !== false ? `celebrate.praise.${n}` : null;
       // The voice is the "human" half of the reward; no haptic — the game's own
       // success cue already buzzed.
-      if (options.voice !== false) play(praiseIntent(n), { haptic: false });
+      // Hold the voice window so the next prompt, sticker toast or level-up waits.
+      let voiceMs = 0;
+      if (options.voice ?? options.praise !== false) {
+        if (play(praiseIntent(n), { haptic: false })) {
+          voiceMs = (PRAISE_MS[currentLanguage()] ?? PRAISE_MS.en)[n - 1] + PRAISE_TAIL_MS;
+          holdVoice(voiceMs);
+        }
+      }
 
       const burst: Burst = {
         id: nextId.current++,
         size,
         praiseKey,
         combo: bumpCombo(),
+        voiceMs,
         pieces: makePieces(size),
         resolve,
       };
@@ -136,7 +157,9 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
 
   const finish = useCallback((id: number) => {
     setBursts((b) => {
-      b.find((x) => x.id === id)?.resolve();
+      const done = b.find((x) => x.id === id);
+      // Don't let an awaiting game move on mid-sentence.
+      if (done) setTimeout(done.resolve, voiceBusyRemaining());
       return b.filter((x) => x.id !== id);
     });
   }, []);
@@ -195,6 +218,8 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
   const progress = useMemo(() => new Animated.Value(0), []);
   const bubble = useMemo(() => new Animated.Value(0), []);
   const duration = DURATION[burst.size];
+  // The confetti keeps its pace; the bubble (and cheering Lulu) wait for the voice.
+  const visible = Math.max(duration, burst.voiceMs);
 
   useEffect(() => {
     Animated.parallel([
@@ -206,11 +231,11 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
       }),
       Animated.sequence([
         Animated.spring(bubble, { toValue: 1, friction: 5, tension: 140, useNativeDriver: true }),
-        Animated.delay(duration - 600),
+        Animated.delay(visible - 600),
         Animated.timing(bubble, { toValue: 0, duration: 220, useNativeDriver: true }),
       ]),
     ]).start(() => onDone(burst.id));
-  }, [bubble, burst.id, duration, onDone, progress]);
+  }, [bubble, burst.id, duration, visible, onDone, progress]);
 
   const fade = progress.interpolate({ inputRange: [0, 0.7, 1], outputRange: [1, 1, 0] });
 

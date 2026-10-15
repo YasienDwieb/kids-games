@@ -75,26 +75,28 @@ export function useSound() {
     [playerFor],
   );
 
+  /** Returns true when a clip actually started (sound on, intent known). */
   const play = useCallback(
-    (intent: string, options: PlayOptions = {}) => {
+    (intent: string, options: PlayOptions = {}): boolean => {
       const current = settings.current;
 
       if (current.hapticsEnabled && options.haptic !== false) {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
       }
 
-      if (!current.soundEnabled) return;
+      if (!current.soundEnabled) return false;
 
       const module = pickModule(intent, overrides.current); // random variant for the intent
-      if (module === undefined) return; // graceful: unknown intent → silent
+      if (module === undefined) return false; // graceful: unknown intent → silent
 
       const player = playerFor(module);
-      if (!player) return;
+      if (!player) return false;
       try {
         player.seekTo(0); // expo-audio doesn't auto-rewind on finish
         player.play();
+        return true;
       } catch {
-        // graceful degradation — game works without sound
+        return false; // graceful degradation — game works without sound
       }
     },
     [playerFor],

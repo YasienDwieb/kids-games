@@ -43,8 +43,6 @@ export default function BalloonArcherGame() {
     null,
   );
 
-  // Loosing an arrow gets its own whoosh so the core action never feels silent.
-  const onShoot = useCallback(() => play('whoosh'), [play]);
   const onPop = useCallback(() => play('balloon'), [play]);
   const onCleared = useCallback(
     (stars: number) => {
@@ -64,7 +62,6 @@ export default function BalloonArcherGame() {
     area,
     data: tuned,
     enabled: status === 'playing' && overlay === null,
-    onShoot,
     onPop,
     onCleared,
     onFailed,
