@@ -139,12 +139,16 @@ platform :ios do
       key_filepath: File.join(root, ios["ascApiKeyPath"])
     )
     # Device slot comes from each image's size (deliver/app_screenshot.rb).
+    shots = File.join(root, "fastlane/metadata/ios/screenshots")
     deliver(
       api_key: key,
       app_identifier: CredentialsManager::AppfileConfig.try_fetch_value(:package_name),
       app_version: options[:app_version],
       platform: "ios",
-      screenshots_path: File.join(root, "fastlane/metadata/ios/screenshots"),
+      # deliver validates locale dir names under metadata_path even with skip_metadata;
+      # the default ./fastlane/metadata holds android/ and ios/, which fail that check.
+      metadata_path: shots,
+      screenshots_path: shots,
       overwrite_screenshots: true,
       skip_binary_upload: true,
       skip_metadata: true,
