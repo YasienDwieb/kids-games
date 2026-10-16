@@ -38,8 +38,8 @@ Uploads en-US + ar title/subtitle/description/keywords/URLs from store.config.js
 - Set **Age Rating** (answer the questionnaire — no objectionable content → 4+).
 - Complete the **App Privacy** section: "Data Not Collected".
 - Confirm **Support URL** and **Privacy Policy URL** are set.
-- Upload **screenshots** (6.9" iPhone + 13" iPad, landscape) — see
-  `screenshots/README.md`.
+- Upload **screenshots** (6.9" iPhone + 13" iPad, landscape) with
+  `fastlane ios screenshots` — see `screenshots/README.md`.
 - Select the uploaded build, then **Submit for Review**.
 
 ## Notes

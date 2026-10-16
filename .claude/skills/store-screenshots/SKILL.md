@@ -35,8 +35,8 @@ captures), `--keep` (leave the emulator running between runs), `--apk PATH`.
 | `play-phone/NN.png` (1920×1080) | `fastlane/metadata/android/<en-US\|ar>/images/phoneScreenshots/NN.jpg` — replace the whole set, saved as JPEG q92 |
 | `play-tablet/NN.png` (2560×1600) | `…/images/tenInchScreenshots/` — replace the whole set |
 | `featureGraphic.png` (1024×500) | `…/images/featureGraphic.png` |
-| `ios-phone/NN.png` (2796×1290) | App Store Connect, iPhone 6.9" slot (manual upload, `en-US` / `ar-SA`) |
-| `ios-ipad/NN.png` (2752×2064) | App Store Connect, iPad 13" slot |
+| `ios-phone/NN.png` (2796×1290) | `fastlane/metadata/ios/screenshots/<en-US\|ar-SA>/iphone-NN.png` (RGB) |
+| `ios-ipad/NN.png` (2752×2064) | `…/ipad-NN.png` — upload both with `fastlane ios screenshots` (ask first) |
 | en phone `01…08.jpg` | `docs/screenshots/<name>.jpg` README twins, byte-identical (fastlane-release §5); names in the loop below |
 
 ```bash
@@ -48,6 +48,12 @@ for pair in en:en-US ar:ar; do l=${pair%%:*}; d=fastlane/metadata/android/${pair
       "$p" "$d/phoneScreenshots/$(basename "$p" .png).jpg"; done
   cp $S/$l/play-tablet/[0-9][0-9].png $d/tenInchScreenshots/
   cp $S/$l/featureGraphic.png $d/featureGraphic.png
+done
+for pair in en:en-US ar:ar-SA; do l=${pair%%:*}; d=fastlane/metadata/ios/screenshots/${pair#*:}
+  find $d -name '*.png' -delete
+  for f in ios-phone:iphone ios-ipad:ipad; do for p in $S/$l/${f%%:*}/[0-9][0-9].png; do
+    python3 -c "import sys;from PIL import Image;Image.open(sys.argv[1]).convert('RGB').save(sys.argv[2],optimize=True)" \
+      "$p" "$d/${f#*:}-$(basename "$p")"; done; done
 done
 P=fastlane/metadata/android/en-US/images/phoneScreenshots
 i=1; for n in home-landscape level-up letter-land turbo-road color-mixer wardrobe match-up parent-corner; do
