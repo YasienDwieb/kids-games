@@ -10,7 +10,7 @@ learning games in English and Arabic (full RTL), built on a shared SDK. Publishe
 
 <p align="center">
   <a href="https://onesmartlink.app/kids-zone">
-    <img src="https://img.shields.io/badge/Get_Kids_Zone-Android_%26_iOS-7B3FE4?style=for-the-badge" alt="Get Kids Zone on Android and iOS" height="48" />
+    <img src="https://img.shields.io/badge/Get_Kids_Zone-Android_%26_iOS-7B3FE4?style=for-the-badge" alt="Get Kids Zone on Android and iOS" width="360" />
   </a>
   <br />
   <sub>One link — opens the right store for your device: <a href="https://onesmartlink.app/kids-zone">onesmartlink.app/kids-zone</a></sub>
@@ -18,10 +18,10 @@ learning games in English and Arabic (full RTL), built on a shared SDK. Publishe
 
 <p align="center">
   <a href="https://play.google.com/store/apps/details?id=dev.waybeyond.kidszone">
-    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="72" />
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="186" align="middle" />
   </a>
   <a href="https://apps.apple.com/app/id6793942277">
-    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" height="48" />
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" width="144" align="middle" />
   </a>
 </p>
 
