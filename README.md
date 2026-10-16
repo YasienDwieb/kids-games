@@ -9,18 +9,20 @@ A multi-game Expo React Native app for young children (ages 2–12). Each game i
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/home-landscape.jpg" alt="Home — Up next journey card, the games grid, and the sound / language / settings controls" width="640" />
+  <img src="docs/screenshots/home-landscape.jpg" alt="Home — big, bright games for little hands; no ads, no reading needed" width="400" />
+  <img src="docs/screenshots/level-up.jpg" alt="Level up — every win earns stars, and new levels unlock outfits for Lulu" width="400" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/color-mixer.jpg" alt="Color Mixer — mix red, yellow and blue like real paint, with white and black to tint and shade" width="640" />
+  <img src="docs/screenshots/letter-land.jpg" alt="Letter Land — hear it, then find the letter, in English and Arabic" width="400" />
+  <img src="docs/screenshots/turbo-road.jpg" alt="Turbo Road — steer, race and grab the coins on the 3D road" width="400" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/letter-land.jpg" alt="Letter Land — which letter is it?" width="320" />
-  <img src="docs/screenshots/numbers-land.jpg" alt="Numbers Land — which number is it?" width="320" />
+  <img src="docs/screenshots/color-mixer.jpg" alt="Color Mixer — mix paint colors to make new ones" width="400" />
+  <img src="docs/screenshots/wardrobe.jpg" alt="Lulu's wardrobe — dress Lulu in the hats and glasses your stars unlock" width="400" />
 </p>
 <p align="center">
-  <img src="docs/screenshots/count-and-pop.jpg" alt="Count & Pop — match each number to how many" width="320" />
-  <img src="docs/screenshots/match-up.jpg" alt="Match Up — match each animal to its food" width="320" />
+  <img src="docs/screenshots/match-up.jpg" alt="Match Up — connect what belongs together" width="400" />
+  <img src="docs/screenshots/parent-corner.jpg" alt="Parent corner — play time and stars by game, plus an optional daily limit" width="400" />
 </p>
 
 ## Get it
@@ -38,7 +40,7 @@ carries a signed APK — copy it to an Android device and install it (you may ne
 "install from unknown sources"). Note that the APK there lags the store build; **Google Play
 is the current version**.
 
-## Store listing (Google Play)
+## Store listings
 
 The Google Play store listing — title, descriptions, release notes, and graphics
 (English + Arabic) — is managed as code with [`fastlane supply`](https://docs.fastlane.tools/actions/supply/)
@@ -48,6 +50,13 @@ layout, character limits, and the `tracks` / `validate` / `metadata` / `changelo
 [`.github/workflows/release-aab.yml`](.github/workflows/release-aab.yml), which submits to
 production as a **draft** — `fastlane rollout version_code:<vc>` is the step that makes a
 release live.
+
+The App Store listing text (en-US + ar-SA) lives in [`store.config.json`](store.config.json) and is pushed with
+`npx eas metadata:push`; iOS builds go through `eas build` / `eas submit`.
+
+Store screenshots for both stores are generated, not hand-made: [`screenshots/`](screenshots/) captures the
+release APK on an emulator with seeded demo data and composes the framed galleries (see the
+`store-screenshots` skill). The images above are the English Play phone set.
 
 ## Getting Started
 
@@ -75,14 +84,22 @@ For full setup, testing on a phone via Expo Go, and local/EAS cloud builds acros
 ```
 App.tsx                     # Entry: loads fonts, SafeAreaProvider, NavigationContainer, game registration
 src/
-├── app/navigation/         # RootNavigator — screens: Home, GamePlayer, Settings
-├── screens/                # HomeScreen (game grid), GamePlayerScreen (loads game by id), SettingsScreen (behind ParentGate)
+├── app/navigation/         # RootNavigator — screens: Home, GamePlayer, Settings, FlowPlayer, Wardrobe
+├── screens/                # Home (Lulu + game rail), GamePlayer (loads game by id), Settings (behind ParentGate),
+│                           #   FlowPlayer (Guided Journey), Wardrobe (Lulu's outfits), PlayLimitGate (daily limit break)
 ├── sdk/                    # SDK platform core — the single import surface for games (@/sdk)
 │   ├── config/             # registerGame / getGame / getAllGames + GameConfig types
 │   ├── layout/             # GameShell, useGameShell, useScreenBack
 │   ├── audio/              # useSound (play SFX by intent, per-game win jingles)
 │   ├── storage/            # createStore (AsyncStorage-backed)
 │   ├── progress/           # levels & resume: useLevels, ResumePrompt
+│   ├── feedback/           # useCelebrate (confetti, praise, combos, LEVEL UP card), useHintLadder
+│   ├── mascot/             # Lulu the owl: 2D poses + interactive 3D Lulu3D
+│   ├── player/             # player level from lifetime stars, wardrobe outfits
+│   ├── rewards/            # stars and the sticker book
+│   ├── playtime/           # play-time tracking and the optional daily limit
+│   ├── adaptive/           # adaptive difficulty for the arcade games
+│   ├── tutorial/           # first-run demos (DemoHand), idle hints
 │   ├── settings/           # useSettings (sound / haptics / age band / language)
 │   ├── age/                # AGE_BANDS, gamesForBand, bandsForGame
 │   ├── i18n/               # useTranslation, registerTranslations, useLanguage (en + ar, RTL)
@@ -124,6 +141,9 @@ Games import **only** from `@/sdk` — never from another game or deep `src/` pa
 - **Audio** — `useSound().play('sfx.pop' | 'sfx.success' | 'sfx.win' | 'sfx.wrong' | …)`; each intent has several soft variants picked at random, and every game sets its own win jingle via `GameConfig.sounds`
 - **Storage** — `createStore(namespace, defaultValue)`
 - **Progress & levels** — `useLevels`, `levelsFromList`/`levelsFromGenerator`, `ResumePrompt`
+- **Feedback** — `useCelebrate` (confetti + praise, resolves when done), `useHintLadder` (shared retry → highlight → reveal hints)
+- **Mascot & player** — `Lulu3D` / `Mascot` / `MascotHelper`; `levelInfo(stars)`, `OUTFITS`, `useWearing`
+- **Tutorials** — `useFirstRun`, `DemoHand`, `useIdle`
 - **Settings / Age** — `useSettings`, `AGE_BANDS`, `gamesForBand`
 - **i18n** — `useTranslation().t`, `registerTranslations`, `useLanguage` (English + Arabic, full RTL; per-game locale bundles)
 - **Assets** — `ASSETS`, `findAssets`, `pickAsset`
@@ -146,7 +166,7 @@ See `CLAUDE.md` (Design-system adherence) and the `kids-games-dev` skill for the
 | **Mouse Maze** | 3–8 | Logic | Swipe to guide the mouse to the cheese, collecting stars; levels resume on return |
 | **Balloon Archer** | 5–8 | Aim & arcade | Aim your bow and pop the balloons across levels, with limited arrows |
 | **Shape Detective** | 3–10 | Patterns & logic | Spot the next shape, find the odd one out, and sort shapes into groups |
-| **Turbo Road** | 4–12 | Racing | Steer, dodge, and collect along sunny roads; win cups and unlock cars in the garage |
+| **Turbo Road** | 4–12 | Racing | Steer, dodge, and collect along sunny roads (2D, or the optional 3D road); win cups and unlock cars in the garage |
 | **Count & Pop** | 3–7 | Counting | Count the objects and pop the right number |
 | **Match Up** | 3–7 | Matching | Draw a line from each thing to its match (animals→food, helpers→tools, and more) |
 | **Letter Land** | 3–7 | Literacy & phonics | Listen and find the letter — with spoken prompts and word-picture heroes |
