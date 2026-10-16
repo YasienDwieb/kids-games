@@ -37,7 +37,7 @@ captures), `--keep` (leave the emulator running between runs), `--apk PATH`.
 | `featureGraphic.png` (1024×500) | `…/images/featureGraphic.png` |
 | `ios-phone/NN.png` (2796×1290) | App Store Connect, iPhone 6.9" slot (manual upload, `en-US` / `ar-SA`) |
 | `ios-ipad/NN.png` (2752×2064) | App Store Connect, iPad 13" slot |
-| en phone `01/03/05/07.jpg` | `docs/screenshots/{home-landscape,letter-land,color-mixer,match-up}.jpg` README twins, byte-identical (fastlane-release §5) |
+| en phone `01…08.jpg` | `docs/screenshots/<name>.jpg` README twins, byte-identical (fastlane-release §5); names in the loop below |
 
 ```bash
 S=screenshots/out/store
@@ -50,13 +50,12 @@ for pair in en:en-US ar:ar; do l=${pair%%:*}; d=fastlane/metadata/android/${pair
   cp $S/$l/featureGraphic.png $d/featureGraphic.png
 done
 P=fastlane/metadata/android/en-US/images/phoneScreenshots
-cp $P/01.jpg docs/screenshots/home-landscape.jpg; cp $P/03.jpg docs/screenshots/letter-land.jpg
-cp $P/05.jpg docs/screenshots/color-mixer.jpg;    cp $P/07.jpg docs/screenshots/match-up.jpg
+i=1; for n in home-landscape level-up letter-land turbo-road color-mixer wardrobe match-up parent-corner; do
+  cp $P/0$i.jpg docs/screenshots/$n.jpg; i=$((i+1)); done
 ```
 
-`numbers-land.jpg` and `count-and-pop.jpg` have no Play-phone twin any more
-(numbers is an extra, Count & Pop isn't a scene) — refresh them by hand if the
-README should match.
+If the Play phone order or a scene changes, rename to match and update the
+README's `## Screenshots` grid (2 per row, `width="400"`).
 
 Then run `bash .claude/skills/fastlane-release/scripts/check-listing.sh`.
 
