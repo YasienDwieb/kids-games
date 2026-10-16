@@ -83,6 +83,21 @@ Pull current listing from Play Console into fastlane/metadata.
 
 ----
 
+
+## iOS
+
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+Replace the App Store screenshots (en-US + ar-SA, iPhone 6.9" + iPad 13") on the editable version.
+
+No text, binary or submission. fastlane ios screenshots [app_version:1.3.0]
+
+----
+
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
 More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
