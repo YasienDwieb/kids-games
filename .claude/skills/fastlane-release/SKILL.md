@@ -374,7 +374,10 @@ version, then **Add for Review → Submit**:
 
 - **Attach the build** for this version; set **"What's New"** (release notes) and the
   version **Copyright** (`<year> Waybeyond`).
-- **Screenshots:** upload the required sets (see §8.6 for sizes) if they changed.
+- **Screenshots:** if they changed, `fastlane ios screenshots [app_version:<v>]`
+  replaces both locales' sets from `fastlane/metadata/ios/screenshots/<en-US|ar-SA>/`
+  on the editable version (screenshots only; outward — confirm first, then check the
+  version page). Sizes in §8.6.
 - **Category / Age rating / App Privacy** normally **carry over** from the previous version
   — just confirm they're still set. (App is Education, 4+, "Data Not Collected", normal
   listing — NOT the Kids Category. App Privacy may need an ASC **Admin** to confirm.)
