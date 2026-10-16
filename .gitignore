@@ -59,3 +59,6 @@ fastlane/test_output
 
 # Local device/web screenshots from dev verification
 .device-shots/
+
+# Store screenshot pipeline output (screenshots/capture.sh, render.js)
+screenshots/out/
