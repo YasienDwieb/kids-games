@@ -6,7 +6,7 @@
 import { getEmojiImage } from '../images';
 
 // One representative glyph per game inventory that was added for word pictures.
-const WORD_PICTURES = ['⚽', '🐼', '🦓', '🐪', '🦒', '🚀', '📱', '☀️', '✈️', '✋'];
+const WORD_PICTURES = ['⚽', '🐼', '🦓', '🐪', '🦒', '🚀', '📱', '☀️', '✈️', '✋', '✏️'];
 
 describe('word-picture emoji', () => {
   it('resolves every newly-bundled word glyph (incl. FE0F variants)', () => {

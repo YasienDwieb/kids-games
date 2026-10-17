@@ -5,11 +5,13 @@ type ChipProps = {
   label: string;
   active?: boolean;
   onPress: () => void;
+  /** Overrides the UI font, for a label in another script (e.g. Arabic letters in an English UI). */
+  fontFamily?: string;
 };
 
 // Pill filter / tab. Inactive: white with a hard shadow. Active: solid ink with
 // zap-yellow text, pressed flat (no shadow) so the selection reads as "down".
-export function Chip({ label, active = false, onPress }: ChipProps) {
+export function Chip({ label, active = false, onPress, fontFamily }: ChipProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -22,7 +24,7 @@ export function Chip({ label, active = false, onPress }: ChipProps) {
         pressed && styles.pressed,
       ]}
     >
-      <Text style={[styles.text, active && styles.textActive]}>{label}</Text>
+      <Text style={[styles.text, active && styles.textActive, fontFamily ? { fontFamily } : null]}>{label}</Text>
     </Pressable>
   );
 }

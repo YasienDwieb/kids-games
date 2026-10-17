@@ -35,8 +35,8 @@ function LetterFlowRound({
   const target: Letter = round.target;
 
   const speakTarget = () => {
-    const name = t('letter-land:names.' + target.id);
-    const word = t('letter-land:words.' + target.word);
+    const name = t('letters:names.' + target.id);
+    const word = t('letters:words.' + target.word);
     void speak(t('letter-land:speak.carrier', { name, word }));
   };
 

@@ -1,3 +1,4 @@
+import '@/games/_shared/letters/i18n'; // side-effect: registers shared letter names/words
 import './i18n'; // side-effect: registers this game's en/ar translation bundles
 import { registerGame, ACCENTS, COLORS } from '@/sdk';
 import LetterLand from './index';

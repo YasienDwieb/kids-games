@@ -15,7 +15,8 @@
  */
 
 import { makeLetterLandLevels } from '../utils/levels';
-import { LATIN_LETTERS, ARABIC_LETTERS, CHOICES_PER_ROUND } from '../constants';
+import { LATIN_LETTERS, ARABIC_LETTERS } from '@/games/_shared/letters';
+import { CHOICES_PER_ROUND } from '../constants';
 import type { Letter, LevelData } from '../types';
 
 const SEED = 12345;

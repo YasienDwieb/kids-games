@@ -5,7 +5,8 @@ import type { LanguageCode } from '@/sdk/i18n/types';
 import { settingsStore } from '@/sdk/settings/store';
 import { voiceHoldRemaining } from './voiceGate';
 
-export type SpeakOptions = { rate?: number; pitch?: number };
+/** `language` overrides the app language, e.g. an Arabic letter spoken in an English UI. */
+export type SpeakOptions = { rate?: number; pitch?: number; language?: LanguageCode };
 
 /** IETF BCP 47 locale per app language. */
 const LOCALE: Record<LanguageCode, string> = {
@@ -51,7 +52,7 @@ export function useSpeech() {
     // next screen.
     if (!mounted.current) return;
 
-    const language = LOCALE[currentLanguage()] ?? LOCALE.en;
+    const language = LOCALE[options.language ?? currentLanguage()] ?? LOCALE.en;
     try {
       // Replace any in-flight/queued utterance — expo-speech queues otherwise.
       Speech.stop();
