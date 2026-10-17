@@ -1,13 +1,13 @@
 /**
  * Trace It — guided-flow adapter.
  *
- * Three units: a warm-up, then the first and second untraced letters in school
- * order (guided pass only), each on the same Round the standalone game uses.
+ * Three units: a warm-up, then the next two untraced letters in school order
+ * (guided pass only), each on the same Round the standalone game uses.
  */
 import { useEffect, useState } from 'react';
 import { I18nManager, StyleSheet, View } from 'react-native';
 import { registerFlowAdapter, useFlowRound } from '@/sdk';
-import { charsFor, type TraceChar } from './catalog';
+import { charsFor, flowLetter, type TraceChar } from './catalog';
 import { Round } from './components/Round';
 import { WARMUPS } from './glyphs/warmup';
 import { progressStore } from './progress';
@@ -29,9 +29,7 @@ function LetterUnit({ nth, onComplete }: { nth: 0 | 1; onComplete: () => void })
     let alive = true;
     void progressStore.get().then(({ done }) => {
       if (!alive) return;
-      const all = charsFor('letters', script());
-      const untraced = all.filter((c) => !done[c.id]);
-      setChar(untraced[nth] ?? all[nth]);
+      setChar(flowLetter(charsFor('letters', script()), done, nth));
     });
     return () => {
       alive = false;

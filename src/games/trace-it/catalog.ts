@@ -104,6 +104,19 @@ export function nextSuggested(
   return chars.find((c) => !done[c.id])?.id;
 }
 
+/**
+ * The letter for flow unit `nth`. Each unit records its stars before the next
+ * mounts, so the first untraced letter is always the next new one; once all
+ * are traced, the school-order head stands in.
+ */
+export function flowLetter(
+  chars: readonly TraceChar[],
+  done: Readonly<Record<string, number>>,
+  nth: 0 | 1,
+): TraceChar {
+  return chars.find((c) => !done[c.id]) ?? chars[nth];
+}
+
 /** True once every character of `track`'s block has stars: the taught school-order letters, or the whole digit / warm-up set. */
 export function blockComplete(
   track: Track,

@@ -1,5 +1,5 @@
 import { getEmojiImage } from '@/sdk/assets/emoji/images';
-import { blockComplete, charsFor, nextSuggested, roundSteps } from '../catalog';
+import { blockComplete, charsFor, flowLetter, nextSuggested, roundSteps } from '../catalog';
 import { charStars, progressStore, recordStars } from '../progress';
 import type { Track } from '../types';
 
@@ -59,6 +59,18 @@ describe('catalog', () => {
     const c = charsFor('letters', 'latin');
     expect(nextSuggested(c, { T: 3, I: 1 })).toBe('S');
     expect(nextSuggested(c, Object.fromEntries(c.map((x) => [x.id, 1])))).toBeUndefined();
+  });
+
+  it('flow letter units take consecutive letters: unit 1 is recorded before unit 2 picks', () => {
+    const c = charsFor('letters', 'arabic');
+    const done: Record<string, number> = { baa: 3 };
+    const first = flowLetter(c, done, 0);
+    expect(first.id).toBe('alef');
+    done[first.id] = 2;
+    expect(flowLetter(c, done, 1).id).toBe('meem');
+    // Everything traced: fall back to the school-order head, still two different letters.
+    const all = Object.fromEntries(c.map((x) => [x.id, 1]));
+    expect([flowLetter(c, all, 0).id, flowLetter(c, all, 1).id]).toEqual(['alef', 'baa']);
   });
 
   it('a letter block is the taught school-order head; digits and warm-ups are the whole track', () => {
