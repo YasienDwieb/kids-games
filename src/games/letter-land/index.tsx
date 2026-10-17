@@ -83,8 +83,8 @@ function LetterLandRun({
   const speakTarget = useCallback(() => {
     const target = targetRef.current;
     if (!target) return;
-    const name = t('letter-land:names.' + target.id);
-    const word = t('letter-land:words.' + target.word);
+    const name = t('letters:names.' + target.id);
+    const word = t('letters:words.' + target.word);
     void speak(t('letter-land:speak.carrier', { name, word }));
   }, [t, speak]);
 

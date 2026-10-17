@@ -1,5 +1,5 @@
 import { currentLanguage } from '@/sdk';
-import { ARABIC_LETTERS, LATIN_LETTERS } from '../constants';
+import { ARABIC_LETTERS, LATIN_LETTERS } from '@/games/_shared/letters';
 import type { Letter } from '../types';
 
 // Keyed off the chosen language, not I18nManager.isRTL: native RTL can lag the
