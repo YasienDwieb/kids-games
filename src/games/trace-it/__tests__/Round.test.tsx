@@ -37,3 +37,26 @@ it('walks guided then solo, takes the min stars and records them', async () => {
   expect(tree!.root.findAllByType(WinSticker)).toHaveLength(1);
   act(() => tree!.unmount());
 });
+
+it('in a flow, records stars and finishes at once without its own sticker', async () => {
+  const a = charsFor('letters', 'latin')[0];
+  const onFinished = jest.fn();
+  let tree: ReturnType<typeof create>;
+  await act(async () => {
+    tree = create(<Round char={a} mode="guidedOnly" inFlow onFinished={onFinished} />);
+  });
+  await act(async () => {
+    tree!.root.findAll((n: { props: Record<string, unknown> }) => typeof n.props.onLayout === 'function')[0].props.onLayout({
+      nativeEvent: { layout: { width: 800, height: 400 } },
+    });
+  });
+  const steps = tree!.root.findByType(TraceBoard).props.step;
+  expect(steps.pass).toBe('guided');
+  for (let i = 0; i < a.glyphs.length; i++) {
+    await act(async () => tree!.root.findByType(TraceBoard).props.onDone(3));
+  }
+  await flush();
+  expect(onFinished).toHaveBeenCalledWith(3);
+  expect(tree!.root.findAllByType(WinSticker)).toHaveLength(0);
+  act(() => tree!.unmount());
+});

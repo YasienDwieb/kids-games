@@ -29,6 +29,8 @@ type RoundProps = {
   char: TraceChar;
   mode: 'full' | 'guidedOnly';
   onFinished: (stars: 1 | 2 | 3) => void;
+  /** Hosted by the guided flow: it pads the back button, celebrates and awards itself. */
+  inFlow?: boolean;
 };
 
 const IDLE_MS = 6000;
@@ -37,7 +39,7 @@ const ACCENT = 'coral' as const;
 const PAD_START = 56 + SPACING.md * 2;
 const PAD_END = SPACING.lg;
 
-export function Round({ char, mode, onFinished }: RoundProps) {
+export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
   const { t } = useTranslation();
   const { speak } = useSpeech();
   const { play } = useSound();
@@ -75,7 +77,7 @@ export function Round({ char, mode, onFinished }: RoundProps) {
   const finish = async (stars: 1 | 2 | 3) => {
     setFinished(true);
     finalStars.current = stars;
-    play('win');
+    if (!inFlow) play('win');
     sayChar();
     // Script follows the reading direction (read at call time, never at import).
     const script = I18nManager.isRTL ? 'arabic' : 'latin';
@@ -83,6 +85,10 @@ export function Round({ char, mode, onFinished }: RoundProps) {
     await recordStars(char.id, stars);
     const after = (await progressStore.get()).done;
     const big = !blockComplete(char.track, script, before) && blockComplete(char.track, script, after);
+    if (inFlow) {
+      onFinished(stars);
+      return;
+    }
     void celebrate(big ? 'big' : 'small', { voice: false });
     void awardStars('trace-it', stars);
     setSticker(true);
@@ -111,7 +117,8 @@ export function Round({ char, mode, onFinished }: RoundProps) {
   };
 
   const step = steps[index];
-  const inner = area.width - PAD_START - PAD_END;
+  const padStart = inFlow ? 0 : PAD_START;
+  const inner = area.width - padStart - PAD_END;
   const side = Math.floor(Math.min(area.height * 0.9, inner * 0.55));
   const paneWidth = Math.max(0, inner - side - SPACING.md * 2);
   const instruction =
@@ -125,7 +132,7 @@ export function Round({ char, mode, onFinished }: RoundProps) {
   const showDemo = !finished && ((firstStroke && firstRun.status === 'show') || idle);
 
   return (
-    <View style={styles.root} onLayout={onLayout}>
+    <View style={[styles.root, inFlow && styles.rootInFlow]} onLayout={onLayout}>
       {side > 0 ? (
         <>
           <View style={[styles.boardPane, { width: side }]} accessibilityLabel={t('trace-it:a11y.board')}>
@@ -146,7 +153,7 @@ export function Round({ char, mode, onFinished }: RoundProps) {
           </View>
         </>
       ) : null}
-      <MascotHelper pose={finished ? 'cheer' : null} side="end" size={100} />
+      {inFlow ? null : <MascotHelper pose={finished ? 'cheer' : null} side="end" size={100} />}
       {sticker ? <WinSticker char={char} onDone={() => onFinished(finalStars.current)} /> : null}
     </View>
   );
@@ -154,6 +161,7 @@ export function Round({ char, mode, onFinished }: RoundProps) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingStart: PAD_START, paddingEnd: PAD_END },
+  rootInFlow: { paddingStart: 0 },
   boardPane: { alignItems: 'center', justifyContent: 'center' },
   sidePane: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: SPACING.md, paddingHorizontal: SPACING.md },
   instruction: { fontFamily: FONTS.display, fontSize: 28, color: COLORS.ink, textAlign: 'center' },
