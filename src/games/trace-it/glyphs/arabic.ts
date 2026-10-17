@@ -135,6 +135,7 @@ export const ARABIC_GLYPHS: readonly Glyph[] = [
   // و: head from the left round clockwise, then the tail down to the lower left.
   g('waw', path(curve([58, 64], [42, 56], [52, 34], [66, 44]), curve([66, 44], [76, 52], [70, 78], [30, 90]))),
   // ي: small head down to the left, swing back right, round the bowl to the left.
+  // Taught without the two dots, as children write it at the end of a word.
   g(
     'yaa',
     path(
@@ -143,7 +144,5 @@ export const ARABIC_GLYPHS: readonly Glyph[] = [
       curve([74, 62], [86, 70], [74, 90], [50, 90]),
       curve([50, 90], [36, 90], [24, 84], [22, 72]),
     ),
-    dot(56, 76),
-    dot(44, 76),
   ),
 ];

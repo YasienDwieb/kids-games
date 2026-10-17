@@ -91,9 +91,21 @@ export const TrackLayer = memo(function TrackLayer({ glyph, scale, solo, accent,
   });
   const width = TRACK_WIDTH * scale;
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, solo && styles.solo]}>
+    // Faded layers are flattened before the opacity applies; otherwise Android fades each
+    // overlapping bar and disc on its own and the road shows its seams.
+    <View
+      pointerEvents="none"
+      needsOffscreenAlphaCompositing={solo}
+      renderToHardwareTextureAndroid={solo}
+      style={[StyleSheet.absoluteFill, solo && styles.solo]}
+    >
       {later.length > 0 ? (
-        <View testID="track-later" style={[StyleSheet.absoluteFill, styles.later]}>
+        <View
+          testID="track-later"
+          needsOffscreenAlphaCompositing
+          renderToHardwareTextureAndroid
+          style={[StyleSheet.absoluteFill, styles.later]}
+        >
           <Road paths={later} width={width} accent={accent} scale={scale} />
         </View>
       ) : null}

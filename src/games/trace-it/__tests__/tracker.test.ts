@@ -6,6 +6,7 @@ import {
   move,
   strokeFraction,
   up,
+  withDotAt,
   type TraceState,
 } from "../utils/tracker";
 import type { Glyph, Pt } from "../types";
@@ -129,5 +130,31 @@ describe("tracker", () => {
     const off = move(g, r.state, [50, 80]);
     expect(off.event).toBe("none");
     expect(off.state.progress).toBe(r.state.progress);
+  });
+});
+
+describe("withDotAt", () => {
+  const twoDots = prepareGlyph({
+    id: "dd",
+    strokes: [path(line([10, 50], [90, 50])), dot(60, 20), dot(40, 20)],
+  });
+  const atDots: TraceState = { ...initTrace(), stroke: 1 };
+
+  it("lets the child tap the later dot first", () => {
+    const g2 = withDotAt(twoDots, atDots, [40, 20]);
+    expect(g2.strokes[1]).toEqual(dot(40, 20));
+    expect(g2.strokes[2]).toEqual(dot(60, 20));
+    const r = down(g2, atDots, [40, 20]);
+    expect(r.event).toBe("strokeDone");
+    expect(down(g2, r.state, [60, 20]).event).toBe("glyphDone");
+  });
+
+  it("keeps the glyph when the current dot is hit or nothing is", () => {
+    expect(withDotAt(twoDots, atDots, [60, 20])).toBe(twoDots);
+    expect(withDotAt(twoDots, atDots, [90, 90])).toBe(twoDots);
+  });
+
+  it("never pulls a dot forward while a path is current", () => {
+    expect(withDotAt(twoDots, initTrace(), [40, 20])).toBe(twoDots);
   });
 });

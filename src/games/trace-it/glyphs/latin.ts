@@ -119,7 +119,8 @@ export const LATIN_LOWER: readonly Glyph[] = [
   // r: stick, then the small arch from the stick.
   g('r', down(32, 40, 90), path(arc(54, 64, 22, 180, 310, 24))),
   g('s', path(arc(50, 52.5, 17, -30, -270, 12.5), arc(50, 77.5, 19, -90, 150, 12.5))),
-  g('t', path(line([50, 15], [50, 90])), path(line([32, 45], [68, 45]))),
+  // t: stick down curling into a small hook to the right, then the cross bar.
+  g('t', path(line([44, 15], [44, 76]), arc(56, 76, 12, 180, 60)), path(line([30, 42], [64, 42]))),
   // u: down, round the bottom and up; then the stem down.
   g('u', path(line([28, 40], [28, 68]), arc(50, 68, 22, 180, 0), line([72, 68], [72, 40])), down(72, 40, 90)),
   g('v', path(line([28, 40], [50, 90]), line([50, 90], [72, 40]))),

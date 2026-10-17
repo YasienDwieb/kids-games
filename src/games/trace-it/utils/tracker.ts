@@ -46,6 +46,23 @@ function finishStroke(g: Glyph, s: TraceState, p: Pt): Step {
   };
 }
 
+/**
+ * Dots may be tapped in any order: when the current stroke is a dot and `p` hits a
+ * later one instead, that dot is swapped into the current slot. Otherwise `g` is returned.
+ */
+export function withDotAt(g: Glyph, s: TraceState, p: Pt): Glyph {
+  if (s.done) return g;
+  const cur = g.strokes[s.stroke];
+  if (cur.kind !== "dot" || near(cur.at, p)) return g;
+  const j = g.strokes.findIndex(
+    (st, i) => i > s.stroke && st.kind === "dot" && near(st.at, p),
+  );
+  if (j < 0) return g;
+  const strokes = [...g.strokes];
+  [strokes[s.stroke], strokes[j]] = [strokes[j], strokes[s.stroke]];
+  return { ...g, strokes };
+}
+
 export function down(g: Glyph, s: TraceState, p: Pt): Step {
   if (s.done) return { state: s, event: "none" };
   const stroke = g.strokes[s.stroke];

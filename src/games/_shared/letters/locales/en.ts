@@ -8,7 +8,8 @@ export const en = {
   // structural parity — values are transliterated Arabic letter names.
   names: {
     // Latin (A–Z) — phonetic letter names for an en-US voice.
-    A: 'ay',
+    // 'ay' comes out as "eye" on Google TTS; a bare capital reads as the letter name.
+    A: 'A',
     B: 'bee',
     C: 'see',
     D: 'dee',
