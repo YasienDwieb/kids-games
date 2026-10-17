@@ -1,5 +1,7 @@
+import { LATIN_LETTERS } from '@/games/_shared/letters';
 import { getEmojiImage } from '@/sdk/assets/emoji/images';
 import { ALL_SETS } from '../glyphs';
+import { LATIN_LOWER, LATIN_UPPER } from '../glyphs/latin';
 import { WARMUPS, warmupFor } from '../glyphs/warmup';
 import type { Glyph, Pt } from '../types';
 import { prepareGlyph } from '../utils/resample';
@@ -86,6 +88,46 @@ describe('digits', () => {
         expect(y).toBeLessThanOrEqual(90 + 1e-9);
       }
     }
+  });
+});
+
+describe('latin', () => {
+  it('has A-Z uppercase then a-z lowercase', () => {
+    const upper = LATIN_LETTERS.map((l) => l.id);
+    expect(LATIN_UPPER.map((g) => g.id)).toEqual(upper);
+    expect(LATIN_LOWER.map((g) => g.id)).toEqual(upper.map((id) => id.toLowerCase()));
+    expect(ALL_SETS.latin).toEqual([...LATIN_UPPER, ...LATIN_LOWER]);
+  });
+
+  it('uppercase stays within y 10-90', () => {
+    for (const g of LATIN_UPPER) {
+      for (const [, y] of pointsOf(g)) {
+        expect(y).toBeGreaterThanOrEqual(10 - 1e-9);
+        expect(y).toBeLessThanOrEqual(90 + 1e-9);
+      }
+    }
+  });
+
+  it('lowercase stays within y 10-98', () => {
+    for (const g of LATIN_LOWER) {
+      for (const [, y] of pointsOf(g)) {
+        expect(y).toBeGreaterThanOrEqual(10 - 1e-9);
+        expect(y).toBeLessThanOrEqual(98 + 1e-9);
+      }
+    }
+  });
+
+  it.each(['i', 'j'])('%s ends with a dot tittle', (id) => {
+    const g = LATIN_LOWER.find((l) => l.id === id)!;
+    expect(g.strokes.at(-1)!.kind).toBe('dot');
+    expect(g.strokes.filter((s) => s.kind === 'dot')).toHaveLength(1);
+  });
+
+  it('only i and j use dots', () => {
+    const dotted = [...LATIN_UPPER, ...LATIN_LOWER]
+      .filter((g) => g.strokes.some((s) => s.kind === 'dot'))
+      .map((g) => g.id);
+    expect(dotted).toEqual(['i', 'j']);
   });
 });
 
