@@ -51,7 +51,7 @@ export { useSound } from './audio/useSound';
 export { SoundOverridesContext } from './audio/SoundOverridesContext';
 export type { PlayOptions } from './audio/useSound';
 export { useLoopSound } from './audio/useLoopSound';
-export { useLoop, pulse } from '@/components/pop/motion';
+export { useLoop, pulse, useReduceMotion } from '@/components/pop/motion';
 
 // Speech
 export { useSpeech } from './speech/useSpeech';

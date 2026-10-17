@@ -1,10 +1,14 @@
 import { act, create } from 'react-test-renderer';
 import { GestureDetector, State } from 'react-native-gesture-handler';
 import { fireGestureHandler } from 'react-native-gesture-handler/jest-utils';
+import { StyleSheet } from 'react-native';
 import { DIGITS } from '../glyphs/digits';
+import { WARMUPS, warmupFor } from '../glyphs/warmup';
 import { LATIN_LOWER, LATIN_UPPER } from '../glyphs/latin';
 import { TraceBoard } from '../components/TraceBoard';
 import { TrackLayer } from '../components/TrackLayer';
+import { EMOJI, GAP, REACH, routeFor, spotsFor } from '../components/Travellers';
+import { TRACK_WIDTH } from '../constants';
 import { prepareGlyph } from '../utils/resample';
 
 const mockPlay = jest.fn();
@@ -128,4 +132,68 @@ it('dims strokes still to come in the guided pass only', () => {
   expect(later(0)).toBeGreaterThan(0);
   expect(later(g.strokes.length - 1)).toBe(0);
   expect(later(undefined)).toBe(0);
+});
+
+it('warm-up board shows the traveller and its goal', () => {
+  let tree: ReturnType<typeof create>;
+  act(() => {
+    tree = create(
+      <TraceBoard step={{ glyph: warmupFor('line', false), pass: 'guided' }} side={232} accent="coral" onDone={jest.fn()} travel={{ from: '🐶', to: '🦴' }} />,
+    );
+  });
+  const host = (id: string) => tree!.root.findAll((n: { type: unknown; props: { testID?: string } }) => typeof n.type === 'string' && n.props.testID === id);
+  expect(host('traveller')).toHaveLength(1);
+  expect(host('goal')).toHaveLength(1);
+  act(() => tree!.unmount());
+});
+
+describe('warm-up spots', () => {
+  const roadOf = (id: string, rtl: boolean) =>
+    (prepareGlyph(warmupFor(id, rtl)).strokes[0] as { points: readonly (readonly [number, number])[] }).points;
+  const dist = (a: readonly number[], b: readonly number[]) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+
+  it('puts the dog in line before the start and the bone after the end', () => {
+    const { from, to } = spotsFor(prepareGlyph(warmupFor('line', false)));
+    expect(from[0]).toBeLessThan(24);
+    expect(from[1]).toBeCloseTo(50);
+    expect(to[0]).toBeGreaterThan(76);
+    expect(to[1]).toBeCloseTo(50);
+  });
+
+  it('waits the carrot in the open middle of the spiral', () => {
+    const { to } = spotsFor(prepareGlyph(warmupFor('spiral', false)));
+    // Well inside the innermost turn (radius 21).
+    expect(dist(to, [50, 50])).toBeLessThan(14);
+  });
+
+  it.each(WARMUPS.flatMap((w) => [[w.id, false], [w.id, true]] as const))(
+    '%s (rtl %s): both emoji clear of the road, inside the board and apart',
+    (id, rtl) => {
+      const road = roadOf(id, rtl);
+      const { from, to } = spotsFor(prepareGlyph(warmupFor(id, rtl)));
+      for (const c of [from, to]) {
+        expect(Math.min(...road.map((p) => dist(p, c)))).toBeGreaterThanOrEqual(REACH - 0.5);
+        const lo = -TRACK_WIDTH / 2 + EMOJI / 2;
+        const hi = 100 + TRACK_WIDTH / 2 - EMOJI / 2;
+        for (const v of c) {
+          expect(v).toBeGreaterThanOrEqual(lo);
+          expect(v).toBeLessThanOrEqual(hi);
+        }
+      }
+      expect(dist(from, to)).toBeGreaterThanOrEqual(EMOJI + GAP);
+      // Each waits by its own end of the road.
+      expect(dist(from, road[0])).toBeLessThan(dist(from, road[road.length - 1]));
+      expect(dist(to, road[road.length - 1])).toBeLessThan(dist(to, road[0]));
+    },
+  );
+
+  it('routes the traveller along the road and stops touching the goal', () => {
+    const road = roadOf('line', false);
+    const { from, to } = spotsFor(prepareGlyph(warmupFor('line', false)));
+    const route = routeFor(from, road, to);
+    expect(route[0]).toEqual(from);
+    expect(route[1]).toEqual(road[0]);
+    const last = route[route.length - 1];
+    expect(dist(last, to)).toBeCloseTo(EMOJI * 0.6);
+  });
 });

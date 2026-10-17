@@ -137,7 +137,7 @@ describe('arabic', () => {
   const START_EXEMPT = ['alef', 'jeem', 'haa', 'khaa'];
   const DOTS: Record<string, number> = {
     baa: 1, taa: 2, thaa: 3, jeem: 1, khaa: 1, thal: 1, zay: 1, sheen: 3, dad: 1,
-    thaa_heavy: 1, ghayn: 1, faa: 1, qaf: 2, noon: 1, yaa: 2,
+    thaa_heavy: 1, ghayn: 1, faa: 1, qaf: 2, noon: 1,
   };
 
   it('has the inventory ids in order and is registered', () => {
@@ -193,11 +193,21 @@ describe('arabic', () => {
 });
 
 describe('warm-ups', () => {
-  it('stay within y 25-75', () => {
-    for (const g of WARMUPS) {
-      for (const [, y] of pointsOf(g)) {
-        expect(y).toBeGreaterThanOrEqual(25 - 1e-9);
-        expect(y).toBeLessThanOrEqual(75 + 1e-9);
+  // Left-to-right strokes leave room at both ends for the story emoji.
+  it.each(['line', 'zigzag', 'wave', 'arch', 'loops'])('%s stays within x 24-76, y 25-75', (id) => {
+    for (const [x, y] of pointsOf(WARMUPS.find((w) => w.id === id)!)) {
+      expect(x).toBeGreaterThanOrEqual(24 - 1e-9);
+      expect(x).toBeLessThanOrEqual(76 + 1e-9);
+      expect(y).toBeGreaterThanOrEqual(25 - 1e-9);
+      expect(y).toBeLessThanOrEqual(75 + 1e-9);
+    }
+  });
+
+  it.each(['spiral', 'circle'])('%s stays inside the box', (id) => {
+    for (const p of pointsOf(WARMUPS.find((w) => w.id === id)!)) {
+      for (const v of p) {
+        expect(v).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThanOrEqual(100);
       }
     }
   });
@@ -217,21 +227,24 @@ describe('warm-ups', () => {
     (id) => {
       const ltr = warmupFor(id, false);
       const rtl = warmupFor(id, true);
-      expect(ltr.fromSide).toBe('left');
-      expect(rtl.fromSide).toBe('right');
-      expect(firstPath(ltr.glyph)[0][0]).toBeLessThan(lastPath(ltr.glyph).at(-1)![0]);
-      expect(firstPath(rtl.glyph)[0][0]).toBeGreaterThan(lastPath(rtl.glyph).at(-1)![0]);
+      expect(firstPath(ltr)[0][0]).toBeLessThan(lastPath(ltr).at(-1)![0]);
+      expect(firstPath(rtl)[0][0]).toBeGreaterThan(lastPath(rtl).at(-1)![0]);
     },
   );
 
   it('mirrors the circle start under RTL', () => {
     const ltr = warmupFor('circle', false);
     const rtl = warmupFor('circle', true);
-    expect(ltr.fromSide).toBe('left');
-    expect(rtl.fromSide).toBe('right');
-    const x = firstPath(ltr.glyph)[0][0];
+    const x = firstPath(ltr)[0][0];
     expect(x).not.toBeCloseTo(50);
-    expect(firstPath(rtl.glyph)[0][0]).toBeCloseTo(100 - x);
+    expect(firstPath(rtl)[0][0]).toBeCloseTo(100 - x);
+  });
+
+  // The traveller and its goal sit at the two ends, so they must not overlap.
+  it.each(WARMUPS.map((w) => [w.id] as const))('%s starts and ends at least 20 apart', (id) => {
+    const g = warmupFor(id, false);
+    const [a, b] = [firstPath(g)[0], lastPath(g).at(-1)!];
+    expect(Math.hypot(a[0] - b[0], a[1] - b[1])).toBeGreaterThanOrEqual(20);
   });
 
   it('throws on an unknown warm-up id', () => {

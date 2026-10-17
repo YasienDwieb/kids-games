@@ -22,6 +22,7 @@ import {
 import { blockComplete, currentScript, roundSteps, type TraceChar } from '../catalog';
 import { charStars, progressStore, recordStars } from '../progress';
 import { TraceBoard } from './TraceBoard';
+import { TRAVEL_HOLD_MS } from './Travellers';
 import { WinSticker } from './WinSticker';
 import { WordPane } from './WordPane';
 
@@ -108,7 +109,7 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
     endFirstRun();
     stepStars.current.push(stars);
     poke();
-    // Let the child see the finished glyph before it moves on.
+    // Let the child see the finished glyph (or the warm-up's trip) before it moves on.
     hold.current = setTimeout(() => {
       hold.current = null;
       if (index < steps.length - 1) {
@@ -117,7 +118,7 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
         return;
       }
       void finish(charStars(stepStars.current));
-    }, DONE_HOLD_MS);
+    }, char.track === 'warmup' ? TRAVEL_HOLD_MS : DONE_HOLD_MS);
   };
 
   const onStrokeDone = (next: 'path' | 'dot' | null) => {
@@ -143,6 +144,10 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
         : step.pass === 'guided'
           ? t('trace-it:round.guided')
           : t('trace-it:round.solo');
+  const travel = useMemo(
+    () => (char.from && char.to ? { from: char.from, to: char.to, faces: char.faces } : undefined),
+    [char],
+  );
   const showDemo = !finished && ((firstStroke && firstRun.status === 'show') || idle);
 
   return (
@@ -162,6 +167,7 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
               onMisses={setMisses}
               // The flow plays its own success when the unit completes.
               quietDone={inFlow && index === steps.length - 1}
+              travel={travel}
             />
           </View>
           <View style={styles.sidePane}>

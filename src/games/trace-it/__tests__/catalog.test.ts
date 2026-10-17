@@ -61,7 +61,7 @@ describe('catalog', () => {
     expect(roundSteps(d, 'guidedOnly')).toHaveLength(1);
     const w = charsFor('warmup', 'arabic')[0];
     expect(roundSteps(w, 'full')).toHaveLength(1);
-    expect(w.fromSide).toBe('right');
+    expect(w.glyphs[0].strokes[0].kind === 'path' && w.glyphs[0].strokes[0].points[0][0]).toBeGreaterThan(50);
     expect(w.id.startsWith('w:')).toBe(true);
   });
 

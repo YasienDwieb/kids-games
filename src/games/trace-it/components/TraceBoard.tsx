@@ -18,11 +18,12 @@ import type { RoundStep } from '../catalog';
 import { charStars } from '../progress';
 import type { Glyph, Pt } from '../types';
 import { boardMetrics, toBox } from '../utils/segments';
-import { down, initTrace, move, up, type Step, type TraceState } from '../utils/tracker';
+import { down, initTrace, move, up, withDotAt, type Step, type TraceState } from '../utils/tracker';
 import { prepareGlyph } from '../utils/resample';
 import { InkLayer } from './InkLayer';
 import { Markers } from './Markers';
 import { TrackLayer } from './TrackLayer';
+import { Travellers } from './Travellers';
 
 type TraceBoardProps = {
   step: RoundStep;
@@ -38,6 +39,8 @@ type TraceBoardProps = {
   onMisses?: (misses: number) => void;
   /** Skip the finishing chime (the host plays its own). */
   quietDone?: boolean;
+  /** Warm-ups: `from` travels along the path to `to`. */
+  travel?: { from: string; to: string; faces?: 'left' };
 };
 
 const DEMO_MAX_POINTS = 8;
@@ -65,16 +68,19 @@ export function TraceBoard({
   onActivity,
   onMisses,
   quietDone = false,
+  travel,
 }: TraceBoardProps) {
   const { play } = useSound();
-  const glyph = useMemo(() => prepareGlyph(step.glyph), [step.glyph]);
+  const prepared = useMemo(() => prepareGlyph(step.glyph), [step.glyph]);
   // Mutable per-step session: a new step starts from a clean tracker. Keyed on
   // the step's contents so a host passing a fresh-but-equal object doesn't reset.
+  // Its glyph's dots get reordered as the child taps them (see withDotAt).
   const session = useMemo(
-    () => ({ state: initTrace(), stars: [] as (1 | 2 | 3)[], reported: false }),
+    () => ({ glyph: prepared, state: initTrace(), stars: [] as (1 | 2 | 3)[], reported: false }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [step.glyph, step.pass],
+    [prepared, step.pass],
   );
+  const glyph = session.glyph;
   const [, setTick] = useState(0);
   const s = session.state;
   // Keyed on the pass too, so a single-stroke glyph's guided misses don't leak into its solo pass.
@@ -89,6 +95,7 @@ export function TraceBoard({
   }, [missesShown]);
 
   const apply = ({ state, event }: Step) => {
+    const { glyph } = session;
     const prev = session.state;
     session.state = state;
     // Only re-render when something drawn changed, not on every finger move.
@@ -143,9 +150,13 @@ export function TraceBoard({
     null!,
   );
   handler.current = {
-    begin: (x, y) => apply(down(glyph, session.state, toBox(x, y, side, pad))),
-    update: (x, y) => apply(move(glyph, session.state, toBox(x, y, side, pad))),
-    end: () => apply(up(glyph, session.state)),
+    begin: (x, y) => {
+      const p = toBox(x, y, side, pad);
+      session.glyph = withDotAt(session.glyph, session.state, p);
+      apply(down(session.glyph, session.state, p));
+    },
+    update: (x, y) => apply(move(session.glyph, session.state, toBox(x, y, side, pad))),
+    end: () => apply(up(session.glyph, session.state)),
   };
   const pan = useRef(
     Gesture.Pan()
@@ -183,6 +194,16 @@ export function TraceBoard({
             hint={ladder.step}
             accent={accent}
           />
+          {travel ? (
+            <Travellers
+              glyph={glyph}
+              from={travel.from}
+              to={travel.to}
+              faces={travel.faces}
+              done={s.done}
+              scale={scale}
+            />
+          ) : null}
         </View>
         {demoPoints.length > 0 ? (
           <DemoHand

@@ -1,9 +1,9 @@
 /**
  * The round's side pane: the character's picture (word picture for letters,
- * `count` balloons for digits, from → to story for warm-ups), its word, and a
- * replay button that speaks it again.
+ * `count` balloons for digits; warm-ups tell their story on the board), its
+ * word, and a replay button that speaks it again.
  */
-import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, EmojiImage, FONTS, Icon, IconButton, SPACING, useTranslation } from '@/sdk';
 import type { TraceChar } from '../catalog';
 
@@ -35,21 +35,6 @@ export function WordPane({ char, width, onReplay }: WordPaneProps) {
 }
 
 function Picture({ char, width }: { char: TraceChar; width: number }) {
-  if (char.from && char.to) {
-    const size = Math.min(88, width * 0.3);
-    // Physical order (R5): the from-emoji sits on its stroke's start side and the
-    // arrow points at the to-emoji. Icon mirrors arrows under RTL, so undo that.
-    const fromLeft = char.fromSide !== 'right';
-    const flip = fromLeft === I18nManager.isRTL;
-    const ends = [
-      <EmojiImage key="from" emoji={char.from} size={size} />,
-      <View key="arrow" style={flip ? styles.flip : undefined}>
-        <Icon name="arrow-forward" size={size * 0.45} />
-      </View>,
-      <EmojiImage key="to" emoji={char.to} size={size} />,
-    ];
-    return <View style={styles.story}>{fromLeft ? ends : ends.reverse()}</View>;
-  }
   if (char.count !== undefined && char.emoji) {
     if (char.count === 0) return null;
     const size = Math.min(52, width / 4.5);
@@ -67,9 +52,6 @@ function Picture({ char, width }: { char: TraceChar; width: number }) {
 
 const styles = StyleSheet.create({
   root: { alignItems: 'center', justifyContent: 'center', gap: SPACING.sm },
-  // Pinned LTR so `fromSide` stays a physical side under Arabic.
-  story: { direction: 'ltr', flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
-  flip: { transform: [{ scaleX: -1 }] },
   balloons: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: SPACING.xs },
   word: { fontFamily: FONTS.display, fontSize: 32, color: COLORS.ink, textAlign: 'center' },
 });

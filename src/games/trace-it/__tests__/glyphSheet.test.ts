@@ -2,6 +2,10 @@
 import * as fs from 'fs';
 import * as pathMod from 'path';
 import { ALL_SETS } from '../glyphs';
+import { WARMUPS, warmupFor } from '../glyphs/warmup';
+import { EMOJI, spotsFor } from '../components/Travellers';
+import { TRACK_WIDTH } from '../constants';
+import { prepareGlyph } from '../utils/resample';
 import type { Glyph } from '../types';
 
 const OUT = process.env.GLYPH_SHEET;
@@ -44,7 +48,41 @@ function cellSvg(g: Glyph, x: number, y: number): string {
   return parts.join('');
 }
 
+// Warm-up story at true size: the road as drawn, both emoji spots and the board edge.
+function storySvg(g: Glyph, from: string, to: string, x: number, y: number): string {
+  const pad = TRACK_WIDTH / 2;
+  const prepared = prepareGlyph(g);
+  const { from: a, to: b, road } = spotsFor(prepared);
+  const pts = road.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  const emoji = (c: readonly [number, number], e: string) =>
+    `<circle cx="${c[0]}" cy="${c[1]}" r="${EMOJI / 2}" fill="#fde7a8" stroke="#c90"/>` +
+    `<text x="${c[0]}" y="${c[1] + 5}" font-size="13" text-anchor="middle">${e}</text>`;
+  return [
+    `<g transform="translate(${x + pad + 6},${y + pad + 6})">`,
+    `<rect x="${-pad}" y="${-pad}" width="${100 + 2 * pad}" height="${100 + 2 * pad}" fill="#fffaf0" stroke="#bbb"/>`,
+    `<polyline points="${pts}" fill="none" stroke="#333" stroke-width="${TRACK_WIDTH + 2}" stroke-linecap="round" stroke-linejoin="round"/>`,
+    `<polyline points="${pts}" fill="none" stroke="#f4c7c3" stroke-width="${TRACK_WIDTH}" stroke-linecap="round" stroke-linejoin="round"/>`,
+    emoji(a, from),
+    emoji(b, to),
+    `<text x="${-pad + 2}" y="${-pad + 8}" font-size="7" font-family="sans-serif">${g.id}</text>`,
+    `</g>`,
+  ].join('');
+}
+
 (OUT ? describe : describe.skip)('glyph sheet', () => {
+  it('writes the warm-up story sheet (LTR row, then RTL)', () => {
+    fs.mkdirSync(OUT as string, { recursive: true });
+    const cell = 100 + TRACK_WIDTH + 12;
+    const cells = [false, true].flatMap((rtl, row) =>
+      WARMUPS.map((w, i) => storySvg(warmupFor(w.id, rtl), w.from, w.to, i * cell, row * cell)),
+    );
+    const [w, h] = [WARMUPS.length * cell, 2 * cell];
+    fs.writeFileSync(
+      pathMod.join(OUT as string, 'trace-warmup-story.svg'),
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 2}" height="${h * 2}" viewBox="0 0 ${w} ${h}"><rect width="100%" height="100%" fill="#fff"/>${cells.join('')}</svg>`,
+    );
+  });
+
   it('writes one SVG per glyph set', () => {
     fs.mkdirSync(OUT as string, { recursive: true });
     for (const [name, glyphs] of Object.entries(ALL_SETS)) {

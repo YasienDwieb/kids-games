@@ -22,7 +22,7 @@ export type TraceChar = {
   count?: number;
   from?: string;
   to?: string;
-  fromSide?: 'left' | 'right';
+  faces?: 'left';
 };
 
 export type RoundStep = { glyph: Glyph; pass: 'guided' | 'solo' };
@@ -50,16 +50,15 @@ function need(map: Map<string, Glyph>, id: string): Glyph {
 export function charsFor(track: Track, script: 'latin' | 'arabic'): TraceChar[] {
   if (track === 'warmup') {
     return WARMUPS.map((w) => {
-      const { glyph, fromSide } = warmupFor(w.id, script === 'arabic');
       return {
         id: `w:${w.id}`,
         track,
         label: w.from,
-        glyphs: [glyph],
+        glyphs: [warmupFor(w.id, script === 'arabic')],
         nameKey: `trace-it:warmup.${w.id}`,
         from: w.from,
         to: w.to,
-        fromSide,
+        faces: w.faces,
       };
     });
   }
