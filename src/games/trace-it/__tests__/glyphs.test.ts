@@ -1,6 +1,7 @@
-import { LATIN_LETTERS } from '@/games/_shared/letters';
+import { ARABIC_LETTERS, LATIN_LETTERS } from '@/games/_shared/letters';
 import { getEmojiImage } from '@/sdk/assets/emoji/images';
 import { ALL_SETS } from '../glyphs';
+import { ARABIC_GLYPHS } from '../glyphs/arabic';
 import { LATIN_LOWER, LATIN_UPPER } from '../glyphs/latin';
 import { WARMUPS, warmupFor } from '../glyphs/warmup';
 import type { Glyph, Pt } from '../types';
@@ -128,6 +129,58 @@ describe('latin', () => {
       .filter((g) => g.strokes.some((s) => s.kind === 'dot'))
       .map((g) => g.id);
     expect(dotted).toEqual(['i', 'j']);
+  });
+});
+
+describe('arabic', () => {
+  // د ر ز و start with a downstroke; ج ح خ start the head left to right (Ministry KG1 book).
+  const START_EXEMPT = ['alef', 'dal', 'thal', 'raa', 'zay', 'waw', 'jeem', 'haa', 'khaa'];
+  const DOTS: Record<string, number> = {
+    baa: 1, taa: 2, thaa: 3, jeem: 1, khaa: 1, thal: 1, zay: 1, sheen: 3, dad: 1,
+    thaa_heavy: 1, ghayn: 1, faa: 1, qaf: 2, noon: 1, yaa: 2,
+  };
+
+  it('has the inventory ids in order and is registered', () => {
+    expect(ARABIC_GLYPHS.map((g) => g.id)).toEqual(ARABIC_LETTERS.map((l) => l.id));
+    expect(ALL_SETS.arabic).toBe(ARABIC_GLYPHS);
+  });
+
+  it.each(ARABIC_GLYPHS.filter((g) => !START_EXEMPT.includes(g.id)).map((g) => [g.id, g] as const))(
+    '%s starts its body on the right and travels left',
+    (_id, g) => {
+      const body = firstPath(g);
+      expect(body[0][0]).toBeGreaterThanOrEqual(body.at(-1)![0]);
+    },
+  );
+
+  it('alef is one stroke from top to bottom', () => {
+    const g = ARABIC_GLYPHS.find((l) => l.id === 'alef')!;
+    expect(g.strokes).toHaveLength(1);
+    const body = firstPath(g);
+    expect(body[0][1]).toBeLessThan(body.at(-1)![1]);
+  });
+
+  it.each(ARABIC_GLYPHS.map((g) => [g.id, DOTS[g.id] ?? 0] as const))('%s has %i dots', (id, n) => {
+    const g = ARABIC_GLYPHS.find((l) => l.id === id)!;
+    expect(g.strokes.filter((s) => s.kind === 'dot')).toHaveLength(n);
+  });
+
+  it('baa and taa share the anchored body', () => {
+    const [baa, taa] = ['baa', 'taa'].map((id) => ARABIC_GLYPHS.find((l) => l.id === id)!);
+    expect(firstPath(baa)[0]).toEqual([80, 45]);
+    expect(firstPath(baa).at(-1)).toEqual([20, 50]);
+    expect(firstPath(taa)).toEqual(firstPath(baa));
+    expect(baa.strokes.slice(1)).toEqual([{ kind: 'dot', at: [50, 82] }]);
+    expect(taa.strokes.slice(1)).toEqual([
+      { kind: 'dot', at: [42, 30] },
+      { kind: 'dot', at: [58, 30] },
+    ]);
+  });
+
+  it('descenders stay within y 95', () => {
+    for (const g of ARABIC_GLYPHS) {
+      for (const [, y] of pointsOf(g)) expect(y).toBeLessThanOrEqual(95 + 1e-9);
+    }
   });
 });
 
