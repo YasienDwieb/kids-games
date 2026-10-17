@@ -12,6 +12,8 @@ import { progressStore } from '../progress';
 // Celebrations resolve at once unless a test holds one open.
 const mockCelebrate = jest.fn((..._args: unknown[]) => Promise.resolve());
 jest.mock('@/sdk', () => ({ ...jest.requireActual('@/sdk'), useCelebrate: () => mockCelebrate }));
+const mockSpeak = jest.fn();
+jest.mock('expo-speech', () => ({ speak: (...a: unknown[]) => mockSpeak(...a), stop: jest.fn() }));
 
 const flush = () => act(async () => {
   await new Promise((r) => setTimeout(r, 0));
@@ -148,4 +150,16 @@ it('a warm-up sticker says "I can draw", a letter sticker "I can write"', () => 
   };
   expect(caption(zig)).toContain('I can draw a zigzag!');
   expect(caption(a)).toContain(`I can write ${a.label}!`);
+});
+
+it('speaks an Arabic letter in Arabic in an English UI', async () => {
+  mockSpeak.mockClear();
+  const alef = charsFor('letters', 'arabic')[0];
+  const tree = await mount(<Round char={alef} mode="full" onFinished={jest.fn()} />);
+  await flush();
+  expect(mockSpeak).toHaveBeenCalled();
+  const [text, opts] = mockSpeak.mock.calls[0] as [string, { language: string }];
+  expect(opts.language).toBe('ar');
+  expect(text).toMatch(/[\u0600-\u06FF]/);
+  act(() => tree.unmount());
 });

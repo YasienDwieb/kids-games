@@ -9,7 +9,7 @@ export { validateGameConfig } from './config/validate';
 // Design tokens (re-exported so games have one surface)
 export { COLORS, ACCENTS, POP, bestTextOn, contrastRatio, type AccentName } from '@/constants/colors';
 export { SPACING, BORDER_RADIUS, TOUCH_TARGET, FONT_SIZES, SHADOWS, OUTLINE } from '@/constants/dimensions';
-export { FONTS } from '@/constants/typography';
+export { FONTS, fontsFor } from '@/constants/typography';
 
 // Design-system UI primitives — always prefer these over hand-rolled controls.
 export {

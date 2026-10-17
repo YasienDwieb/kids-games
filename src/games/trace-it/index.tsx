@@ -6,15 +6,14 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { COLORS, useScreenBack } from '@/sdk';
-import { currentScript, type TraceChar } from './catalog';
+import { currentScript, type TabId, type TraceChar } from './catalog';
 import { Picker } from './components/Picker';
 import { Round } from './components/Round';
-import type { Track } from './types';
 
 export default function TraceIt() {
   const [selected, setSelected] = useState<TraceChar | null>(null);
-  const [tab, setTab] = useState<Track>('letters');
   const script = currentScript();
+  const [tab, setTab] = useState<TabId>(script);
 
   useScreenBack(() => {
     if (!selected) return false;

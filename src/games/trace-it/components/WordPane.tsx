@@ -4,8 +4,8 @@
  * word, and a replay button that speaks it again.
  */
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, EmojiImage, FONTS, Icon, IconButton, SPACING, useTranslation } from '@/sdk';
-import type { TraceChar } from '../catalog';
+import { COLORS, EmojiImage, FONTS, Icon, IconButton, SPACING, fontsFor, useTranslation } from '@/sdk';
+import { charLanguage, type TraceChar } from '../catalog';
 
 type WordPaneProps = {
   char: TraceChar;
@@ -14,9 +14,10 @@ type WordPaneProps = {
   onReplay: () => void;
 };
 
-/** What the pane names the character: the example word for letters, else its spoken name. */
-export function wordFor(char: TraceChar, t: (key: string) => string): string {
-  return char.word ? t('letters:words.' + char.word) : t(char.nameKey);
+/** What the pane names the character, in its own language: the example word for letters, else its spoken name. */
+export function wordFor(char: TraceChar, t: (key: string, options?: { lng: string }) => string): string {
+  const lng = charLanguage(char);
+  return char.word ? t('letters:words.' + char.word, { lng }) : t(char.nameKey, { lng });
 }
 
 export function WordPane({ char, width, onReplay }: WordPaneProps) {
@@ -24,7 +25,7 @@ export function WordPane({ char, width, onReplay }: WordPaneProps) {
   return (
     <View style={styles.root}>
       <Picture char={char} width={width} />
-      <Text style={styles.word} numberOfLines={2}>
+      <Text style={[styles.word, { fontFamily: fontsFor(charLanguage(char)).display }]} numberOfLines={2}>
         {wordFor(char, t)}
       </Text>
       <IconButton onPress={onReplay} accessibilityLabel={t('trace-it:a11y.replay')} size={56}>

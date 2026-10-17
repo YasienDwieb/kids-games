@@ -10,12 +10,13 @@ import {
   COLORS,
   EmojiImage,
   FONTS,
+  fontsFor,
   OUTLINE,
   SHADOWS,
   SPACING,
   useTranslation,
 } from '@/sdk';
-import type { TraceChar } from '../catalog';
+import { charLanguage, type TraceChar } from '../catalog';
 
 const POP_MS = 300;
 const HOLD_MS = 800;
@@ -52,7 +53,7 @@ export function WinSticker({ char, onDone }: { char: TraceChar; onDone: () => vo
   return (
     <View style={styles.layer} pointerEvents="none">
       <Animated.View style={[styles.card, style]}>
-        {warmup ? null : <Text style={styles.glyph}>{char.label}</Text>}
+        {warmup ? null : <Text style={[styles.glyph, { fontFamily: fontsFor(charLanguage(char)).display }]}>{char.label}</Text>}
         {picture ? <EmojiImage emoji={picture} size={72} /> : null}
         <Text style={styles.caption}>{t(warmup ? 'trace-it:sticker.iCanDraw' : 'trace-it:sticker.iCanWrite', { glyph })}</Text>
       </Animated.View>

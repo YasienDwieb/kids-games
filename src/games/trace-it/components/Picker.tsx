@@ -18,20 +18,13 @@ import {
   SHADOWS,
   SPACING,
   Star,
+  fontsFor,
   pulse,
   useLoop,
   useTranslation,
 } from '@/sdk';
-import { charsFor, nextSuggested, type TraceChar } from '../catalog';
+import { charLanguage, charsForTab, nextSuggested, tabsFor, type Script, type TabId, type TraceChar } from '../catalog';
 import { progressStore } from '../progress';
-import type { Track } from '../types';
-
-const TABS: readonly Track[] = ['warmup', 'letters', 'numbers'];
-const TAB_KEY: Record<Track, string> = {
-  warmup: 'trace-it:tabs.warmup',
-  letters: 'trace-it:tabs.letters',
-  numbers: 'trace-it:tabs.numbers',
-};
 const TILE_W = 128;
 const TILE_H = 156;
 // Room for the bare-mode floating back button (56) at the AppBar's start.
@@ -53,15 +46,15 @@ function useDone(): Record<string, number> | null {
 }
 
 type PickerProps = {
-  script: 'latin' | 'arabic';
-  tab: Track;
-  onTab: (tab: Track) => void;
+  script: Script;
+  tab: TabId;
+  onTab: (tab: TabId) => void;
   onPick: (c: TraceChar) => void;
 };
 
 export function Picker({ script, tab, onTab, onPick }: PickerProps) {
   const { t } = useTranslation();
-  const chars = useMemo(() => charsFor(tab, script), [tab, script]);
+  const chars = useMemo(() => charsForTab(tab, script), [tab, script]);
   const done = useDone();
 
   return (
@@ -69,8 +62,14 @@ export function Picker({ script, tab, onTab, onPick }: PickerProps) {
       <AppBar
         left={<View style={styles.backSpace} />}
         title={t('trace-it:meta.name')}
-        right={TABS.map((k) => (
-          <Chip key={k} label={t(TAB_KEY[k])} active={k === tab} onPress={() => onTab(k)} />
+        right={tabsFor(script).map((k) => (
+          <Chip
+            key={k}
+            label={t(`trace-it:tabs.${k}`)}
+            active={k === tab}
+            onPress={() => onTab(k)}
+            fontFamily={k === 'arabic' || k === 'latin' ? fontsFor(k === 'arabic' ? 'ar' : 'en').display : undefined}
+          />
         ))}
       />
       {/* Mounted once progress has loaded, so "Next" is final when the rail scrolls to it. */}
@@ -167,7 +166,7 @@ function Tile({ char, stars, next, onPress, onLayoutX }: TileProps) {
         {warmup && char.from ? (
           <EmojiImage emoji={char.from} size={64} />
         ) : (
-          <Text style={styles.glyph} numberOfLines={1}>
+          <Text style={[styles.glyph, char.script && { fontFamily: fontsFor(charLanguage(char)).display }]} numberOfLines={1}>
             {char.label}
           </Text>
         )}

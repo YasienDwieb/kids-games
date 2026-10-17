@@ -1,7 +1,19 @@
 import { getEmojiImage } from '@/sdk/assets/emoji/images';
 import { I18nManager } from 'react-native';
 import { i18n } from '@/sdk';
-import { blockComplete, charsFor, currentScript, flowLetter, nextSuggested, roundSteps } from '../catalog';
+import '@/games/_shared/letters/i18n';
+import {
+  blockComplete,
+  charLanguage,
+  charsFor,
+  charsForTab,
+  currentScript,
+  flowLetter,
+  nextSuggested,
+  roundSteps,
+  tabsFor,
+} from '../catalog';
+import { wordFor } from '../components/WordPane';
 import { charStars, progressStore, recordStars } from '../progress';
 import type { Track } from '../types';
 
@@ -116,5 +128,27 @@ describe('progress', () => {
     await recordStars('T', 3);
     await recordStars('T', 1);
     expect((await progressStore.get()).done.T).toBe(3);
+  });
+
+  it('offers both scripts, the app language first', () => {
+    expect(tabsFor('latin')).toEqual(['warmup', 'latin', 'arabic', 'numbers']);
+    expect(tabsFor('arabic')).toEqual(['warmup', 'arabic', 'latin', 'numbers']);
+    expect(charsForTab('arabic', 'latin')[0].id).toBe('alef');
+    expect(charsForTab('latin', 'arabic')[0].id).toBe('T');
+    // Warm-ups keep the app language's direction.
+    expect(charsForTab('warmup', 'arabic')).toEqual(charsFor('warmup', 'arabic'));
+  });
+
+  it('names a letter in its own language, whatever the app language', async () => {
+    await i18n.changeLanguage('en');
+    const alef = charsForTab('arabic', 'latin')[0];
+    const T = charsForTab('latin', 'latin')[0];
+    const d1 = charsFor('numbers', 'latin')[1];
+    expect(charLanguage(alef)).toBe('ar');
+    expect(charLanguage(T)).toBe('en');
+    expect(charLanguage(d1)).toBe('en');
+    const t = i18n.t.bind(i18n) as (key: string, options?: { lng: string }) => string;
+    expect(wordFor(alef, t)).toBe(i18n.t('letters:words.' + alef.word, { lng: 'ar' }));
+    expect(wordFor(alef, t)).not.toBe(i18n.t('letters:words.' + alef.word, { lng: 'en' }));
   });
 });

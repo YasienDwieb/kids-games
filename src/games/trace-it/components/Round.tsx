@@ -19,7 +19,7 @@ import {
   useSpeech,
   useTranslation,
 } from '@/sdk';
-import { blockComplete, currentScript, roundSteps, type TraceChar } from '../catalog';
+import { blockComplete, charLanguage, currentScript, roundSteps, type TraceChar } from '../catalog';
 import { charStars, progressStore, recordStars } from '../progress';
 import { TraceBoard } from './TraceBoard';
 import { TRAVEL_HOLD_MS } from './Travellers';
@@ -69,8 +69,11 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
   const [firstStroke, setFirstStroke] = useState(true);
 
   const sayChar = useCallback(() => {
-    const name = t(char.nameKey);
-    void speak(char.word ? t('trace-it:speak.carrier', { name, word: t('letters:words.' + char.word) }) : name);
+    // Letters are spoken in their own language (an Arabic letter in an English UI too).
+    const lng = charLanguage(char);
+    const name = t(char.nameKey, { lng });
+    const text = char.word ? t('trace-it:speak.carrier', { lng, name, word: t('letters:words.' + char.word, { lng }) }) : name;
+    void speak(text, { language: lng });
   }, [char, speak, t]);
 
   useEffect(() => {
@@ -89,7 +92,7 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
     setFinished(true);
     finalStars.current = stars;
     if (!inFlow) play('win');
-    const script = currentScript();
+    const script = char.script ?? currentScript();
     const before = (await progressStore.get()).done;
     await recordStars(char.id, stars);
     const after = (await progressStore.get()).done;

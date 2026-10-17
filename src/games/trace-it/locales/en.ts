@@ -7,7 +7,9 @@ export const en = {
   },
   tabs: {
     warmup: 'Warm-up',
-    letters: 'Letters',
+    // The letters themselves, so a pre-reader knows the subject.
+    latin: 'ABC',
+    arabic: 'أ ب ت',
     numbers: 'Numbers',
   },
   picker: {

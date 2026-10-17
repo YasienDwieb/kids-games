@@ -4,16 +4,20 @@ import {
   SCHOOL_ORDER,
   schoolOrdered,
 } from '@/games/_shared/letters';
-import { currentLanguage } from '@/sdk';
+import { currentLanguage, type LanguageCode } from '@/sdk';
 import { ARABIC_GLYPHS } from './glyphs/arabic';
 import { DIGITS } from './glyphs/digits';
 import { LATIN_LOWER, LATIN_UPPER } from './glyphs/latin';
 import { WARMUPS, warmupFor } from './glyphs/warmup';
 import type { Glyph, Track } from './types';
 
+export type Script = 'latin' | 'arabic';
+
 export type TraceChar = {
   id: string;
   track: Track;
+  /** Letters only: the script, which sets the language they are spoken and shown in. */
+  script?: Script;
   label: string;
   glyphs: readonly Glyph[];
   emoji?: string;
@@ -28,11 +32,32 @@ export type TraceChar = {
 export type RoundStep = { glyph: Glyph; pass: 'guided' | 'solo' };
 
 /**
- * The letter script (and warm-up direction) follows the app language, as in
- * letter-land — not I18nManager.isRTL, which can lag the language switch.
+ * The app language's script: the letters the picker opens on, the flow's letters
+ * and the warm-up direction — not I18nManager.isRTL, which can lag the language switch.
  */
-export function currentScript(): 'latin' | 'arabic' {
+export function currentScript(): Script {
   return currentLanguage() === 'ar' ? 'arabic' : 'latin';
+}
+
+/** The language a character is named in: its script's for letters, else the app's. */
+export function charLanguage(c: TraceChar): LanguageCode {
+  if (!c.script) return currentLanguage();
+  return c.script === 'arabic' ? 'ar' : 'en';
+}
+
+/**
+ * Picker tabs. Both scripts' letters are always offered — a KG child studies
+ * Arabic and English side by side — with the app language's first.
+ */
+export type TabId = 'warmup' | Script | 'numbers';
+
+export function tabsFor(script: Script): TabId[] {
+  return ['warmup', script, script === 'arabic' ? 'latin' : 'arabic', 'numbers'];
+}
+
+export function charsForTab(tab: TabId, script: Script): TraceChar[] {
+  if (tab === 'warmup' || tab === 'numbers') return charsFor(tab === 'warmup' ? 'warmup' : 'numbers', script);
+  return charsFor('letters', tab);
 }
 
 const DIGIT_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
@@ -47,7 +72,7 @@ function need(map: Map<string, Glyph>, id: string): Glyph {
   return g;
 }
 
-export function charsFor(track: Track, script: 'latin' | 'arabic'): TraceChar[] {
+export function charsFor(track: Track, script: Script): TraceChar[] {
   if (track === 'warmup') {
     return WARMUPS.map((w) => {
       return {
@@ -79,6 +104,7 @@ export function charsFor(track: Track, script: 'latin' | 'arabic'): TraceChar[] 
     return schoolOrdered(ARABIC_LETTERS, SCHOOL_ORDER.arabic).map((l) => ({
       id: l.id,
       track,
+      script,
       label: l.glyph ?? l.id,
       glyphs: [need(glyphs, l.id)],
       emoji: l.emoji,
@@ -91,6 +117,7 @@ export function charsFor(track: Track, script: 'latin' | 'arabic'): TraceChar[] 
   return schoolOrdered(LATIN_LETTERS, SCHOOL_ORDER.latin).map((l) => ({
     id: l.id,
     track,
+    script,
     label: l.glyph ?? l.id,
     glyphs: [need(upper, l.id), need(lower, l.id.toLowerCase())],
     emoji: l.emoji,
@@ -128,7 +155,7 @@ export function flowLetter(
 /** True once every character of `track`'s block has stars: the taught school-order letters, or the whole digit / warm-up set. */
 export function blockComplete(
   track: Track,
-  script: 'latin' | 'arabic',
+  script: Script,
   done: Readonly<Record<string, number>>,
 ): boolean {
   const ids = track === 'letters' ? SCHOOL_ORDER[script] : charsFor(track, script).map((c) => c.id);

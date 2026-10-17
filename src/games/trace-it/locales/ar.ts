@@ -7,7 +7,8 @@ export const ar: GameTranslations = {
   },
   tabs: {
     warmup: 'إحماء',
-    letters: 'حروف',
+    latin: 'ABC',
+    arabic: 'أ ب ت',
     numbers: 'أرقام',
   },
   picker: {
