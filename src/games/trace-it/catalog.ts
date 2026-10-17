@@ -103,3 +103,13 @@ export function nextSuggested(
 ): string | undefined {
   return chars.find((c) => !done[c.id])?.id;
 }
+
+/** True once every character of `track`'s block has stars: the taught school-order letters, or the whole digit / warm-up set. */
+export function blockComplete(
+  track: Track,
+  script: 'latin' | 'arabic',
+  done: Readonly<Record<string, number>>,
+): boolean {
+  const ids = track === 'letters' ? SCHOOL_ORDER[script] : charsFor(track, script).map((c) => c.id);
+  return ids.every((id) => !!done[id]);
+}

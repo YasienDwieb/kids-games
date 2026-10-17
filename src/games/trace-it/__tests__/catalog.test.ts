@@ -1,5 +1,5 @@
 import { getEmojiImage } from '@/sdk/assets/emoji/images';
-import { charsFor, nextSuggested, roundSteps } from '../catalog';
+import { blockComplete, charsFor, nextSuggested, roundSteps } from '../catalog';
 import { charStars, progressStore, recordStars } from '../progress';
 import type { Track } from '../types';
 
@@ -59,6 +59,21 @@ describe('catalog', () => {
     const c = charsFor('letters', 'latin');
     expect(nextSuggested(c, { T: 3, I: 1 })).toBe('S');
     expect(nextSuggested(c, Object.fromEntries(c.map((x) => [x.id, 1])))).toBeUndefined();
+  });
+
+  it('a letter block is the taught school-order head; digits and warm-ups are the whole track', () => {
+    const taught = { T: 1, I: 2, S: 3, A: 1, N: 1, P: 1, H: 1, D: 1, R: 1, E: 1, C: 1, K: 1 };
+    expect(blockComplete('letters', 'latin', taught)).toBe(false);
+    expect(blockComplete('letters', 'latin', { ...taught, M: 2 })).toBe(true);
+    const ar = ['alef', 'baa', 'meem', 'haa', 'jeem', 'dal', 'khaa', 'taa', 'lam', 'seen', 'noon'];
+    expect(blockComplete('letters', 'arabic', Object.fromEntries(ar.map((id) => [id, 1])))).toBe(true);
+    expect(blockComplete('letters', 'latin', Object.fromEntries(ar.map((id) => [id, 1])))).toBe(false);
+    const digits = charsFor('numbers', 'latin').map((c) => c.id);
+    expect(blockComplete('numbers', 'latin', Object.fromEntries(digits.slice(1).map((id) => [id, 1])))).toBe(false);
+    expect(blockComplete('numbers', 'latin', Object.fromEntries(digits.map((id) => [id, 1])))).toBe(true);
+    const warm = charsFor('warmup', 'arabic').map((c) => c.id);
+    expect(blockComplete('warmup', 'arabic', Object.fromEntries(warm.map((id) => [id, 3])))).toBe(true);
+    expect(blockComplete('warmup', 'arabic', {})).toBe(false);
   });
 });
 

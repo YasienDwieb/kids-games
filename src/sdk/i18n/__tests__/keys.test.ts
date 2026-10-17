@@ -484,6 +484,24 @@ const KEYS: string[] = [
   'candy-catch:lose.retry',
   'candy-catch:a11y.basket',
   'candy-catch:a11y.hint',
+  // trace-it
+  'trace-it:meta.name',
+  'trace-it:meta.description',
+  'trace-it:tabs.warmup',
+  'trace-it:tabs.letters',
+  'trace-it:tabs.numbers',
+  'trace-it:picker.next',
+  'trace-it:round.guided',
+  'trace-it:round.solo',
+  'trace-it:round.dots',
+  'trace-it:round.warmup',
+  'trace-it:sticker.iCanWrite',
+  'trace-it:speak.carrier',
+  'trace-it:digits.d3',
+  'trace-it:warmup.zigzag',
+  'trace-it:a11y.replay',
+  'trace-it:a11y.tile',
+  'trace-it:a11y.board',
 ];
 
 describe.each(['en', 'ar'])('translation keys resolve in %s', (lng) => {
