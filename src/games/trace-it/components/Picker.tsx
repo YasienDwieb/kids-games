@@ -3,8 +3,8 @@
  * school order. Each tile shows its best stars; the next untraced one pulses
  * with a "Next" badge, but every tile stays tappable.
  */
-import { useEffect, useMemo, useState } from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   ACCENTS,
   AppBar,
@@ -37,8 +37,9 @@ const TILE_H = 156;
 // Room for the bare-mode floating back button (56) at the AppBar's start.
 const BACK_SPACE = 56;
 
-function useDone(): Record<string, number> {
-  const [done, setDone] = useState<Record<string, number>>({});
+/** Best stars per character; null until the store has loaded. */
+function useDone(): Record<string, number> | null {
+  const [done, setDone] = useState<Record<string, number> | null>(null);
   useEffect(() => {
     let alive = true;
     void progressStore.get().then((p) => alive && setDone(p.done));
@@ -62,7 +63,6 @@ export function Picker({ script, tab, onTab, onPick }: PickerProps) {
   const { t } = useTranslation();
   const chars = useMemo(() => charsFor(tab, script), [tab, script]);
   const done = useDone();
-  const next = nextSuggested(chars, done);
 
   return (
     <View style={styles.root}>
@@ -73,27 +73,87 @@ export function Picker({ script, tab, onTab, onPick }: PickerProps) {
           <Chip key={k} label={t(TAB_KEY[k])} active={k === tab} onPress={() => onTab(k)} />
         ))}
       />
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.scroll}
-        contentContainerStyle={styles.rail}
-      >
-        {chars.map((c) => (
-          <Tile key={c.id} char={c} stars={done[c.id] ?? 0} next={c.id === next} onPress={() => onPick(c)} />
-        ))}
-      </ScrollView>
+      {/* Mounted once progress has loaded, so "Next" is final when the rail scrolls to it. */}
+      {done ? <Rail key={tab} chars={chars} done={done} onPick={onPick} /> : <View style={styles.scroll} />}
     </View>
   );
 }
 
-function Tile({ char, stars, next, onPress }: { char: TraceChar; stars: number; next: boolean; onPress: () => void }) {
+type RailProps = {
+  chars: readonly TraceChar[];
+  done: Record<string, number>;
+  onPick: (c: TraceChar) => void;
+};
+
+/**
+ * The tile rail. On mount it brings the "Next" tile into view instead of always
+ * opening at the start. Offsets are physical px, as HomeScreen's rail relies on:
+ * under native RTL the rail is mirrored but x:0 is still its left (far) end.
+ */
+function Rail({ chars, done, onPick }: RailProps) {
+  const next = nextSuggested(chars, done);
+  const rail = useRef<ScrollView>(null);
+  const [viewW, setViewW] = useState(0);
+  const [contentW, setContentW] = useState(0);
+  const [nextX, setNextX] = useState<number | null>(null);
+  const scrolled = useRef(false);
+  useEffect(() => {
+    if (scrolled.current || viewW === 0 || contentW === 0) return;
+    const max = Math.max(0, contentW - viewW);
+    let x: number;
+    if (next) {
+      if (nextX === null) return;
+      x = nextX - (viewW - TILE_W) / 2;
+    } else {
+      x = I18nManager.isRTL ? max : 0;
+    }
+    scrolled.current = true;
+    rail.current?.scrollTo({ x: Math.min(max, Math.max(0, x)), animated: false });
+  }, [viewW, contentW, nextX, next]);
+
+  return (
+    <ScrollView
+      ref={rail}
+      horizontal
+      onLayout={(e) => setViewW(e.nativeEvent.layout.width)}
+      onContentSizeChange={(w) => setContentW(w)}
+      showsHorizontalScrollIndicator={false}
+      style={styles.scroll}
+      contentContainerStyle={styles.rail}
+    >
+      {chars.map((c) => (
+        <Tile
+          key={c.id}
+          char={c}
+          stars={done[c.id] ?? 0}
+          next={c.id === next}
+          onPress={() => onPick(c)}
+          onLayoutX={c.id === next ? setNextX : undefined}
+        />
+      ))}
+    </ScrollView>
+  );
+}
+
+type TileProps = {
+  char: TraceChar;
+  stars: number;
+  next: boolean;
+  onPress: () => void;
+  /** Reports the tile's physical x inside the rail. */
+  onLayoutX?: (x: number) => void;
+};
+
+function Tile({ char, stars, next, onPress, onLayoutX }: TileProps) {
   const { t } = useTranslation();
   const loop = useLoop(1400, { enabled: next });
   const warmup = char.track === 'warmup';
   const label = warmup ? t(char.nameKey) : char.label;
   return (
-    <Animated.View style={next ? pulse(loop, 0.06) : undefined}>
+    <Animated.View
+      style={next ? pulse(loop, 0.06) : undefined}
+      onLayout={onLayoutX ? (e) => onLayoutX(e.nativeEvent.layout.x) : undefined}
+    >
       <Pressable
         onPress={onPress}
         accessibilityRole="button"

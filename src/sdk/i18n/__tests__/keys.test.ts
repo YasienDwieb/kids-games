@@ -496,6 +496,7 @@ const KEYS: string[] = [
   'trace-it:round.dots',
   'trace-it:round.warmup',
   'trace-it:sticker.iCanWrite',
+  'trace-it:sticker.iCanDraw',
   'trace-it:speak.carrier',
   'trace-it:digits.d3',
   'trace-it:warmup.zigzag',

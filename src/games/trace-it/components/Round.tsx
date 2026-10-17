@@ -5,7 +5,7 @@
  * Used by the standalone screen (`full`) and the guided flow (`guidedOnly`).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { I18nManager, StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
 import {
   COLORS,
   FONTS,
@@ -19,7 +19,7 @@ import {
   useSpeech,
   useTranslation,
 } from '@/sdk';
-import { blockComplete, roundSteps, type TraceChar } from '../catalog';
+import { blockComplete, currentScript, roundSteps, type TraceChar } from '../catalog';
 import { charStars, progressStore, recordStars } from '../progress';
 import { TraceBoard } from './TraceBoard';
 import { WinSticker } from './WinSticker';
@@ -34,6 +34,8 @@ type RoundProps = {
 };
 
 const IDLE_MS = 6000;
+/** How long a finished glyph stays on the board before the next step (or the finish). */
+export const DONE_HOLD_MS = 600;
 const ACCENT = 'coral' as const;
 // Start padding clears the bare-mode floating back button (56 wide, SPACING.md in).
 const PAD_START = 56 + SPACING.md * 2;
@@ -52,6 +54,14 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
   const [area, setArea] = useState({ width: 0, height: 0 });
   const stepStars = useRef<(1 | 2 | 3)[]>([]);
   const finalStars = useRef<1 | 2 | 3>(3);
+  const hold = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [misses, setMisses] = useState(0);
+  useEffect(
+    () => () => {
+      if (hold.current) clearTimeout(hold.current);
+    },
+    [],
+  );
 
   const firstRun = useFirstRun('trace-it');
   const { idle, poke } = useIdle(IDLE_MS, !finished);
@@ -79,8 +89,7 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
     finalStars.current = stars;
     if (!inFlow) play('win');
     sayChar();
-    // Script follows the reading direction (read at call time, never at import).
-    const script = I18nManager.isRTL ? 'arabic' : 'latin';
+    const script = currentScript();
     const before = (await progressStore.get()).done;
     await recordStars(char.id, stars);
     const after = (await progressStore.get()).done;
@@ -99,12 +108,16 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
     endFirstRun();
     stepStars.current.push(stars);
     poke();
-    if (index < steps.length - 1) {
-      setDotsOnly(false);
-      setIndex(index + 1);
-      return;
-    }
-    void finish(charStars(stepStars.current));
+    // Let the child see the finished glyph before it moves on.
+    hold.current = setTimeout(() => {
+      hold.current = null;
+      if (index < steps.length - 1) {
+        setDotsOnly(false);
+        setIndex(index + 1);
+        return;
+      }
+      void finish(charStars(stepStars.current));
+    }, DONE_HOLD_MS);
   };
 
   const onStrokeDone = (next: 'path' | 'dot' | null) => {
@@ -146,6 +159,9 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
               onStrokeDone={onStrokeDone}
               onDone={onDone}
               onActivity={poke}
+              onMisses={setMisses}
+              // The flow plays its own success when the unit completes.
+              quietDone={inFlow && index === steps.length - 1}
             />
           </View>
           <View style={styles.sidePane}>
@@ -154,7 +170,7 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
           </View>
         </>
       ) : null}
-      {inFlow ? null : <MascotHelper pose={finished ? 'cheer' : null} side="end" size={100} />}
+      <MascotHelper pose={!finished && misses >= 2 ? 'encourage' : null} side="end" size={100} />
       {sticker ? <WinSticker char={char} onDone={() => onFinished(finalStars.current)} /> : null}
     </View>
   );

@@ -1,7 +1,7 @@
 /**
- * The finish reward: an outlined "I can write …!" card (glyph + word picture)
- * that pops in, holds, then shrinks away toward the start side (~1.5 s) before
- * calling `onDone`.
+ * The finish reward: an outlined "I can write …!" ("I can draw …!" for warm-ups)
+ * card (glyph + word picture) that pops in, holds, then shrinks away toward the
+ * start side (~1.5 s) before calling `onDone`.
  */
 import { useEffect, useMemo } from 'react';
 import { Animated, Easing, I18nManager, StyleSheet, Text, View } from 'react-native';
@@ -54,7 +54,7 @@ export function WinSticker({ char, onDone }: { char: TraceChar; onDone: () => vo
       <Animated.View style={[styles.card, style]}>
         {warmup ? null : <Text style={styles.glyph}>{char.label}</Text>}
         {picture ? <EmojiImage emoji={picture} size={72} /> : null}
-        <Text style={styles.caption}>{t('trace-it:sticker.iCanWrite', { glyph })}</Text>
+        <Text style={styles.caption}>{t(warmup ? 'trace-it:sticker.iCanDraw' : 'trace-it:sticker.iCanWrite', { glyph })}</Text>
       </Animated.View>
     </View>
   );

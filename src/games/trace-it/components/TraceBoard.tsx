@@ -1,15 +1,14 @@
 /**
  * The playable board for one RoundStep: outlined track, the child's ink, start
  * markers, finger tracing via the tracker, and the shared hint ladder (bouncing
- * start → pulsing arrow → ghost-hand reveal, Lulu encouraging after two misses).
+ * start → pulsing arrow → ghost-hand reveal; misses are reported for the host's Lulu).
  * The host owns layout, instructions, idle timing and the win flow.
  */
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import {
   DemoHand,
-  MascotHelper,
   useHintLadder,
   useSound,
   type AccentName,
@@ -35,6 +34,10 @@ type TraceBoardProps = {
   onDone: (stars: 1 | 2 | 3) => void;
   /** Any grab, advance or dot hit — lets the host reset its idle timer. */
   onActivity?: () => void;
+  /** Misses on the current stroke (0 once the glyph is done) — the host shows Lulu encouraging. */
+  onMisses?: (misses: number) => void;
+  /** Skip the finishing chime (the host plays its own). */
+  quietDone?: boolean;
 };
 
 const DEMO_MAX_POINTS = 8;
@@ -52,7 +55,17 @@ function demoFor(glyph: Glyph, s: TraceState): Pt[] {
   return out;
 }
 
-export function TraceBoard({ step, side, showDemo = false, accent, onStrokeDone, onDone, onActivity }: TraceBoardProps) {
+export function TraceBoard({
+  step,
+  side,
+  showDemo = false,
+  accent,
+  onStrokeDone,
+  onDone,
+  onActivity,
+  onMisses,
+  quietDone = false,
+}: TraceBoardProps) {
   const { play } = useSound();
   const glyph = useMemo(() => prepareGlyph(step.glyph), [step.glyph]);
   // Mutable per-step session: a new step starts from a clean tracker. Keyed on
@@ -69,9 +82,24 @@ export function TraceBoard({ step, side, showDemo = false, accent, onStrokeDone,
   const { scale, pad } = boardMetrics(side);
   const guided = step.pass === 'guided';
 
+  const missesShown = s.done ? 0 : ladder.misses;
+  useEffect(() => {
+    onMisses?.(missesShown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [missesShown]);
+
   const apply = ({ state, event }: Step) => {
+    const prev = session.state;
     session.state = state;
-    setTick((n) => n + 1);
+    // Only re-render when something drawn changed, not on every finger move.
+    if (
+      state.progress !== prev.progress ||
+      state.stroke !== prev.stroke ||
+      state.grabbed !== prev.grabbed ||
+      state.done !== prev.done
+    ) {
+      setTick((n) => n + 1);
+    }
     switch (event) {
       case 'grab':
         play('pop');
@@ -99,7 +127,7 @@ export function TraceBoard({ step, side, showDemo = false, accent, onStrokeDone,
       case 'glyphDone':
         session.stars.push(ladder.stars);
         if (glyph.strokes[state.stroke].kind === 'dot') onActivity?.();
-        play('success');
+        if (!quietDone) play('success');
         if (!session.reported) {
           session.reported = true;
           onDone(charStars(session.stars));
@@ -143,7 +171,7 @@ export function TraceBoard({ step, side, showDemo = false, accent, onStrokeDone,
     <GestureDetector gesture={pan}>
       <View style={[styles.root, { width: side, height: side }]}>
         <View pointerEvents="none" style={[styles.box, { left: pad, top: pad, width: 100 * scale, height: 100 * scale }]}>
-          <TrackLayer glyph={glyph} scale={scale} solo={!guided} accent={accent} />
+          <TrackLayer glyph={glyph} scale={scale} solo={!guided} accent={accent} current={guided ? s.stroke : undefined} />
           <InkLayer glyph={glyph} stroke={s.stroke} progress={s.progress} done={s.done} scale={scale} accent={accent} />
           <Markers
             glyph={glyph}
@@ -163,7 +191,6 @@ export function TraceBoard({ step, side, showDemo = false, accent, onStrokeDone,
             size={Math.max(44, side * 0.16)}
           />
         ) : null}
-        <MascotHelper pose={!s.done && ladder.misses >= 2 ? 'encourage' : null} size={Math.min(110, side * 0.35)} />
       </View>
     </GestureDetector>
   );

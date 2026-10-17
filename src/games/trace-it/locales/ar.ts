@@ -6,7 +6,7 @@ export const ar: GameTranslations = {
     description: 'تتبّع الحروف والأرقام بإصبعك!',
   },
   tabs: {
-    warmup: 'تحمية',
+    warmup: 'إحماء',
     letters: 'حروف',
     numbers: 'أرقام',
   },
@@ -17,10 +17,11 @@ export const ar: GameTranslations = {
     guided: 'اتبع السهم!',
     solo: 'والآن وحدك!',
     dots: 'ضع النقاط!',
-    warmup: 'ساعده يصل!',
+    warmup: 'ساعده ليصل!',
   },
   sticker: {
     iCanWrite: 'أستطيع كتابة {{glyph}}!',
+    iCanDraw: 'أستطيع رسم {{glyph}}!',
   },
   speak: {
     carrier: '{{name}}. {{word}}',

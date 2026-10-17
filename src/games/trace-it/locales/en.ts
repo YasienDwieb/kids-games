@@ -21,6 +21,8 @@ export const en = {
   },
   sticker: {
     iCanWrite: 'I can write {{glyph}}!',
+    // Warm-up names carry their own article so they read here and when spoken.
+    iCanDraw: 'I can draw {{glyph}}!',
   },
   speak: {
     carrier: '{{name}}. {{word}}',
@@ -38,13 +40,13 @@ export const en = {
     d9: 'nine',
   },
   warmup: {
-    line: 'straight line',
-    zigzag: 'zigzag',
-    wave: 'wave',
+    line: 'a straight line',
+    zigzag: 'a zigzag',
+    wave: 'a wave',
     arch: 'bridges',
     loops: 'loops',
-    spiral: 'spiral',
-    circle: 'circle',
+    spiral: 'a spiral',
+    circle: 'a circle',
   },
   a11y: {
     replay: 'Hear it again',
