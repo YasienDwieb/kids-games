@@ -89,20 +89,22 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
     setFinished(true);
     finalStars.current = stars;
     if (!inFlow) play('win');
-    sayChar();
     const script = currentScript();
     const before = (await progressStore.get()).done;
     await recordStars(char.id, stars);
     const after = (await progressStore.get()).done;
     const big = !blockComplete(char.track, script, before) && blockComplete(char.track, script, after);
     if (inFlow) {
+      sayChar();
       onFinished(stars);
       return;
     }
     void awardStars('trace-it', stars);
-    // The praise burst sits mid-screen; the sticker follows it rather than hiding under it.
-    await celebrate(big ? 'big' : 'small', { voice: false });
+    // The praise burst (and its voice) comes first; the sticker and the letter's
+    // name follow it rather than hiding under it or talking over it.
+    await celebrate(big ? 'big' : 'small');
     setSticker(true);
+    sayChar();
   };
 
   const onDone = (stars: 1 | 2 | 3) => {
