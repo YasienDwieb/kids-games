@@ -89,8 +89,9 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
       onFinished(stars);
       return;
     }
-    void celebrate(big ? 'big' : 'small', { voice: false });
     void awardStars('trace-it', stars);
+    // The praise burst sits mid-screen; the sticker follows it rather than hiding under it.
+    await celebrate(big ? 'big' : 'small', { voice: false });
     setSticker(true);
   };
 

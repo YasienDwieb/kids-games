@@ -8,6 +8,10 @@ import { TraceBoard } from '../components/TraceBoard';
 import { WinSticker } from '../components/WinSticker';
 import { progressStore } from '../progress';
 
+// Celebrations resolve at once unless a test holds one open.
+const mockCelebrate = jest.fn((..._args: unknown[]) => Promise.resolve());
+jest.mock('@/sdk', () => ({ ...jest.requireActual('@/sdk'), useCelebrate: () => mockCelebrate }));
+
 const flush = () => act(async () => {
   await new Promise((r) => setTimeout(r, 0));
 });
@@ -58,5 +62,29 @@ it('in a flow, records stars and finishes at once without its own sticker', asyn
   await flush();
   expect(onFinished).toHaveBeenCalledWith(3);
   expect(tree!.root.findAllByType(WinSticker)).toHaveLength(0);
+  act(() => tree!.unmount());
+});
+
+it('waits for the celebration burst before the sticker, so they never overlap', async () => {
+  let release!: () => void;
+  mockCelebrate.mockImplementationOnce(() => new Promise<void>((r) => (release = r)));
+  const one = charsFor('numbers', 'latin').find((c) => c.id === 'd1')!;
+  let tree: ReturnType<typeof create>;
+  await act(async () => {
+    tree = create(<Round char={one} mode="full" onFinished={jest.fn()} />);
+  });
+  await act(async () => {
+    tree!.root.findAll((n: { props: Record<string, unknown> }) => typeof n.props.onLayout === 'function')[0].props.onLayout({
+      nativeEvent: { layout: { width: 800, height: 400 } },
+    });
+  });
+  await act(async () => tree!.root.findByType(TraceBoard).props.onDone(3));
+  await act(async () => tree!.root.findByType(TraceBoard).props.onDone(3));
+  await flush();
+  expect(mockCelebrate).toHaveBeenCalled();
+  expect(tree!.root.findAllByType(WinSticker)).toHaveLength(0);
+  await act(async () => release());
+  await flush();
+  expect(tree!.root.findAllByType(WinSticker)).toHaveLength(1);
   act(() => tree!.unmount());
 });
