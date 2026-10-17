@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { ACCENTS, COLORS, OUTLINE, useLoop, type AccentName, type HintStep } from '@/sdk';
 import { TRACK_WIDTH } from '../constants';
@@ -24,11 +25,19 @@ type MarkersProps = {
 export function Markers({ glyph, stroke, progress, done, scale, guided, hint, accent }: MarkersProps) {
   const bounce = useLoop(700, { enabled: !done && hint === 'retry' });
   const throb = useLoop(800, { enabled: !done && guided && hint === 'highlight' });
+  const dotSize = TRACK_WIDTH * scale * 0.8;
+  // Memoized so the native-driven loops aren't re-attached on every finger move.
+  const hop = useMemo(
+    () => ({ transform: [{ translateY: bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -dotSize * 0.5] }) }] }),
+    [bounce, dotSize],
+  );
+  const throbStyle = useMemo(
+    () => ({ transform: [{ scale: throb.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] }) }] }),
+    [throb],
+  );
   if (done) return null;
   const current = glyph.strokes[stroke];
   const colors = ACCENTS[accent];
-  const dotSize = TRACK_WIDTH * scale * 0.8;
-  const hop = { transform: [{ translateY: bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -dotSize * 0.5] }) }] };
 
   const at = (p: Pt, size: number) => ({
     left: p[0] * scale - size / 2,
@@ -63,7 +72,6 @@ export function Markers({ glyph, stroke, progress, done, scale, guided, hint, ac
   const ahead = pts[Math.min(progress + ARROW_AHEAD, pts.length - 1)];
   const angle = (Math.atan2(ahead[1] - start[1], ahead[0] - start[0]) * 180) / Math.PI;
   const arrow = TRACK_WIDTH * scale * 0.6;
-  const throbStyle = { transform: [{ scale: throb.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] }) }] };
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>

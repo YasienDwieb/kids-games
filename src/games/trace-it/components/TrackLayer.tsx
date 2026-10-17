@@ -56,14 +56,20 @@ export function Polyline({ points, scale, thickness, color }: PolylineProps) {
   );
 }
 
-type TrackLayerProps = { glyph: Glyph; scale: number; solo: boolean; accent: AccentName };
+type TrackLayerProps = {
+  glyph: Glyph;
+  scale: number;
+  solo: boolean;
+  accent: AccentName;
+  /** Guided pass: the stroke being traced; strokes after it are drawn dimmer. */
+  current?: number;
+};
 
-/** The static outlined "road" every path stroke runs along. */
-export const TrackLayer = memo(function TrackLayer({ glyph, scale, solo, accent }: TrackLayerProps) {
-  const paths = glyph.strokes.flatMap((s) => (s.kind === 'path' ? [everyNth(s.points, 2)] : []));
-  const width = TRACK_WIDTH * scale;
+type RoadProps = { paths: readonly Pt[][]; width: number; accent: AccentName; scale: number };
+
+function Road({ paths, width, accent, scale }: RoadProps) {
   return (
-    <View pointerEvents="none" style={[StyleSheet.absoluteFill, solo && styles.solo]}>
+    <>
       {/* All outlines first, then all fills, so crossing strokes read as one road. */}
       {paths.map((pts, i) => (
         <Polyline key={`o${i}`} points={pts} scale={scale} thickness={width + 2 * OUTLINE.base} color={OUTLINE.color} />
@@ -71,6 +77,27 @@ export const TrackLayer = memo(function TrackLayer({ glyph, scale, solo, accent 
       {paths.map((pts, i) => (
         <Polyline key={`f${i}`} points={pts} scale={scale} thickness={width} color={ACCENTS[accent].tint} />
       ))}
+    </>
+  );
+}
+
+/** The static outlined "road" every path stroke runs along. */
+export const TrackLayer = memo(function TrackLayer({ glyph, scale, solo, accent, current }: TrackLayerProps) {
+  const lit: Pt[][] = [];
+  const later: Pt[][] = [];
+  glyph.strokes.forEach((s, i) => {
+    if (s.kind !== 'path') return;
+    (current !== undefined && i > current ? later : lit).push(everyNth(s.points, 2));
+  });
+  const width = TRACK_WIDTH * scale;
+  return (
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, solo && styles.solo]}>
+      {later.length > 0 ? (
+        <View testID="track-later" style={[StyleSheet.absoluteFill, styles.later]}>
+          <Road paths={later} width={width} accent={accent} scale={scale} />
+        </View>
+      ) : null}
+      <Road paths={lit} width={width} accent={accent} scale={scale} />
     </View>
   );
 });
@@ -78,4 +105,5 @@ export const TrackLayer = memo(function TrackLayer({ glyph, scale, solo, accent 
 const styles = StyleSheet.create({
   abs: { position: 'absolute' },
   solo: { opacity: 0.35 },
+  later: { opacity: 0.4 },
 });
