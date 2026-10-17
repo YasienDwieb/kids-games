@@ -93,8 +93,8 @@ export const ARABIC_GLYPHS: readonly Glyph[] = [
   // ا: one stroke top to bottom (the hamza of أ is not traced).
   g('alef', path(line([50, 14], [50, 66]))),
   g('baa', baaBody(), dot(50, 82)),
-  g('taa', baaBody(), dot(42, 30), dot(58, 30)),
-  g('thaa', baaBody(), dot(42, 32), dot(58, 32), dot(50, 21)),
+  g('taa', baaBody(), dot(58, 30), dot(42, 30)),
+  g('thaa', baaBody(), dot(58, 32), dot(42, 32), dot(50, 21)),
   g('jeem', haaBody(), dot(52, 64)),
   g('haa', haaBody()),
   g('khaa', haaBody(), dot(56, 15)),
@@ -111,7 +111,7 @@ export const ARABIC_GLYPHS: readonly Glyph[] = [
   g('ayn', aynBody()),
   g('ghayn', aynBody(), dot(52, 16)),
   g('faa', faaBody(), dot(72, 32)),
-  g('qaf', qafBody(), dot(62, 32), dot(74, 32)),
+  g('qaf', qafBody(), dot(74, 32), dot(62, 32)),
   // ك: upright down and along the base to the left, then the small zigzag inside.
   g(
     'kaf',
@@ -143,7 +143,7 @@ export const ARABIC_GLYPHS: readonly Glyph[] = [
       curve([74, 62], [86, 70], [74, 90], [50, 90]),
       curve([50, 90], [36, 90], [24, 84], [22, 72]),
     ),
-    dot(44, 76),
     dot(56, 76),
+    dot(44, 76),
   ),
 ];

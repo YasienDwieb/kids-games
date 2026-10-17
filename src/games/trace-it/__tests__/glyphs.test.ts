@@ -133,8 +133,8 @@ describe('latin', () => {
 });
 
 describe('arabic', () => {
-  // د ر ز و start with a downstroke; ج ح خ start the head left to right (Ministry KG1 book).
-  const START_EXEMPT = ['alef', 'dal', 'thal', 'raa', 'zay', 'waw', 'jeem', 'haa', 'khaa'];
+  // ا runs top to bottom; ج ح خ start the head left to right (Ministry KG1 book).
+  const START_EXEMPT = ['alef', 'jeem', 'haa', 'khaa'];
   const DOTS: Record<string, number> = {
     baa: 1, taa: 2, thaa: 3, jeem: 1, khaa: 1, thal: 1, zay: 1, sheen: 3, dad: 1,
     thaa_heavy: 1, ghayn: 1, faa: 1, qaf: 2, noon: 1, yaa: 2,
@@ -172,9 +172,17 @@ describe('arabic', () => {
     expect(firstPath(taa)).toEqual(firstPath(baa));
     expect(baa.strokes.slice(1)).toEqual([{ kind: 'dot', at: [50, 82] }]);
     expect(taa.strokes.slice(1)).toEqual([
-      { kind: 'dot', at: [42, 30] },
       { kind: 'dot', at: [58, 30] },
+      { kind: 'dot', at: [42, 30] },
     ]);
+  });
+
+  it.each(ARABIC_GLYPHS.map((g) => [g.id, g] as const))('%s orders same-row dots right to left', (_id, g) => {
+    const dots = g.strokes.flatMap((s) => (s.kind === 'dot' ? [s.at] : []));
+    for (let i = 0; i < dots.length; i++) {
+      const row = dots.slice(i + 1).find((d) => Math.abs(d[1] - dots[i][1]) < 3);
+      if (row) expect(dots[i][0]).toBeGreaterThanOrEqual(row[0]);
+    }
   });
 
   it('descenders stay within y 95', () => {
