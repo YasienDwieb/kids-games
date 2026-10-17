@@ -44,6 +44,15 @@ describe("tracker", () => {
     expect(up(g, d.state).event).toBe("miss");
   });
 
+  it("grab then up without advancing is a miss", () => {
+    const d = down(g, initTrace(), [10, 50]);
+    expect(d.event).toBe("grab");
+    const u = up(g, d.state);
+    expect(u.event).toBe("miss");
+    expect(u.state.grabbed).toBe(false);
+    expect(u.state.progress).toBe(0);
+  });
+
   it("lift and resume keeps progress", () => {
     const d = down(g, initTrace(), [10, 50]);
     const r = drag(g, d.state, range(20, 50));

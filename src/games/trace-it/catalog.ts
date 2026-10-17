@@ -4,6 +4,7 @@ import {
   SCHOOL_ORDER,
   schoolOrdered,
 } from '@/games/_shared/letters';
+import { currentLanguage } from '@/sdk';
 import { ARABIC_GLYPHS } from './glyphs/arabic';
 import { DIGITS } from './glyphs/digits';
 import { LATIN_LOWER, LATIN_UPPER } from './glyphs/latin';
@@ -25,6 +26,14 @@ export type TraceChar = {
 };
 
 export type RoundStep = { glyph: Glyph; pass: 'guided' | 'solo' };
+
+/**
+ * The letter script (and warm-up direction) follows the app language, as in
+ * letter-land — not I18nManager.isRTL, which can lag the language switch.
+ */
+export function currentScript(): 'latin' | 'arabic' {
+  return currentLanguage() === 'ar' ? 'arabic' : 'latin';
+}
 
 const DIGIT_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
 

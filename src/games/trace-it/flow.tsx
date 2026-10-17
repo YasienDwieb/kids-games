@@ -5,14 +5,12 @@
  * (guided pass only), each on the same Round the standalone game uses.
  */
 import { useEffect, useState } from 'react';
-import { I18nManager, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { registerFlowAdapter, useFlowRound } from '@/sdk';
-import { charsFor, flowLetter, type TraceChar } from './catalog';
+import { charsFor, currentScript, flowLetter, type TraceChar } from './catalog';
 import { Round } from './components/Round';
 import { WARMUPS } from './glyphs/warmup';
 import { progressStore } from './progress';
-
-const script = () => (I18nManager.isRTL ? 'arabic' : 'latin');
 
 function FlowRound({ char, onComplete }: { char: TraceChar; onComplete: () => void }) {
   const { complete } = useFlowRound(onComplete);
@@ -29,7 +27,7 @@ function LetterUnit({ nth, onComplete }: { nth: 0 | 1; onComplete: () => void })
     let alive = true;
     void progressStore.get().then(({ done }) => {
       if (!alive) return;
-      setChar(flowLetter(charsFor('letters', script()), done, nth));
+      setChar(flowLetter(charsFor('letters', currentScript()), done, nth));
     });
     return () => {
       alive = false;
@@ -39,7 +37,7 @@ function LetterUnit({ nth, onComplete }: { nth: 0 | 1; onComplete: () => void })
 }
 
 function WarmupUnit({ seed, onComplete }: { seed: number; onComplete: () => void }) {
-  const warmups = charsFor('warmup', script());
+  const warmups = charsFor('warmup', currentScript());
   return <FlowRound char={warmups[seed % WARMUPS.length]} onComplete={onComplete} />;
 }
 

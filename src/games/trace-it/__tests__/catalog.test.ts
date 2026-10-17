@@ -1,9 +1,26 @@
 import { getEmojiImage } from '@/sdk/assets/emoji/images';
-import { blockComplete, charsFor, flowLetter, nextSuggested, roundSteps } from '../catalog';
+import { I18nManager } from 'react-native';
+import { i18n } from '@/sdk';
+import { blockComplete, charsFor, currentScript, flowLetter, nextSuggested, roundSteps } from '../catalog';
 import { charStars, progressStore, recordStars } from '../progress';
 import type { Track } from '../types';
 
 describe('catalog', () => {
+  it('script follows the app language, not the native RTL flag', async () => {
+    const rtl = I18nManager.isRTL;
+    try {
+      (I18nManager as { isRTL: boolean }).isRTL = false;
+      await i18n.changeLanguage('ar');
+      expect(currentScript()).toBe('arabic');
+      (I18nManager as { isRTL: boolean }).isRTL = true;
+      await i18n.changeLanguage('en');
+      expect(currentScript()).toBe('latin');
+    } finally {
+      (I18nManager as { isRTL: boolean }).isRTL = rtl;
+      await i18n.changeLanguage('en');
+    }
+  });
+
   it('latin letters are in school order', () => {
     const c = charsFor('letters', 'latin');
     expect(c).toHaveLength(26);
