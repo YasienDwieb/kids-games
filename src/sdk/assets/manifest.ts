@@ -356,6 +356,37 @@ export const ASSETS = {
     type: 'audio',
     tags: ['lulu.tap.ar.3'],
   },
+  // Zain's lines when a child taps him (3D mascot), per language.
+  'voice.zain.en.1': {
+    modules: [require('./audio/voice/zain-tap-en-1.m4a')],
+    type: 'audio',
+    tags: ['zain.tap.en.1'],
+  },
+  'voice.zain.en.2': {
+    modules: [require('./audio/voice/zain-tap-en-2.m4a')],
+    type: 'audio',
+    tags: ['zain.tap.en.2'],
+  },
+  'voice.zain.en.3': {
+    modules: [require('./audio/voice/zain-tap-en-3.m4a')],
+    type: 'audio',
+    tags: ['zain.tap.en.3'],
+  },
+  'voice.zain.ar.1': {
+    modules: [require('./audio/voice/zain-tap-ar-1.m4a')],
+    type: 'audio',
+    tags: ['zain.tap.ar.1'],
+  },
+  'voice.zain.ar.2': {
+    modules: [require('./audio/voice/zain-tap-ar-2.m4a')],
+    type: 'audio',
+    tags: ['zain.tap.ar.2'],
+  },
+  'voice.zain.ar.3': {
+    modules: [require('./audio/voice/zain-tap-ar-3.m4a')],
+    type: 'audio',
+    tags: ['zain.tap.ar.3'],
+  },
 } as const satisfies Record<string, AssetEntry>;
 
 export type AssetId = keyof typeof ASSETS;
