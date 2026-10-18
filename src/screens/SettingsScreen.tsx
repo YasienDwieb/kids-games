@@ -28,6 +28,7 @@ import {
   openStoreReview,
 } from '@/sdk';
 import { COLORS, FONTS, OUTLINE, SPACING } from '../constants';
+import { SUBJECTS, findLesson, starsOf, unitDone, useSchool, useSchoolProgress, useAppLang } from '../school';
 
 // Grown-up screens keep the Pop Quest ink and type but drop the motion, the
 // loud colour and the hard shadows: calm surfaces for reading numbers.
@@ -115,6 +116,90 @@ function ParentsTab({ landscape }: { landscape: boolean }) {
   );
 }
 
+/** School: the child's KG level and term, and how each subject is going. */
+function SchoolTab({ landscape }: { landscape: boolean }) {
+  const { t } = useTranslation();
+  const { update } = useSettings();
+  const school = useSchool();
+  const progress = useSchoolProgress();
+  const lang = useAppLang();
+
+  // Played lessons that needed the most hints, lowest stars first.
+  const practise = Object.entries(progress.lessons)
+    .filter(([, r]) => r.stars < 3)
+    .sort((a, b) => a[1].stars - b[1].stars || b[1].misses - a[1].misses)
+    .slice(0, 3)
+    .map(([id]) => findLesson(lang, id))
+    .filter((x): x is NonNullable<typeof x> => x != null);
+
+  return (
+    <View style={[styles.columns, landscape && styles.columnsLandscape]}>
+      <View style={[styles.column, landscape && styles.columnLandscape]}>
+        <Text style={styles.section}>{t('school.parents.year')}</Text>
+        <View style={styles.bands}>
+          {(['kg1', 'kg2'] as const).map((lv) => (
+            <Chip
+              key={lv}
+              label={t(`school.level.${lv}`)}
+              active={school.level === lv}
+              onPress={() => update({ schoolLevel: lv })}
+            />
+          ))}
+        </View>
+        <Text style={styles.section}>{t('school.parents.term')}</Text>
+        <View style={styles.bands}>
+          {([1, 2] as const).map((n) => (
+            <Chip key={n} label={t('school.term', { n })} active={school.term === n} onPress={() => update({ schoolTerm: n })} />
+          ))}
+        </View>
+        <Text style={styles.note}>{t('school.parents.note')}</Text>
+
+        <Text style={styles.section}>{t('school.parents.practise')}</Text>
+        <View style={styles.card}>
+          {practise.length === 0 ? (
+            <Text style={[styles.rowLabel, styles.emptyRow]}>{t('school.parents.practiseEmpty')}</Text>
+          ) : (
+            practise.map(({ unit, lesson }, i) => (
+              <View key={lesson.id}>
+                {i > 0 ? <View style={styles.divider} /> : null}
+                <View style={styles.row}>
+                  <Text style={styles.rowLabel}>{lesson.title}</Text>
+                  <Text style={styles.gameStat}>{t(`school.subjects.${unit.subject}`)}</Text>
+                </View>
+              </View>
+            ))
+          )}
+        </View>
+      </View>
+
+      <View style={[styles.column, landscape && styles.columnLandscape]}>
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Text style={[styles.rowLabel, styles.headCell]}>{t('school.parents.subject')}</Text>
+            <Text style={[styles.gameStat, styles.headCell]}>{t('school.parents.units')}</Text>
+            <Text style={[styles.gameStat, styles.headCell]}>{t('school.parents.stars')}</Text>
+          </View>
+          {SUBJECTS.map((subject) => {
+            const units = school.units(subject);
+            const done = units.filter((u) => unitDone(u, progress)).length;
+            const stars = units.reduce((n, u) => n + u.lessons.reduce((m, l) => m + starsOf(l.id, progress), 0), 0);
+            return (
+              <View key={subject}>
+                <View style={styles.divider} />
+                <View style={styles.row}>
+                  <Text style={styles.rowLabel}>{t(`school.subjects.${subject}`)}</Text>
+                  <Text style={styles.gameStat}>{t('school.parents.unitsRow', { done, total: units.length })}</Text>
+                  <Text style={styles.gameStat}>⭐ {stars}</Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    </View>
+  );
+}
+
 function ToggleRow({
   icon,
   label,
@@ -150,7 +235,7 @@ export function SettingsScreen({ navigation }: Props) {
   // Tabs, not one scrolling page: the journey-games list grows with the
   // catalogue, so a single screen overflows again every few games. Tabs stay
   // bounded no matter how many games ship.
-  const [tab, setTab] = useState<'general' | 'journey' | 'parents'>('general');
+  const [tab, setTab] = useState<'general' | 'journey' | 'school' | 'parents'>('general');
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
@@ -208,6 +293,7 @@ export function SettingsScreen({ navigation }: Props) {
           active={tab === 'journey'}
           onPress={() => setTab('journey')}
         />
+        <Chip label={t('school.parents.tab')} active={tab === 'school'} onPress={() => setTab('school')} />
         <Chip
           label={t('settings.tabs.parents')}
           active={tab === 'parents'}
@@ -218,6 +304,8 @@ export function SettingsScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.content}>
         {tab === 'parents' ? (
           <ParentsTab landscape={landscape} />
+        ) : tab === 'school' ? (
+          <SchoolTab landscape={landscape} />
         ) : tab === 'general' ? (
           <View style={[styles.columns, landscape && styles.columnsLandscape]}>
             <View style={[styles.column, landscape && styles.columnLandscape]}>
@@ -328,6 +416,8 @@ const styles = StyleSheet.create({
   statLabel: { fontFamily: FONTS.bodySemi, fontSize: 14, color: COLORS.inkSoft },
   gameStat: { fontFamily: FONTS.bodySemi, fontSize: 15, color: COLORS.inkSoft },
   emptyRow: { paddingVertical: SPACING.md },
+  headCell: { fontFamily: FONTS.bodyExtra, color: COLORS.inkSoft },
+  note: { fontFamily: FONTS.bodySemi, fontSize: 13, color: COLORS.inkSoft },
   section: {
     fontFamily: FONTS.display,
     fontSize: 18,

@@ -101,11 +101,14 @@ export { Sticker } from './rewards/Sticker';
 // Player level & Lulu's wardrobe
 export * from './player';
 
-// Mascot — Lulu the owl
-export { Mascot } from './mascot/Mascot';
+// Buddy — the child's chosen mascot (Lulu the owl or Zain the lion cub)
+export { BUDDIES, DEFAULT_BUDDY, useBuddy, useBuddyPicked, chooseBuddy, currentBuddy } from './buddy';
+export type { BuddyId } from './buddy';
+// Mascot — draws the chosen buddy
+export { Mascot, MASCOT_POSES } from './mascot/Mascot';
 export type { MascotPose } from './mascot/Mascot';
 export { MascotHelper } from './mascot/MascotHelper';
-export { Lulu3D, LULU_TAP_LINES } from './mascot/Lulu3D';
+export { Lulu3D, Buddy3D, LULU_TAP_LINES } from './mascot/Lulu3D';
 export type { LuluMood } from './mascot/Lulu3D';
 export { useModel3D, preloadModels3D } from './three/models';
 export type { ModelSource } from './three/models';

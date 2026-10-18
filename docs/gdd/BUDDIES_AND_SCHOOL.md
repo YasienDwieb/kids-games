@@ -1,7 +1,11 @@
 # Buddies & School Subjects — plan
 
-Status: **design / planning**. Nothing here is built yet. Designs live on the
-"Kids Zone — Buddies & School" design canvas.
+Status: **built — first version**. Buddies (Lulu + Zain, 2D + 3D, picker,
+wardrobe switch, voice) and School Term 1 for KG1 and KG2 (Arabic, English,
+Math; unit paths, Learn → Practise → I learned, chests, backpack badges,
+Parents → School tab) are in the app. Not yet: tracing, the Sort / Order /
+True-false engines, Term 2, Discover. Designs live on the "Kids Zone —
+Buddies & School" design canvas.
 
 Two features:
 

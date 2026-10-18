@@ -29,6 +29,16 @@ license. Add an entry **before** importing any new third-party asset.
 - **License:** generated content used under the Higgsfield account's terms, which the
   project owner confirmed permit commercial use in this app.
 
+### Higgsfield (Nano Banana Pro) — Zain the lion cub buddy
+
+- **Used for:** the boy buddy's four poses (`src/sdk/assets/images/mascot/lion-{wave,cheer,point,encourage}.png`),
+  drawn by the `Mascot` SDK component when the child picks Zain.
+- **Source:** generated with Higgsfield AI (Nano Banana Pro) using the Lulu art as the style
+  reference, 2026-10-18, on the project's Higgsfield account; background removed with
+  Higgsfield's background remover.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+
 ### Kenney — Car Kit & Racing Kit (3D models)
 
 - **Used for:** Turbo Road's 3D road (`src/games/turbo-road/assets/models/`): the
@@ -107,6 +117,16 @@ license. Add an entry **before** importing any new third-party asset.
   ownership claim to Google over generated content.
 - **Processing:** median-length take of three, loudness-normalized to the house level
   (≈ −25 dBFS active RMS, peak ≤ −6 dBFS), mono AAC 64 kbps.
+
+### Higgsfield (Seed Audio 1.0) — Zain's tap lines (English and Arabic)
+
+- **Used for:** what Zain says when a child taps him (`src/sdk/assets/audio/voice/zain-tap-{en,ar}-{1..3}.m4a`).
+- **Source:** generated with Higgsfield AI (model: Seed Audio 1.0, preset voice "Benji"),
+  2026-10-18, on the project's Higgsfield account; Arabic lines from fully vowelled text.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+- **Processing:** trimmed of silence, mono AAC 64 kbps at 44.1 kHz, loudness-matched to the
+  Arabic clips (−23.7 LUFS integrated, peak ≤ −6 dBFS).
 
 ### Kenney — feedback SFX
 
