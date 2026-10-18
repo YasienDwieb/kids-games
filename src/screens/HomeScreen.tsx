@@ -14,7 +14,8 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
 import { Chip, GameCard, Icon, IconButton, PressableButton } from '../components/common';
-import { FeaturedCard, LevelPill, PopBackdrop } from '../components/pop';
+import { BuddyPicker, FeaturedCard, LevelPill, PopBackdrop, SchoolCard } from '../components/pop';
+import { useSchoolProgress } from '../school/progress';
 import { isTablet } from '../utils/responsive';
 import { BORDER_RADIUS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
@@ -40,6 +41,8 @@ import {
   type GameCategory,
   Lulu3D,
   useRewards,
+  useBuddy,
+  useBuddyPicked,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
 
@@ -69,6 +72,10 @@ export function HomeScreen({ navigation }: Props) {
   const landscape = width > height;
   const { settings, update } = useSettings();
   const rewards = useRewards();
+  const buddy = useBuddy();
+  const buddyPicked = useBuddyPicked();
+  const school = useSchoolProgress();
+  const schoolFresh = Object.keys(school.lessons).length === 0;
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
   // Language switching restarts the app, so it asks first. That confirmation is
@@ -135,6 +142,7 @@ export function HomeScreen({ navigation }: Props) {
   };
 
   const openGame = (id: string) => navigation.navigate('GamePlayer', { gameId: id });
+  const openSchool = () => navigation.navigate('School');
 
   // --- Top bar ---
   // Sound and language live here, not behind the parent gate: muting is the
@@ -146,7 +154,7 @@ export function HomeScreen({ navigation }: Props) {
     <Pressable
       onPress={() => navigation.navigate('Wardrobe')}
       accessibilityRole="button"
-      accessibilityLabel={t('home.wardrobeA11y', { n: rewards.stars })}
+      accessibilityLabel={t(`buddy.${buddy}.wardrobeA11y`, { n: rewards.stars })}
       hitSlop={6}
       style={({ pressed }) => [styles.starsPill, pressed ? styles.pressed : SHADOWS.sm]}
     >
@@ -264,6 +272,9 @@ export function HomeScreen({ navigation }: Props) {
 
   const empty = <Text style={styles.empty}>{t('home.empty')}</Text>;
 
+  // First launch (and existing players once): pick Lulu or Zain before playing.
+  const buddyPicker = buddyPicked === false && focused ? <BuddyPicker /> : null;
+
   if (landscape) {
     // Body under the top bar: a Lulu column, then one horizontal rail
     // that opens with the featured card and continues into the game tiles.
@@ -316,6 +327,9 @@ export function HomeScreen({ navigation }: Props) {
                     }}
                   >
                     {category === null ? featured(featW, railH) : null}
+                    {category === null ? (
+                      <SchoolCard width={Math.round(cardW * 1.25)} height={railH} fresh={schoolFresh} onPress={openSchool} />
+                    ) : null}
                     {games.length === 0 ? (
                       empty
                     ) : (
@@ -345,6 +359,7 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </SafeAreaView>
         {languageDialog}
+        {buddyPicker}
       </View>
     );
   }
@@ -359,6 +374,7 @@ export function HomeScreen({ navigation }: Props) {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.portrait}>
           {topBar}
           {featured(contentW, 300)}
+          <SchoolCard width={contentW} height={170} fresh={schoolFresh} onPress={openSchool} />
           <View style={styles.portraitRow}>
             <Lulu3D key={visit} size={130} interactive active={focused} />
           </View>
@@ -382,6 +398,7 @@ export function HomeScreen({ navigation }: Props) {
         </ScrollView>
       </SafeAreaView>
       {languageDialog}
+      {buddyPicker}
     </View>
   );
 }

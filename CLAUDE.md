@@ -42,7 +42,7 @@ All games import exclusively from `@/sdk`. The SDK exports:
 - **Progress & levels**: `levelsFromList`/`levelsFromGenerator` → `LevelSource<T>`; `useLevels({ gameId, source })` → `{ status, level, data, score, isLast, start, startOver, advance, addScore, goTo }`; `createProgressStore`, `DEFAULT_PROGRESS`, `Progress`; `resumeStatusFor`, `ResumeStatus`; `ResumePrompt` (Continue/Start-over UI). Opt-in; coarse `{ level, score }` checkpoint persisted under `kg:progress:<gameId>`.
 - **Feedback**: `useCelebrate()` → `celebrate('small'|'big', { praise? })` (confetti + random praise over the game, resolves when done; `CelebrationProvider` is mounted by `GamePlayerScreen`/`FlowPlayerScreen`, no-op without one) — use instead of a tap-to-continue modal after small wins. The provider also shows the comic praise burst, the `xN COMBO!` streak (`bumpCombo`/`breakCombo` in `feedback/combo.ts`; a miss through `useHintLadder` breaks it) and the full-screen "LEVEL UP!" card; `useHintLadder(roundKey)` → `{ miss(), step, firstTry, stars }` implementing the shared hint policy (`hintStepFor`: 1st miss `retry`, 2nd `highlight`, 3rd `reveal`; `starsForMisses`)
 - **Tutorials**: `useFirstRun(id)` → `{ status: 'loading'|'show'|'done', complete }` (persisted under `kg:tutorial`); `<DemoHand mode="tap"|"drag" points={[{x,y}]} />` ghost-hand demo in the parent's physical coordinates (RTL-safe); `useIdle(ms, active)` → `{ idle, poke }` to re-show help when a child is stuck. Reference integrations: `mouse-maze` (first-run drag demo + idle hint), `count-and-pop` (hint ladder + celebrations)
-- **Mascot (Lulu the owl)**: `Mascot` (2D poses `wave`/`cheer`/`point`/`encourage`), `MascotHelper` (corner pop-in by pose, null hides), `Lulu3D` (procedural three.js owl: `mood` idle/wave/cheer/encourage/point, `interactive` = tap to hop + giggle in EN/AR, drag to spin, eyes follow the finger; `active={false}` pauses rendering). 3D Lulu cheers on every celebration and lives on Home and in the wardrobe; she wears the child's saved outfit (`wearing` prop overrides)
+- **Buddy & mascot**: the child picks a buddy on first launch — Lulu the owl (girl) or Zain the lion cub (boy) — via the Home `BuddyPicker`; `useBuddy()` / `useBuddyPicked()` / `chooseBuddy(id)` / `currentBuddy()` (`src/sdk/buddy`, stored as `settings.buddy`, null until picked). `Mascot` (2D poses `wave`/`cheer`/`point`/`encourage`, per buddy in `MASCOT_POSES`; `buddy` prop overrides), `MascotHelper` (corner pop-in by pose, null hides), `Lulu3D` / `Buddy3D` (procedural three.js buddy — owl or lion on one shared rig: `mood` idle/wave/cheer/encourage/point, `interactive` = tap to hop + giggle in EN/AR via `<buddy>.tap.<lang>.<n>`, drag to spin, eyes follow the finger; `active={false}` pauses rendering). The 3D buddy cheers on every celebration and lives on Home and in the wardrobe; both buddies share the saved outfit (`wearing` prop overrides). Buddy-specific lines use `t(`buddy.${buddy}.…`)` (Arabic grammatical gender differs per buddy)
 - **Levels & wardrobe** (`src/sdk/player/`): `levelInfo(stars)` (player level derived from lifetime stars; `onLevelUp` in rewards fires when it rises), `OUTFITS` / `useWearing()` / `wear(slot, id)` (hats and glasses unlocked by level, drawn on `Lulu3D`)
 - **Settings**: `useSettings()` hook, `settingsStore`, `DEFAULT_SETTINGS`, `Settings` type (`soundEnabled`, `hapticsEnabled`, `ageBand`, `language`)
 - **i18n**: `useTranslation()` → `{ t }` (call `t('<namespace>:key')`); `registerTranslations(namespace, { en, ar })` (mirrors `registerGame` — register from a per-game `i18n.ts` side-effect imported in that game's `config.ts`); `useLanguage()` → `{ language, meta, changeLanguage }`; `LANGUAGES`, `DEFAULT_LANGUAGE`, `languageMeta`, `isRTL`, `LanguageCode`; `gameName(config)`/`gameDescription(config)` (resolve `<id>:meta.name`/`meta.description`, fall back to config); `applyLanguage`/`bootstrapLanguage`/`currentLanguage`. See **Internationalization** below.
@@ -84,7 +84,7 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 **Core types (`src/types/index.ts`):**
 
-- `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`, `FlowPlayer`, `Wardrobe`
+- `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`, `FlowPlayer`, `Wardrobe`, `School`, `SchoolUnit` (`subject`, `unitId?`), `SchoolLesson` (`lessonId`), `SchoolBackpack`
 - `ChildProfile` — player profile (for future use)
 
 `GameConfig` and `GameRegistry` are defined in `src/sdk/config/types.ts` and re-exported from `@/sdk`.
@@ -111,6 +111,15 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 **Wiki maintenance:** `.claude/skills/almanac-refresh/SKILL.md` — how to bring the `almanac/` CodeAlmanac wiki back in sync with the code (range ingests, sync, garden, validate).
 
+## School (`src/school/`, screens in `src/screens/school/`)
+
+The Egyptian MOE kindergarten curriculum (KG1/KG2, Term 1, books 2026–2027) as "learn, then practise" lessons — see `docs/gdd/BUDDIES_AND_SCHOOL.md`.
+- **Content is data** (`src/school/content/egMoe.ts`): Arabic and English units in the books' order, written in their own language (prompts from `core:school.prompt.*` in the LESSON's language); Math built per app language. Each lesson has a `bookRef` for the content team's review against the Ministry book.
+- **Builders** (`src/school/build.ts`): `arabicLetter` (KG2 adds a short-vowel round), `englishLetter`, `vocab`, `number`, `shape`, `colour`, `colourSet`/`shapeSet`, `days`, `review` → a `Learn` card + `Round`s (one "pick the right tile" engine; tiles are text/emoji/group/swatch). `shuffleRound` reorders tiles at play time.
+- **Flow**: hub (`School`, subject cards + badges) → unit path (`SchoolUnit`; story stop, lesson stops unlock in order, review, treasure chest; Arabic units run right-to-left whatever the app language) → lesson (`SchoolLesson`: Learn → Practise with `useHintLadder` → "I learned" certificate) ; `SchoolBackpack` shows bronze/silver/gold per subject.
+- **Progress** (`kg:school`, `src/school/progress.ts`): best stars per lesson (only improvements are paid out via `awardStars('school-<subject>')`), heard intros, opened chests (+`CHEST_STARS`). Parents set level/term in Settings → School (`settings.schoolLevel`/`schoolTerm`).
+- Guarded by `src/school/__tests__/` (valid answers, distinct tiles, resolved strings, bundled emoji art).
+
 ## Key Dependencies
 
 - `@react-navigation/native` + `@react-navigation/native-stack` — navigation
@@ -124,7 +133,8 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 - Zap-yellow `PopBackdrop`; top bar: `LevelPill` (→ Wardrobe), stars pill (→ Wardrobe), sound, language, grown-ups (→ Settings)
 - Start column: interactive `Lulu3D`, sized to the column
-- One horizontal rail (sized by `onLayout`): the `FeaturedCard` "PLAY NOW" guided adventure, then column-major `GameCard` tiles; category `Chip`s (`GameConfig.category`: numbers/words/action/puzzles) filter it
+- One horizontal rail (sized by `onLayout`): the `FeaturedCard` "PLAY NOW" guided adventure, the `SchoolCard` tile (→ School), then column-major `GameCard` tiles; category `Chip`s (`GameConfig.category`: numbers/words/action/puzzles) filter it
+- First launch (and once for existing players): the full-screen `BuddyPicker` until a buddy is chosen
 - Portrait falls back to a stacked layout with a wrapping grid
 - Navigation props typed via `NativeStackScreenProps<RootStackParamList, 'Home'>`
 
