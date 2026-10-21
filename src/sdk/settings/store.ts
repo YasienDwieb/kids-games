@@ -18,6 +18,8 @@ export type Settings = {
   flowGameIds: string[] | null;
   /** Parent-set daily play limit in minutes; null = no limit. */
   dailyLimitMin: number | null;
+  /** The child's buddy (mascot). Null until they pick one on first launch. */
+  buddy: 'lulu' | 'zain' | null;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -28,6 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
   mode: 'free',
   flowGameIds: null,
   dailyLimitMin: null,
+  buddy: null,
 };
 
 export const settingsStore = createStore<Settings>('settings', DEFAULT_SETTINGS);
