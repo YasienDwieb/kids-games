@@ -84,7 +84,7 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 **Core types (`src/types/index.ts`):**
 
-- `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`, `FlowPlayer`, `Wardrobe`
+- `RootStackParamList` — navigation param list: `Home`, `GamePlayer` (takes `gameId`), `Settings`, `FlowPlayer`, `Wardrobe`, `School`, `SchoolUnit` (`subject`, `unitId?`), `SchoolLesson` (`lessonId`), `SchoolBackpack`
 - `ChildProfile` — player profile (for future use)
 
 `GameConfig` and `GameRegistry` are defined in `src/sdk/config/types.ts` and re-exported from `@/sdk`.
@@ -111,6 +111,15 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 **Wiki maintenance:** `.claude/skills/almanac-refresh/SKILL.md` — how to bring the `almanac/` CodeAlmanac wiki back in sync with the code (range ingests, sync, garden, validate).
 
+## School (`src/school/`, screens in `src/screens/school/`)
+
+The Egyptian MOE kindergarten curriculum (KG1/KG2, Term 1, books 2026–2027) as "learn, then practise" lessons — see `docs/gdd/BUDDIES_AND_SCHOOL.md`.
+- **Content is data** (`src/school/content/egMoe.ts`): Arabic and English units in the books' order, written in their own language (prompts from `core:school.prompt.*` in the LESSON's language); Math built per app language. Each lesson has a `bookRef` for the content team's review against the Ministry book.
+- **Builders** (`src/school/build.ts`): `arabicLetter` (KG2 adds a short-vowel round), `englishLetter`, `vocab`, `number`, `shape`, `colour`, `colourSet`/`shapeSet`, `days`, `review` → a `Learn` card + `Round`s (one "pick the right tile" engine; tiles are text/emoji/group/swatch). `shuffleRound` reorders tiles at play time.
+- **Flow**: hub (`School`, subject cards + badges) → unit path (`SchoolUnit`; story stop, lesson stops unlock in order, review, treasure chest; Arabic units run right-to-left whatever the app language) → lesson (`SchoolLesson`: Learn → Practise with `useHintLadder` → "I learned" certificate) ; `SchoolBackpack` shows bronze/silver/gold per subject.
+- **Progress** (`kg:school`, `src/school/progress.ts`): best stars per lesson (only improvements are paid out via `awardStars('school-<subject>')`), heard intros, opened chests (+`CHEST_STARS`). Parents set level/term in Settings → School (`settings.schoolLevel`/`schoolTerm`).
+- Guarded by `src/school/__tests__/` (valid answers, distinct tiles, resolved strings, bundled emoji art).
+
 ## Key Dependencies
 
 - `@react-navigation/native` + `@react-navigation/native-stack` — navigation
@@ -124,7 +133,7 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 
 - Zap-yellow `PopBackdrop`; top bar: `LevelPill` (→ Wardrobe), stars pill (→ Wardrobe), sound, language, grown-ups (→ Settings)
 - Start column: interactive `Lulu3D`, sized to the column
-- One horizontal rail (sized by `onLayout`): the `FeaturedCard` "PLAY NOW" guided adventure, then column-major `GameCard` tiles; category `Chip`s (`GameConfig.category`: numbers/words/action/puzzles) filter it
+- One horizontal rail (sized by `onLayout`): the `FeaturedCard` "PLAY NOW" guided adventure, the `SchoolCard` tile (→ School), then column-major `GameCard` tiles; category `Chip`s (`GameConfig.category`: numbers/words/action/puzzles) filter it
 - First launch (and once for existing players): the full-screen `BuddyPicker` until a buddy is chosen
 - Portrait falls back to a stacked layout with a wrapping grid
 - Navigation props typed via `NativeStackScreenProps<RootStackParamList, 'Home'>`

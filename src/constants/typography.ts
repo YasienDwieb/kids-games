@@ -59,3 +59,18 @@ export const FONTS = {
     return familyFor('bodyExtra');
   },
 } as { readonly [K in FontRole]: string };
+
+const ARABIC_SCRIPT = /[؀-ۿ]/;
+
+/**
+ * Family for content in a given language, whatever the app's direction — School
+ * shows Arabic lessons in the English app and English lessons in the Arabic one.
+ */
+export function fontForLang(lang: 'en' | 'ar', role: FontRole = 'display'): string {
+  return lang === 'ar' ? ARABIC[role] : LATIN[role];
+}
+
+/** Family for a piece of text by its script (Arabic letters get the Arabic face). */
+export function fontForText(text: string, role: FontRole = 'display'): string {
+  return fontForLang(ARABIC_SCRIPT.test(text) ? 'ar' : 'en', role);
+}
