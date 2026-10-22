@@ -13,6 +13,7 @@ Kids Games — a multi-game Expo React Native app targeting children. Each game 
 - `npx expo start --ios` — launch on iOS
 - `npx expo start --web` — launch web version
 - Install new packages with `npx expo install <pkg>` (ensures SDK compatibility)
+- `eas update --channel <preview|production> --environment <same> -m "..."` — OTA JS/asset update (or the `release-ota.yml` workflow). `runtimeVersion` uses the fingerprint policy, so native changes need a store build; `preview` = GitHub APKs, `production` = store builds
 
 ## Architecture
 
