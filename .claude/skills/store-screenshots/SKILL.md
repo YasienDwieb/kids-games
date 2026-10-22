@@ -34,6 +34,7 @@ captures), `--keep` (leave the emulator running between runs), `--apk PATH`.
 |---|---|
 | `play-phone/NN.png` (1920×1080) | `fastlane/metadata/android/<en-US\|ar>/images/phoneScreenshots/NN.jpg` — replace the whole set, saved as JPEG q92 |
 | `play-tablet/NN.png` (2560×1600) | `…/images/tenInchScreenshots/` — replace the whole set |
+| `play-tablet7/NN.png` (1920×1200, from the tablet captures) | `…/images/sevenInchScreenshots/` — replace the whole set |
 | `featureGraphic.png` (1024×500) | `…/images/featureGraphic.png` |
 | `ios-phone/NN.png` (2796×1290) | `fastlane/metadata/ios/screenshots/<en-US\|ar-SA>/iphone-NN.png` (RGB) |
 | `ios-ipad/NN.png` (2752×2064) | `…/ipad-NN.png` — upload both with `fastlane ios screenshots` (ask first) |
@@ -42,11 +43,12 @@ captures), `--keep` (leave the emulator running between runs), `--apk PATH`.
 ```bash
 S=screenshots/out/store
 for pair in en:en-US ar:ar; do l=${pair%%:*}; d=fastlane/metadata/android/${pair#*:}/images
-  rm -f $d/phoneScreenshots/* $d/tenInchScreenshots/*
+  rm -f "${d:?}"/phoneScreenshots/* "${d:?}"/tenInchScreenshots/* "${d:?}"/sevenInchScreenshots/*
   for p in $S/$l/play-phone/[0-9][0-9].png; do
     python3 -c "import sys;from PIL import Image;Image.open(sys.argv[1]).convert('RGB').save(sys.argv[2],quality=92)" \
       "$p" "$d/phoneScreenshots/$(basename "$p" .png).jpg"; done
   cp $S/$l/play-tablet/[0-9][0-9].png $d/tenInchScreenshots/
+  mkdir -p $d/sevenInchScreenshots; cp $S/$l/play-tablet7/[0-9][0-9].png $d/sevenInchScreenshots/
   cp $S/$l/featureGraphic.png $d/featureGraphic.png
 done
 for pair in en:en-US ar:ar-SA; do l=${pair%%:*}; d=fastlane/metadata/ios/screenshots/${pair#*:}
