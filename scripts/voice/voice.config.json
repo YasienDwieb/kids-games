@@ -1,0 +1,7 @@
+{
+  "provider": "google",
+  "voices": { "en": "en-US-Chirp3-HD-Leda", "ar": "ar-XA-Chirp3-HD-Leda" },
+  "takes": 3,
+  "loudness": { "rmsDb": -25, "peakDb": -6 },
+  "format": { "sampleRate": 24000, "codec": "aac", "bitrate": "64k" }
+}
