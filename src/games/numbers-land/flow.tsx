@@ -8,7 +8,8 @@
 
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { registerFlowAdapter, useFlowRound, useSpeech, useTranslation } from '@/sdk';
+import { registerFlowAdapter, useFlowRound, useSpeech, useTranslation, currentLanguage } from '@/sdk';
+import { numberPhrase } from './phrase';
 import { ListenFindBoard, buildRound, orderFor } from '@/games/_shared/listen-find';
 import { NumberHero } from './components/NumberHero';
 import { NUMBERS, CHOICES_PER_ROUND } from './constants';
@@ -32,8 +33,7 @@ function NumberFlowRound({
   const target: NumberItem = round.target;
 
   const speakTarget = () => {
-    const name = t('numbers-land:names.' + target.id);
-    void speak(t('numbers-land:speak.carrier', { name }));
+    void speak(numberPhrase(target.id, currentLanguage()));
   };
 
   useEffect(() => {

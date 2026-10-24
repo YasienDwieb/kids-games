@@ -1,0 +1,506 @@
+[
+ {
+  "text": "أَربَعة",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "أسد"
+ },
+ {
+  "lang": "ar",
+  "text": "أَلِف. أَسَد"
+ },
+ {
+  "text": "اِثنان",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "اصنع هذا اللون: أخضر"
+ },
+ {
+  "lang": "ar",
+  "text": "اصنع هذا اللون: أزرق فاتح"
+ },
+ {
+  "lang": "ar",
+  "text": "اصنع هذا اللون: برتقالي"
+ },
+ {
+  "lang": "ar",
+  "text": "اصنع هذا اللون: بنفسجي"
+ },
+ {
+  "lang": "ar",
+  "text": "اصنع هذا اللون: بني"
+ },
+ {
+  "lang": "ar",
+  "text": "اصنع هذا اللون: وردي"
+ },
+ {
+  "lang": "ar",
+  "text": "بَاء. بَطَّة"
+ },
+ {
+  "lang": "ar",
+  "text": "بطة"
+ },
+ {
+  "lang": "ar",
+  "text": "بقرة"
+ },
+ {
+  "lang": "ar",
+  "text": "تَاء. تُفَّاحَة"
+ },
+ {
+  "text": "تِسعة",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "ثَاء. ثَعْلَب"
+ },
+ {
+  "text": "ثَلاثة",
+  "lang": "ar"
+ },
+ {
+  "text": "ثَمانِية",
+  "lang": "ar"
+ },
+ {
+  "text": "جسور",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "جِيم. جَمَل"
+ },
+ {
+  "lang": "ar",
+  "text": "حَاء. حِصَان"
+ },
+ {
+  "lang": "ar",
+  "text": "حصان"
+ },
+ {
+  "text": "حلزون",
+  "lang": "ar"
+ },
+ {
+  "text": "حلقات",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "خَاء. خَرُوف"
+ },
+ {
+  "lang": "ar",
+  "text": "خروف"
+ },
+ {
+  "text": "خط متعرّج",
+  "lang": "ar"
+ },
+ {
+  "text": "خط مستقيم",
+  "lang": "ar"
+ },
+ {
+  "text": "خَمسة",
+  "lang": "ar"
+ },
+ {
+  "text": "دائرة",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "دَال. دُبّ"
+ },
+ {
+  "lang": "ar",
+  "text": "ديك"
+ },
+ {
+  "lang": "ar",
+  "text": "ذَال. ذُبَاب"
+ },
+ {
+  "lang": "ar",
+  "text": "رَاء. رِيشَة"
+ },
+ {
+  "lang": "ar",
+  "text": "زَاي. زَرَافَة"
+ },
+ {
+  "text": "سَبعة",
+  "lang": "ar"
+ },
+ {
+  "text": "سِتّة",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "سِين. سَمَكَة"
+ },
+ {
+  "lang": "ar",
+  "text": "شِين. شَمْس"
+ },
+ {
+  "lang": "ar",
+  "text": "صَاد. صَارُوخ"
+ },
+ {
+  "text": "صِفر",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "ضَاد. ضِفْدَع"
+ },
+ {
+  "lang": "ar",
+  "text": "ضفدع"
+ },
+ {
+  "lang": "ar",
+  "text": "طَاء. طَائِرَة"
+ },
+ {
+  "lang": "ar",
+  "text": "ظَاء. ظَرْف"
+ },
+ {
+  "lang": "ar",
+  "text": "عَشَرة"
+ },
+ {
+  "lang": "ar",
+  "text": "عصفور"
+ },
+ {
+  "lang": "ar",
+  "text": "عَيْن. عُصْفُور"
+ },
+ {
+  "lang": "ar",
+  "text": "غَيْن. غَزَالَة"
+ },
+ {
+  "lang": "ar",
+  "text": "فَاء. فِيل"
+ },
+ {
+  "lang": "ar",
+  "text": "فيل"
+ },
+ {
+  "lang": "ar",
+  "text": "قَاف. قِطَّة"
+ },
+ {
+  "lang": "ar",
+  "text": "قطة"
+ },
+ {
+  "lang": "ar",
+  "text": "كَاف. كُرَة"
+ },
+ {
+  "lang": "ar",
+  "text": "كلب"
+ },
+ {
+  "lang": "ar",
+  "text": "لَام. لَيْمُون"
+ },
+ {
+  "text": "موجة",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "مِيم. مَوْزَة"
+ },
+ {
+  "lang": "ar",
+  "text": "نحلة"
+ },
+ {
+  "lang": "ar",
+  "text": "نُون. نَجْمَة"
+ },
+ {
+  "lang": "ar",
+  "text": "هَاء. هَاتِف"
+ },
+ {
+  "text": "وَاحِد",
+  "lang": "ar"
+ },
+ {
+  "lang": "ar",
+  "text": "وَاو. وَرْدَة"
+ },
+ {
+  "lang": "ar",
+  "text": "يَاء. يَد"
+ },
+ {
+  "text": "a circle",
+  "lang": "en"
+ },
+ {
+  "text": "a spiral",
+  "lang": "en"
+ },
+ {
+  "text": "a straight line",
+  "lang": "en"
+ },
+ {
+  "text": "a wave",
+  "lang": "en"
+ },
+ {
+  "text": "a zigzag",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "A. Apple"
+ },
+ {
+  "lang": "en",
+  "text": "B. Ball"
+ },
+ {
+  "lang": "en",
+  "text": "Bee"
+ },
+ {
+  "lang": "en",
+  "text": "Bird"
+ },
+ {
+  "text": "bridges",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "C. Cat"
+ },
+ {
+  "lang": "en",
+  "text": "Cat"
+ },
+ {
+  "lang": "en",
+  "text": "Cow"
+ },
+ {
+  "lang": "en",
+  "text": "D. Dog"
+ },
+ {
+  "lang": "en",
+  "text": "Dog"
+ },
+ {
+  "lang": "en",
+  "text": "Duck"
+ },
+ {
+  "lang": "en",
+  "text": "E. Egg"
+ },
+ {
+  "text": "eight",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "Elephant"
+ },
+ {
+  "lang": "en",
+  "text": "F. Fish"
+ },
+ {
+  "text": "five",
+  "lang": "en"
+ },
+ {
+  "text": "four",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "Frog"
+ },
+ {
+  "lang": "en",
+  "text": "G. Goat"
+ },
+ {
+  "lang": "en",
+  "text": "H. Hat"
+ },
+ {
+  "lang": "en",
+  "text": "Horse"
+ },
+ {
+  "lang": "en",
+  "text": "I. Ice cream"
+ },
+ {
+  "lang": "en",
+  "text": "J. Juice"
+ },
+ {
+  "lang": "en",
+  "text": "K. Kite"
+ },
+ {
+  "lang": "en",
+  "text": "L. Lion"
+ },
+ {
+  "lang": "en",
+  "text": "Lion"
+ },
+ {
+  "text": "loops",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "M. Moon"
+ },
+ {
+  "lang": "en",
+  "text": "Make this color: Brown"
+ },
+ {
+  "lang": "en",
+  "text": "Make this color: Green"
+ },
+ {
+  "lang": "en",
+  "text": "Make this color: Light Blue"
+ },
+ {
+  "lang": "en",
+  "text": "Make this color: Orange"
+ },
+ {
+  "lang": "en",
+  "text": "Make this color: Pink"
+ },
+ {
+  "lang": "en",
+  "text": "Make this color: Purple"
+ },
+ {
+  "lang": "en",
+  "text": "N. Nose"
+ },
+ {
+  "text": "nine",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "O. Orange"
+ },
+ {
+  "text": "one",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "P. Panda"
+ },
+ {
+  "lang": "en",
+  "text": "Q. Queen"
+ },
+ {
+  "lang": "en",
+  "text": "R. Rabbit"
+ },
+ {
+  "lang": "en",
+  "text": "Rooster"
+ },
+ {
+  "lang": "en",
+  "text": "S. Sun"
+ },
+ {
+  "text": "seven",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "Sheep"
+ },
+ {
+  "text": "six",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "T. Tree"
+ },
+ {
+  "lang": "en",
+  "text": "ten"
+ },
+ {
+  "text": "three",
+  "lang": "en"
+ },
+ {
+  "text": "two",
+  "lang": "en"
+ },
+ {
+  "lang": "en",
+  "text": "U. Umbrella"
+ },
+ {
+  "lang": "en",
+  "text": "V. Van"
+ },
+ {
+  "lang": "en",
+  "text": "W. Whale"
+ },
+ {
+  "lang": "en",
+  "text": "X. Xylophone"
+ },
+ {
+  "lang": "en",
+  "text": "Y. Yarn"
+ },
+ {
+  "lang": "en",
+  "text": "Z. Zebra"
+ },
+ {
+  "text": "zero",
+  "lang": "en"
+ }
+]

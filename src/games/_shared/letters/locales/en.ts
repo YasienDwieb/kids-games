@@ -1,6 +1,10 @@
 // Letter names + example words shared by Letter Land and Trace It.
 // Keyed by Letter.id / Letter.word from ../index.ts. Glyphs are authored DATA, never translated.
 export const en = {
+  // Spoken letter prompt (docs/VOICE.md): «<name>. <Word>».
+  speak: {
+    carrier: '{{name}}. {{word}}',
+  },
   // Spoken letter NAME per letter id, written naturally (docs/VOICE.md): Latin
   // values are the uppercase letter itself. Arabic ids are never spoken under EN
   // but are kept for structural parity — values are transliterated names.

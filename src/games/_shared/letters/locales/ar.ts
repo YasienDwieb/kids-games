@@ -2,6 +2,10 @@ import type { GameTranslations } from './en';
 
 // Arabic letter names + example words, written naturally with tashkeel (docs/VOICE.md).
 export const ar: GameTranslations = {
+  // Spoken letter prompt (docs/VOICE.md): «<name>. <Word>».
+  speak: {
+    carrier: '{{name}}. {{word}}',
+  },
   // Spoken letter NAME per letter id. Arabic ids carry the proper Arabic
   // letter names (spoken under ar). Latin ids are kept for structural parity
   // (spoken under en, not here) — set to the Latin letter.

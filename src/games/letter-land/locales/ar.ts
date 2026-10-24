@@ -14,12 +14,6 @@ export const ar: GameTranslations = {
     tapAgain: 'اضغط لتسمعه مرة أخرى',
     which: 'أي حرف هذا؟',
   },
-  // The letter NAME (names.*) is already a full spoken word (e.g. «لاَم»), so we
-  // say just the name then the example word — «لاَم. ليمون» — with no extra
-  // «حرف» prefix, matching the English "name. word" prompt.
-  speak: {
-    carrier: '{{name}}. {{word}}',
-  },
   a11y: {
     replay: 'اسمع الحرف مرة أخرى',
     choiceTile: 'حرف {{glyph}}',

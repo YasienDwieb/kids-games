@@ -19,7 +19,8 @@ import {
   useSpeech,
   useTranslation,
 } from '@/sdk';
-import { blockComplete, charLanguage, currentScript, roundSteps, type TraceChar } from '../catalog';
+import { blockComplete, currentScript, roundSteps, type TraceChar } from '../catalog';
+import { charPhrase } from '../phrase';
 import { charStars, progressStore, recordStars } from '../progress';
 import { TraceBoard } from './TraceBoard';
 import { TRAVEL_HOLD_MS } from './Travellers';
@@ -70,11 +71,9 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
 
   const sayChar = useCallback(() => {
     // Letters are spoken in their own language (an Arabic letter in an English UI too).
-    const lng = charLanguage(char);
-    const name = t(char.nameKey, { lng });
-    const text = char.word ? t('trace-it:speak.carrier', { lng, name, word: t('letters:words.' + char.word, { lng }) }) : name;
-    void speak(text, { language: lng });
-  }, [char, speak, t]);
+    const { text, lang } = charPhrase(char);
+    void speak(text, { language: lang });
+  }, [char, speak]);
 
   useEffect(() => {
     sayChar();

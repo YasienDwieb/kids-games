@@ -44,7 +44,9 @@ import {
   useSpeech,
   useTranslation,
   type LevelSource,
+  currentLanguage,
 } from '@/sdk';
+import { animalPhrase } from './phrase';
 import {
   ListenFindBoard,
   useListenFind,
@@ -113,11 +115,11 @@ export default function AnimalSafari(): React.JSX.Element {
     const round = roundRef.current;
     if (!round) return;
     if (round.mode === 'hearName') {
-      void speak(t('animal-safari:names.' + round.targetAnimal.id));
+      void speak(animalPhrase(round.targetAnimal.id, currentLanguage()));
     } else {
       void play(round.targetAnimal.id);
     }
-  }, [t, speak, play]);
+  }, [speak, play]);
 
   const lf = useListenFind<AnimalFindLevel>({
     gameId: 'animal-safari',
