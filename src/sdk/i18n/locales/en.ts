@@ -94,6 +94,10 @@ export const en = {
       gameRow: '{{min}} min · ⭐ {{stars}}',
       empty: 'No play time yet.',
     },
+    rate: {
+      prompt: 'Enjoying Kids Zone? A rating helps other parents find it.',
+      button: 'Rate',
+    },
     gate: {
       title: 'Ask a grown-up',
       wrong: 'Not quite — try again',

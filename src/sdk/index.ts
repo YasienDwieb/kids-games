@@ -123,6 +123,10 @@ export {
 } from './playtime/playtime';
 export type { Playtime } from './playtime/playtime';
 
+// Store review — native rating sheet, only from behind the parent gate
+export { maybeAskForReview, openStoreReview, shouldAskForReview } from './review/review';
+export type { ReviewState } from './review/review';
+
 // Adaptive difficulty — a per-game skill tier that follows the child
 export { useAdaptive } from './adaptive/useAdaptive';
 export type { UseAdaptiveResult } from './adaptive/useAdaptive';

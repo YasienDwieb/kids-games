@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -24,6 +24,8 @@ import {
   secondsToday,
   usePlaytime,
   useRewards,
+  maybeAskForReview,
+  openStoreReview,
 } from '@/sdk';
 import { COLORS, FONTS, OUTLINE, SPACING } from '../constants';
 
@@ -169,6 +171,14 @@ export function SettingsScreen({ navigation }: Props) {
     update({ flowGameIds: next.length === flowGames.length ? null : next });
   };
 
+  // A grown-up just got past the gate: the one moment a rating sheet is allowed.
+  // Short delay so the sheet lands on top of Settings, not mid-transition.
+  useEffect(() => {
+    if (!unlocked) return;
+    const id = setTimeout(() => void maybeAskForReview(), 800);
+    return () => clearTimeout(id);
+  }, [unlocked]);
+
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   const resetJourney = () => {
     flowStore.set({ step: 0, seed: 0, updatedAt: Date.now(), done: {} });
@@ -218,6 +228,13 @@ export function SettingsScreen({ navigation }: Props) {
                   value={settings.hapticsEnabled}
                   onChange={(v) => update({ hapticsEnabled: v })}
                 />
+              </View>
+              <View style={styles.card}>
+                <View style={styles.row}>
+                  <Text style={styles.rowIcon}>⭐</Text>
+                  <Text style={styles.rowLabel}>{t('settings.rate.prompt')}</Text>
+                  <Chip label={t('settings.rate.button')} onPress={() => void openStoreReview()} />
+                </View>
               </View>
             </View>
 
