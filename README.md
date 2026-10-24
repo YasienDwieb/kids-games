@@ -78,13 +78,16 @@ All guides: [docs/](docs/README.md).
 
 ## License
 
-The **code** is licensed under the [Apache License 2.0](LICENSE). You're welcome
-to build your own games on top of it, fork it, and publish — including for your
-own kids. Per the [`NOTICE`](NOTICE) file, derivative works must keep the
-attribution ("Based on the Kids Games project").
+Kids Zone is **source-available** under the [PolyForm Shield License 1.0.0](LICENSE).
+You're welcome to read, run, modify and share the code: build games for your own
+kids, use it at school, learn from it, and send improvements back. The one thing
+it doesn't allow is publishing a product that competes with Kids Zone, free or paid.
 
-The **"Kids Games" name, logo, and app icon are reserved** and are *not* covered
-by the code license (Apache-2.0 §6). Please use a different name and branding for
-your own published builds.
+The **Lulu mascot, voice recordings, app icon and store graphics are reserved**,
+and the **"Kids Zone" / "Kids Games" names and logo are trademarks**. None of
+them are covered by the code license. See [`NOTICE`](NOTICE) for the full list.
+
+Versions up to the `last-apache` tag were released under the
+[Apache License 2.0](LICENSES/Apache-2.0.txt) and stay available under it.
 
 Bundled third-party assets keep their own licenses — see [CREDITS.md](CREDITS.md).

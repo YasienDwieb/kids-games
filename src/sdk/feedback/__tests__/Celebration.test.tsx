@@ -4,7 +4,10 @@ import { i18n } from '@/sdk/i18n';
 import { pickAsset } from '@/sdk/assets/query';
 import { LULU_TAP_LINES } from '@/sdk/mascot/Lulu3D';
 import { voiceBusyRemaining } from '@/sdk/speech/voiceGate';
+import { stopSpeech } from '@/sdk/speech/useSpeech';
 import { CelebrationProvider, PRAISE_COUNT, useCelebrate, type Celebrate } from '../Celebration';
+
+jest.mock('@/sdk/speech/useSpeech', () => ({ ...jest.requireActual('@/sdk/speech/useSpeech'), stopSpeech: jest.fn() }));
 
 function Grab({ onReady }: { onReady: (c: Celebrate) => void }) {
   onReady(useCelebrate());
@@ -91,6 +94,28 @@ it('holds the voice while praise plays, and stays silent with praise: false', as
 
   act(() => tree.unmount());
   jest.useRealTimers();
+});
+
+it('praise cuts off a spoken prompt, so the two voices never overlap', () => {
+  (stopSpeech as jest.Mock).mockClear();
+  let celebrate!: Celebrate;
+  let tree!: ReturnType<typeof create>;
+  act(() => {
+    tree = create(
+      <CelebrationProvider>
+        <Grab onReady={(c) => (celebrate = c)} />
+      </CelebrationProvider>,
+    );
+  });
+  act(() => {
+    void celebrate('small', { praise: false });
+  });
+  expect(stopSpeech).not.toHaveBeenCalled();
+  act(() => {
+    void celebrate('small');
+  });
+  expect(stopSpeech).toHaveBeenCalled();
+  act(() => tree.unmount());
 });
 
 it('has every praise line in both languages', () => {

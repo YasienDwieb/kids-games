@@ -10,3 +10,4 @@ import '@/games/simple-pairs/flow';
 import '@/games/mouse-maze/flow';
 import '@/games/color-mixer/flow';
 import '@/games/candy-catch/flow';
+import '@/games/trace-it/flow';

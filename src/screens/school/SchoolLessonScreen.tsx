@@ -153,10 +153,10 @@ function LearnStep({ unit, lesson, onNext }: { unit: Unit; lesson: Lesson; onNex
   const dir = unit.lang === 'ar' ? 'rtl' : 'ltr';
 
   useEffect(() => {
-    void speak(learn.explain, { lang: unit.lang });
+    void speak(learn.explain, { language: unit.lang });
   }, [learn.explain, speak, unit.lang]);
 
-  const say = (text: string) => void speak(text, { lang: unit.lang });
+  const say = (text: string) => void speak(text, { language: unit.lang });
 
   return (
     <View style={[styles.learn, { direction: dir }]}>
@@ -257,7 +257,7 @@ function PractiseStep({ unit, lesson, onDone }: { unit: Unit; lesson: Lesson; on
   const r = rounds[i];
   const font = fontForLang(unit.lang, 'display');
 
-  const ask = useCallback(() => void speak(r.say ?? r.prompt, { lang: unit.lang }), [r, speak, unit.lang]);
+  const ask = useCallback(() => void speak(r.say ?? r.prompt, { language: unit.lang }), [r, speak, unit.lang]);
   useEffect(() => {
     if (focused) ask();
   }, [ask, focused]);

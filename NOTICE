@@ -1,15 +1,44 @@
-Kids Games
+Kids Zone (formerly "Kids Games")
 Copyright 2026 Yasien Dwieb
 
-This product includes software developed as part of the Kids Games project.
-Based on the Kids Games project — https://github.com/YasienDwieb/kids-games
+Required Notice: Copyright 2026 Yasien Dwieb (https://github.com/YasienDwieb/kids-games)
 
-Licensed under the Apache License, Version 2.0. You must retain this NOTICE,
-including the attribution above, in any distribution or derivative work.
+Licensor Line of Business: Kids Zone, an educational games app for children on mobile app stores, published by the licensor or a company the licensor controls (currently waybeyond) (https://github.com/YasienDwieb/kids-games)
 
-The "Kids Games" name, logo, and app icon are trademarks of the author and are
-NOT licensed under Apache-2.0 (see Section 6 of the LICENSE). Forks and
-derivative works must use a different name and branding.
+LICENSE
+-------
+The code is licensed under the PolyForm Shield License 1.0.0 (see LICENSE,
+https://polyformproject.org/licenses/shield/1.0.0). You may use, study, modify
+and share it for any purpose, including personal, family, school and research
+use, except providing a product that competes with Kids Zone or any other
+product the licensor provides using this software. Competing products include
+free ones.
 
-Third-party assets bundled with this project retain their own licenses; see
-CREDITS.md for details.
+EARLIER VERSIONS
+----------------
+Versions up to and including the commit tagged `last-apache` were released
+under the Apache License 2.0 (see LICENSES/Apache-2.0.txt), and remain
+available under those terms. Contributions made before the switch were
+provided under Apache-2.0 and are included here under its terms.
+
+RESERVED ASSETS (all rights reserved)
+-------------------------------------
+The following original assets are NOT covered by the code license, in this or
+any version. They may not be copied, modified or distributed outside of
+official Kids Zone builds without written permission:
+
+  - The Lulu owl mascot: the character, its name and design, the pose art in
+    src/sdk/assets/images/mascot/, and its likeness as drawn by Lulu3D
+  - Voice recordings: src/sdk/assets/audio/voice/ and src/sdk/assets/audio/speech/
+  - App icon and splash art: assets/
+  - Store listing text and graphics: fastlane/metadata/
+
+TRADEMARKS
+----------
+"Kids Zone", "Kids Games", "Lulu", and the Kids Zone logo and app icon are
+trademarks of the licensor and are not licensed. Forks and derivative works
+must use a different name and branding.
+
+THIRD-PARTY ASSETS
+------------------
+Bundled third-party assets retain their own licenses; see CREDITS.md.

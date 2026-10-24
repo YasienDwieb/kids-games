@@ -25,7 +25,9 @@ import {
   useSpeech,
   useTranslation,
   voiceHoldRemaining,
+  currentLanguage,
 } from '@/sdk';
+import { animalPhrase } from './phrase';
 import { ListenFindBoard, type FindItem } from '@/games/_shared/listen-find';
 import { ANIMAL_IMAGES } from './animalImages';
 import { LEVEL_COUNT, roundForUnit } from './utils/levels';
@@ -52,7 +54,7 @@ function AnimalSafariFlowRound({
   // per unit — the flow remounts each unit.
   const present = () => {
     if (round.mode === 'hearName') {
-      void speak(t('animal-safari:names.' + round.target.id));
+      void speak(animalPhrase(round.target.id, currentLanguage()));
     } else {
       void play(round.target.id);
     }

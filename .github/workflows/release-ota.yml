@@ -1,0 +1,68 @@
+name: Release — OTA update (EAS Update)
+
+# Publishes the current JS bundle + assets as an over-the-air update. No store
+# review: installed apps download it on launch and apply it on the next cold start.
+#
+# Only reaches binaries with the same runtimeVersion (fingerprint policy in
+# app.json). Native changes — new native modules, SDK bumps, plugins, icons,
+# permissions — change the fingerprint and need a store build (release-aab.yml)
+# instead; an OTA published after such a change simply matches no installed app.
+#
+# Channels: `preview` = sideloaded GitHub APKs (test here first),
+# `production` = Play / App Store builds.
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: "Channel to publish to"
+        type: choice
+        options: [preview, production]
+        default: preview
+      message:
+        description: "Update message (shown in the EAS dashboard)"
+        required: true
+      rollout:
+        description: "Rollout percentage (1-100)"
+        default: "100"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-ota-${{ inputs.channel }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Publish OTA update (${{ inputs.channel }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 20.1.0 # must satisfy eas.json cli.version (>= 20.1.0)
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Test
+        run: npx jest --ci
+
+      - name: Publish update
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          MESSAGE: ${{ inputs.message }}
+          ROLLOUT: ${{ inputs.rollout }}
+        run: |
+          set -euo pipefail
+          eas update --channel "$CHANNEL" --environment "$CHANNEL" \
+            --message "$MESSAGE" --rollout-percentage "$ROLLOUT" \
+            --platform all --non-interactive

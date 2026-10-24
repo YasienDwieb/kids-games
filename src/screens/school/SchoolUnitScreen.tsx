@@ -50,7 +50,7 @@ export function SchoolUnitScreen({ navigation, route }: Props) {
   useEffect(() => {
     if (unit && !progress.intros.includes(unit.id) && modal === null) {
       setModal('intro');
-      void speak(unit.intro.text, { lang: unit.lang });
+      void speak(unit.intro.text, { language: unit.lang });
     }
     // Only when the unit changes or progress first loads.
   }, [unit?.id, progress.intros.length]);
@@ -133,7 +133,7 @@ export function SchoolUnitScreen({ navigation, route }: Props) {
           key="intro"
           onPress={() => {
             setModal('intro');
-            void speak(unit.intro.text, { lang: unit.lang });
+            void speak(unit.intro.text, { language: unit.lang });
           }}
           accessibilityRole="button"
           accessibilityLabel={t('school.stop.intro')}
@@ -279,7 +279,7 @@ export function SchoolUnitScreen({ navigation, route }: Props) {
                   {unit.intro.text}
                 </Text>
                 <View style={styles.cardRow}>
-                  <IconButton onPress={() => void speak(unit.intro.text, { lang: unit.lang })} accessibilityLabel={t('school.listen')}>
+                  <IconButton onPress={() => void speak(unit.intro.text, { language: unit.lang })} accessibilityLabel={t('school.listen')}>
                     <Icon name="volume-high" size={22} />
                   </IconButton>
                   <PressableButton
