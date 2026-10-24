@@ -68,3 +68,6 @@ scripts/voice/.takes/
 
 # Plan execution scratch
 .superpowers/
+
+# EAS local signing credentials (keystore paths/passwords)
+credentials.json

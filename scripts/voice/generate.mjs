@@ -7,7 +7,7 @@
 //   npm run voice:generate -- --pick "<key>=<n>"   # use take n instead
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -26,13 +26,18 @@ const slug = (key) => `${key.slice(0, 2)}-${createHash('sha1').update(key).diges
 
 function parseArgs(argv) {
   const args = { dryRun: false, redo: new Set(), pick: new Map() };
+  const value = (flag, i) => {
+    if (argv[i] === undefined || argv[i].startsWith('--')) throw new Error(`${flag} needs a value, e.g. ${flag} "ar:كَاف. كُرَة"`);
+    return argv[i];
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--dry-run') args.dryRun = true;
-    else if (a === '--redo') args.redo.add(argv[++i].normalize('NFC').trim());
+    else if (a === '--redo') args.redo.add(value(a, ++i).normalize('NFC').trim());
     else if (a === '--pick') {
-      const [key, n] = argv[++i].split(/=(?=\d+$)/);
-      args.pick.set(key.normalize('NFC').trim(), Number(n));
+      const m = value(a, ++i).match(/^(.+)=([1-9]\d*)$/);
+      if (!m) throw new Error(`--pick takes "<key>=<take number>", e.g. --pick "ar:كَاف. كُرَة=2"`);
+      args.pick.set(m[1].normalize('NFC').trim(), Number(m[2]));
     } else throw new Error(`unknown argument: ${a}`);
   }
   return args;
@@ -51,9 +56,10 @@ async function synthesize(lang, text, attempt = 1) {
 
 async function request(lang, text) {
   const voice = CONFIG.voices[lang];
-  const res = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.GOOGLE_TTS_API_KEY}`, {
+  // Key in a header, not the URL, so it stays out of proxy and access logs.
+  const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': process.env.GOOGLE_TTS_API_KEY },
     body: JSON.stringify({ input: { text }, voice: { languageCode: voice.split('-').slice(0, 2).join('-'), name: voice }, audioConfig: { audioEncoding: 'MP3' } }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -87,10 +93,14 @@ function finalize(take, out) {
   ffmpeg(['-i', take, '-af', `volume=${gain.toFixed(2)}dB,alimiter=limit=${limit}:level=false`, '-ac', '1', '-ar', String(sampleRate), '-c:a', codec, '-b:a', bitrate, out]);
 }
 
-const takeFiles = (key) => {
-  const dir = join(TAKES_DIR, slug(key));
-  return existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith('.mp3')).sort().map((f) => join(dir, f)) : [];
-};
+/** A clip's takes as { n, file }, numbered by file name (take-3.mp3 is take 3 even if take 2 failed). */
+const takeFiles = (key, dir = join(TAKES_DIR, slug(key))) =>
+  existsSync(dir)
+    ? readdirSync(dir)
+        .map((f) => ({ n: Number(f.match(/^take-(\d+)\.mp3$/)?.[1]), file: join(dir, f) }))
+        .filter((t) => t.n > 0)
+        .sort((a, b) => a.n - b.n)
+    : [];
 
 const esc = (s) => s.replace(/[<&>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -98,7 +108,7 @@ function writeReview(rows) {
   const body = rows
     .map(({ key, takes, chosen }) => {
       const cells = takes
-        .map((t, i) => `<td class="${i + 1 === chosen ? 'chosen' : ''}"><audio controls preload="none" src="${relative(TAKES_DIR, t)}"></audio><br>take ${i + 1}${i + 1 === chosen ? ' ✓' : ''}</td>`)
+        .map((t) => `<td class="${t.n === chosen ? 'chosen' : ''}"><audio controls preload="none" src="${relative(TAKES_DIR, t.file)}"></audio><br>take ${t.n}${t.n === chosen ? ' ✓' : ''}</td>`)
         .join('');
       const cmd = `npm run voice:generate -- --pick "${key}=N"`;
       return `<tr><th dir="auto">${esc(key)}</th>${cells}<td><code>${esc(cmd)}</code><br><code>npm run voice:generate -- --redo "${esc(key)}"</code></td></tr>`;
@@ -158,10 +168,11 @@ async function main() {
   const review = [];
   const failed = [];
 
-  // Record takes.
+  // Record takes into a fresh folder; the old takes stay until the new set is accepted.
   const jobs = [];
+  const fresh = (key) => join(TAKES_DIR, `${slug(key)}.new`);
   for (const [key, l] of todo) {
-    const dir = join(TAKES_DIR, slug(key));
+    const dir = fresh(key);
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(dir, { recursive: true });
     for (let n = 1; n <= CONFIG.takes; n++) {
@@ -176,13 +187,29 @@ async function main() {
   }
   await pool(jobs, CONCURRENCY);
 
+  // A clip already in the app is only replaced by a full set of takes; a new
+  // phrase takes whatever was recorded (better than the device voice).
+  const accepted = [];
+  for (const [key] of todo) {
+    const got = takeFiles(key, fresh(key)).length;
+    if (got === CONFIG.takes || (!lock[key] && got > 0)) {
+      rmSync(join(TAKES_DIR, slug(key)), { recursive: true, force: true });
+      renameSync(fresh(key), join(TAKES_DIR, slug(key)));
+      accepted.push(key);
+    } else {
+      rmSync(fresh(key), { recursive: true, force: true });
+      if (lock[key]) failed.push(`${key}: only ${got}/${CONFIG.takes} takes recorded — kept the current clip`);
+    }
+  }
+
   // A clip and its lock entry change together, and one bad take never stops the
   // run before the lock and map are written.
   const install = (key, takes, n) => {
     const file = `${slug(key)}.m4a`;
     try {
-      if (!takes[n - 1]) throw new Error(`no take ${n} (have ${takes.length}; run --redo first)`);
-      finalize(takes[n - 1], join(CLIP_DIR, file));
+      const take = takes.find((t) => t.n === n);
+      if (!take) throw new Error(`no take ${n} (have ${takes.map((t) => t.n).join(', ') || 'none'}; run --redo first)`);
+      finalize(take.file, join(CLIP_DIR, file));
       lock[key] = { file, voice: CONFIG.voices[lines.get(key).lang], take: n, durationS: Number(duration(join(CLIP_DIR, file)).toFixed(2)), generatedAt: new Date().toISOString().slice(0, 10) };
       review.push({ key, takes, chosen: n });
     } catch (e) {
@@ -191,11 +218,10 @@ async function main() {
   };
 
   // Auto-pick the median-length take; outliers are the rushed or drawn-out ones.
-  for (const [key] of todo) {
+  for (const key of accepted) {
     const takes = takeFiles(key);
-    if (!takes.length) continue;
-    const byLength = takes.map((t, i) => ({ i, d: duration(t) })).sort((a, b) => a.d - b.d);
-    install(key, takes, byLength[Math.floor((byLength.length - 1) / 2)].i + 1);
+    const byLength = takes.map((t) => ({ n: t.n, d: duration(t.file) })).sort((a, b) => a.d - b.d);
+    install(key, takes, byLength[Math.floor((byLength.length - 1) / 2)].n);
     process.stdout.write('.');
   }
 

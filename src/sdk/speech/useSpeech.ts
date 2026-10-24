@@ -38,6 +38,11 @@ function stopAll() {
   }
 }
 
+/** Stop whatever a game is saying — e.g. when praise starts, so voices never overlap. */
+export function stopSpeech(): void {
+  stopAll();
+}
+
 function releaseClip() {
   try {
     clip?.player.remove();

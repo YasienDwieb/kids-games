@@ -59,7 +59,8 @@ Write the text **the way a reader would write it**. The voice gets that text, un
 5. Commit the clips with `src/sdk/speech/clips.generated.ts` and `clips.lock.json`.
 
 `src/games/__tests__/voiceClips.test.ts` fails if a spoken phrase has no clip, so a locale
-edit can't silently fall back to the robot voice.
+edit can't silently fall back to the robot voice, and `speakCallSites.test.ts` fails if a game
+passes `speak()` anything but a phrase builder's result.
 
 ## Takes are random
 

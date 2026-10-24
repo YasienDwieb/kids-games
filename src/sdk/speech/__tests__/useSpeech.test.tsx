@@ -2,7 +2,7 @@ import React from 'react';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { createAudioPlayer } from 'expo-audio';
 import * as Speech from 'expo-speech';
-import { useSpeech } from '../useSpeech';
+import { stopSpeech, useSpeech } from '../useSpeech';
 import { clipKey } from '../clipKey';
 
 jest.mock('expo-speech', () => ({ speak: jest.fn(), stop: jest.fn() }));
@@ -107,6 +107,15 @@ it('falls back to device TTS when the clip cannot play', async () => {
   const { api } = mount();
   await act(() => api.speak('Q. Queen', { language: 'en' }));
   expect(Speech.speak).toHaveBeenCalledWith('Q. Queen', expect.objectContaining({ language: 'en-US' }));
+});
+
+it('stopSpeech() stops the playing clip from outside the hook', async () => {
+  const { api } = mount();
+  await act(() => api.speak('Q. Queen', { language: 'en' }));
+  playerFor(2).pause.mockClear();
+  stopSpeech();
+  expect(playerFor(2).pause).toHaveBeenCalled();
+  expect(Speech.stop).toHaveBeenCalled();
 });
 
 it('clipKey normalizes to NFC and trims', () => {
