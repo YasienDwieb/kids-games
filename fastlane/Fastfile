@@ -53,7 +53,10 @@ platform :android do
       version_code: require_version_code(options),
       skip_upload_apk: true,
       skip_upload_aab: true,
-      skip_upload_changelogs: true
+      skip_upload_changelogs: true,
+      # Skip images whose sha256 already matches Play; otherwise every release
+      # re-uploads (and lists as "changed") the icon, graphic and all screenshots.
+      sync_image_upload: true
     )
   end
 
