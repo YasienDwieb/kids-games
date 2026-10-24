@@ -10,7 +10,9 @@
     "web": "expo start --web",
     "test": "jest",
     "voice:catalog": "VOICE_CATALOG_OUT=scripts/voice/catalog.json jest src/games/__tests__/voiceCatalog.test.ts",
-    "voice:generate": "node --env-file-if-exists=.env.local scripts/voice/generate.mjs"
+    "voice:generate": "node --env-file-if-exists=.env.local scripts/voice/generate.mjs",
+    "test:voice": "node --test scripts/voice/__tests__/*.test.mjs",
+    "voice:studio": "node --env-file-if-exists=.env.local scripts/voice/studio.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/baloo-bhaijaan-2": "^0.4.2",
