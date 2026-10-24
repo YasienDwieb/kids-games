@@ -95,6 +95,10 @@ export const ar: CoreTranslations = {
       gameRow: '{{min}} دقيقة · ⭐ {{stars}}',
       empty: 'لا يوجد وقت لعب بعد.',
     },
+    rate: {
+      prompt: 'هل أعجبكم Kids Zone؟ تقييمكم يساعد أهالي آخرين.',
+      button: 'قيّمونا',
+    },
     gate: {
       title: 'اسأل شخصاً كبيراً',
       wrong: 'ليست صحيحة، حاول مرة أخرى',

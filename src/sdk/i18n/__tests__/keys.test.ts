@@ -292,6 +292,8 @@ const KEYS: string[] = [
   'core:settings.tabs.journey',
   'core:settings.sound',
   'core:settings.haptics',
+  'core:settings.rate.prompt',
+  'core:settings.rate.button',
   'core:settings.gate.title',
   'core:settings.gate.wrong',
   // letter-land
