@@ -1,24 +1,24 @@
-// Animal Safari — static require map of OpenMoji animal images.
+// Animal Safari — static require map of animal images.
 //
-// Local PNG assets (CC BY-SA 4.0, OpenMoji) keyed by animal id. A static
-// `require(...)` map is the RN-idiomatic way to reference bundled images: the
-// bundler resolves each path at build time to a numeric module handle that
-// <Image source={...} /> consumes. png is in Metro's default assetExts and is
-// transformed by jest-expo, so no metro/jest change is needed.
+// The shared Noto emoji PNGs (Apache-2.0, see /CREDITS.md) for each animal's
+// `emoji` in constants.ts, so the pictures match the glyphs used elsewhere in
+// the app. A static `require(...)` map is the RN-idiomatic way to reference
+// bundled images: the bundler resolves each path at build time to a numeric
+// module handle that <Image source={...} /> consumes.
 //
 // Keyed by `Animal.id` (see constants.ts) — all 12 animals covered.
 
 export const ANIMAL_IMAGES: Record<string, number> = {
-  lion: require('@/sdk/assets/images/animals/lion.png'),
-  elephant: require('@/sdk/assets/images/animals/elephant.png'),
-  cow: require('@/sdk/assets/images/animals/cow.png'),
-  dog: require('@/sdk/assets/images/animals/dog.png'),
-  cat: require('@/sdk/assets/images/animals/cat.png'),
-  frog: require('@/sdk/assets/images/animals/frog.png'),
-  horse: require('@/sdk/assets/images/animals/horse.png'),
-  sheep: require('@/sdk/assets/images/animals/sheep.png'),
-  rooster: require('@/sdk/assets/images/animals/rooster.png'),
-  duck: require('@/sdk/assets/images/animals/duck.png'),
-  bird: require('@/sdk/assets/images/animals/bird.png'),
-  bee: require('@/sdk/assets/images/animals/bee.png'),
+  lion: require('@/sdk/assets/emoji/png/1F981.png'),
+  elephant: require('@/sdk/assets/emoji/png/1F418.png'),
+  cow: require('@/sdk/assets/emoji/png/1F404.png'),
+  dog: require('@/sdk/assets/emoji/png/1F436.png'),
+  cat: require('@/sdk/assets/emoji/png/1F431.png'),
+  frog: require('@/sdk/assets/emoji/png/1F438.png'),
+  horse: require('@/sdk/assets/emoji/png/1F40E.png'),
+  sheep: require('@/sdk/assets/emoji/png/1F411.png'),
+  rooster: require('@/sdk/assets/emoji/png/1F414.png'),
+  duck: require('@/sdk/assets/emoji/png/1F986.png'),
+  bird: require('@/sdk/assets/emoji/png/1F426.png'),
+  bee: require('@/sdk/assets/emoji/png/1F41D.png'),
 };
