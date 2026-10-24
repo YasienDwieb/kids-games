@@ -79,7 +79,7 @@ Noto emoji on rounded white/green cards, cream background, card size ≤ 100 dp.
 
 ### Medium (M — days)
 7. **Smooth difficulty ladder**: 2 → 3 → 4 → 5 → 6 → 8 pairs as *levels* via `useLevels`, auto-advance after win, keep the picker as "free choice".
-8. **Theme decks**: animals, fruit, vehicles, shapes, letters, numbers (reuse emoji/OpenMoji already bundled) — unlocked one per few wins.
+8. **Theme decks**: animals, fruit, vehicles, shapes, letters, numbers (reuse the Noto emoji already bundled) — unlocked one per few wins.
 9. **Sticker reward**: each win awards the matched animal as a sticker into the app-wide sticker book (see [README → Platform](./README.md#4-platform-level-engagement-systems)).
 10. **Mismatch "peek" helper** for ages 2–3: after 3 failed tries, matching card glows briefly.
 11. Join **guided flow** (one board of 2–3 pairs = one unit).

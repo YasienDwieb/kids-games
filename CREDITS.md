@@ -7,19 +7,11 @@ license. Add an entry **before** importing any new third-party asset.
 
 ### Google Noto Emoji — emoji artwork
 
-- **Used for:** emoji drawn as images across the app's games and screens (`src/sdk/assets/emoji/png/`), resolved
+- **Used for:** emoji drawn as images across the app's games and screens, including Animal Safari's animal pictures (`src/sdk/assets/emoji/png/`), resolved
   via `src/sdk/assets/emoji/images.ts` and rendered through the `EmojiImage` SDK primitive.
 - **Source:** https://github.com/googlefonts/noto-emoji — © Google Inc.
 - **License:** Apache License 2.0 (emoji images). https://www.apache.org/licenses/LICENSE-2.0
 - **Terms honored:** attribution (this entry). Commercial use permitted; no share-alike.
-
-### OpenMoji — Animal Safari illustrations
-
-- **Used for:** Animal Safari's animal pictures (`src/sdk/assets/images/animals/`).
-- **Source:** https://openmoji.org — all emojis designed by OpenMoji, the open-source emoji and icon project.
-- **License:** CC BY-SA 4.0. https://creativecommons.org/licenses/by-sa/4.0/
-- **Terms honored:** attribution required wherever the images are used (including in-app),
-  not yet shown in the app. Per-file sources: `src/sdk/assets/images/animals/CREDITS.md`.
 
 ### Kenney — Background Elements (backdrop)
 
