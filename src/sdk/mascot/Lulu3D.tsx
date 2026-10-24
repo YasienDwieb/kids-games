@@ -1,11 +1,12 @@
 /**
- * Lulu in 3D — the mascot built from soft toon-shaded shapes (no model file),
- * so every part can move: she breathes, blinks, follows the child's finger
- * with her eyes and head, flaps on a cheer, nods to encourage, and reacts to
- * a tap with a hop, a spin and a giggle.
+ * The buddy in 3D — Lulu the owl or Zain the lion cub, built from soft
+ * toon-shaded shapes (no model file), so every part can move: they breathe,
+ * blink, follow the child's finger with eyes and head, flap/wave on a cheer,
+ * nod to encourage, and react to a tap with a hop, a spin and a giggle.
  *
  *   <Lulu3D size={140} mood="cheer" />
- *   <Lulu3D size={120} interactive />   // tap / drag her
+ *   <Lulu3D size={120} interactive />   // tap / drag
+ *   <Lulu3D buddy="zain" />             // a specific buddy (default: the chosen one)
  *
  * `active={false}` stops the render loop (keep a mounted Lulu cheap while
  * hidden). Colours match the 2D art: lavender body, cream face and belly.
@@ -14,7 +15,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { PanResponder, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
 import type { Group, Mesh } from 'three';
-import { ACCENTS, COLORS, POP } from '@/constants/colors';
+import { ACCENTS, BUDDY_COLORS, COLORS, POP } from '@/constants/colors';
+import { useBuddy, type BuddyId } from '@/sdk/buddy';
 import { useWearing, type Wearing } from '@/sdk/player/outfitStore';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
@@ -32,6 +34,7 @@ const WHITE = COLORS.surface;
 const GOLD = COLORS.gold;
 const PINK = POP.bubblegum;
 const BLUE = POP.splash;
+const LION = BUDDY_COLORS.zain;
 const DRAG_SLOP = 8;
 
 /** Hats that sit on top of the head hide the crown feathers under them. */
@@ -178,26 +181,27 @@ function Glasses({ id }: { id: string | null }) {
   );
 }
 
-/** Number of tap reaction lines per language (`lulu.tap.<lang>.<n>` in the manifest). */
+/** Number of tap reaction lines per buddy and language (`<buddy>.tap.<lang>.<n>` in the manifest). */
 export const LULU_TAP_LINES = 3;
 
 type Reaction = { at: number };
 
 type Pointer = { x: number; y: number; active: boolean };
 
-function Owl({
-  mood,
-  wearing,
-  pointer,
-  reaction,
-  spin,
-}: {
+type RigProps = {
   mood: LuluMood;
   wearing: Wearing;
   pointer: React.MutableRefObject<Pointer>;
   reaction: React.MutableRefObject<Reaction>;
   spin: React.MutableRefObject<number>;
-}) {
+};
+
+/**
+ * The shared rig: both buddies breathe, blink, hop, wave an arm/wing, follow the
+ * finger and spin on a tap the same way. Each model just hangs its meshes off
+ * these refs (root > body > head, two arms, eyes, pupils).
+ */
+function useRig({ mood, pointer, reaction, spin }: RigProps) {
   const root = useRef<Group>(null);
   const body = useRef<Group>(null);
   const head = useRef<Group>(null);
@@ -282,6 +286,13 @@ function Owl({
       if (e) e.scale.y = blink;
     });
   });
+
+  return { root, body, head, wingL, wingR, eyes, pupils };
+}
+
+function Owl(props: RigProps) {
+  const { wearing } = props;
+  const { root, body, head, wingL, wingR, eyes, pupils } = useRig(props);
 
   return (
     <group ref={root}>
@@ -372,6 +383,146 @@ function Owl({
   );
 }
 
+/** Zain the lion cub: golden body, a mane ring round his face, paws for arms. */
+function Lion(props: RigProps) {
+  const { wearing } = props;
+  const { root, body, head, wingL, wingR, eyes, pupils } = useRig(props);
+  const MANE_TUFTS = 14;
+
+  return (
+    <group ref={root}>
+      <group ref={body}>
+        {/* Body + belly */}
+        <mesh position={[0, -0.24, 0]} scale={[1, 1.05, 0.9]}>
+          <sphereGeometry args={[0.42, 32, 24]} />
+          <meshToonMaterial color={LION.fur} />
+        </mesh>
+        <mesh position={[0, -0.32, 0.26]} scale={[0.7, 0.75, 0.45]}>
+          <sphereGeometry args={[0.3, 24, 18]} />
+          <meshToonMaterial color={LION.muzzle} />
+        </mesh>
+
+        {/* Neckerchief, a blue triangle under the chin */}
+        <mesh position={[0, 0.02, 0.3]} rotation={[0.25, 0, Math.PI]} scale={[1, 1, 0.35]}>
+          <coneGeometry args={[0.16, 0.22, 3]} />
+          <meshToonMaterial color={LION.scarf} />
+        </mesh>
+
+        {/* Arms (paws), pivoting at the shoulder */}
+        <group ref={wingL} position={[-0.36, -0.08, 0.02]}>
+          <mesh position={[-0.04, -0.18, 0]} scale={[0.36, 0.72, 0.42]}>
+            <sphereGeometry args={[0.3, 18, 14]} />
+            <meshToonMaterial color={LION.furDeep} />
+          </mesh>
+        </group>
+        <group ref={wingR} position={[0.36, -0.08, 0.02]}>
+          <mesh position={[0.04, -0.18, 0]} scale={[0.36, 0.72, 0.42]}>
+            <sphereGeometry args={[0.3, 18, 14]} />
+            <meshToonMaterial color={LION.furDeep} />
+          </mesh>
+        </group>
+
+        {/* Feet */}
+        {[-0.17, 0.17].map((x) => (
+          <mesh key={x} position={[x, -0.62, 0.12]} scale={[1, 0.55, 1.25]}>
+            <sphereGeometry args={[0.11, 14, 10]} />
+            <meshToonMaterial color={LION.furDeep} />
+          </mesh>
+        ))}
+
+        {/* Tail with a mane-coloured tuft */}
+        <group position={[0.28, -0.5, -0.28]} rotation={[0.5, 0, -0.9]}>
+          <mesh position={[0, 0.16, 0]}>
+            <cylinderGeometry args={[0.035, 0.035, 0.34, 8]} />
+            <meshToonMaterial color={LION.fur} />
+          </mesh>
+          <mesh position={[0, 0.36, 0]}>
+            <sphereGeometry args={[0.08, 12, 10]} />
+            <meshToonMaterial color={LION.mane} />
+          </mesh>
+        </group>
+
+        {/* Head (turns on its own) */}
+        <group ref={head} position={[0, 0.12, 0]}>
+          {/* Mane: a soft disc behind the face plus tufts round the rim */}
+          <mesh position={[0, 0.3, -0.08]} scale={[1, 1, 0.62]}>
+            <sphereGeometry args={[0.5, 28, 20]} />
+            <meshToonMaterial color={LION.mane} />
+          </mesh>
+          {Array.from({ length: MANE_TUFTS }, (_, i) => {
+            const a = (i / MANE_TUFTS) * Math.PI * 2;
+            return (
+              <mesh key={i} position={[Math.cos(a) * 0.47, 0.3 + Math.sin(a) * 0.47, -0.06]} scale={[1, 1, 0.7]}>
+                <sphereGeometry args={[0.13, 14, 10]} />
+                <meshToonMaterial color={LION.mane} />
+              </mesh>
+            );
+          })}
+          {/* Face */}
+          <mesh position={[0, 0.3, 0.06]}>
+            <sphereGeometry args={[0.38, 28, 22]} />
+            <meshToonMaterial color={LION.fur} />
+          </mesh>
+          {/* Ears */}
+          {[-1, 1].map((sgn) => (
+            <group key={sgn} position={[sgn * 0.3, 0.6, 0.04]}>
+              <mesh scale={[1, 1, 0.6]}>
+                <sphereGeometry args={[0.11, 14, 10]} />
+                <meshToonMaterial color={LION.fur} />
+              </mesh>
+              <mesh position={[0, 0, 0.05]} scale={[1, 1, 0.4]}>
+                <sphereGeometry args={[0.06, 12, 8]} />
+                <meshToonMaterial color={LION.cheek} />
+              </mesh>
+            </group>
+          ))}
+          {/* Muzzle, nose, cheeks */}
+          <mesh position={[0, 0.17, 0.36]} scale={[1.3, 0.85, 0.75]}>
+            <sphereGeometry args={[0.15, 20, 14]} />
+            <meshToonMaterial color={LION.muzzle} />
+          </mesh>
+          <mesh position={[0, 0.24, 0.47]} scale={[1.3, 0.9, 1]}>
+            <sphereGeometry args={[0.045, 12, 10]} />
+            <meshToonMaterial color={LION.nose} />
+          </mesh>
+          {[-0.22, 0.22].map((x) => (
+            <mesh key={x} position={[x, 0.22, 0.34]} scale={[1, 0.6, 0.4]}>
+              <sphereGeometry args={[0.06, 12, 8]} />
+              <meshBasicMaterial color={LION.cheek} />
+            </mesh>
+          ))}
+          {/* Eyes */}
+          {[-0.14, 0.14].map((x, i) => (
+            <group key={x} position={[x, 0.37, 0.37]}>
+              <mesh ref={(m) => { eyes.current[i] = m; }}>
+                <sphereGeometry args={[0.08, 18, 14]} />
+                <meshToonMaterial color={WHITE} />
+              </mesh>
+              <group ref={(g) => { pupils.current[i] = g; }} position={[0, 0, 0.055]}>
+                <mesh>
+                  <sphereGeometry args={[0.05, 14, 10]} />
+                  <meshBasicMaterial color={INK} />
+                </mesh>
+                <mesh position={[0.018, 0.022, 0.035]}>
+                  <sphereGeometry args={[0.014, 8, 6]} />
+                  <meshBasicMaterial color={WHITE} />
+                </mesh>
+              </group>
+            </group>
+          ))}
+          {/* The wardrobe is shared with Lulu; shift it onto a lion's head. */}
+          <group position={[0, 0.2, 0]}>
+            <Hat id={wearing.hat} />
+          </group>
+          <group position={[0, 0.22, -0.12]}>
+            <Glasses id={wearing.glasses} />
+          </group>
+        </group>
+      </group>
+    </group>
+  );
+}
+
 type Lulu3DProps = {
   size?: number;
   mood?: LuluMood;
@@ -381,6 +532,8 @@ type Lulu3DProps = {
   active?: boolean;
   /** What she wears; defaults to the child's saved outfit. */
   wearing?: Wearing;
+  /** Which buddy to draw; defaults to the child's chosen one. */
+  buddy?: BuddyId;
   style?: ViewStyle;
 };
 
@@ -390,9 +543,12 @@ export function Lulu3D({
   interactive = false,
   active = true,
   wearing,
+  buddy,
   style,
 }: Lulu3DProps) {
   const saved = useWearing();
+  const chosen = useBuddy();
+  const who = buddy ?? chosen;
   const { t } = useTranslation();
   const { play, prewarm } = useSound();
   const pointer = useRef<Pointer>({ x: 0, y: 0, active: false });
@@ -405,8 +561,8 @@ export function Lulu3D({
   useEffect(() => {
     if (!interactive) return;
     const lang = currentLanguage();
-    prewarm(Array.from({ length: LULU_TAP_LINES }, (_, i) => `lulu.tap.${lang}.${i + 1}`));
-  }, [interactive, prewarm]);
+    prewarm(Array.from({ length: LULU_TAP_LINES }, (_, i) => `${who}.tap.${lang}.${i + 1}`));
+  }, [interactive, prewarm, who]);
 
   const responder = useMemo(
     () =>
@@ -439,7 +595,7 @@ export function Lulu3D({
           if (!drag.current.moved) {
             reaction.current.at = -1; // start the hop on the next frame
             line.current = (line.current % LULU_TAP_LINES) + 1;
-            play(`lulu.tap.${currentLanguage()}.${line.current}`, { haptic: true });
+            play(`${who}.tap.${currentLanguage()}.${line.current}`, { haptic: true });
           }
         },
         onPanResponderTerminate: () => {
@@ -447,7 +603,7 @@ export function Lulu3D({
           spin.current = 0;
         },
       }),
-    [interactive, play],
+    [interactive, play, who],
   );
 
   return (
@@ -459,7 +615,7 @@ export function Lulu3D({
       }}
       accessible={interactive}
       accessibilityRole={interactive ? 'button' : undefined}
-      accessibilityLabel={interactive ? t('mascot.name') : undefined}
+      accessibilityLabel={interactive ? t(`buddy.${who}.name`) : undefined}
       {...(interactive ? responder.panHandlers : {})}
     >
       <Canvas
@@ -471,8 +627,15 @@ export function Lulu3D({
       >
         <ambientLight intensity={0.9} />
         <directionalLight position={[2, 3, 4]} intensity={1.2} />
-        <Owl mood={mood} wearing={wearing ?? saved} pointer={pointer} reaction={reaction} spin={spin} />
+        {who === 'zain' ? (
+          <Lion mood={mood} wearing={wearing ?? saved} pointer={pointer} reaction={reaction} spin={spin} />
+        ) : (
+          <Owl mood={mood} wearing={wearing ?? saved} pointer={pointer} reaction={reaction} spin={spin} />
+        )}
       </Canvas>
     </View>
   );
 }
+
+/** Alias that reads better at new call sites: the chosen buddy in 3D. */
+export const Buddy3D = Lulu3D;

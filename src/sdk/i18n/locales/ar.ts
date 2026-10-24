@@ -30,7 +30,6 @@ export const ar: CoreTranslations = {
     play: 'العب',
     levelA11y: 'المستوى {{n}}. باقي {{left}} نجوم للمستوى التالي',
     grownUps: 'للكبار',
-    wardrobeA11y: '{{n}} نجمة. افتح خزانة لولو',
     categories: {
       all: 'الكل',
       numbers: 'أرقام',
@@ -47,7 +46,6 @@ export const ar: CoreTranslations = {
     keepPlaying: 'تابع اللعب',
   },
   wardrobe: {
-    title: 'لبّس لولو',
     hats: 'قبّعات',
     glasses: 'نظّارات',
     stickers: 'ملصقات',
@@ -139,11 +137,9 @@ export const ar: CoreTranslations = {
   },
   break: {
     title: 'وقت الشحن!',
-    body: 'لولو تحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
     home: 'العودة للرئيسية',
     grownUp: 'للكبار: {{n}} دقيقة إضافية',
     energy: 'الطاقة منخفضة',
-    stretchTitle: 'تمرّن مع لولو',
     stretch1: 'ارفع يديك عالياً',
     stretch2: 'المس أصابع قدميك',
     stretch3: 'خُذ نفساً عميقاً',
@@ -158,6 +154,30 @@ export const ar: CoreTranslations = {
       6: 'واو!',
       7: 'عمل جميل!',
       8: 'مذهل!',
+    },
+  },
+  buddy: {
+    pickTitle: 'اختر صديقك!',
+    anyTime: 'يمكنك تغيير صديقك في أي وقت',
+    go: 'هيا بنا!',
+    choose: 'العب مع {{name}}',
+    lulu: {
+      name: 'لولو',
+      species: 'البومة',
+      hello: 'أهلًا! أنا لولو!',
+      dressUp: 'لبّس لولو',
+      wardrobeA11y: '{{n}} نجمة. افتح خزانة لولو',
+      rest: 'لولو تحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
+      stretchWith: 'تمرّن مع لولو',
+    },
+    zain: {
+      name: 'زين',
+      species: 'الأسد الصغير',
+      hello: 'أهلًا! أنا زين!',
+      dressUp: 'لبّس زين',
+      wardrobeA11y: '{{n}} نجمة. افتح خزانة زين',
+      rest: 'زين يحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
+      stretchWith: 'تمرّن مع زين',
     },
   },
   flow: {

@@ -135,10 +135,12 @@ it('has a recorded voice clip for every praise line in both languages', () => {
   }
 });
 
-it('has a recorded line for every Lulu tap reaction in both languages', () => {
-  for (const lang of ['en', 'ar']) {
-    for (let n = 1; n <= LULU_TAP_LINES; n++) {
-      expect(pickAsset(`lulu.tap.${lang}.${n}`)).toBe(`voice.lulu.${lang}.${n}`);
+it('has a recorded line for every buddy tap reaction in both languages', () => {
+  for (const buddy of ['lulu', 'zain']) {
+    for (const lang of ['en', 'ar']) {
+      for (let n = 1; n <= LULU_TAP_LINES; n++) {
+        expect(pickAsset(`${buddy}.tap.${lang}.${n}`)).toBe(`voice.${buddy}.${lang}.${n}`);
+      }
     }
   }
 });
