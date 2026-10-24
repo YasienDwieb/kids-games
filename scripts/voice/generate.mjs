@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CONFIG = JSON.parse(readFileSync(join(ROOT, 'scripts/voice/voice.config.json'), 'utf8'));
-const CATALOG = JSON.parse(readFileSync(join(ROOT, 'scripts/voice/catalog.json'), 'utf8'));
+const CATALOG = JSON.parse(readFileSync(join(ROOT, 'scripts/voice/catalog.json'), 'utf8')).lines;
 const CLIP_DIR = join(ROOT, 'src/sdk/assets/audio/speech');
 const TAKES_DIR = join(ROOT, 'scripts/voice/.takes');
 const LOCK = join(ROOT, 'src/sdk/speech/clips.lock.json');
