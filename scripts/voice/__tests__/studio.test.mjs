@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { request } from 'node:http';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
 import { clipKey, pickTake, slug } from '../core.mjs';
@@ -98,6 +99,37 @@ test('flag via POST writes flags.json', async () => {
   assert.equal(readJson(root, 'scripts/voice/flags.json')[K1].note, 'too fast');
   await post(`${url}/api/flag`, { key: K1, note: null });
   assert.deepEqual(readJson(root, 'scripts/voice/flags.json'), {});
+});
+
+/** A raw request, so the test controls Host/Origin like a hostile page would. */
+function raw(url, { method = 'GET', headers = {}, body } = {}) {
+  return new Promise((resolve, reject) => {
+    const req = request(url, { method, headers }, (res) => {
+      res.resume();
+      res.on('end', () => resolve(res.statusCode));
+    });
+    req.on('error', reject);
+    req.end(body);
+  });
+}
+
+test('refuses cross-site requests: foreign Origin, non-JSON POST, foreign Host', async () => {
+  const { root, url } = await studio();
+  const body = JSON.stringify({ key: K1, note: 'injected' });
+  assert.equal(await raw(`${url}/api/flag`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'https://evil.example' }, body }), 403);
+  assert.equal(await raw(`${url}/api/flag`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body }), 403);
+  assert.equal(await raw(`${url}/api/state`, { headers: { Host: 'evil.example:4317' } }), 403);
+  assert.deepEqual(readJson(root, 'scripts/voice/flags.json'), {});
+  // The page itself (same origin, JSON) still works.
+  assert.equal(await raw(`${url}/api/flag`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: url }, body }), 200);
+});
+
+test('a broken audio file does not take the server down', async () => {
+  const { root, url } = await studio();
+  const dir = join(root, 'scripts/voice/.takes', slug(K1), 'take-7.mp3');
+  mkdirSync(dir); // a directory where a take should be: reading it fails
+  assert.notEqual((await fetch(`${url}/audio/take/${slug(K1)}/7`).catch(() => ({ status: 0 }))).status, 200);
+  assert.equal((await fetch(`${url}/api/job`)).status, 200);
 });
 
 test('listens on 127.0.0.1 only', () => {

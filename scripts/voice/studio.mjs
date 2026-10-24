@@ -13,7 +13,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
 export const LISTEN_HOST = '127.0.0.1';
 const PORT = 4317;
-const PAGE_FILES = { '/': ['index.html', 'text/html; charset=utf-8'], '/sections.mjs': ['sections.mjs', 'text/javascript; charset=utf-8'] };
+const PAGE_FILES = { '/': ['index.html', 'text/html; charset=utf-8'], '/sections.mjs': ['sections.mjs', 'text/javascript; charset=utf-8'], '/queue.mjs': ['queue.mjs', 'text/javascript; charset=utf-8'] };
 const CLIP_RE = /^[a-z]{2}-[0-9a-f]{10}\.m4a$/;
 const SLUG_RE = /^[a-z]{2}-[0-9a-f]{10}$/;
 
@@ -24,8 +24,26 @@ function send(res, code, body) {
 
 function sendFile(res, file, type) {
   if (!existsSync(file)) return send(res, 404, { error: 'not found' });
-  res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' });
-  createReadStream(file).pipe(res);
+  // Headers wait for a successful open: a take folder can be swapped mid-recording.
+  createReadStream(file)
+    .on('open', function () {
+      res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' });
+      this.pipe(res);
+    })
+    .on('error', () => (res.headersSent ? res.destroy() : send(res, 404, { error: 'not found' })));
+}
+
+/**
+ * Only the studio's own page may talk to it: a web page elsewhere could otherwise
+ * POST here (a "simple" text/plain request needs no preflight) and re-record clips,
+ * spend quota or plant flag notes — or read state through DNS rebinding.
+ */
+function isOwnPage(req, port) {
+  const host = req.headers.host ?? '';
+  if (host !== `127.0.0.1:${port}` && host !== `localhost:${port}`) return false;
+  const origin = req.headers.origin;
+  if (origin && origin !== `http://${host}`) return false;
+  return req.method !== 'POST' || (req.headers['content-type'] ?? '').startsWith('application/json');
 }
 
 function readBody(req) {
@@ -56,7 +74,8 @@ export function createStudioServer({ root, synthesize, warning = null, keyReady 
   const ctx = { root, synthesize };
   let job = { running: false, total: 0, done: 0, current: null, written: [], failed: [] };
 
-  return createServer(async (req, res) => {
+  const server = createServer(async (req, res) => {
+    if (!isOwnPage(req, server.address()?.port)) return send(res, 403, { error: 'forbidden' });
     const url = new URL(req.url, 'http://localhost');
     const route = url.pathname;
     try {
@@ -120,6 +139,7 @@ export function createStudioServer({ root, synthesize, warning = null, keyReady 
       return send(res, 500, { error: e.message });
     }
   });
+  return server;
 }
 
 /** Refresh catalog.json from the games; on failure keep the last one and say why. */

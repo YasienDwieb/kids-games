@@ -146,6 +146,7 @@ kbd { border: 1.5px solid currentColor; border-radius: 5px; padding: 0 4px; font
 
 <script type="module">
 import { filterClips, groupClips } from './sections.mjs';
+import { createQueue } from './queue.mjs';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -276,7 +277,7 @@ const cardOf = (c) => [...$('main').querySelectorAll('.card')].find((el) => el.d
 const audio = new Audio();
 let playingCard = null, raf = 0, endResolve = null;
 function play(src, cardEl, canvas) {
-  stopPlayback(false);
+  stopPlayback();
   return new Promise((resolve) => {
     audio.src = src; audio.play().catch(() => resolve(false));
     playingCard = cardEl; cardEl?.classList.add('playing'); endResolve = resolve;
@@ -299,35 +300,32 @@ function setNow(c, label) {
 const where = (c) => c.uses.map((u) => `${gameOf(u.game).icon} ${gameOf(u.game).name}`).join('  ·  ');
 function playClip(c) {
   if (!c.clip) return;
-  running = false;
+  queue.stop();
   const el = cardOf(c); setNow(c, where(c));
   return play(clipUrl(c), el, el?.querySelector('.wave'));
 }
 
-let queue = [], qi = 0, running = false;
-async function runQueue() {
-  running = true; $('playAll').textContent = '⏸'; $('playAll').classList.add('on');
-  while (running && qi < queue.length) {
-    const c = queue[qi]; const el = cardOf(c);
+const queue = createQueue({
+  play: (c, i, total) => {
+    const el = cardOf(c);
     el?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
-    setNow(c, `Playing ${qi + 1} / ${queue.length} · ${where(c)}`);
-    await play(clipUrl(c), el, el?.querySelector('.wave'));
-    if (!running) break;
-    qi++;
-    await new Promise((r) => setTimeout(r, +$('gap').value * 1000));
-  }
-  if (qi >= queue.length) { running = false; qi = 0; $('nowLabel').textContent = `Done — ${queue.length} clips played 🎉`; }
-  $('playAll').textContent = '▶'; $('playAll').classList.remove('on');
-}
-function startQueue(list) { stopPlayback(); running = false; queue = list.filter((c) => c.clip); qi = 0; setTimeout(runQueue, 50); }
-function toggleAll() {
-  if (running) { running = false; stopPlayback(); return; }
-  if (!queue.length || qi === 0) queue = groupClips(visible(), S.games).flatMap((s) => s.clips).filter((c) => c.clip);
-  runQueue();
-}
+    setNow(c, `Playing ${i + 1} / ${total} · ${where(c)}`);
+    return play(clipUrl(c), el, el?.querySelector('.wave'));
+  },
+  stop: () => stopPlayback(),
+  gap: () => new Promise((r) => setTimeout(r, +$('gap').value * 1000)),
+  onChange: ({ running, total, done }) => {
+    $('playAll').textContent = running ? '⏸' : '▶';
+    $('playAll').classList.toggle('on', running);
+    if (done) $('nowLabel').textContent = `Done — ${total} clips played 🎉`;
+  },
+});
+const inView = () => groupClips(visible(), S.games).flatMap((s) => s.clips).filter((c) => c.clip);
+function startQueue(list) { queue.start(list.filter((c) => c.clip)); }
+const toggleAll = () => queue.toggle(inView);
 $('playAll').onclick = toggleAll;
-$('next').onclick = () => { if (!queue.length) return; stopPlayback(); qi = Math.min(qi + 1, queue.length - 1); if (!running) runQueue(); };
-$('prev').onclick = () => { if (!queue.length) return; running = false; stopPlayback(); qi = Math.max(qi - 1, 0); setTimeout(runQueue, 30); };
+$('next').onclick = () => queue.next();
+$('prev').onclick = () => queue.prev();
 $('gap').oninput = () => ($('gapV').textContent = $('gap').value + 's');
 $('reload').onclick = () => load().then(() => toast('Reloaded from disk'));
 
@@ -370,7 +368,7 @@ function wire(el) {
   el.querySelectorAll('.take').forEach((b) => (b.onclick = () => audition(+b.dataset.n)));
   function audition(n) {
     if (!c.takes.includes(n)) return;
-    running = false; heard = n;
+    queue.stop(); heard = n;
     el.querySelectorAll('.take').forEach((x) => x.classList.toggle('auditioning', +x.dataset.n === n));
     setNow(c, `Take ${n}${c.clip?.take === n ? ' (in the app)' : ''}`);
     play(takeUrl(c, n), el, null);
