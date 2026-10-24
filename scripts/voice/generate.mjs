@@ -141,6 +141,14 @@ async function main() {
     console.log(`${todo.length} clip(s) × ${CONFIG.takes} takes, ${chars} characters`);
     return;
   }
+  for (const tool of ['ffmpeg', 'ffprobe']) {
+    try {
+      execFileSync(tool, ['-version'], { stdio: 'ignore' });
+    } catch {
+      console.error(`${tool} is required (install ffmpeg) — nothing was recorded.`);
+      process.exit(1);
+    }
+  }
   if (todo.length && !process.env.GOOGLE_TTS_API_KEY) {
     console.error('GOOGLE_TTS_API_KEY is not set — add it to .env.local (see docs/VOICE.md).');
     process.exit(1);
@@ -168,29 +176,31 @@ async function main() {
   }
   await pool(jobs, CONCURRENCY);
 
+  // A clip and its lock entry change together, and one bad take never stops the
+  // run before the lock and map are written.
+  const install = (key, takes, n) => {
+    const file = `${slug(key)}.m4a`;
+    try {
+      if (!takes[n - 1]) throw new Error(`no take ${n} (have ${takes.length}; run --redo first)`);
+      finalize(takes[n - 1], join(CLIP_DIR, file));
+      lock[key] = { file, voice: CONFIG.voices[lines.get(key).lang], take: n, durationS: Number(duration(join(CLIP_DIR, file)).toFixed(2)), generatedAt: new Date().toISOString().slice(0, 10) };
+      review.push({ key, takes, chosen: n });
+    } catch (e) {
+      failed.push(`${key}: ${e.message}`);
+    }
+  };
+
   // Auto-pick the median-length take; outliers are the rushed or drawn-out ones.
-  for (const [key, l] of todo) {
+  for (const [key] of todo) {
     const takes = takeFiles(key);
     if (!takes.length) continue;
     const byLength = takes.map((t, i) => ({ i, d: duration(t) })).sort((a, b) => a.d - b.d);
-    const chosen = byLength[Math.floor((byLength.length - 1) / 2)].i + 1;
-    const file = `${slug(key)}.m4a`;
-    finalize(takes[chosen - 1], join(CLIP_DIR, file));
-    lock[key] = { file, voice: CONFIG.voices[l.lang], take: chosen, durationS: Number(duration(join(CLIP_DIR, file)).toFixed(2)), generatedAt: new Date().toISOString().slice(0, 10) };
-    review.push({ key, takes, chosen });
+    install(key, takes, byLength[Math.floor((byLength.length - 1) / 2)].i + 1);
     process.stdout.write('.');
   }
 
   // Manual picks.
-  for (const [key, n] of args.pick) {
-    const takes = takeFiles(key);
-    if (!takes[n - 1]) throw new Error(`no take ${n} for ${key} (have ${takes.length}; run --redo first)`);
-    const l = lines.get(key);
-    const file = `${slug(key)}.m4a`;
-    finalize(takes[n - 1], join(CLIP_DIR, file));
-    lock[key] = { file, voice: CONFIG.voices[l.lang], take: n, durationS: Number(duration(join(CLIP_DIR, file)).toFixed(2)), generatedAt: new Date().toISOString().slice(0, 10) };
-    review.push({ key, takes, chosen: n });
-  }
+  for (const [key, n] of args.pick) install(key, takeFiles(key), n);
 
   // Drop clips whose phrase left the catalog.
   for (const key of Object.keys(lock)) {
@@ -215,7 +225,7 @@ async function main() {
   console.log(`\n${review.length} clip(s) written, ${Object.keys(sorted).length} total.`);
   console.log(`Review: ${join(TAKES_DIR, 'review.html')}`);
   if (failed.length) {
-    console.error(`${failed.length} take(s) failed:\n  ${failed.join('\n  ')}`);
+    console.error(`${failed.length} failure(s):\n  ${failed.join('\n  ')}`);
     process.exitCode = 1;
   }
 }

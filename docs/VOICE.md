@@ -22,8 +22,8 @@ text in the app and the text that was recorded can't drift apart.
 | Letter | `<name>! <Word>` (EN) / `<name>. <Word>` (AR) | `V! Van` | `كَاف. كُرَة` |
 | Number | `<name>` | `three` | `ثَلاثة` |
 | Animal | `<name>` | `Lion` | `أسد` |
-| Colour goal | `<makeThisColor> <colour>` | `Make this color: Green` | `اصنع هذا اللون: أخضر` |
-| Trace-it warm-up / digit | `<name>` | `zigzag` | — |
+| Colour goal | `<makeThisColor> <colour>` | `Make this color: Green` | `اِصنعْ هذا اللون: أخضر` |
+| Trace-it warm-up / digit | `<name>` | `a zigzag` | `مَوْجَةْ` |
 
 ## Writing rules
 
@@ -66,4 +66,4 @@ edit can't silently fall back to the robot voice.
 The same text and settings give a different recording each time (one test: 1.40 s, 0.96 s,
 1.12 s). The generator records `takes` versions of each phrase and keeps the one with the
 median length — the short outliers are the rushed ones. A committed clip never changes
-unless you `--redo` it.
+unless you `--pick` another take or `--redo` it.

@@ -9,7 +9,7 @@ jest.mock('expo-speech', () => ({ speak: jest.fn(), stop: jest.fn() }));
 jest.mock('../clips.generated', () => ({ CLIPS: { 'ar:كَاف. كُرَة': 1, 'en:Q. Queen': 2 } }));
 
 type Api = ReturnType<typeof useSpeech>;
-type Player = { play: jest.Mock; pause: jest.Mock; seekTo: jest.Mock };
+type Player = { play: jest.Mock; pause: jest.Mock; seekTo: jest.Mock; remove: jest.Mock };
 
 function mount(): { api: Api; tree: ReactTestRenderer } {
   let api!: Api;
@@ -72,6 +72,41 @@ it('unmount stops a playing clip', async () => {
   await act(() => api.speak('Q. Queen', { language: 'en' }));
   act(() => tree.unmount());
   expect(playerFor(2).pause).toHaveBeenCalled();
+});
+
+it('switching clips releases the previous player', async () => {
+  const { api } = mount();
+  await act(() => api.speak('Q. Queen', { language: 'en' }));
+  const first = playerFor(2);
+  await act(() => api.speak('كَاف. كُرَة', { language: 'ar' }));
+  expect(first.remove).toHaveBeenCalled();
+});
+
+it('replaying the same clip reuses its player from the start', async () => {
+  const { api } = mount();
+  await act(() => api.speak('Q. Queen', { language: 'en' }));
+  const player = playerFor(2);
+  await act(() => api.speak('Q. Queen', { language: 'en' }));
+  expect(playerFor(2)).toBe(player);
+  expect(player.remove).not.toHaveBeenCalled();
+  expect(player.seekTo).toHaveBeenLastCalledWith(0);
+  expect(player.play).toHaveBeenCalledTimes(2);
+});
+
+it('unmount releases the clip player', async () => {
+  const { api, tree } = mount();
+  await act(() => api.speak('كَاف. كُرَة', { language: 'ar' }));
+  act(() => tree.unmount());
+  expect(playerFor(1).remove).toHaveBeenCalled();
+});
+
+it('falls back to device TTS when the clip cannot play', async () => {
+  (createAudioPlayer as jest.Mock).mockImplementationOnce(() => {
+    throw new Error('decoder unavailable');
+  });
+  const { api } = mount();
+  await act(() => api.speak('Q. Queen', { language: 'en' }));
+  expect(Speech.speak).toHaveBeenCalledWith('Q. Queen', expect.objectContaining({ language: 'en-US' }));
 });
 
 it('clipKey normalizes to NFC and trims', () => {

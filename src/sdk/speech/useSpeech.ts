@@ -21,9 +21,9 @@ const LOCALE: Record<LanguageCode, string> = {
 const DEFAULT_RATE = 0.7;
 const DEFAULT_PITCH = 1.1;
 
-// Bundled clips (docs/VOICE.md): one player per clip, and one clip at a time app-wide.
-const players = new Map<number, AudioPlayer>();
-let currentClip: AudioPlayer | null = null;
+// Bundled clips (docs/VOICE.md): one native player at a time app-wide, kept only
+// while its clip may be replayed, so a long session doesn't pile up players.
+let clip: { module: number; player: AudioPlayer } | null = null;
 
 function stopAll() {
   try {
@@ -32,22 +32,28 @@ function stopAll() {
     // no-op
   }
   try {
-    currentClip?.pause();
+    clip?.player.pause();
   } catch {
     // already released
   }
-  currentClip = null;
+}
+
+function releaseClip() {
+  try {
+    clip?.player.remove();
+  } catch {
+    // already released
+  }
+  clip = null;
 }
 
 function playClip(module: number) {
-  let player = players.get(module);
-  if (!player) {
-    player = createAudioPlayer(module);
-    players.set(module, player);
+  if (clip?.module !== module) {
+    releaseClip();
+    clip = { module, player: createAudioPlayer(module) };
   }
-  player.seekTo(0); // expo-audio doesn't auto-rewind on finish
-  player.play();
-  currentClip = player;
+  clip.player.seekTo(0); // expo-audio doesn't auto-rewind on finish
+  clip.player.play();
 }
 
 /**
@@ -68,6 +74,7 @@ export function useSpeech() {
     return () => {
       mounted.current = false;
       stopAll();
+      releaseClip();
     };
   }, []);
 
@@ -86,10 +93,14 @@ export function useSpeech() {
     try {
       // Replace any in-flight clip/utterance — expo-speech queues otherwise.
       stopAll();
-      const clip = CLIPS[clipKey(lang, text)];
-      if (clip !== undefined) {
-        playClip(clip);
-        return;
+      const module = CLIPS[clipKey(lang, text)];
+      if (module !== undefined) {
+        try {
+          playClip(module);
+          return;
+        } catch {
+          releaseClip(); // the device voice still asks the question
+        }
       }
       Speech.speak(text, {
         language,
