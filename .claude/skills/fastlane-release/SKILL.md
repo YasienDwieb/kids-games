@@ -31,7 +31,8 @@ fastlane/
     │   └── images/
     │       ├── icon.png featureGraphic.png   # FILES, not folders — a folder uploads nothing
     │       ├── phoneScreenshots/      # 2–8 images
-    │       └── tenInchScreenshots/    # tablet
+    │       ├── sevenInchScreenshots/  # 7" tablet
+    │       └── tenInchScreenshots/    # 10" tablet
     └── ar/  … same structure
 ```
 
@@ -134,7 +135,7 @@ Big buttons, happy sounds, no reading needed, full English & Arabic. Enjoy! 💛
 exact game count anywhere — the listing stays count-agnostic so it doesn't go stale.
 Limits: full_description ≤ 4000, short_description ≤ 80, title ≤ 30.
 
-**Screenshots** (`images/phoneScreenshots/`, `images/tenInchScreenshots/`):
+**Screenshots** (`images/phoneScreenshots/`, `images/tenInchScreenshots/`, `images/sevenInchScreenshots/`):
 - Each locale needs **2–8** phone screenshots.
 - Files are ordered by filename (`01`, `02`, …). `supply` accepts `.jpg`, `.jpeg`,
   and `.png`, and mixed extensions are fine — but **never two files with the same index**

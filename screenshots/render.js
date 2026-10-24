@@ -41,6 +41,7 @@ const MASCOT = (pose) => `file://${ROOT}/src/sdk/assets/images/mascot/owl-${pose
 const FORMS = {
   'play-phone': { W: 1920, H: 1080, raw: 'phone', max: 8, extras: false },
   'play-tablet': { W: 2560, H: 1600, raw: 'tablet', max: 8 },
+  'play-tablet7': { W: 1920, H: 1200, raw: 'tablet', max: 8 },
   'ios-phone': { W: 2796, H: 1290, raw: 'phone', max: 10 },
   'ios-ipad': { W: 2752, H: 2064, raw: 'ipad', max: 10 },
 };
