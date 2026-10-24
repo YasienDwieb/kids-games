@@ -4,7 +4,7 @@ import { request } from 'node:http';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
 import { clipKey, pickTake, slug } from '../core.mjs';
-import { LISTEN_HOST, createStudioServer } from '../studio.mjs';
+import { createStudioServer, listen, refreshCatalog } from '../studio.mjs';
 import { fakeSynth, line, makeRoot, readJson, tone } from './fixtures.mjs';
 
 const K1 = clipKey('en', 'one');
@@ -29,8 +29,10 @@ async function studio(options = {}) {
 }
 const post = (url, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
-test('state lists clips and games, hides the key', async () => {
+test('state lists clips and games, hides the key', async (t) => {
+  const before = process.env.GOOGLE_TTS_API_KEY;
   process.env.GOOGLE_TTS_API_KEY = 'secret-key-123';
+  t.after(() => (before === undefined ? delete process.env.GOOGLE_TTS_API_KEY : (process.env.GOOGLE_TTS_API_KEY = before)));
   const { url } = await studio();
   const res = await fetch(`${url}/api/state`);
   const text = await res.text();
@@ -41,6 +43,7 @@ test('state lists clips and games, hides the key', async () => {
   assert.equal(state.keyReady, true);
   assert.equal(text.includes('secret-key-123'), false);
   assert.equal(text.includes('/scripts/voice/.takes'), false); // no absolute paths leak to the page
+  assert.equal(state.takes, 3); // from voice.config.json, for the page's copy and shortcuts
 });
 
 test('state carries the catalog warning', async () => {
@@ -85,7 +88,9 @@ test('record runs one job at a time', async () => {
   }
   assert.equal(job.running, false);
   assert.deepEqual(job.written, [K1]);
-  assert.equal(job.total, 1);
+  assert.deepEqual(job.keys, [K1]); // a reloaded page knows which cards are recording
+  assert.equal(job.takesDone, 3);
+  assert.equal(job.takesTotal, 3);
 });
 
 test('record is refused without a key', async () => {
@@ -132,6 +137,28 @@ test('a broken audio file does not take the server down', async () => {
   assert.equal((await fetch(`${url}/api/job`)).status, 200);
 });
 
-test('listens on 127.0.0.1 only', () => {
-  assert.equal(LISTEN_HOST, '127.0.0.1');
+test('listens on 127.0.0.1 only', async () => {
+  const server = createStudioServer({ root: makeRoot({ lines: [] }), keyReady: false });
+  servers.push(server);
+  await listen(server, 0);
+  assert.equal(server.address().address, '127.0.0.1');
+});
+
+test('an oversized body is refused and the server stays up', async () => {
+  const { url } = await studio();
+  const res = await post(`${url}/api/flag`, { key: K1, note: 'x'.repeat(70 * 1024) }).catch(() => ({ status: 0 }));
+  assert.notEqual(res.status, 200);
+  assert.equal((await fetch(`${url}/api/job`)).status, 200);
+});
+
+test('refreshCatalog: a failed run gives a warning with its output, and has a timeout', () => {
+  let options;
+  const warning = refreshCatalog((cmd, args, opts) => {
+    options = opts;
+    return { status: 1, stdout: 'writing rules: ة not هْ\n', stderr: '' };
+  });
+  assert.match(warning, /^The catalog refresh failed/);
+  assert.match(warning, /writing rules: ة not هْ/);
+  assert.equal(options.timeout, 120000);
+  assert.equal(refreshCatalog(() => ({ status: 0, stdout: '', stderr: '' })), null);
 });

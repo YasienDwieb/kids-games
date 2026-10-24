@@ -11,7 +11,7 @@ import { paths, pickTake, recordTakes, setFlag, slug, status, readState } from '
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
-export const LISTEN_HOST = '127.0.0.1';
+const LISTEN_HOST = '127.0.0.1';
 const PORT = 4317;
 const PAGE_FILES = { '/': ['index.html', 'text/html; charset=utf-8'], '/sections.mjs': ['sections.mjs', 'text/javascript; charset=utf-8'], '/queue.mjs': ['queue.mjs', 'text/javascript; charset=utf-8'] };
 const CLIP_RE = /^[a-z]{2}-[0-9a-f]{10}\.m4a$/;
@@ -51,7 +51,10 @@ function readBody(req) {
     let data = '';
     req.on('data', (c) => {
       data += c;
-      if (data.length > 64 * 1024) reject(new Error('body too large'));
+      if (data.length > 64 * 1024) {
+        req.destroy(); // stop reading; nothing this page sends is that big
+        reject(new Error('body too large'));
+      }
     });
     req.on('end', () => {
       try {
@@ -72,7 +75,7 @@ const pageClips = (ctx) => status(ctx).map(({ takes, ...c }) => ({ ...c, slug: s
  */
 export function createStudioServer({ root, synthesize, warning = null, keyReady }) {
   const ctx = { root, synthesize };
-  let job = { running: false, total: 0, done: 0, current: null, written: [], failed: [] };
+  let job = { running: false, keys: [], total: 0, done: 0, takesDone: 0, takesTotal: 0, current: null, written: [], failed: [] };
 
   const server = createServer(async (req, res) => {
     if (!isOwnPage(req, server.address()?.port)) return send(res, 403, { error: 'forbidden' });
@@ -84,7 +87,8 @@ export function createStudioServer({ root, synthesize, warning = null, keyReady 
         return sendFile(res, join(HERE, 'studio', file), type);
       }
       if (req.method === 'GET' && route === '/api/state') {
-        return send(res, 200, { games: readState(ctx).games, clips: pageClips(ctx), warning, keyReady, job });
+        const { games, config } = readState(ctx);
+        return send(res, 200, { games, takes: config.takes, clips: pageClips(ctx), warning, keyReady, job });
       }
       if (req.method === 'GET' && route === '/api/job') return send(res, 200, job);
 
@@ -116,10 +120,11 @@ export function createStudioServer({ root, synthesize, warning = null, keyReady 
         if (!keyReady) return send(res, 400, { error: 'GOOGLE_TTS_API_KEY is not set — add it to .env.local and restart the studio.' });
         if (!Array.isArray(keys) || !keys.length || !keys.every((k) => typeof k === 'string')) return send(res, 400, { error: 'record needs { keys: [...] }' });
         if (job.running) return send(res, 409, { error: 'a recording is already running' });
-        job = { running: true, total: keys.length, done: 0, current: keys[0], written: [], failed: [] };
-        recordTakes(ctx, keys, ({ done }) => {
-          job.done = done;
-          job.current = keys[done] ?? null;
+        const unique = [...new Set(keys)];
+        job = { running: true, keys: unique, total: unique.length, done: 0, takesDone: 0, takesTotal: 0, current: unique[0], written: [], failed: [] };
+        recordTakes(ctx, unique, (p) => {
+          if (p.phase === 'takes') Object.assign(job, { takesDone: p.done, takesTotal: p.total });
+          else Object.assign(job, { done: p.done, current: unique[p.done] ?? null });
         })
           .then(({ written, failed }) => Object.assign(job, { written, failed }))
           .catch((e) => job.failed.push(e.message))
@@ -142,22 +147,25 @@ export function createStudioServer({ root, synthesize, warning = null, keyReady 
   return server;
 }
 
-/** Refresh catalog.json from the games; on failure keep the last one and say why. */
-function refreshCatalog() {
-  console.log('Refreshing the voice catalog…');
-  const run = spawnSync('npm', ['run', 'voice:catalog'], { cwd: ROOT, encoding: 'utf8' });
-  if (run.status === 0) return null;
-  const out = `${run.stdout ?? ''}${run.stderr ?? ''}`.trim().split('\n').slice(-20).join('\n');
-  return `The catalog refresh failed, so this is the last saved catalog — new phrases may be missing.\n\n${out}`;
+/**
+ * Refresh catalog.json from the games. On failure, say why: a writing-rule test can
+ * fail after the catalog was written, a build error before — either way, check first.
+ */
+export function refreshCatalog(run = spawnSync) {
+  const res = run('npm', ['run', 'voice:catalog'], { cwd: ROOT, encoding: 'utf8', timeout: 120000 });
+  if (res.status === 0) return null;
+  const out = `${res.stdout ?? ''}${res.stderr ?? ''}`.trim().split('\n').slice(-20).join('\n');
+  return `The catalog refresh failed (a writing rule or a build error) — new or changed phrases may be missing or wrong here. Fix it and restart the studio before recording.\n\n${out || (res.error ? res.error.message : '')}`;
 }
 
-function listen(server, port, tries = 20) {
+/** Listen on 127.0.0.1 only, trying the next port when one is taken. Resolves to the port. */
+export function listen(server, port, tries = 20) {
   return new Promise((resolve, reject) => {
     server.once('error', (e) => {
       if (e.code === 'EADDRINUSE' && tries > 0) resolve(listen(server, port + 1, tries - 1));
       else reject(e);
     });
-    server.listen(port, LISTEN_HOST, () => resolve(port));
+    server.listen(port, LISTEN_HOST, () => resolve(server.address().port));
   });
 }
 
@@ -171,6 +179,7 @@ function openBrowser(url) {
 }
 
 async function main() {
+  console.log('Refreshing the voice catalog…');
   const warning = refreshCatalog();
   if (warning) console.warn(warning);
   const server = createStudioServer({ root: ROOT, warning, keyReady: Boolean(process.env.GOOGLE_TTS_API_KEY) });

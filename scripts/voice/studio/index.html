@@ -108,6 +108,40 @@ kbd { border: 1.5px solid currentColor; border-radius: 5px; padding: 0 4px; font
 .toast { position: fixed; top: 150px; left: 50%; transform: translateX(-50%) translateY(-20px); opacity: 0; z-index: 40; background: var(--white); border: 3px solid var(--ink); box-shadow: var(--sh-md); border-radius: 16px; padding: 10px 16px; max-width: 640px; transition: all .25s; pointer-events: none; white-space: pre-line; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .empty { text-align: center; padding: 60px; color: var(--muted); font-size: 22px; }
+
+/* ---------- dialog ---------- */
+dialog { border: 3px solid var(--ink); border-radius: 26px; box-shadow: 10px 10px 0 var(--grape); padding: 0; width: min(560px, calc(100% - 32px)); background: var(--white); color: var(--ink); }
+dialog::backdrop { background: rgba(27,27,47,.55); } /* no blur: it repaints 100+ waveforms per frame */
+dialog[open] { animation: dlg-in .18s ease-out; }
+@keyframes dlg-in { from { transform: translateY(12px) scale(.97); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { dialog[open] { animation: none; } }
+.dlg-head { background: var(--zap); border-bottom: 3px solid var(--ink); padding: 14px 20px; display: flex; align-items: center; gap: 10px; border-radius: 23px 23px 0 0; }
+.dlg-head h3 { margin: 0; font-size: 22px; }
+.dlg-head .x { margin-inline-start: auto; width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--white); }
+.dlg-body { padding: 16px 20px 6px; display: flex; flex-direction: column; gap: 12px; }
+.dlg-phrase { display: flex; align-items: center; gap: 12px; background: var(--canvas); border: 2.5px solid var(--ink); border-radius: 16px; padding: 10px 12px; }
+.dlg-phrase .text { flex: 1; min-height: 0; }
+.dlg-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button { border: 2.5px solid var(--ink); border-radius: 999px; background: var(--white); padding: 4px 11px; font-size: 13px; box-shadow: 2px 2px 0 var(--ink); }
+.quick button[aria-pressed=true] { background: var(--coral); color: var(--white); }
+dialog textarea { width: 100%; min-height: 92px; resize: vertical; border: 2.5px solid var(--ink); border-radius: 14px; padding: 10px 12px; font: 700 15px/1.4 Nunito, sans-serif; outline: none; }
+dialog textarea:focus { box-shadow: 3px 3px 0 var(--grape); }
+.thread { display: flex; flex-direction: column; gap: 8px; }
+.bubble { border: 2.5px solid var(--ink); border-radius: 16px; padding: 8px 12px; font-size: 14px; max-width: 92%; }
+.bubble small { display: block; font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.bubble.you { background: var(--coral-t); align-self: flex-start; }
+.bubble.claude { background: #EEE7FF; align-self: flex-end; }
+.cost { display: flex; align-items: baseline; gap: 8px; }
+.cost b { font-family: 'Lilita One'; font-weight: 400; font-size: 34px; }
+.dlg-foot { display: flex; gap: 10px; justify-content: flex-end; padding: 12px 20px 18px; flex-wrap: wrap; align-items: center; }
+.dlg-foot .hint { flex-basis: 100%; font-size: 11px; color: var(--muted); }
+.dlg-foot .grow { margin-inline-end: auto; }
+.btn { border: 3px solid var(--ink); border-radius: 14px; padding: 8px 16px; background: var(--white); box-shadow: var(--sh-sm); font-family: 'Lilita One'; font-size: 17px; }
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.btn.primary { background: var(--zap); }
+.btn.danger { background: var(--coral); color: var(--white); }
+.btn.ok { background: var(--green); }
 </style>
 </head>
 <body>
@@ -139,10 +173,11 @@ kbd { border: 1.5px solid currentColor; border-radius: 5px; padding: 0 4px; font
   </div>
   <div class="knobs">
     <label>Gap <input type="range" id="gap" min="0.2" max="2" step="0.1" value="0.7"><span id="gapV">0.7s</span></label>
-    <div class="keys"><kbd>Space</kbd> play · <kbd>←</kbd><kbd>→</kbd> skip · <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> takes · <kbd>F</kbd> flag</div>
+    <div class="keys"><kbd>Space</kbd> play · <kbd>←</kbd><kbd>→</kbd> skip · <kbd>1</kbd>–<kbd id="takesKbd">3</kbd> takes · <kbd>F</kbd> flag</div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
 
 <script type="module">
 import { filterClips, groupClips } from './sections.mjs';
@@ -171,6 +206,8 @@ async function load() {
   S = await api('/api/state');
   bust = Date.now();
   peaks.clear();
+  recording = new Set(S.job.running ? S.job.keys : []);
+  $('takesKbd').textContent = S.takes;
   render();
   if (S.job.running) watchJob();
 }
@@ -239,9 +276,9 @@ function card(c) {
     <div class="actions">
       <button class="act use-take">✓ Use take <span class="tn"></span></button>
       <button class="act ${has ? 'redo' : 'record'}" ${S.keyReady ? '' : 'disabled title="Set GOOGLE_TTS_API_KEY to record"'}>${recLabel}</button>
-      <button class="act flag ${c.flag ? 'on' : ''}">⚑ ${c.flag ? 'Unflag' : 'Flag'}</button>
+      <button class="act flag ${c.flag ? 'on' : ''}">⚑ ${c.flag ? 'Flagged…' : 'Flag'}</button>
     </div>
-    <div class="recording"><div><div class="eq"><span></span><span></span><span></span><span></span><span></span></div><b class="display" style="font-size:18px">Recording 3 fresh takes…</b><div class="meta">${esc(c.text)}</div></div></div>
+    <div class="recording"><div><div class="eq"><span></span><span></span><span></span><span></span><span></span></div><b class="display" style="font-size:18px">Recording ${S.takes} fresh takes…</b><div class="meta">${esc(c.text)}</div></div></div>
   </div>`;
 }
 let observer;
@@ -332,10 +369,7 @@ $('reload').onclick = () => load().then(() => toast('Reloaded from disk'));
 // ---------- actions ----------
 const toast = (msg) => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 4200); };
 async function record(clips) {
-  if (!clips.length) return;
-  const chars = clips.reduce((n, c) => n + c.chars, 0);
-  const what = clips.length === 1 ? `“${clips[0].text}”` : `${clips.length} phrases`;
-  if (!confirm(`Record 3 fresh takes of ${what}?\n\nThat's ${chars} characters of Google Text-to-Speech (free tier: 1,000,000 a month).`)) return;
+  if (!clips.length || !(await recordDialog(clips))) return;
   try {
     await api('/api/record', { keys: clips.map((c) => c.key) });
     recording = new Set(clips.map((c) => c.key));
@@ -349,8 +383,11 @@ async function watchJob() {
   try {
     for (;;) {
       const job = await api('/api/job');
-      $('nowLabel').textContent = job.running ? `Recording ${job.done} / ${job.total}…` : $('nowLabel').textContent;
-      if (!job.running) {
+      if (job.running) {
+        $('nowLabel').textContent = job.takesDone < job.takesTotal
+          ? `Recording takes ${job.takesDone} / ${job.takesTotal}…`
+          : `Saving clips ${job.done} / ${job.total}…`;
+      } else {
         recording = new Set();
         await load();
         toast(`Recorded ${job.written.length} of ${job.total}.${job.failed.length ? `\n${job.failed.length} problem(s):\n${job.failed.slice(0, 4).join('\n')}` : ''}`);
@@ -358,7 +395,80 @@ async function watchJob() {
       }
       await new Promise((r) => setTimeout(r, 700));
     }
+  } catch {
+    recording = new Set();
+    renderMain();
+    toast('Lost contact with the studio. Restart npm run voice:studio, then Reload.');
   } finally { watching = false; }
+}
+
+// ---------- dialogs ----------
+const ISSUES = ['Mispronounced', 'Wrong stress', 'Wrong vowel / tashkeel', 'Too fast', 'Too slow', 'Sounds robotic', 'Cut off', 'Too quiet / loud'];
+/** Opens the dialog with `html`; resolves with the clicked [data-v] value, or null on Esc / ✕ / backdrop. */
+function openDialog(title, html, wire = () => {}) {
+  const d = $('dlg');
+  d.innerHTML = `<div class="dlg-head"><h3 class="display" id="dlgTitle">${title}</h3><button class="x" data-v="" aria-label="Close">✕</button></div>${html}`;
+  return new Promise((resolve) => {
+    let value = null;
+    d.querySelectorAll('[data-v]').forEach((b) => (b.onclick = () => { value = b.dataset.v || null; d.close(); }));
+    d.onclick = (e) => { if (e.target === d) d.close(); }; // backdrop click
+    d.onclose = () => { queue.stop(); resolve(value); };
+    wire(d, (v) => { value = v; d.close(); });
+    d.showModal();
+  });
+}
+const phraseBox = (c) => `<div class="dlg-phrase">
+  ${c.clip ? '<button class="play" data-hear aria-label="Hear it">▶</button>' : ''}
+  <div class="text ${c.lang === 'ar' ? 'ar' : ''}" dir="${c.lang === 'ar' ? 'rtl' : 'ltr'}">${esc(c.text)}</div></div>
+  <div class="uses">${c.uses.map((u) => { const g = gameOf(u.game); return `<span class="use" style="background:${g.accent.tint}">${g.icon} ${esc(g.name)} · ${esc(u.where)}</span>`; }).join('')}</div>`;
+const wireHear = (d, c) => { const b = d.querySelector('[data-hear]'); if (b) b.onclick = () => play(clipUrl(c), null, null); };
+
+function recordDialog(clips) {
+  const chars = clips.reduce((n, c) => n + c.chars, 0);
+  const one = clips.length === 1;
+  return openDialog(one ? (clips[0].clip ? '↻ Re-record' : '● Record') : `● Record ${clips.length} phrases`, `
+    <div class="dlg-body">
+      ${one ? phraseBox(clips[0]) : `<div>${clips.slice(0, 6).map((c) => esc(c.text)).join(' · ')}${clips.length > 6 ? ` · +${clips.length - 6} more` : ''}</div>`}
+      <div class="cost"><b>${chars.toLocaleString()}</b><span>characters · ${S.takes} fresh takes${one ? '' : ' each'}</span></div>
+      <div class="meta">Google Text-to-Speech, free up to 1,000,000 characters a month. ${one && clips[0].clip ? 'The middle-length take replaces the clip in the app; you can pick another take afterwards.' : 'The middle-length take goes into the app; you can pick another afterwards.'}</div>
+    </div>
+    <div class="dlg-foot"><button class="btn" data-v="">Cancel</button><button class="btn primary" data-v="go" autofocus>Record</button></div>`,
+    (d) => one && wireHear(d, clips[0])).then((v) => v === 'go');
+}
+
+function flagDialog(c) {
+  const flagged = Boolean(c.flag);
+  const thread = flagged ? `<div class="thread">
+      <div class="bubble you"><small>You · ${esc(c.flag.at)}</small>${esc(c.flag.note || '(no note)')}</div>
+      ${c.flag.reply ? `<div class="bubble claude"><small>🦉 Claude · ${esc(c.flag.repliedAt || '')}</small>${esc(c.flag.reply)}</div>` : '<div class="meta">Claude hasn\'t looked at this yet.</div>'}
+    </div>` : '';
+  return openDialog(flagged ? '⚑ Flagged' : '⚑ Flag for Claude', `
+    <div class="dlg-body">
+      ${phraseBox(c)}
+      ${thread}
+      <div class="dlg-label">${flagged ? 'Update the note' : 'What sounds off?'}</div>
+      <div class="quick">${ISSUES.map((t) => `<button type="button" aria-pressed="${Boolean(c.flag?.note.includes(t))}">${t}</button>`).join('')}</div>
+      <textarea id="note" placeholder="Anything that helps Claude fix it — e.g. “the ع is too soft”">${flagged ? esc(c.flag.note) : ''}</textarea>
+    </div>
+    <div class="dlg-foot"><span class="hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to send · <kbd>Esc</kbd> to cancel</span>
+      ${flagged ? '<button class="btn ok grow" data-v="unflag">✓ Unflag, it\'s fixed</button>' : ''}
+      <button class="btn" data-v="">Cancel</button>
+      <button class="btn ${flagged ? '' : 'danger'}" data-v="save">${flagged ? 'Update note' : '⚑ Flag'}</button>
+    </div>`,
+    (d, done) => {
+      wireHear(d, c);
+      const note = d.querySelector('#note');
+      d.querySelectorAll('.quick button').forEach((b) => (b.onclick = () => {
+        const on = b.getAttribute('aria-pressed') !== 'true', t = b.textContent;
+        b.setAttribute('aria-pressed', on);
+        const rest = note.value.replace(t, '').replace(/^[\s·]+|[\s·]+$/g, '').replace(/(\s*·\s*){2,}/g, ' · ');
+        note.value = on ? (rest ? `${t} · ${rest}` : t) : rest;
+        note.focus();
+      }));
+      note.onkeydown = (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) done('save'); };
+      setTimeout(() => note.focus(), 30);
+    }).then((v) => (v === 'save' ? { note: d().value.trim() } : v === 'unflag' ? { note: null } : undefined));
+  function d() { return $('dlg').querySelector('#note'); }
 }
 function wire(el) {
   const c = byKey(el.dataset.key);
@@ -384,12 +494,13 @@ function wire(el) {
   };
   el.querySelector('.redo, .record').onclick = () => record([c]);
   async function flag() {
-    let note = null;
-    if (!c.flag) {
-      note = prompt(`What's wrong with “${c.text}”? (Claude reads this)`, '');
-      if (note === null) return;
-    } else if (!confirm(`Unflag “${c.text}”?${c.flag.reply ? `\n\nClaude's reply: ${c.flag.reply}` : ''}`)) return;
-    try { await api('/api/flag', { key: c.key, note }); await load(); } catch (e) { toast(e.message); }
+    const res = await flagDialog(c);
+    if (!res) return;
+    try {
+      await api('/api/flag', { key: c.key, note: res.note });
+      await load();
+      toast(res.note === null ? '✓ Unflagged' : c.flag ? 'Note updated' : '⚑ Flagged — tell Claude to “fix the flagged ones”');
+    } catch (e) { toast(e.message); }
   }
   el.querySelector('.flag').onclick = flag;
   el._flag = flag;
@@ -397,12 +508,12 @@ function wire(el) {
 }
 let hovered = null;
 document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT') return;
+  if ($('dlg').open || e.target.closest?.('input, textarea')) return;
   const target = playingCard || document.activeElement?.closest?.('.card') || hovered;
   if (e.code === 'Space') { e.preventDefault(); toggleAll(); }
   else if (e.key === 'ArrowRight') $('next').click();
   else if (e.key === 'ArrowLeft') $('prev').click();
-  else if (['1', '2', '3'].includes(e.key) && target) target._audition(+e.key);
+  else if (/^[1-9]$/.test(e.key) && +e.key <= S.takes && target) target._audition(+e.key);
   else if (e.key.toLowerCase() === 'f' && target) target._flag();
 });
 

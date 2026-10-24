@@ -189,10 +189,12 @@ async function pool(jobs, limit) {
  * Record `takes` fresh takes for each key, then install the median-length one.
  * A clip already in the app is only replaced by a full set; a new phrase takes
  * whatever was recorded. Never throws for one key — failures are reported.
- * onProgress({ key, done, total }) fires as each phrase finishes.
+ * onProgress fires as each take lands ({ phase: 'takes', done, total }) and as each
+ * phrase is installed ({ phase: 'phrases', key, done, total }).
  */
-export async function recordTakes(ctx, keys, onProgress = () => {}) {
+export async function recordTakes(ctx, requested, onProgress = () => {}) {
   const { root } = ctx;
+  const keys = [...new Set(requested)];
   const { config, lines, lock } = readState(ctx);
   const synthesize = ctx.synthesize ?? googleSynthesize(config);
   const written = [];
@@ -200,6 +202,8 @@ export async function recordTakes(ctx, keys, onProgress = () => {}) {
   const fresh = (key) => join(paths(root).takes, `${slug(key)}.new`);
 
   const jobs = [];
+  let takesDone = 0;
+  const takesTotal = keys.filter((k) => lines.has(k)).length * config.takes;
   for (const key of keys) {
     const line = lines.get(key);
     if (!line) {
@@ -216,12 +220,13 @@ export async function recordTakes(ctx, keys, onProgress = () => {}) {
         } catch (e) {
           failed.push(`${key} take ${n}: ${e.message}`);
         }
+        onProgress({ phase: 'takes', done: ++takesDone, total: takesTotal });
       });
     }
   }
   await pool(jobs, CONCURRENCY);
 
-  let done = 0;
+  let done = keys.filter((k) => !lines.has(k)).length;
   for (const key of keys.filter((k) => lines.has(k))) {
     const got = takeFiles(root, key, fresh(key)).length;
     if (got === config.takes || (!lock[key] && got > 0)) {
@@ -239,7 +244,7 @@ export async function recordTakes(ctx, keys, onProgress = () => {}) {
       rmSync(fresh(key), { recursive: true, force: true });
       if (lock[key]) failed.push(`${key}: only ${got}/${config.takes} takes recorded — kept the current clip`);
     }
-    onProgress({ key, done: ++done, total: keys.length });
+    onProgress({ phase: 'phrases', key, done: ++done, total: keys.length });
   }
   return { written, failed };
 }

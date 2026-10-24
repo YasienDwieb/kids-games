@@ -78,6 +78,25 @@ test("recordTakes: one failing phrase doesn't stop the others", async () => {
   assert.ok(res.failed.some((f) => f.startsWith(K2)));
 });
 
+test('recordTakes: duplicate keys are recorded once', async () => {
+  const root = makeRoot({ lines: [ONE] });
+  const synth = fakeSynth();
+  const res = await recordTakes({ root, synthesize: synth }, [K1, K1]);
+  assert.deepEqual(res, { written: [K1], failed: [] });
+  assert.equal(synth.calls.get('one'), 3);
+});
+
+test('recordTakes reports progress per take, then per phrase', async () => {
+  const root = makeRoot({ lines: [ONE, TWO] });
+  const seen = [];
+  await recordTakes({ root, synthesize: fakeSynth() }, [K1, K2, 'en:nope'], (p) => seen.push(p));
+  const takes = seen.filter((p) => p.phase === 'takes');
+  assert.deepEqual(takes.map((p) => p.done), [1, 2, 3, 4, 5, 6]);
+  assert.ok(takes.every((p) => p.total === 6));
+  const last = seen.at(-1);
+  assert.deepEqual({ phase: last.phase, done: last.done, total: last.total }, { phase: 'phrases', done: 3, total: 3 });
+});
+
 test('status marks missing and stale clips', () => {
   const root = makeRoot({ lines: [ONE, TWO] });
   seedTakes(root, K1);
