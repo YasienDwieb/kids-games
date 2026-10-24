@@ -5,3 +5,4 @@ export { ProgressBar } from './ProgressBar';
 export { Sunburst } from './Sunburst';
 export { useLoop, useReduceMotion, bob, pulse, wiggle } from './motion';
 export { BuddyPicker } from './BuddyPicker';
+export { SchoolCard } from './SchoolCard';
