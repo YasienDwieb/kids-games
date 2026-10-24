@@ -38,6 +38,7 @@ All games import exclusively from `@/sdk`. The SDK exports:
 - **Config & registry**: `registerGame`, `getGame`, `getAllGames`, `getGamesForAge`, `validateGameConfig`, `GameConfig` type, `GameRegistry` type
 - **Layout**: `GameShell` (title bar + back button + overlay slots), `GameOverlay`, `useGameShell()` hook → `{ setScore, showOverlay, hideOverlay }`, `GameShellApi`/`GameShellProps`/`OverlaySlot` types
 - **Audio**: `useSound()` → `{ play(intent, options?) }` — plays assets by intent string, respects settings/haptics; `PlayOptions` type. Per-game swaps via `GameConfig.sounds` (`{ 'sfx.win': 'jingle.sax-10' }`), provided to `useSound` through `SoundOverridesContext` by `GamePlayerScreen`; `SoundOverrides` type
+- **Speech**: `useSpeech()` → `{ speak(text, { language? }), stop() }` — plays the bundled clip for `"<lang>:<text>"` (Chirp 3 HD "Leda", `src/sdk/assets/audio/speech/`, map in `src/sdk/speech/clips.generated.ts`), falling back to device TTS; never muted by settings. Games build spoken text in a per-game `phrase.ts`, listed in `src/games/voiceCatalog.ts`; `npm run voice:catalog && npm run voice:generate` records clips (key `GOOGLE_TTS_API_KEY` in `.env.local`); `voiceClips.test.ts` guards coverage. `npm run voice:studio` opens the Voice Studio (listen per game, pick/re-record takes, record missing, flags with notes in `scripts/voice/flags.json` — Claude answers with `reply`, never unflags). Rules and workflow in `docs/VOICE.md`
 - **Storage**: `createStore<T>(namespace, defaultValue)` → `Store<T>` with `get`/`set`/`subscribe`
 - **Progress & levels**: `levelsFromList`/`levelsFromGenerator` → `LevelSource<T>`; `useLevels({ gameId, source })` → `{ status, level, data, score, isLast, start, startOver, advance, addScore, goTo }`; `createProgressStore`, `DEFAULT_PROGRESS`, `Progress`; `resumeStatusFor`, `ResumeStatus`; `ResumePrompt` (Continue/Start-over UI). Opt-in; coarse `{ level, score }` checkpoint persisted under `kg:progress:<gameId>`.
 - **Feedback**: `useCelebrate()` → `celebrate('small'|'big', { praise? })` (confetti + random praise over the game, resolves when done; `CelebrationProvider` is mounted by `GamePlayerScreen`/`FlowPlayerScreen`, no-op without one) — use instead of a tap-to-continue modal after small wins. The provider also shows the comic praise burst, the `xN COMBO!` streak (`bumpCombo`/`breakCombo` in `feedback/combo.ts`; a miss through `useHintLadder` breaks it) and the full-screen "LEVEL UP!" card; `useHintLadder(roundKey)` → `{ miss(), step, firstTry, stars }` implementing the shared hint policy (`hintStepFor`: 1st miss `retry`, 2nd `highlight`, 3rd `reveal`; `starsForMisses`)
@@ -117,7 +118,7 @@ To add an asset: drop the file(s) in `src/sdk/assets/<type>/` and add a tagged e
 - `react-native-screens`, `react-native-safe-area-context`, `react-native-gesture-handler` — navigation peer deps
 - `expo-screen-orientation` — orientation control per game
 - `expo-audio` — sound effects and audio
-- `expo-speech` — spoken prompts (listen-and-find games)
+- `expo-speech` — device-TTS fallback for spoken prompts without a bundled clip
 - `react-native-reanimated` + `react-native-worklets` — UI-thread game motion (`@/sdk` `useGameLoop`); needs the `react-native-worklets/plugin` babel plugin last in the list, and ships only via a native/EAS build, never OTA
 
 ## HomeScreen

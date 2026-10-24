@@ -82,6 +82,19 @@ license. Add an entry **before** importing any new third-party asset.
 - **Processing:** trimmed of silence, resampled to 44.1 kHz mono AAC 64 kbps, and
   loudness-matched to the English clips (−23.7 LUFS integrated, peak ≤ −6 dBFS).
 
+### Google Cloud Text-to-Speech (Chirp 3 HD) — spoken prompts
+
+- **Used for:** every phrase the games speak — letters, numbers, animals, colour goals and
+  Trace It names, in English and Arabic (`src/sdk/assets/audio/speech/*.m4a`), played by
+  `useSpeech()`.
+- **Source:** generated with Google Cloud Text-to-Speech, Chirp 3 HD voice "Leda"
+  (`en-US-Chirp3-HD-Leda`, `ar-XA-Chirp3-HD-Leda`), 2026-10-24, on the project's Google
+  Cloud account, via `scripts/voice/generate.mjs`.
+- **License:** generated output used under the Google Cloud terms, which assign no
+  ownership claim to Google over generated content.
+- **Processing:** median-length take of three, loudness-normalized to the house level
+  (≈ −25 dBFS active RMS, peak ≤ −6 dBFS), mono AAC 64 kbps.
+
 ### Kenney — feedback SFX
 
 - **Used for:** shared game sound effects (`src/sdk/assets/audio/cc0/`), via `useSound()`:

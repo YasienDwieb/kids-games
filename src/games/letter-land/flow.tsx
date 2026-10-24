@@ -9,7 +9,8 @@
 
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { registerFlowAdapter, useFlowRound, useSpeech, useTranslation } from '@/sdk';
+import { registerFlowAdapter, useFlowRound, useSpeech, useTranslation, currentLanguage } from '@/sdk';
+import { letterPhrase } from '@/games/_shared/letters/phrase';
 import { ListenFindBoard, buildRound, orderFor } from '@/games/_shared/listen-find';
 import { LetterHero } from './components/LetterHero';
 import { CHOICES_PER_ROUND } from './constants';
@@ -35,9 +36,7 @@ function LetterFlowRound({
   const target: Letter = round.target;
 
   const speakTarget = () => {
-    const name = t('letters:names.' + target.id);
-    const word = t('letters:words.' + target.word);
-    void speak(t('letter-land:speak.carrier', { name, word }));
+    void speak(letterPhrase(target, currentLanguage()));
   };
 
   // Speak once on mount (each unit remounts via its key).

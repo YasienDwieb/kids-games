@@ -26,9 +26,6 @@ export const en = {
     // Warm-up names carry their own article so they read here and when spoken.
     iCanDraw: 'I can draw {{glyph}}!',
   },
-  speak: {
-    carrier: '{{name}}. {{word}}',
-  },
   digits: {
     d0: 'zero',
     d1: 'one',

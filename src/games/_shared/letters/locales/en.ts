@@ -1,40 +1,42 @@
 // Letter names + example words shared by Letter Land and Trace It.
 // Keyed by Letter.id / Letter.word from ../index.ts. Glyphs are authored DATA, never translated.
 export const en = {
-  // Spoken letter NAME per letter id (so TTS says the letter's name, not a
-  // guessed phoneme). Keyed by Letter.id from constants.ts. Latin values are
-  // phonetic spellings an en-US voice reads as the letter name. Arabic ids are
-  // never spoken under EN (Arabic set runs under RTL/ar) but are kept here for
-  // structural parity — values are transliterated Arabic letter names.
+  // Spoken letter prompt (docs/VOICE.md): "<name>! <Word>" — with a period the
+  // voice reads "V." as "versus".
+  speak: {
+    carrier: '{{name}}! {{word}}',
+  },
+  // Spoken letter NAME per letter id, written naturally (docs/VOICE.md): Latin
+  // values are the uppercase letter itself. Arabic ids are never spoken under EN
+  // but are kept for structural parity — values are transliterated names.
   names: {
-    // Latin (A–Z) — phonetic letter names for an en-US voice.
-    // 'ay' comes out as "eye" on Google TTS; a bare capital reads as the letter name.
+    // Latin (A–Z)
     A: 'A',
-    B: 'bee',
-    C: 'see',
-    D: 'dee',
-    E: 'ee',
-    F: 'eff',
-    G: 'jee',
-    H: 'aitch',
-    I: 'eye',
-    J: 'jay',
-    K: 'kay',
-    L: 'ell',
-    M: 'em',
-    N: 'en',
-    O: 'oh',
-    P: 'pee',
-    Q: 'cue',
-    R: 'arr',
-    S: 'ess',
-    T: 'tee',
-    U: 'you',
-    V: 'vee',
-    W: 'double you',
-    X: 'eks',
-    Y: 'why',
-    Z: 'zee',
+    B: 'B',
+    C: 'C',
+    D: 'D',
+    E: 'E',
+    F: 'F',
+    G: 'G',
+    H: 'H',
+    I: 'I',
+    J: 'J',
+    K: 'K',
+    L: 'L',
+    M: 'M',
+    N: 'N',
+    O: 'O',
+    P: 'P',
+    Q: 'Q',
+    R: 'R',
+    S: 'S',
+    T: 'T',
+    U: 'U',
+    V: 'V',
+    W: 'W',
+    X: 'X',
+    Y: 'Y',
+    Z: 'Z',
     // Arabic ids (parity only; spoken under ar, not en) — transliterated names.
     alef: 'alif',
     baa: 'baa',

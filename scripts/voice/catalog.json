@@ -1,0 +1,1604 @@
+{
+ "games": [
+  {
+   "id": "animal-safari",
+   "name": "Animal Safari",
+   "icon": "🐾",
+   "accent": {
+    "base": "#FFA51F",
+    "deep": "#E58600",
+    "tint": "#FFEFCF"
+   }
+  },
+  {
+   "id": "trace-it",
+   "name": "Trace It",
+   "icon": "✏️",
+   "accent": {
+    "base": "#FF6B5E",
+    "deep": "#E84B3D",
+    "tint": "#FFE3DF"
+   }
+  },
+  {
+   "id": "color-mixer",
+   "name": "Color Mixer",
+   "icon": "🎨",
+   "accent": {
+    "base": "#2EC4F1",
+    "deep": "#0FA5D4",
+    "tint": "#DDF5FD"
+   }
+  },
+  {
+   "id": "letter-land",
+   "name": "Letter Land",
+   "icon": "🔤",
+   "accent": {
+    "base": "#2EC4F1",
+    "deep": "#0FA5D4",
+    "tint": "#DDF5FD"
+   }
+  },
+  {
+   "id": "numbers-land",
+   "name": "Numbers Land",
+   "icon": "🔢",
+   "accent": {
+    "base": "#FFA51F",
+    "deep": "#E58600",
+    "tint": "#FFEFCF"
+   }
+  }
+ ],
+ "lines": [
+  {
+   "lang": "ar",
+   "text": "أَربَعة",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "أسد",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "أَلِف. أَسَد",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِثنان",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِصنعْ هذا اللون: أخضر",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِصنعْ هذا اللون: أزرق فاتح",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِصنعْ هذا اللون: برتقالي",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِصنعْ هذا اللون: بنفسجي",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِصنعْ هذا اللون: بني",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِصنعْ هذا اللون: وردي",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "بَاء. بَطَّة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "بطة",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "بقرة",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "تَاء. تُفَّاحَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "تِسْعة",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ثَاء. ثَعْلَب",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ثَلاثة",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ثَمانِية",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "جسور",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "جِيم. جَمَل",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "حَاء. حِصَان",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "حصان",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "حلزون",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "حلقات",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "خَاء. خَرُوف",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "خروف",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "خطٌ متعرّج",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "خط مستقيم",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "خَمسة",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "دائرة",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "دَال. دُبّ",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ديك",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ذَال. ذُبَاب",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "رَاء. رِيشَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "زَاي. زَرَافَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "سَبعة",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "سِتّة",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "سِين. سَمَكَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "شِين. شَمْس",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "صَاد. صَارُوخ",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "صِفْر",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ضَاد. ضِفْدَع",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ضفدع",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "طَاء. طَائِرَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ظَاء. ظَرْف",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "عَشَرة",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "عصفور",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "عَيْن. عُصْفُور",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "غَيْن. غَزَالَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "فَاء. فِيل",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "فيل",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "قَاف. قِطَّة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "قطة",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَاف. كُرَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كلب",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "لَام. لَيْمُون",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "مَوْجَةْ",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "مِيم. مَوْزَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "نحلة",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "نُون. نَجْمَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "هَاء. هَاتِف",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "وَاحِد",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "وَاو. وَرْدَة",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "يَاء. يَد",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "a circle",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "a spiral",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "a straight line",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "a wave",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "a zigzag",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "A! Apple",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "B! Ball",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Bee",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Bird",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "bridges",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "C! Cat",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Cat",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Cow",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "D! Dog",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Dog",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Duck",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "E! Egg",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "eight",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Elephant",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "F! Fish",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "five",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "four",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Frog",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "G! Goat",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "H! Hat",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Horse",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "I! Ice cream",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "J! Juice",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "K! Kite",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "L! Lion",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Lion",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "loops",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "M! Moon",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Make this color: Brown",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Make this color: Green",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Make this color: Light Blue",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Make this color: Orange",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Make this color: Pink",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Make this color: Purple",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "N! Nose",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "nine",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "O! Orange",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "one",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "P! Panda",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Q! Queen",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "R! Rabbit",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Rooster",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "S! Sun",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "seven",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Sheep",
+   "uses": [
+    {
+     "game": "animal-safari",
+     "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "six",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "T! Tree",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "ten",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "three",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "two",
+   "uses": [
+    {
+     "game": "numbers-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "U! Umbrella",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "V! Van",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "W! Whale",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "X! Xylophone",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Y! Yarn",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Z! Zebra",
+   "uses": [
+    {
+     "game": "letter-land",
+     "where": "Listen & find"
+    },
+    {
+     "game": "trace-it",
+     "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "zero",
+   "uses": [
+    {
+     "game": "trace-it",
+     "where": "Numbers tab"
+    }
+   ]
+  }
+ ]
+}
