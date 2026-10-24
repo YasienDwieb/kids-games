@@ -18,7 +18,9 @@ import {
   useFlowRound,
   useSpeech,
   useTranslation,
+  currentLanguage,
 } from '@/sdk';
+import { colorTargetPhrase } from './phrase';
 import { ColorBlob } from './components/ColorBlob';
 import { CHALLENGES, COLORS } from './constants';
 import { MIX_CAP, PIGMENT_IDS, addDrop, isChallengeMet, mixHex, removeDrop } from './utils';
@@ -36,7 +38,7 @@ function MixFlowRound({ target, onComplete }: { target: ColorId; onComplete: () 
   const targetHex = COLORS[target].hex;
   const targetName = t(`color-mixer:colors.${target}`);
 
-  const sayTarget = () => void speak(`${t('color-mixer:challenge.makeThisColor')} ${targetName}`);
+  const sayTarget = () => void speak(colorTargetPhrase(target, currentLanguage()));
   // Say the goal once when the unit appears (each unit remounts via its key).
   useEffect(() => {
     sayTarget();

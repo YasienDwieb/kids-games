@@ -84,7 +84,7 @@ export const ar: GameTranslations = {
   },
 
   challenge: {
-    makeThisColor: 'اصنع هذا اللون:',
+    makeThisColor: 'اِصنعْ هذا اللون:',
     needHint: 'تريد تلميحاً؟',
     backLabel: 'رجوع للتحديات',
     meter: {

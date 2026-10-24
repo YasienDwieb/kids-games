@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voice Studio</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦉</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=IBM+Plex+Sans+Arabic:wght@500;700&family=Lilita+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --canvas: #FFF7E0; --ink: #1B1B2F; --zap: #FFE135; --grape: #7B4DFF; --white: #fff; --muted: #6b6880;
+  --coral: #FF6B5E; --coral-t: #FFE3DF; --green: #7DDB3C;
+  --sh-sm: 3px 3px 0 var(--ink); --sh-md: 5px 5px 0 var(--ink); --sh-lg: 8px 8px 0 var(--ink);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--canvas); color: var(--ink); font: 800 15px/1.35 Nunito, system-ui, sans-serif; }
+body { padding-bottom: 150px; background-image: radial-gradient(rgba(27,27,47,.07) 1.2px, transparent 1.3px); background-size: 18px 18px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { opacity: .45; cursor: not-allowed; }
+.display { font-family: 'Lilita One', system-ui, sans-serif; font-weight: 400; letter-spacing: .3px; }
+
+header { position: sticky; top: 0; z-index: 20; background: var(--zap); border-bottom: 3px solid var(--ink); padding: 14px 24px 12px; }
+.bar { display: flex; align-items: center; gap: 14px; max-width: 1400px; margin: 0 auto; }
+.logo { display: flex; align-items: center; gap: 12px; }
+.owl { width: 52px; height: 52px; border-radius: 16px; background: var(--grape); border: 3px solid var(--ink); box-shadow: var(--sh-sm); display: grid; place-items: center; font-size: 30px; transform: rotate(-6deg); }
+.logo h1 { margin: 0; font-size: 30px; line-height: 1; }
+.logo small { display: block; font: 800 12px Nunito; opacity: .7; margin-top: 3px; }
+.spacer { flex: 1; }
+.stat { display: flex; align-items: center; gap: 8px; background: var(--white); border: 3px solid var(--ink); border-radius: 999px; padding: 6px 14px; box-shadow: var(--sh-sm); }
+.stat b { font-family: 'Lilita One'; font-weight: 400; font-size: 20px; }
+.stat span { font-size: 12px; color: var(--muted); }
+.stat.flags { background: var(--coral-t); }
+.reload { border: 3px solid var(--ink); background: var(--white); border-radius: 999px; padding: 8px 14px; box-shadow: var(--sh-sm); }
+
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; max-width: 1400px; margin: 12px auto 0; }
+.chip { border: 3px solid var(--ink); background: var(--white); border-radius: 999px; padding: 5px 13px; box-shadow: var(--sh-sm); display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+.chip:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.chip.on { background: var(--ink); color: var(--white); }
+.chip .n { font-size: 11px; opacity: .65; }
+.sep { width: 3px; height: 28px; background: var(--ink); opacity: .15; border-radius: 2px; margin: 0 4px; }
+.search { border: 3px solid var(--ink); border-radius: 999px; padding: 6px 14px; font: 800 14px Nunito; min-width: 200px; box-shadow: var(--sh-sm); outline: none; }
+
+.banner { max-width: 1400px; margin: 16px auto 0; background: var(--coral-t); border: 3px solid var(--ink); border-radius: 16px; box-shadow: var(--sh-sm); padding: 10px 14px; }
+.banner pre { margin: 8px 0 0; white-space: pre-wrap; font-size: 12px; max-height: 180px; overflow: auto; }
+
+main { max-width: 1400px; margin: 0 auto; padding: 8px 24px; }
+.section-h { display: flex; align-items: center; gap: 12px; margin: 30px 4px 14px; flex-wrap: wrap; }
+.section-h h2 { margin: 0; font-size: 26px; }
+.section-h .count { font-size: 13px; color: var(--muted); }
+.section-h .tools { margin-inline-start: auto; display: flex; gap: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+
+.card { --acc: #2EC4F1; --acc-t: #DDF5FD; position: relative; background: var(--white); border: 3px solid var(--ink); border-radius: 22px; box-shadow: var(--sh-md);
+  padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 10px; transition: transform .15s, box-shadow .15s; outline: none; }
+.card:hover, .card:focus-visible { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--ink); }
+.card.playing { transform: translate(-3px,-3px) scale(1.015); box-shadow: var(--sh-lg); background: var(--acc-t); z-index: 2; }
+.card.flagged { background: repeating-linear-gradient(-45deg, var(--white) 0 14px, var(--coral-t) 14px 28px); }
+.card.new { border-style: dashed; }
+.uses { display: flex; flex-wrap: wrap; gap: 5px; }
+.use { font-size: 11px; border: 2px solid var(--ink); border-radius: 999px; padding: 1px 8px 1px 4px; display: inline-flex; gap: 4px; align-items: center; }
+.state { font-size: 11px; border: 2px solid var(--ink); border-radius: 999px; padding: 1px 8px; background: var(--zap); }
+.text { font-size: 28px; line-height: 1.15; min-height: 40px; font-family: 'Lilita One'; word-break: break-word; }
+.text.ar { font-family: 'Baloo Bhaijaan 2', 'IBM Plex Sans Arabic', sans-serif; font-weight: 800; font-size: 34px; line-height: 1.25; }
+.wave { width: 100%; height: 54px; display: block; cursor: pointer; border-radius: 12px; background: var(--canvas); border: 2px solid var(--ink); }
+.nowave { height: 54px; border-radius: 12px; border: 2px dashed var(--ink); display: grid; place-items: center; color: var(--muted); font-size: 13px; }
+.row { display: flex; align-items: center; gap: 8px; }
+.play { width: 44px; height: 44px; flex: none; border-radius: 50%; border: 3px solid var(--ink); background: var(--acc); box-shadow: var(--sh-sm); font-size: 16px; }
+.meta { font-size: 12px; color: var(--muted); }
+.takes { display: flex; gap: 6px; margin-inline-start: auto; }
+.take { width: 34px; height: 34px; border-radius: 10px; border: 2.5px solid var(--ink); background: var(--white); position: relative; font-family: 'Lilita One'; font-size: 16px; }
+.take.chosen { background: var(--ink); color: var(--white); }
+.take.chosen::after { content: '✓'; position: absolute; top: -9px; right: -9px; width: 18px; height: 18px; border-radius: 50%; background: var(--green); border: 2px solid var(--ink); color: var(--ink); font-size: 10px; display: grid; place-items: center; font-family: Nunito; font-weight: 900; }
+.take.auditioning { background: var(--zap); color: var(--ink); }
+.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.act { border: 2.5px solid var(--ink); border-radius: 12px; background: var(--white); padding: 4px 10px; font-size: 12px; box-shadow: 2px 2px 0 var(--ink); }
+.act:active { transform: translate(2px,2px); box-shadow: none; }
+.act.use-take { background: var(--green); display: none; }
+.card.can-use .act.use-take { display: inline-block; }
+.act.flag.on { background: var(--coral); color: var(--white); }
+.act.record { background: var(--zap); }
+.note { font-size: 13px; background: var(--white); border: 2px solid var(--ink); border-radius: 12px; padding: 6px 10px; }
+.note .reply { margin-top: 4px; padding-top: 4px; border-top: 2px dashed rgba(27,27,47,.25); color: #3a3a5a; }
+.recording { position: absolute; inset: 0; border-radius: 19px; background: rgba(255,247,224,.94); display: none; place-items: center; text-align: center; z-index: 3; }
+.card.rec .recording { display: grid; }
+.eq { display: flex; gap: 4px; height: 34px; align-items: flex-end; justify-content: center; margin-bottom: 8px; }
+.eq span { width: 7px; background: var(--grape); border: 2px solid var(--ink); border-radius: 4px; animation: eq .7s infinite ease-in-out alternate; }
+.eq span:nth-child(2) { animation-delay: .15s } .eq span:nth-child(3) { animation-delay: .3s } .eq span:nth-child(4) { animation-delay: .45s } .eq span:nth-child(5) { animation-delay: .6s }
+@keyframes eq { from { height: 6px } to { height: 34px } }
+@media (prefers-reduced-motion: reduce) { .eq span { animation: none; height: 20px; } .card, .chip { transition: none; } }
+
+.transport { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 30; width: min(1100px, calc(100% - 32px));
+  background: var(--ink); color: var(--white); border-radius: 26px; box-shadow: 8px 8px 0 var(--grape); display: flex; align-items: center; gap: 16px; padding: 12px 18px; }
+.big-play { width: 66px; height: 66px; border-radius: 50%; background: var(--zap); color: var(--ink); border: 3px solid var(--white); font-size: 26px; flex: none; }
+.big-play.on { background: var(--coral); }
+.tbtn { width: 40px; height: 40px; border-radius: 50%; border: 2.5px solid var(--white); background: transparent; color: var(--white); font-size: 15px; flex: none; }
+.now { flex: 1; min-width: 0; }
+.now .label { font-size: 11px; opacity: .6; text-transform: uppercase; letter-spacing: 1px; }
+.now .t { font-size: 30px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Lilita One'; }
+.now .t.ar { font-family: 'Baloo Bhaijaan 2', sans-serif; font-weight: 800; font-size: 32px; }
+.prog { height: 6px; background: rgba(255,255,255,.18); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.prog i { display: block; height: 100%; width: 0; background: var(--zap); }
+.knobs { display: flex; flex-direction: column; gap: 6px; font-size: 11px; flex: none; }
+.knobs label { display: flex; align-items: center; gap: 8px; opacity: .85; }
+.knobs input[type=range] { width: 110px; accent-color: var(--zap); }
+.keys { font-size: 10px; opacity: .55; }
+kbd { border: 1.5px solid currentColor; border-radius: 5px; padding: 0 4px; font-family: Nunito; }
+.toast { position: fixed; top: 150px; left: 50%; transform: translateX(-50%) translateY(-20px); opacity: 0; z-index: 40; background: var(--white); border: 3px solid var(--ink); box-shadow: var(--sh-md); border-radius: 16px; padding: 10px 16px; max-width: 640px; transition: all .25s; pointer-events: none; white-space: pre-line; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.empty { text-align: center; padding: 60px; color: var(--muted); font-size: 22px; }
+
+/* ---------- dialog ---------- */
+dialog { border: 3px solid var(--ink); border-radius: 26px; box-shadow: 10px 10px 0 var(--grape); padding: 0; width: min(560px, calc(100% - 32px)); background: var(--white); color: var(--ink); }
+dialog::backdrop { background: rgba(27,27,47,.55); } /* no blur: it repaints 100+ waveforms per frame */
+dialog[open] { animation: dlg-in .18s ease-out; }
+@keyframes dlg-in { from { transform: translateY(12px) scale(.97); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { dialog[open] { animation: none; } }
+.dlg-head { background: var(--zap); border-bottom: 3px solid var(--ink); padding: 14px 20px; display: flex; align-items: center; gap: 10px; border-radius: 23px 23px 0 0; }
+.dlg-head h3 { margin: 0; font-size: 22px; }
+.dlg-head .x { margin-inline-start: auto; width: 34px; height: 34px; border-radius: 50%; border: 2.5px solid var(--ink); background: var(--white); }
+.dlg-body { padding: 16px 20px 6px; display: flex; flex-direction: column; gap: 12px; }
+.dlg-phrase { display: flex; align-items: center; gap: 12px; background: var(--canvas); border: 2.5px solid var(--ink); border-radius: 16px; padding: 10px 12px; }
+.dlg-phrase .text { flex: 1; min-height: 0; }
+.dlg-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.quick { display: flex; flex-wrap: wrap; gap: 6px; }
+.quick button { border: 2.5px solid var(--ink); border-radius: 999px; background: var(--white); padding: 4px 11px; font-size: 13px; box-shadow: 2px 2px 0 var(--ink); }
+.quick button[aria-pressed=true] { background: var(--coral); color: var(--white); }
+dialog textarea { width: 100%; min-height: 92px; resize: vertical; border: 2.5px solid var(--ink); border-radius: 14px; padding: 10px 12px; font: 700 15px/1.4 Nunito, sans-serif; outline: none; }
+dialog textarea:focus { box-shadow: 3px 3px 0 var(--grape); }
+.thread { display: flex; flex-direction: column; gap: 8px; }
+.bubble { border: 2.5px solid var(--ink); border-radius: 16px; padding: 8px 12px; font-size: 14px; max-width: 92%; }
+.bubble small { display: block; font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+.bubble.you { background: var(--coral-t); align-self: flex-start; }
+.bubble.claude { background: #EEE7FF; align-self: flex-end; }
+.cost { display: flex; align-items: baseline; gap: 8px; }
+.cost b { font-family: 'Lilita One'; font-weight: 400; font-size: 34px; }
+.dlg-foot { display: flex; gap: 10px; justify-content: flex-end; padding: 12px 20px 18px; flex-wrap: wrap; align-items: center; }
+.dlg-foot .hint { flex-basis: 100%; font-size: 11px; color: var(--muted); }
+.dlg-foot .grow { margin-inline-end: auto; }
+.btn { border: 3px solid var(--ink); border-radius: 14px; padding: 8px 16px; background: var(--white); box-shadow: var(--sh-sm); font-family: 'Lilita One'; font-size: 17px; }
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.btn.primary { background: var(--zap); }
+.btn.danger { background: var(--coral); color: var(--white); }
+.btn.ok { background: var(--green); }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">
+      <div class="owl">🦉</div>
+      <div><h1 class="display">Voice Studio</h1><small>Lulu's voice · every word the games say</small></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="stat"><b id="clipCount">0</b><span>clips</span></div>
+    <div class="stat"><b id="newCount">0</b><span>new / missing</span></div>
+    <div class="stat flags"><b id="flagCount">0</b><span>flagged</span></div>
+    <button class="reload" id="reload" title="Re-read clips, takes and flags from disk">↻ Reload</button>
+  </div>
+  <div class="filters" id="filters"></div>
+</header>
+<div id="banners"></div>
+<main id="main"></main>
+
+<div class="transport">
+  <button class="tbtn" id="prev" title="Previous (←)">⏮</button>
+  <button class="big-play" id="playAll" title="Play all (Space)">▶</button>
+  <button class="tbtn" id="next" title="Next (→)">⏭</button>
+  <div class="now">
+    <div class="label" id="nowLabel">Play all — every clip in view, back to back</div>
+    <div class="t" id="nowText">Press ▶ or Space</div>
+    <div class="prog"><i id="nowProg"></i></div>
+  </div>
+  <div class="knobs">
+    <label>Gap <input type="range" id="gap" min="0.2" max="2" step="0.1" value="0.7"><span id="gapV">0.7s</span></label>
+    <div class="keys"><kbd>Space</kbd> play · <kbd>←</kbd><kbd>→</kbd> skip · <kbd>1</kbd>–<kbd id="takesKbd">3</kbd> takes · <kbd>F</kbd> flag</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<dialog id="dlg" aria-labelledby="dlgTitle"></dialog>
+
+<script type="module">
+import { filterClips, groupClips } from './sections.mjs';
+import { createQueue } from './queue.mjs';
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+const store = { get(k, d) { try { return JSON.parse(localStorage.getItem('vs:' + k)) ?? d; } catch { return d; } }, set(k, v) { try { localStorage.setItem('vs:' + k, JSON.stringify(v)); } catch {} } };
+
+let S = { games: [], clips: [], warning: null, keyReady: false, job: { running: false } };
+const ui = store.get('filters', { game: 'all', lang: 'all', flaggedOnly: false, q: '' });
+let bust = Date.now(); // new takes/clips keep their file names, so URLs carry a version
+let recording = new Set();
+
+const gameOf = (id) => S.games.find((g) => g.id === id) ?? { id, name: id, icon: '🎮', accent: { base: '#2EC4F1', deep: '#0FA5D4', tint: '#DDF5FD' } };
+const clipUrl = (c) => c.clip && `/audio/clip/${c.clip.file}?v=${bust}`;
+const takeUrl = (c, n) => `/audio/take/${c.slug}/${n}?v=${bust}`;
+
+async function api(path, body) {
+  const res = await fetch(path, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+async function load() {
+  S = await api('/api/state');
+  bust = Date.now();
+  peaks.clear();
+  recording = new Set(S.job.running ? S.job.keys : []);
+  $('takesKbd').textContent = S.takes;
+  render();
+  if (S.job.running) watchJob();
+}
+
+// ---------- waveforms ----------
+let ctx; const peaks = new Map();
+function peaksFor(src) {
+  if (!peaks.has(src)) {
+    ctx ??= new (window.AudioContext || window.webkitAudioContext)();
+    peaks.set(src, fetch(src).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((buf) => {
+      const d = buf.getChannelData(0), n = 56, step = Math.floor(d.length / n), out = [];
+      for (let i = 0; i < n; i++) { let m = 0; for (let j = i * step; j < (i + 1) * step; j += 16) m = Math.max(m, Math.abs(d[j])); out.push(m); }
+      const max = Math.max(...out) || 1; return out.map((v) => v / max);
+    }).catch(() => Array(56).fill(0.15)));
+  }
+  return peaks.get(src);
+}
+async function drawWave(canvas, src, progress = 0) {
+  const ps = await peaksFor(src); const dpr = devicePixelRatio || 1;
+  const w = canvas.clientWidth, h = canvas.clientHeight; canvas.width = w * dpr; canvas.height = h * dpr;
+  const g = canvas.getContext('2d'); g.scale(dpr, dpr);
+  const bw = w / ps.length;
+  ps.forEach((v, i) => {
+    const bh = Math.max(3, v * (h - 14));
+    g.fillStyle = i / ps.length < progress ? canvas.dataset.acc : 'rgba(27,27,47,.22)';
+    g.beginPath(); g.roundRect(i * bw + bw * 0.2, (h - bh) / 2, bw * 0.6, bh, 2); g.fill();
+  });
+}
+
+// ---------- render ----------
+const visible = () => filterClips(S.clips, ui);
+function renderHeader() {
+  $('clipCount').textContent = S.clips.length;
+  $('newCount').textContent = S.clips.filter((c) => c.state !== 'ok').length;
+  $('flagCount').textContent = S.clips.filter((c) => c.flag).length;
+  const count = (id) => S.clips.filter((c) => c.uses.some((u) => u.game === id)).length;
+  $('filters').innerHTML = `<button class="chip ${ui.game === 'all' ? 'on' : ''}" data-game="all">All games <span class="n">${S.clips.length}</span></button>`
+    + S.games.map((g) => `<button class="chip ${ui.game === g.id ? 'on' : ''}" data-game="${g.id}" style="${ui.game === g.id ? '' : `background:${g.accent.tint}`}">${g.icon} ${esc(g.name)} <span class="n">${count(g.id)}</span></button>`).join('')
+    + '<span class="sep"></span>'
+    + [['all', 'Both'], ['en', 'English'], ['ar', 'عربي']].map(([l, n]) => `<button class="chip ${ui.lang === l ? 'on' : ''}" data-lang="${l}">${n}</button>`).join('')
+    + `<span class="sep"></span><button class="chip ${ui.flaggedOnly ? 'on' : ''}" data-flagged>⚑ Flagged only</button>`
+    + `<input class="search" id="q" placeholder="Search a word…" value="${esc(ui.q)}">`;
+  const set = (patch) => { Object.assign(ui, patch); store.set('filters', ui); render(); };
+  $('filters').querySelectorAll('[data-game]').forEach((b) => (b.onclick = () => set({ game: b.dataset.game })));
+  $('filters').querySelectorAll('[data-lang]').forEach((b) => (b.onclick = () => set({ lang: b.dataset.lang })));
+  $('filters').querySelector('[data-flagged]').onclick = () => set({ flaggedOnly: !ui.flaggedOnly });
+  const q = $('q'); q.oninput = () => { ui.q = q.value; store.set('filters', ui); renderMain(); };
+  $('banners').innerHTML = (S.warning ? `<div class="banner">⚠️ ${esc(S.warning.split('\n')[0])}<pre>${esc(S.warning.split('\n').slice(1).join('\n').trim())}</pre></div>` : '')
+    + (S.keyReady ? '' : '<div class="banner">🔑 Recording is off: GOOGLE_TTS_API_KEY isn\'t set. Add it to <code>.env.local</code> and restart <code>npm run voice:studio</code>. Listening and picking takes still work.</div>');
+}
+function card(c) {
+  const ar = c.lang === 'ar', acc = gameOf(c.uses[0]?.game).accent;
+  const has = Boolean(c.clip);
+  const recLabel = has ? '↻ Re-record' : '● Record';
+  return `<div class="card ${c.flag ? 'flagged' : ''} ${c.state !== 'ok' ? 'new' : ''} ${recording.has(c.key) ? 'rec' : ''}" tabindex="0" data-key="${esc(c.key)}"
+    style="--acc:${acc.base};--acc-t:${acc.tint}">
+    <div class="uses">${c.state !== 'ok' ? `<span class="state">${c.state === 'missing' ? 'not recorded' : 'old voice'}</span>` : ''}${c.uses.map((u) => { const g = gameOf(u.game); return `<span class="use" style="background:${g.accent.tint}">${g.icon} ${esc(g.name)} · ${esc(u.where)}</span>`; }).join('')}</div>
+    <div class="text ${ar ? 'ar' : ''}" dir="${ar ? 'rtl' : 'ltr'}" ${ar ? 'lang="ar"' : ''}>${esc(c.text)}</div>
+    ${has ? `<canvas class="wave" data-acc="${acc.base}" title="Play the clip in the app"></canvas>` : '<div class="nowave">No recording yet — the game uses the device voice</div>'}
+    <div class="row">
+      ${has ? '<button class="play" title="Play the clip in the app">▶</button>' : ''}
+      <div class="meta">${has ? `${c.clip.durationS.toFixed(2)}s · take ${c.clip.take} in app` : `${c.chars} characters to record`}</div>
+      <div class="takes">${c.takes.map((n) => `<button class="take ${has && n === c.clip.take ? 'chosen' : ''}" data-n="${n}" title="Hear take ${n}">${n}</button>`).join('')}</div>
+    </div>
+    ${c.flag ? `<div class="note">⚑ ${esc(c.flag.note || '(no note)')}${c.flag.reply ? `<div class="reply">🦉 ${esc(c.flag.reply)}</div>` : ''}</div>` : ''}
+    <div class="actions">
+      <button class="act use-take">✓ Use take <span class="tn"></span></button>
+      <button class="act ${has ? 'redo' : 'record'}" ${S.keyReady ? '' : 'disabled title="Set GOOGLE_TTS_API_KEY to record"'}>${recLabel}</button>
+      <button class="act flag ${c.flag ? 'on' : ''}">⚑ ${c.flag ? 'Flagged…' : 'Flag'}</button>
+    </div>
+    <div class="recording"><div><div class="eq"><span></span><span></span><span></span><span></span><span></span></div><b class="display" style="font-size:18px">Recording ${S.takes} fresh takes…</b><div class="meta">${esc(c.text)}</div></div></div>
+  </div>`;
+}
+let observer;
+function renderMain() {
+  const list = visible();
+  observer?.disconnect();
+  observer = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    const c = byKey(e.target.closest('.card').dataset.key); drawWave(e.target, clipUrl(c)); observer.unobserve(e.target);
+  }), { rootMargin: '300px' });
+  if (!list.length) { $('main').innerHTML = '<div class="empty display">Nothing here 🦉</div>'; return; }
+  $('main').innerHTML = groupClips(list, S.games).map((s) => {
+    const missing = s.clips.filter((c) => c.state !== 'ok');
+    const chars = missing.reduce((n, c) => n + c.chars, 0);
+    const icon = s.game ? s.game.icon + ' ' : '✨ ';
+    return `<div class="section-h"><h2 class="display">${icon}${esc(s.title)}</h2><span class="count">${s.clips.length} clips</span>
+      <div class="tools">${s.id === 'new' ? `<button class="chip" data-record-all ${S.keyReady ? '' : 'disabled'}>● Record all ${missing.length} (${chars} characters)</button>` : ''}
+      <button class="chip" data-sec="${s.id}">▶ Play this section</button></div></div>
+      <div class="grid">${s.clips.map(card).join('')}</div>`;
+  }).join('');
+  $('main').querySelectorAll('.wave').forEach((w) => observer.observe(w));
+  $('main').querySelectorAll('.card').forEach(wire);
+  const sections = groupClips(list, S.games);
+  $('main').querySelectorAll('[data-sec]').forEach((b) => (b.onclick = () => startQueue(sections.find((s) => s.id === b.dataset.sec).clips)));
+  const all = $('main').querySelector('[data-record-all]');
+  if (all) all.onclick = () => record(list.filter((c) => c.state !== 'ok'));
+}
+function render() { renderHeader(); renderMain(); }
+const byKey = (key) => S.clips.find((c) => c.key === key);
+const cardOf = (c) => [...$('main').querySelectorAll('.card')].find((el) => el.dataset.key === c.key);
+
+// ---------- playback ----------
+const audio = new Audio();
+let playingCard = null, raf = 0, endResolve = null;
+function play(src, cardEl, canvas) {
+  stopPlayback();
+  return new Promise((resolve) => {
+    audio.src = src; audio.play().catch(() => resolve(false));
+    playingCard = cardEl; cardEl?.classList.add('playing'); endResolve = resolve;
+    const tick = () => {
+      const p = audio.duration ? audio.currentTime / audio.duration : 0;
+      if (canvas) drawWave(canvas, src, p);
+      $('nowProg').style.width = p * 100 + '%';
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+    audio.onended = () => { cancelAnimationFrame(raf); if (canvas) drawWave(canvas, src, 1); cleanup(); endResolve = null; resolve(true); };
+  });
+}
+function cleanup() { playingCard?.classList.remove('playing'); playingCard?.querySelectorAll('.auditioning').forEach((t) => t.classList.remove('auditioning')); playingCard = null; }
+function stopPlayback(resolveIt = true) { audio.pause(); cancelAnimationFrame(raf); cleanup(); if (resolveIt && endResolve) endResolve(false); endResolve = null; }
+function setNow(c, label) {
+  const t = $('nowText'); t.textContent = c.text; t.className = 't' + (c.lang === 'ar' ? ' ar' : ''); t.dir = c.lang === 'ar' ? 'rtl' : 'ltr';
+  $('nowLabel').textContent = label;
+}
+const where = (c) => c.uses.map((u) => `${gameOf(u.game).icon} ${gameOf(u.game).name}`).join('  ·  ');
+function playClip(c) {
+  if (!c.clip) return;
+  queue.stop();
+  const el = cardOf(c); setNow(c, where(c));
+  return play(clipUrl(c), el, el?.querySelector('.wave'));
+}
+
+const queue = createQueue({
+  play: (c, i, total) => {
+    const el = cardOf(c);
+    el?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+    setNow(c, `Playing ${i + 1} / ${total} · ${where(c)}`);
+    return play(clipUrl(c), el, el?.querySelector('.wave'));
+  },
+  stop: () => stopPlayback(),
+  gap: () => new Promise((r) => setTimeout(r, +$('gap').value * 1000)),
+  onChange: ({ running, total, done }) => {
+    $('playAll').textContent = running ? '⏸' : '▶';
+    $('playAll').classList.toggle('on', running);
+    if (done) $('nowLabel').textContent = `Done — ${total} clips played 🎉`;
+  },
+});
+const inView = () => groupClips(visible(), S.games).flatMap((s) => s.clips).filter((c) => c.clip);
+function startQueue(list) { queue.start(list.filter((c) => c.clip)); }
+const toggleAll = () => queue.toggle(inView);
+$('playAll').onclick = toggleAll;
+$('next').onclick = () => queue.next();
+$('prev').onclick = () => queue.prev();
+$('gap').oninput = () => ($('gapV').textContent = $('gap').value + 's');
+$('reload').onclick = () => load().then(() => toast('Reloaded from disk'));
+
+// ---------- actions ----------
+const toast = (msg) => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 4200); };
+async function record(clips) {
+  if (!clips.length || !(await recordDialog(clips))) return;
+  try {
+    await api('/api/record', { keys: clips.map((c) => c.key) });
+    recording = new Set(clips.map((c) => c.key));
+    renderMain();
+    watchJob();
+  } catch (e) { toast(e.message); }
+}
+let watching = false;
+async function watchJob() {
+  if (watching) return; watching = true;
+  try {
+    for (;;) {
+      const job = await api('/api/job');
+      if (job.running) {
+        $('nowLabel').textContent = job.takesDone < job.takesTotal
+          ? `Recording takes ${job.takesDone} / ${job.takesTotal}…`
+          : `Saving clips ${job.done} / ${job.total}…`;
+      } else {
+        recording = new Set();
+        await load();
+        toast(`Recorded ${job.written.length} of ${job.total}.${job.failed.length ? `\n${job.failed.length} problem(s):\n${job.failed.slice(0, 4).join('\n')}` : ''}`);
+        break;
+      }
+      await new Promise((r) => setTimeout(r, 700));
+    }
+  } catch {
+    recording = new Set();
+    renderMain();
+    toast('Lost contact with the studio. Restart npm run voice:studio, then Reload.');
+  } finally { watching = false; }
+}
+
+// ---------- dialogs ----------
+const ISSUES = ['Mispronounced', 'Wrong stress', 'Wrong vowel / tashkeel', 'Too fast', 'Too slow', 'Sounds robotic', 'Cut off', 'Too quiet / loud'];
+/** Opens the dialog with `html`; resolves with the clicked [data-v] value, or null on Esc / ✕ / backdrop. */
+function openDialog(title, html, wire = () => {}) {
+  const d = $('dlg');
+  d.innerHTML = `<div class="dlg-head"><h3 class="display" id="dlgTitle">${title}</h3><button class="x" data-v="" aria-label="Close">✕</button></div>${html}`;
+  return new Promise((resolve) => {
+    let value = null;
+    d.querySelectorAll('[data-v]').forEach((b) => (b.onclick = () => { value = b.dataset.v || null; d.close(); }));
+    d.onclick = (e) => { if (e.target === d) d.close(); }; // backdrop click
+    d.onclose = () => { queue.stop(); resolve(value); };
+    wire(d, (v) => { value = v; d.close(); });
+    d.showModal();
+  });
+}
+const phraseBox = (c) => `<div class="dlg-phrase">
+  ${c.clip ? '<button class="play" data-hear aria-label="Hear it">▶</button>' : ''}
+  <div class="text ${c.lang === 'ar' ? 'ar' : ''}" dir="${c.lang === 'ar' ? 'rtl' : 'ltr'}">${esc(c.text)}</div></div>
+  <div class="uses">${c.uses.map((u) => { const g = gameOf(u.game); return `<span class="use" style="background:${g.accent.tint}">${g.icon} ${esc(g.name)} · ${esc(u.where)}</span>`; }).join('')}</div>`;
+const wireHear = (d, c) => { const b = d.querySelector('[data-hear]'); if (b) b.onclick = () => play(clipUrl(c), null, null); };
+
+function recordDialog(clips) {
+  const chars = clips.reduce((n, c) => n + c.chars, 0);
+  const one = clips.length === 1;
+  return openDialog(one ? (clips[0].clip ? '↻ Re-record' : '● Record') : `● Record ${clips.length} phrases`, `
+    <div class="dlg-body">
+      ${one ? phraseBox(clips[0]) : `<div>${clips.slice(0, 6).map((c) => esc(c.text)).join(' · ')}${clips.length > 6 ? ` · +${clips.length - 6} more` : ''}</div>`}
+      <div class="cost"><b>${chars.toLocaleString()}</b><span>characters · ${S.takes} fresh takes${one ? '' : ' each'}</span></div>
+      <div class="meta">Google Text-to-Speech, free up to 1,000,000 characters a month. ${one && clips[0].clip ? 'The middle-length take replaces the clip in the app; you can pick another take afterwards.' : 'The middle-length take goes into the app; you can pick another afterwards.'}</div>
+    </div>
+    <div class="dlg-foot"><button class="btn" data-v="">Cancel</button><button class="btn primary" data-v="go" autofocus>Record</button></div>`,
+    (d) => one && wireHear(d, clips[0])).then((v) => v === 'go');
+}
+
+function flagDialog(c) {
+  const flagged = Boolean(c.flag);
+  const thread = flagged ? `<div class="thread">
+      <div class="bubble you"><small>You · ${esc(c.flag.at)}</small>${esc(c.flag.note || '(no note)')}</div>
+      ${c.flag.reply ? `<div class="bubble claude"><small>🦉 Claude · ${esc(c.flag.repliedAt || '')}</small>${esc(c.flag.reply)}</div>` : '<div class="meta">Claude hasn\'t looked at this yet.</div>'}
+    </div>` : '';
+  return openDialog(flagged ? '⚑ Flagged' : '⚑ Flag for Claude', `
+    <div class="dlg-body">
+      ${phraseBox(c)}
+      ${thread}
+      <div class="dlg-label">${flagged ? 'Update the note' : 'What sounds off?'}</div>
+      <div class="quick">${ISSUES.map((t) => `<button type="button" aria-pressed="${Boolean(c.flag?.note.includes(t))}">${t}</button>`).join('')}</div>
+      <textarea id="note" placeholder="Anything that helps Claude fix it — e.g. “the ع is too soft”">${flagged ? esc(c.flag.note) : ''}</textarea>
+    </div>
+    <div class="dlg-foot"><span class="hint"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> to send · <kbd>Esc</kbd> to cancel</span>
+      ${flagged ? '<button class="btn ok grow" data-v="unflag">✓ Unflag, it\'s fixed</button>' : ''}
+      <button class="btn" data-v="">Cancel</button>
+      <button class="btn ${flagged ? '' : 'danger'}" data-v="save">${flagged ? 'Update note' : '⚑ Flag'}</button>
+    </div>`,
+    (d, done) => {
+      wireHear(d, c);
+      const note = d.querySelector('#note');
+      d.querySelectorAll('.quick button').forEach((b) => (b.onclick = () => {
+        const on = b.getAttribute('aria-pressed') !== 'true', t = b.textContent;
+        b.setAttribute('aria-pressed', on);
+        const rest = note.value.replace(t, '').replace(/^[\s·]+|[\s·]+$/g, '').replace(/(\s*·\s*){2,}/g, ' · ');
+        note.value = on ? (rest ? `${t} · ${rest}` : t) : rest;
+        note.focus();
+      }));
+      note.onkeydown = (e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) done('save'); };
+      setTimeout(() => note.focus(), 30);
+    }).then((v) => (v === 'save' ? { note: d().value.trim() } : v === 'unflag' ? { note: null } : undefined));
+  function d() { return $('dlg').querySelector('#note'); }
+}
+function wire(el) {
+  const c = byKey(el.dataset.key);
+  let heard = null;
+  el.querySelector('.play')?.addEventListener('click', () => playClip(c));
+  el.querySelector('.wave')?.addEventListener('click', () => playClip(c));
+  el.querySelectorAll('.take').forEach((b) => (b.onclick = () => audition(+b.dataset.n)));
+  function audition(n) {
+    if (!c.takes.includes(n)) return;
+    queue.stop(); heard = n;
+    el.querySelectorAll('.take').forEach((x) => x.classList.toggle('auditioning', +x.dataset.n === n));
+    setNow(c, `Take ${n}${c.clip?.take === n ? ' (in the app)' : ''}`);
+    play(takeUrl(c, n), el, null);
+    el.classList.toggle('can-use', c.clip?.take !== n); el.querySelector('.tn').textContent = n;
+  }
+  el._audition = audition;
+  el.querySelector('.use-take').onclick = async () => {
+    try {
+      await api('/api/pick', { key: c.key, n: heard });
+      await load();
+      toast(`✓ Take ${heard} is now the one in the app`);
+    } catch (e) { toast(e.message); }
+  };
+  el.querySelector('.redo, .record').onclick = () => record([c]);
+  async function flag() {
+    const res = await flagDialog(c);
+    if (!res) return;
+    try {
+      await api('/api/flag', { key: c.key, note: res.note });
+      await load();
+      toast(res.note === null ? '✓ Unflagged' : c.flag ? 'Note updated' : '⚑ Flagged — tell Claude to “fix the flagged ones”');
+    } catch (e) { toast(e.message); }
+  }
+  el.querySelector('.flag').onclick = flag;
+  el._flag = flag;
+  el.onmouseenter = () => (hovered = el);
+}
+let hovered = null;
+document.addEventListener('keydown', (e) => {
+  if ($('dlg').open || e.target.closest?.('input, textarea')) return;
+  const target = playingCard || document.activeElement?.closest?.('.card') || hovered;
+  if (e.code === 'Space') { e.preventDefault(); toggleAll(); }
+  else if (e.key === 'ArrowRight') $('next').click();
+  else if (e.key === 'ArrowLeft') $('prev').click();
+  else if (/^[1-9]$/.test(e.key) && +e.key <= S.takes && target) target._audition(+e.key);
+  else if (e.key.toLowerCase() === 'f' && target) target._flag();
+});
+
+load().catch((e) => ($('main').innerHTML = `<div class="empty">Couldn't load the studio: ${esc(e.message)}</div>`));
+</script>
+</body>
+</html>

@@ -38,6 +38,11 @@ function familyFor(role: FontRole): string {
   return I18nManager.isRTL ? ARABIC[role] : LATIN[role];
 }
 
+/** The font set for one script regardless of UI direction (an Arabic letter in an English UI). */
+export function fontsFor(language: 'en' | 'ar'): { readonly [K in FontRole]: string } {
+  return language === 'ar' ? ARABIC : LATIN;
+}
+
 // Object with getters so `FONTS.display` resolves at access time per language.
 export const FONTS = {
   get display() {
