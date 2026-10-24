@@ -26,7 +26,7 @@ export const ar: GameTranslations = {
   },
   // Same voweled spellings as numbers-land, so both share one clip (docs/VOICE.md).
   digits: {
-    d0: 'صِفر',
+    d0: 'صِفْر',
     d1: 'وَاحِد',
     d2: 'اِثنان',
     d3: 'ثَلاثة',
@@ -35,12 +35,12 @@ export const ar: GameTranslations = {
     d6: 'سِتّة',
     d7: 'سَبعة',
     d8: 'ثَمانِية',
-    d9: 'تِسعة',
+    d9: 'تِسْعة',
   },
   warmup: {
     line: 'خط مستقيم',
-    zigzag: 'خط متعرّج',
-    wave: 'موجة',
+    zigzag: 'خطٌ متعرّج',
+    wave: 'مَوْجَةْ',
     arch: 'جسور',
     loops: 'حلقات',
     spiral: 'حلزون',

@@ -1,0 +1,884 @@
+{
+ "ar:أسد": {
+  "file": "ar-710d1f5021.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.34,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:أَربَعة": {
+  "file": "ar-176bb10c31.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.94,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:أَلِف. أَسَد": {
+  "file": "ar-fcc82a4987.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.02,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:اِثنان": {
+  "file": "ar-b1b318964d.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.06,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:اِصنعْ هذا اللون: أخضر": {
+  "file": "ar-d4b7189cec.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.86,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:اِصنعْ هذا اللون: أزرق فاتح": {
+  "file": "ar-9da5b20cad.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 3.17,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:اِصنعْ هذا اللون: برتقالي": {
+  "file": "ar-2efbda5ea4.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.62,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:اِصنعْ هذا اللون: بنفسجي": {
+  "file": "ar-0b6237bc0e.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.54,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:اِصنعْ هذا اللون: بني": {
+  "file": "ar-cf30bb53e8.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.33,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:اِصنعْ هذا اللون: وردي": {
+  "file": "ar-19535c2de3.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.66,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:بطة": {
+  "file": "ar-d93dde9de2.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.3,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:بقرة": {
+  "file": "ar-6e3a43430c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.46,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:بَاء. بَطَّة": {
+  "file": "ar-6af0459883.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.9,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:تَاء. تُفَّاحَة": {
+  "file": "ar-345c9e85d8.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.33,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:تِسْعة": {
+  "file": "ar-d1808c0ec1.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.3,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:ثَاء. ثَعْلَب": {
+  "file": "ar-eb30785d72.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.14,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:ثَلاثة": {
+  "file": "ar-d27db61ade.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.46,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:ثَمانِية": {
+  "file": "ar-d4cedf20e2.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.49,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:جسور": {
+  "file": "ar-977f6348f2.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.42,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:جِيم. جَمَل": {
+  "file": "ar-502ed9d774.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.02,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:حصان": {
+  "file": "ar-b514c5eb43.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.18,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:حلزون": {
+  "file": "ar-1b6a094b4b.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.86,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:حلقات": {
+  "file": "ar-a5aca423d8.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.89,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:حَاء. حِصَان": {
+  "file": "ar-26222c588c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.62,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:خروف": {
+  "file": "ar-c6b2fc7557.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.13,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:خط مستقيم": {
+  "file": "ar-f920085940.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.42,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:خطٌ متعرّج": {
+  "file": "ar-6521ce96c3.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.3,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:خَاء. خَرُوف": {
+  "file": "ar-bbbc71dc06.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.09,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:خَمسة": {
+  "file": "ar-b368e025bb.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.82,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:دائرة": {
+  "file": "ar-923e9db47e.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.46,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:ديك": {
+  "file": "ar-928b4c33f8.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.06,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:دَال. دُبّ": {
+  "file": "ar-195fe8a769.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.82,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:ذَال. ذُبَاب": {
+  "file": "ar-e45f565319.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.06,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:رَاء. رِيشَة": {
+  "file": "ar-01a835506a.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.9,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:زَاي. زَرَافَة": {
+  "file": "ar-cdf6fd6bea.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.09,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:سَبعة": {
+  "file": "ar-dcdc1a9ffb.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.77,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:سِتّة": {
+  "file": "ar-155bb9fb6f.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.46,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:سِين. سَمَكَة": {
+  "file": "ar-2d2788b549.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.14,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:شِين. شَمْس": {
+  "file": "ar-2016a6f1a5.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.02,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:صَاد. صَارُوخ": {
+  "file": "ar-b0170b3aeb.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.02,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:صِفْر": {
+  "file": "ar-2f929f706c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.77,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:ضفدع": {
+  "file": "ar-6c561b6ca6.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.13,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:ضَاد. ضِفْدَع": {
+  "file": "ar-0c7b2eb20b.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.94,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:طَاء. طَائِرَة": {
+  "file": "ar-738950ab97.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.14,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:ظَاء. ظَرْف": {
+  "file": "ar-8ed1d07b3f.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.09,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:عصفور": {
+  "file": "ar-6f1d3624c2.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.54,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:عَشَرة": {
+  "file": "ar-14f1f2537a.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.1,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:عَيْن. عُصْفُور": {
+  "file": "ar-330d056a57.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.14,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:غَيْن. غَزَالَة": {
+  "file": "ar-02b62393ed.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.97,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:فيل": {
+  "file": "ar-90d8681b6b.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.82,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:فَاء. فِيل": {
+  "file": "ar-fababd64ae.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.9,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:قطة": {
+  "file": "ar-6dc3b679bc.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.3,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:قَاف. قِطَّة": {
+  "file": "ar-e43da475af.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.58,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:كلب": {
+  "file": "ar-d1494929d6.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.1,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:كَاف. كُرَة": {
+  "file": "ar-8c8c44fa75.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.18,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:لَام. لَيْمُون": {
+  "file": "ar-925a4fd350.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.09,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:مَوْجَةْ": {
+  "file": "ar-a4d12ecf56.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.89,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:مِيم. مَوْزَة": {
+  "file": "ar-27f20e04dd.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.02,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:نحلة": {
+  "file": "ar-c7dc3ae2ce.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.25,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:نُون. نَجْمَة": {
+  "file": "ar-a06e7e2599.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.97,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:هَاء. هَاتِف": {
+  "file": "ar-aec1a75c74.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.14,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:وَاحِد": {
+  "file": "ar-0252b4c8d0.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.06,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:وَاو. وَرْدَة": {
+  "file": "ar-0f9c75a722.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.97,
+  "generatedAt": "2026-10-24"
+ },
+ "ar:يَاء. يَد": {
+  "file": "ar-8e0f2cbfbf.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.02,
+  "generatedAt": "2026-10-24"
+ },
+ "en:A! Apple": {
+  "file": "en-b2a53f4346.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.02,
+  "generatedAt": "2026-10-24"
+ },
+ "en:B! Ball": {
+  "file": "en-98205166b0.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.86,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Bee": {
+  "file": "en-a43cd57f4a.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.98,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Bird": {
+  "file": "en-145be28153.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.22,
+  "generatedAt": "2026-10-24"
+ },
+ "en:C! Cat": {
+  "file": "en-304012c7a0.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.74,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Cat": {
+  "file": "en-5a8965f16e.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.62,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Cow": {
+  "file": "en-6bb8f6dac6.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.98,
+  "generatedAt": "2026-10-24"
+ },
+ "en:D! Dog": {
+  "file": "en-69d1c2a717.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.18,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Dog": {
+  "file": "en-5a574a6de7.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.42,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Duck": {
+  "file": "en-202bb3525e.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.25,
+  "generatedAt": "2026-10-24"
+ },
+ "en:E! Egg": {
+  "file": "en-a57d328e2e.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.09,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Elephant": {
+  "file": "en-e81509174a.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.77,
+  "generatedAt": "2026-10-24"
+ },
+ "en:F! Fish": {
+  "file": "en-8c4cec8d69.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.37,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Frog": {
+  "file": "en-10e6b0c75b.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.77,
+  "generatedAt": "2026-10-24"
+ },
+ "en:G! Goat": {
+  "file": "en-7fef1478ce.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.42,
+  "generatedAt": "2026-10-24"
+ },
+ "en:H! Hat": {
+  "file": "en-2a42887a23.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.73,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Horse": {
+  "file": "en-588360ce75.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.25,
+  "generatedAt": "2026-10-24"
+ },
+ "en:I! Ice cream": {
+  "file": "en-48eece9ca8.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.97,
+  "generatedAt": "2026-10-24"
+ },
+ "en:J! Juice": {
+  "file": "en-a1b97d5908.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.54,
+  "generatedAt": "2026-10-24"
+ },
+ "en:K! Kite": {
+  "file": "en-4bc6e42f70.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.01,
+  "generatedAt": "2026-10-24"
+ },
+ "en:L! Lion": {
+  "file": "en-8e47763b4c.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.42,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Lion": {
+  "file": "en-7f43a748df.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.25,
+  "generatedAt": "2026-10-24"
+ },
+ "en:M! Moon": {
+  "file": "en-88053fe1d8.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.85,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Make this color: Brown": {
+  "file": "en-779580d1ba.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.09,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Make this color: Green": {
+  "file": "en-b3e46b6be7.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.14,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Make this color: Light Blue": {
+  "file": "en-377ec6e310.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.21,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Make this color: Orange": {
+  "file": "en-9686875817.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.06,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Make this color: Pink": {
+  "file": "en-c7744e35c0.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.97,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Make this color: Purple": {
+  "file": "en-5eb6b0277b.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.94,
+  "generatedAt": "2026-10-24"
+ },
+ "en:N! Nose": {
+  "file": "en-bdbdc59e27.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.06,
+  "generatedAt": "2026-10-24"
+ },
+ "en:O! Orange": {
+  "file": "en-e2427868b3.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.3,
+  "generatedAt": "2026-10-24"
+ },
+ "en:P! Panda": {
+  "file": "en-066f0b36ef.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.02,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Q! Queen": {
+  "file": "en-061f762907.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.14,
+  "generatedAt": "2026-10-24"
+ },
+ "en:R! Rabbit": {
+  "file": "en-2e3a128421.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.45,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Rooster": {
+  "file": "en-f5d6553414.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.1,
+  "generatedAt": "2026-10-24"
+ },
+ "en:S! Sun": {
+  "file": "en-7afa9f668c.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.73,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Sheep": {
+  "file": "en-65313ea473.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.77,
+  "generatedAt": "2026-10-24"
+ },
+ "en:T! Tree": {
+  "file": "en-11e8d9ab45.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.01,
+  "generatedAt": "2026-10-24"
+ },
+ "en:U! Umbrella": {
+  "file": "en-1878344bc9.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.37,
+  "generatedAt": "2026-10-24"
+ },
+ "en:V! Van": {
+  "file": "en-c76b0cdb93.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.66,
+  "generatedAt": "2026-10-24"
+ },
+ "en:W! Whale": {
+  "file": "en-a19df39d37.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.42,
+  "generatedAt": "2026-10-24"
+ },
+ "en:X! Xylophone": {
+  "file": "en-9ac56f76ce.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.94,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Y! Yarn": {
+  "file": "en-201ad2f79f.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.06,
+  "generatedAt": "2026-10-24"
+ },
+ "en:Z! Zebra": {
+  "file": "en-5c50cc0110.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.66,
+  "generatedAt": "2026-10-24"
+ },
+ "en:a circle": {
+  "file": "en-f2bc6e8af4.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.01,
+  "generatedAt": "2026-10-24"
+ },
+ "en:a spiral": {
+  "file": "en-9b4da45f52.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.01,
+  "generatedAt": "2026-10-24"
+ },
+ "en:a straight line": {
+  "file": "en-ed681435c2.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.42,
+  "generatedAt": "2026-10-24"
+ },
+ "en:a wave": {
+  "file": "en-4db1c8558d.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.22,
+  "generatedAt": "2026-10-24"
+ },
+ "en:a zigzag": {
+  "file": "en-c02b92dee4.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.61,
+  "generatedAt": "2026-10-24"
+ },
+ "en:bridges": {
+  "file": "en-eafd56c77b.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.22,
+  "generatedAt": "2026-10-24"
+ },
+ "en:eight": {
+  "file": "en-f3fb7d077f.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.5,
+  "generatedAt": "2026-10-24"
+ },
+ "en:five": {
+  "file": "en-575203c3db.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.89,
+  "generatedAt": "2026-10-24"
+ },
+ "en:four": {
+  "file": "en-358f767136.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.06,
+  "generatedAt": "2026-10-24"
+ },
+ "en:loops": {
+  "file": "en-ff063fbb37.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.7,
+  "generatedAt": "2026-10-24"
+ },
+ "en:nine": {
+  "file": "en-9013f0377c.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.7,
+  "generatedAt": "2026-10-24"
+ },
+ "en:one": {
+  "file": "en-25e4b04dc4.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.58,
+  "generatedAt": "2026-10-24"
+ },
+ "en:seven": {
+  "file": "en-ca41575bd4.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.65,
+  "generatedAt": "2026-10-24"
+ },
+ "en:six": {
+  "file": "en-fb8b5c7459.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.77,
+  "generatedAt": "2026-10-24"
+ },
+ "en:ten": {
+  "file": "en-3d4b0754d0.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.77,
+  "generatedAt": "2026-10-24"
+ },
+ "en:three": {
+  "file": "en-d45897f2e1.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.77,
+  "generatedAt": "2026-10-24"
+ },
+ "en:two": {
+  "file": "en-a6cf6983b6.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.65,
+  "generatedAt": "2026-10-24"
+ },
+ "en:zero": {
+  "file": "en-da06822fc9.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.46,
+  "generatedAt": "2026-10-24"
+ }
+}

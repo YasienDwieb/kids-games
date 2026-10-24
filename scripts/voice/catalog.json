@@ -17,27 +17,27 @@
  },
  {
   "lang": "ar",
-  "text": "اصنع هذا اللون: أخضر"
+  "text": "اِصنعْ هذا اللون: أخضر"
  },
  {
   "lang": "ar",
-  "text": "اصنع هذا اللون: أزرق فاتح"
+  "text": "اِصنعْ هذا اللون: أزرق فاتح"
  },
  {
   "lang": "ar",
-  "text": "اصنع هذا اللون: برتقالي"
+  "text": "اِصنعْ هذا اللون: برتقالي"
  },
  {
   "lang": "ar",
-  "text": "اصنع هذا اللون: بنفسجي"
+  "text": "اِصنعْ هذا اللون: بنفسجي"
  },
  {
   "lang": "ar",
-  "text": "اصنع هذا اللون: بني"
+  "text": "اِصنعْ هذا اللون: بني"
  },
  {
   "lang": "ar",
-  "text": "اصنع هذا اللون: وردي"
+  "text": "اِصنعْ هذا اللون: وردي"
  },
  {
   "lang": "ar",
@@ -56,7 +56,7 @@
   "text": "تَاء. تُفَّاحَة"
  },
  {
-  "text": "تِسعة",
+  "text": "تِسْعة",
   "lang": "ar"
  },
  {
@@ -104,7 +104,7 @@
   "text": "خروف"
  },
  {
-  "text": "خط متعرّج",
+  "text": "خطٌ متعرّج",
   "lang": "ar"
  },
  {
@@ -160,7 +160,7 @@
   "text": "صَاد. صَارُوخ"
  },
  {
-  "text": "صِفر",
+  "text": "صِفْر",
   "lang": "ar"
  },
  {
@@ -224,7 +224,7 @@
   "text": "لَام. لَيْمُون"
  },
  {
-  "text": "موجة",
+  "text": "مَوْجَةْ",
   "lang": "ar"
  },
  {
@@ -277,11 +277,11 @@
  },
  {
   "lang": "en",
-  "text": "A. Apple"
+  "text": "A! Apple"
  },
  {
   "lang": "en",
-  "text": "B. Ball"
+  "text": "B! Ball"
  },
  {
   "lang": "en",
@@ -297,7 +297,7 @@
  },
  {
   "lang": "en",
-  "text": "C. Cat"
+  "text": "C! Cat"
  },
  {
   "lang": "en",
@@ -309,7 +309,7 @@
  },
  {
   "lang": "en",
-  "text": "D. Dog"
+  "text": "D! Dog"
  },
  {
   "lang": "en",
@@ -321,7 +321,7 @@
  },
  {
   "lang": "en",
-  "text": "E. Egg"
+  "text": "E! Egg"
  },
  {
   "text": "eight",
@@ -333,7 +333,7 @@
  },
  {
   "lang": "en",
-  "text": "F. Fish"
+  "text": "F! Fish"
  },
  {
   "text": "five",
@@ -349,11 +349,11 @@
  },
  {
   "lang": "en",
-  "text": "G. Goat"
+  "text": "G! Goat"
  },
  {
   "lang": "en",
-  "text": "H. Hat"
+  "text": "H! Hat"
  },
  {
   "lang": "en",
@@ -361,19 +361,19 @@
  },
  {
   "lang": "en",
-  "text": "I. Ice cream"
+  "text": "I! Ice cream"
  },
  {
   "lang": "en",
-  "text": "J. Juice"
+  "text": "J! Juice"
  },
  {
   "lang": "en",
-  "text": "K. Kite"
+  "text": "K! Kite"
  },
  {
   "lang": "en",
-  "text": "L. Lion"
+  "text": "L! Lion"
  },
  {
   "lang": "en",
@@ -385,7 +385,7 @@
  },
  {
   "lang": "en",
-  "text": "M. Moon"
+  "text": "M! Moon"
  },
  {
   "lang": "en",
@@ -413,7 +413,7 @@
  },
  {
   "lang": "en",
-  "text": "N. Nose"
+  "text": "N! Nose"
  },
  {
   "text": "nine",
@@ -421,7 +421,7 @@
  },
  {
   "lang": "en",
-  "text": "O. Orange"
+  "text": "O! Orange"
  },
  {
   "text": "one",
@@ -429,15 +429,15 @@
  },
  {
   "lang": "en",
-  "text": "P. Panda"
+  "text": "P! Panda"
  },
  {
   "lang": "en",
-  "text": "Q. Queen"
+  "text": "Q! Queen"
  },
  {
   "lang": "en",
-  "text": "R. Rabbit"
+  "text": "R! Rabbit"
  },
  {
   "lang": "en",
@@ -445,7 +445,7 @@
  },
  {
   "lang": "en",
-  "text": "S. Sun"
+  "text": "S! Sun"
  },
  {
   "text": "seven",
@@ -461,7 +461,7 @@
  },
  {
   "lang": "en",
-  "text": "T. Tree"
+  "text": "T! Tree"
  },
  {
   "lang": "en",
@@ -477,27 +477,27 @@
  },
  {
   "lang": "en",
-  "text": "U. Umbrella"
+  "text": "U! Umbrella"
  },
  {
   "lang": "en",
-  "text": "V. Van"
+  "text": "V! Van"
  },
  {
   "lang": "en",
-  "text": "W. Whale"
+  "text": "W! Whale"
  },
  {
   "lang": "en",
-  "text": "X. Xylophone"
+  "text": "X! Xylophone"
  },
  {
   "lang": "en",
-  "text": "Y. Yarn"
+  "text": "Y! Yarn"
  },
  {
   "lang": "en",
-  "text": "Z. Zebra"
+  "text": "Z! Zebra"
  },
  {
   "text": "zero",

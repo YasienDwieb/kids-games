@@ -9,7 +9,7 @@ const lines = voiceCatalog();
 const keys = lines.map((l) => `${l.lang}:${l.text}`);
 
 it('includes the agreed letter patterns', () => {
-  expect(keys).toContain('en:Q. Queen');
+  expect(keys).toContain('en:Q! Queen');
   expect(keys).toContain('ar:كَاف. كُرَة');
 });
 
@@ -30,7 +30,8 @@ it('has no duplicates or blanks', () => {
 it('follows the Arabic writing rules', () => {
   const ar = lines.filter((l) => l.lang === 'ar').map((l) => l.text);
   expect(ar.filter((t) => /هْ(?=$|[ .،!؟:])/.test(t))).toEqual([]); // ة, not هْ
-  expect(ar.filter((t) => /ْ(?=$|[ .،!؟:])/.test(t))).toEqual([]); // no TTS-only trailing sukun
+  // No TTS-only sukun closing a phrase; a real one («اِصنعْ») or a pausal ةْ («مَوْجَةْ») is fine.
+  expect(ar.filter((t) => /(?<!ة)ْ(?=$|[.،!؟:])/.test(t))).toEqual([]);
   expect(ar.filter((t) => /^[ء-ي]\./.test(t))).toEqual([]); // letter name, not bare glyph
 });
 

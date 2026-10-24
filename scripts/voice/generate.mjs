@@ -38,7 +38,18 @@ function parseArgs(argv) {
   return args;
 }
 
-async function synthesize(lang, text) {
+// Google rate-limits Chirp per minute; wait it out instead of failing the run.
+async function synthesize(lang, text, attempt = 1) {
+  try {
+    return await request(lang, text);
+  } catch (e) {
+    if (!e.message.startsWith('HTTP 429') || attempt >= 6) throw e;
+    await new Promise((r) => setTimeout(r, 15000 * attempt));
+    return synthesize(lang, text, attempt + 1);
+  }
+}
+
+async function request(lang, text) {
   const voice = CONFIG.voices[lang];
   const res = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.GOOGLE_TTS_API_KEY}`, {
     method: 'POST',
@@ -192,10 +203,17 @@ async function main() {
   const sorted = Object.fromEntries(Object.keys(lock).sort().map((k) => [k, lock[k]]));
   writeFileSync(LOCK, JSON.stringify(sorted, null, 1) + '\n');
   writeMap(sorted);
-  if (review.length) writeReview(review);
+  // The review page always shows every clip, newest run first.
+  const touched = new Set(review.map((r) => r.key));
+  writeReview([
+    ...review,
+    ...Object.keys(sorted)
+      .filter((k) => !touched.has(k))
+      .map((key) => ({ key, takes: takeFiles(key), chosen: sorted[key].take })),
+  ]);
 
   console.log(`\n${review.length} clip(s) written, ${Object.keys(sorted).length} total.`);
-  if (review.length) console.log(`Review: ${join(TAKES_DIR, 'review.html')}`);
+  console.log(`Review: ${join(TAKES_DIR, 'review.html')}`);
   if (failed.length) {
     console.error(`${failed.length} take(s) failed:\n  ${failed.join('\n  ')}`);
     process.exitCode = 1;

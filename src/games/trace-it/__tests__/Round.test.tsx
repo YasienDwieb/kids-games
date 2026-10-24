@@ -2,7 +2,11 @@ import { Text } from 'react-native';
 import { act, create } from 'react-test-renderer';
 import '@/games/_shared/letters/i18n';
 import '../i18n';
+import { createAudioPlayer } from 'expo-audio';
+import { clipKey } from '@/sdk/speech/clipKey';
+import { CLIPS } from '@/sdk/speech/clips.generated';
 import { charsFor } from '../catalog';
+import { charPhrase } from '../phrase';
 import { MascotHelper } from '@/sdk';
 import { DONE_HOLD_MS, Round } from '../components/Round';
 import { TraceBoard } from '../components/TraceBoard';
@@ -13,6 +17,20 @@ import { progressStore } from '../progress';
 const mockCelebrate = jest.fn((..._args: unknown[]) => Promise.resolve());
 jest.mock('@/sdk', () => ({ ...jest.requireActual('@/sdk'), useCelebrate: () => mockCelebrate }));
 const mockSpeak = jest.fn();
+// In jest every audio file resolves to the same stub; give each voice clip its own
+// module id so its player can be told apart from the sound effects'.
+jest.mock('@/sdk/speech/clips.generated', () => {
+  const { CLIPS } = jest.requireActual('@/sdk/speech/clips.generated');
+  return { CLIPS: Object.fromEntries(Object.keys(CLIPS).map((k, i) => [k, 9000 + i])) };
+});
+// Voice clips play through cached expo-audio players; keep each one by module.
+const players = new Map<unknown, { play: jest.Mock }>();
+const makePlayer = (createAudioPlayer as jest.Mock).getMockImplementation()!;
+(createAudioPlayer as jest.Mock).mockImplementation((module: unknown) => {
+  const player = makePlayer(module);
+  players.set(module, player);
+  return player;
+});
 jest.mock('expo-speech', () => ({ speak: (...a: unknown[]) => mockSpeak(...a), stop: jest.fn() }));
 
 const flush = () => act(async () => {
@@ -154,12 +172,14 @@ it('a warm-up sticker says "I can draw", a letter sticker "I can write"', () => 
 
 it('speaks an Arabic letter in Arabic in an English UI', async () => {
   mockSpeak.mockClear();
+  players.forEach((p) => p.play.mockClear());
   const alef = charsFor('letters', 'arabic')[0];
+  const { text, lang } = charPhrase(alef);
+  expect(lang).toBe('ar');
   const tree = await mount(<Round char={alef} mode="full" onFinished={jest.fn()} />);
   await flush();
-  expect(mockSpeak).toHaveBeenCalled();
-  const [text, opts] = mockSpeak.mock.calls[0] as [string, { language: string }];
-  expect(opts.language).toBe('ar');
-  expect(text).toMatch(/[\u0600-\u06FF]/);
+  // Its bundled Arabic clip plays, not the device voice.
+  expect(players.get(CLIPS[clipKey('ar', text)])?.play).toHaveBeenCalled();
+  expect(mockSpeak).not.toHaveBeenCalled();
   act(() => tree.unmount());
 });

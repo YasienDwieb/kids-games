@@ -19,7 +19,7 @@ text in the app and the text that was recorded can't drift apart.
 
 | What | Pattern | English | Arabic |
 |---|---|---|---|
-| Letter | `<name>. <Word>` | `Q. Queen` | `كَاف. كُرَة` |
+| Letter | `<name>! <Word>` (EN) / `<name>. <Word>` (AR) | `V! Van` | `كَاف. كُرَة` |
 | Number | `<name>` | `three` | `ثَلاثة` |
 | Animal | `<name>` | `Lion` | `أسد` |
 | Colour goal | `<makeThisColor> <colour>` | `Make this color: Green` | `اصنع هذا اللون: أخضر` |
@@ -31,15 +31,18 @@ Write the text **the way a reader would write it**. The voice gets that text, un
 
 - **Never respell for pronunciation** (`cue`, `eks`, `Ay`). If a clip sounds wrong, re-roll
   it (`--redo`); the text stays correct.
-- English letter name = the uppercase letter itself (`Q`), and the word starts with a capital
-  (`Q. Queen`).
+- English letter name = the uppercase letter itself (`Q`), followed by `!` and the word with a
+  capital (`Q! Queen`) — with a period the voice reads `V.` as "versus".
 - Arabic letter name = the letter's written name (`كَاف`), never the bare glyph (`ك`) — the
   voice reads glyphs badly.
 - Arabic strings that exist only to be spoken (letter names, example words, number names)
   carry full tashkeel. Strings also shown on screen (animal and colour names) stay as they
   are displayed; add tashkeel only if a clip keeps misreading them.
 - Arabic spelling is always correct: `ة` not `هْ`, and no extra sukun on the last letter
-  added only to coax a TTS engine.
+  added only to coax a TTS engine. A sukun the word really takes is fine: «اِصنعْ», or a
+  pausal «ةْ» when the full tashkeel reads better («مَوْجَةْ»).
+- When a clip keeps misreading an Arabic word, add the vowel mark that disambiguates it
+  (`صِفْر`, `تِسْعة`, `خطٌ`) — a correct spelling, not a respelling.
 - Numbers are spelled as words, not digits.
 
 `src/games/__tests__/voiceCatalog.test.ts` enforces the Arabic rules on every spoken phrase.

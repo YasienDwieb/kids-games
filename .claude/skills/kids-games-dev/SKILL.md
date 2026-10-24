@@ -221,6 +221,19 @@ const entry = getAsset('sfx.pop');
    ```
 3. **Always prefer reusing an existing tagged asset** before adding a new file.
 
+### Spoken prompts (`useSpeech`)
+
+Anything a game says aloud goes through `useSpeech().speak(text)`, which plays a bundled
+Chirp 3 HD "Leda" clip for `"<lang>:<text>"` and only falls back to device TTS. Follow
+`docs/VOICE.md`:
+
+1. Build the text in the game's `phrase.ts` (one pure builder used by the component **and**
+   `src/games/voiceCatalog.ts`); add the new phrases to the catalog.
+2. Write the text as it is written — no phonetic respellings; Arabic with correct tashkeel.
+3. `npm run voice:catalog && npm run voice:generate`, listen on
+   `scripts/voice/.takes/review.html`, fix with `--pick`/`--redo`, commit the clips.
+4. `src/games/__tests__/voiceClips.test.ts` fails until every phrase has a clip.
+
 ---
 
 ## 4. Layout decisions
