@@ -27,7 +27,9 @@ import {
   SPACING,
   useSpeech,
   useTranslation,
+  currentLanguage,
 } from '@/sdk';
+import { letterPhrase } from '@/games/_shared/letters/phrase';
 import { ListenFindBoard, useListenFind, makeOrderSeed } from '@/games/_shared/listen-find';
 import { LetterHero } from './components/LetterHero';
 import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
@@ -83,10 +85,8 @@ function LetterLandRun({
   const speakTarget = useCallback(() => {
     const target = targetRef.current;
     if (!target) return;
-    const name = t('letter-land:names.' + target.id);
-    const word = t('letter-land:words.' + target.word);
-    void speak(t('letter-land:speak.carrier', { name, word }));
-  }, [t, speak]);
+    void speak(letterPhrase(target, currentLanguage()));
+  }, [speak]);
 
   const lf = useListenFind({
     gameId: 'letter-land',

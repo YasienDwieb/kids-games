@@ -68,8 +68,18 @@ A Claude Code skill is included at `.claude/skills/kids-games-dev/SKILL.md`. It 
 
 ## License of contributions
 
-This project is licensed under the [Apache License 2.0](LICENSE). Unless you state
-otherwise, any contribution you submit for inclusion (a game, code, or docs) is
-provided under the same Apache-2.0 terms (see Section 5 of the license). Please
-don't submit assets or code you don't have the rights to; log any third-party
+The project is distributed under the [PolyForm Shield License 1.0.0](LICENSE).
+Contributions come in under different terms: by submitting a contribution (a game,
+code, or docs), you license it to the project under the
+[Apache License 2.0](LICENSES/Apache-2.0.txt), so the maintainers can include it in
+Kids Zone, ship it on the app stores, and relicense it in future versions.
+
+Sign off every commit to certify you have the right to submit it under those terms,
+per the [Developer Certificate of Origin](https://developercertificate.org/):
+
+```bash
+git commit -s -m "feat: my change"
+```
+
+Please don't submit assets or code you don't have the rights to; log any third-party
 asset in [CREDITS.md](CREDITS.md) before importing it.

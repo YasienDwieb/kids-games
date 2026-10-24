@@ -10,7 +10,7 @@
 | **Guided flow** | ✅ 12 units |
 | **Persistence** | `useLevels` |
 | **Engine** | shared `listen-find` board (own copy of generator) |
-| **Code** | ~940 LOC + 640 test LOC · 11 real animal sound clips (CC0/PD) · 12 OpenMoji PNGs |
+| **Code** | ~940 LOC + 640 test LOC · 11 real animal sound clips (CC0/PD) · 12 Noto emoji PNGs |
 | **Home order** | first tile on Home |
 
 ## 1. Concept & learning goal

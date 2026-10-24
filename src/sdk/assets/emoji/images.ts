@@ -125,6 +125,8 @@ export const EMOJI_IMAGES: Record<string, ImageSourcePropType> = {
   "🎉": require("./png/1F389.png"),
   "💡": require("./png/1F4A1.png"),
   "🏆": require("./png/1F3C6.png"),
+  // Trace It home tile
+  "✏": require("./png/270F.png"),
 };
 
 /** Resolve an emoji glyph to its bundled image, or undefined if not available. */

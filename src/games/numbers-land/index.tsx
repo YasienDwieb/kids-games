@@ -22,7 +22,9 @@ import {
   SPACING,
   useSpeech,
   useTranslation,
+  currentLanguage,
 } from '@/sdk';
+import { numberPhrase } from './phrase';
 import { ListenFindBoard, useListenFind, makeOrderSeed } from '@/games/_shared/listen-find';
 import { NumberHero } from './components/NumberHero';
 import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
@@ -69,9 +71,8 @@ function NumbersLandRun({
   const speakTarget = useCallback(() => {
     const target = targetRef.current;
     if (!target) return;
-    const name = t('numbers-land:names.' + target.id);
-    void speak(t('numbers-land:speak.carrier', { name }));
-  }, [t, speak]);
+    void speak(numberPhrase(target.id, currentLanguage()));
+  }, [speak]);
 
   const lf = useListenFind({
     gameId: 'numbers-land',

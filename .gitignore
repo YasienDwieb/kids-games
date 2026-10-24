@@ -62,3 +62,12 @@ fastlane/test_output
 
 # Store screenshot pipeline output (screenshots/capture.sh, render.js)
 screenshots/out/
+
+# Voice clip takes + review page (scripts/voice/generate.mjs)
+scripts/voice/.takes/
+
+# Plan execution scratch
+.superpowers/
+
+# EAS local signing credentials (keystore paths/passwords)
+credentials.json

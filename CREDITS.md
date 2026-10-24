@@ -7,19 +7,11 @@ license. Add an entry **before** importing any new third-party asset.
 
 ### Google Noto Emoji — emoji artwork
 
-- **Used for:** emoji drawn as images across the app's games and screens (`src/sdk/assets/emoji/png/`), resolved
+- **Used for:** emoji drawn as images across the app's games and screens, including Animal Safari's animal pictures (`src/sdk/assets/emoji/png/`), resolved
   via `src/sdk/assets/emoji/images.ts` and rendered through the `EmojiImage` SDK primitive.
 - **Source:** https://github.com/googlefonts/noto-emoji — © Google Inc.
 - **License:** Apache License 2.0 (emoji images). https://www.apache.org/licenses/LICENSE-2.0
 - **Terms honored:** attribution (this entry). Commercial use permitted; no share-alike.
-
-### OpenMoji — Animal Safari illustrations
-
-- **Used for:** Animal Safari's animal pictures (`src/sdk/assets/images/animals/`).
-- **Source:** https://openmoji.org — all emojis designed by OpenMoji, the open-source emoji and icon project.
-- **License:** CC BY-SA 4.0. https://creativecommons.org/licenses/by-sa/4.0/
-- **Terms honored:** attribution required wherever the images are used (including in-app),
-  not yet shown in the app. Per-file sources: `src/sdk/assets/images/animals/CREDITS.md`.
 
 ### Kenney — Background Elements (backdrop)
 
@@ -101,6 +93,19 @@ license. Add an entry **before** importing any new third-party asset.
   project owner confirmed permit commercial use in this app.
 - **Processing:** trimmed of silence, mono AAC 64 kbps at 44.1 kHz, loudness-matched to the
   Arabic clips (−23.7 LUFS integrated, peak ≤ −6 dBFS).
+
+### Google Cloud Text-to-Speech (Chirp 3 HD) — spoken prompts
+
+- **Used for:** every phrase the games speak — letters, numbers, animals, colour goals and
+  Trace It names, in English and Arabic (`src/sdk/assets/audio/speech/*.m4a`), played by
+  `useSpeech()`.
+- **Source:** generated with Google Cloud Text-to-Speech, Chirp 3 HD voice "Leda"
+  (`en-US-Chirp3-HD-Leda`, `ar-XA-Chirp3-HD-Leda`), 2026-10-24, on the project's Google
+  Cloud account, via `scripts/voice/generate.mjs`.
+- **License:** generated output used under the Google Cloud terms, which assign no
+  ownership claim to Google over generated content.
+- **Processing:** median-length take of three, loudness-normalized to the house level
+  (≈ −25 dBFS active RMS, peak ≤ −6 dBFS), mono AAC 64 kbps.
 
 ### Kenney — feedback SFX
 

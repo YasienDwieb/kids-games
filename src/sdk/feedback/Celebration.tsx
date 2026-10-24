@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { holdVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
+import { stopSpeech } from '@/sdk/speech/useSpeech';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { LevelUp } from './LevelUp';
@@ -136,6 +137,7 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
       // Hold the voice window so the next prompt, sticker toast or level-up waits.
       let voiceMs = 0;
       if (options.voice ?? options.praise !== false) {
+        stopSpeech(); // the child answered; the prompt mustn't talk over the praise
         if (play(praiseIntent(n), { haptic: false })) {
           voiceMs = (PRAISE_MS[currentLanguage()] ?? PRAISE_MS.en)[n - 1] + PRAISE_TAIL_MS;
           holdVoice(voiceMs);

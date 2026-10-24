@@ -9,7 +9,7 @@ type EmojiImageProps = {
 };
 
 /**
- * Renders an emoji as its bundled OpenMoji image for consistent, themable art
+ * Renders an emoji as its bundled Noto emoji image for consistent, themable art
  * across devices; falls back to the system-font glyph for any unmapped emoji.
  */
 export function EmojiImage({ emoji, size, style }: EmojiImageProps) {
