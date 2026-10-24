@@ -233,6 +233,9 @@ Chirp 3 HD "Leda" clip for `"<lang>:<text>"` and only falls back to device TTS. 
 3. `npm run voice:catalog && npm run voice:generate`, listen on
    `scripts/voice/.takes/review.html`, fix with `--pick`/`--redo`, commit the clips.
 4. `src/games/__tests__/voiceClips.test.ts` fails until every phrase has a clip.
+5. Tag each catalog line with where it's heard (`{ game, where }`) so the Voice Studio
+   (`npm run voice:studio`) can show it. When asked to fix flagged clips, follow
+   "Fixing flagged clips" in `docs/VOICE.md` (reply, never unflag).
 
 ---
 
