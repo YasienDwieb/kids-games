@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { createStore } from '@/sdk/storage/createStore';
 import { levelInfo } from '@/sdk/player/levels';
+import { trackRound } from '@/sdk/analytics/client';
 import { STARS_PER_STICKER, nextSticker } from './stickers';
 
 /**
@@ -81,6 +82,7 @@ let queue: Promise<unknown> = Promise.resolve();
  * Safe to fire and forget from game code.
  */
 export function awardStars(gameId: string, stars = 1): Promise<string[]> {
+  if (stars > 0) trackRound(gameId, stars);
   const run = queue.then(async () => {
     if (stars <= 0) return [];
     const cur = await rewardsStore.get();

@@ -27,6 +27,7 @@ import { bootstrapLanguage } from './src/sdk/i18n/useLanguage';
 import { reloadApp, settleReload } from './src/sdk/i18n/reload';
 import './src/games'; // side-effect: registers all games + their translations
 import './src/flow'; // side-effect: registers flow units + topics
+import { initAnalytics } from './src/sdk/analytics/init';
 
 // @react-three/fiber 9 still uses THREE.Clock; three 0.18x warns on every Canvas mount.
 // Remounting a Lulu Canvas logs this on Android GL; harmless.
@@ -56,6 +57,10 @@ export default function App() {
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(
       (e) => console.warn('Failed to lock orientation to landscape', e)
     );
+  }, []);
+
+  useEffect(() => {
+    initAnalytics();
   }, []);
 
   // Sync language + RTL with persisted settings before first paint. If the
