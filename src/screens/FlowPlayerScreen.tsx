@@ -6,6 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
   awardStars, CelebrationProvider, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
+  track, usePlaySession,
   FONTS, FONT_SIZES, COLORS, SPACING, TOUCH_TARGET,
 } from '@/sdk';
 import { BackButton } from '../components/common';
@@ -38,6 +39,14 @@ export function FlowPlayerScreen({ navigation }: Props) {
   );
   const { status, unit, advance, step, total, gameId } = useFlow({ adapters });
   const progress = total > 0 ? step / total : 0;
+  usePlaySession('journey', 'journey');
+
+  // Report finishing the journey only on the transition, not on re-opening it done.
+  const lastStatus = useRef(status);
+  useEffect(() => {
+    if (lastStatus.current === 'playing' && status === 'done') track('journey_done', { total });
+    lastStatus.current = status;
+  }, [status, total]);
 
   // Smooth cross-fade on the shared backdrop when the unit changes.
   const fade = useRef(new Animated.Value(0)).current;

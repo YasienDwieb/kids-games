@@ -20,6 +20,8 @@ export type Settings = {
   dailyLimitMin: number | null;
   /** The child's buddy (mascot). Null until they pick one on first launch. */
   buddy: 'lulu' | 'zain' | null;
+  /** Parent opt-out for anonymous usage stats (see src/sdk/analytics). */
+  analyticsEnabled: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -31,6 +33,7 @@ export const DEFAULT_SETTINGS: Settings = {
   flowGameIds: null,
   dailyLimitMin: null,
   buddy: null,
+  analyticsEnabled: true,
 };
 
 export const settingsStore = createStore<Settings>('settings', DEFAULT_SETTINGS);

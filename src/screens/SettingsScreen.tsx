@@ -228,6 +228,12 @@ export function SettingsScreen({ navigation }: Props) {
                   value={settings.hapticsEnabled}
                   onChange={(v) => update({ hapticsEnabled: v })}
                 />
+                <ToggleRow
+                  icon="📊"
+                  label={t('settings.analytics')}
+                  value={settings.analyticsEnabled}
+                  onChange={(v) => update({ analyticsEnabled: v })}
+                />
               </View>
               <View style={styles.card}>
                 <View style={styles.row}>

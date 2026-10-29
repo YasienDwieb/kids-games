@@ -68,6 +68,7 @@ export const en = {
     title: 'Settings',
     sound: 'Sound effects',
     haptics: 'Haptics',
+    analytics: 'Share anonymous usage stats',
     showGamesFor: 'Show games for',
     all: 'All',
     language: 'Language',

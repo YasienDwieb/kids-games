@@ -36,7 +36,7 @@ Uploads en-US + ar title/subtitle/description/keywords/URLs from store.config.js
 
 - Set **Category**: Education (primary).
 - Set **Age Rating** (answer the questionnaire — no objectionable content → 4+).
-- Complete the **App Privacy** section: "Data Not Collected".
+- Complete the **App Privacy** section: Usage Data → Product Interaction, not linked to the user, not used for tracking (anonymous analytics — see `docs/ANALYTICS.md`).
 - Confirm **Support URL** and **Privacy Policy URL** are set.
 - Upload **screenshots** (6.9" iPhone + 13" iPad, landscape) with
   `fastlane ios screenshots` — see `screenshots/README.md`.

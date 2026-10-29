@@ -11,6 +11,7 @@ import {
   useTranslation,
   type BackInterceptor,
   type SoundOverrides,
+  usePlaySession,
 } from '@/sdk';
 import { BackButton } from '../components/common';
 import { PlayLimitGate } from './PlayLimitGate';
@@ -24,6 +25,7 @@ export function GamePlayerScreen({ route, navigation }: Props) {
   const { gameId } = route.params;
   const { t } = useTranslation();
   const game = getGame(gameId);
+  usePlaySession(game ? gameId : null, 'free');
 
   // Games register a back interceptor; if it consumes the press (e.g. pops an
   // internal screen) we stay, otherwise we navigate up to Home.
