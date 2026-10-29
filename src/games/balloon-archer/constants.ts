@@ -24,7 +24,6 @@ export const BALLOON_COLORS = [
   ACCENTS.pink.base,
 ];
 
-export const GROUND_COLOR = ACCENTS.green.base;
 export const ARROW_COLOR = COLORS.ink;
 export const STRING_COLOR = 'rgba(59,48,38,0.30)';
 export const GUIDE_COLOR = 'rgba(59,48,38,0.28)';
