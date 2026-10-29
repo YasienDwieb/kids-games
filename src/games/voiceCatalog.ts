@@ -5,7 +5,7 @@ import { ANIMALS } from './animal-safari/constants';
 import { animalPhrase } from './animal-safari/phrase';
 import { COLORS as MIX_COLORS } from './color-mixer/constants';
 import { CHALLENGES } from './color-mixer/constants';
-import { colorNamePhrase, colorTargetPhrase } from './color-mixer/phrase';
+import { colorNamePhrase, colorTargetPhrase, dragHintPhrase } from './color-mixer/phrase';
 import type { ColorId } from './color-mixer/types';
 import { NUMBERS } from './numbers-land/constants';
 import { numberPhrase } from './numbers-land/phrase';
@@ -48,6 +48,7 @@ export function voiceCatalog(): VoiceLine[] {
     (Object.keys(MIX_COLORS) as ColorId[]).forEach((id) =>
       add(lang, colorNamePhrase(id, lang), { game: 'color-mixer', where: 'Pot colour name' }),
     );
+    add(lang, dragHintPhrase(lang), { game: 'color-mixer', where: 'Empty pot hint' });
     for (const [track, where] of [['warmup', 'Warm-up'], ['numbers', 'Numbers tab']] as const) {
       charsFor(track, 'latin').forEach((c) => {
         const p = charPhrase(c, lang);

@@ -42,7 +42,7 @@ import {
 import { useColorMixer, useChallengeMode } from './hooks';
 import { COLORS, DIMENSIONS } from './constants';
 import { MIX_CAP, challengeHex, endlessChallenge, isChallengeMet, mixColorId, starsFor } from './utils';
-import { colorNamePhrase, colorTargetPhrase } from './phrase';
+import { colorNamePhrase, colorTargetPhrase, dragHintPhrase } from './phrase';
 import type { ColorId, GameMode, PigmentId, SavedColor } from './types';
 
 export default function ColorMixerGame() {
@@ -150,6 +150,14 @@ export default function ColorMixerGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showDemo, mode, landscape, showChallengePicker, challenge.currentChallenge]);
 
+  // The demo hand says what it shows. In a challenge the goal was just spoken, so the
+  // hint waits until the child is actually stuck.
+  const demoShown = demoPoints.length > 1;
+  const speakHint = demoShown && (mode !== 'challenge' || idle);
+  useEffect(() => {
+    if (speakHint) void speak(dragHintPhrase(currentLanguage()));
+  }, [speakHint, speak]);
+
   // Say the colour the pot turns into — the name is the lesson, and most players can't
   // read the label yet. Only when the name changes, so stirring the same colour is quiet.
   const potColorId = mixColorId(mixer.mixLog, mixer.currentMixHex);
@@ -170,11 +178,23 @@ export default function ColorMixerGame() {
     dragColorRef.current = colorId;
   }, []);
 
-  const handleDragMove = useCallback((_instanceId: string, _pos: { x: number; y: number }) => {
+  // Light the pot up while a colour is held over it; state only changes on enter/leave.
+  const [potHot, setPotHot] = useState(false);
+  const hotRef = useRef(false);
+  const setHot = useCallback((next: boolean) => {
+    if (hotRef.current === next) return;
+    hotRef.current = next;
+    setPotHot(next);
   }, []);
+
+  const handleDragMove = useCallback(
+    (_instanceId: string, pos: { x: number; y: number }) => setHot(isInsideZone(pos)),
+    [isInsideZone, setHot],
+  );
 
   const handleDragEnd = useCallback(
     (_instanceId: string, pos: { x: number; y: number }) => {
+      setHot(false);
       if (dragColorRef.current && isInsideZone(pos)) {
         if (mixer.potFull) refuseDrop();
         else {
@@ -188,7 +208,7 @@ export default function ColorMixerGame() {
       dragColorRef.current = null;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isInsideZone, mixer.addPigment, mixer.potFull, play, refuseDrop],
+    [isInsideZone, mixer.addPigment, mixer.potFull, play, refuseDrop, setHot],
   );
 
   // Discovering a famous color is free play's reward moment — it gets a cue, not silence.
@@ -232,18 +252,20 @@ export default function ColorMixerGame() {
   const handleSavedLiftMove = useCallback(
     (x: number, y: number) => {
       ghostPos.setValue({ x: x - GHOST_SIZE / 2, y: y - GHOST_SIZE / 2 });
+      setHot(isInsideZone({ x, y }));
     },
-    [GHOST_SIZE, ghostPos],
+    [GHOST_SIZE, ghostPos, isInsideZone, setHot],
   );
 
   const handleSavedLiftEnd = useCallback(
     (x: number, y: number) => {
+      setHot(false);
       const saved = liftedSaved.current;
       liftedSaved.current = null;
       if (saved && isInsideZone({ x, y })) addSavedToMix(saved);
       setLiftedHex(null);
     },
-    [isInsideZone, addSavedToMix],
+    [isInsideZone, addSavedToMix, setHot],
   );
 
   const isPositionInBounds = useCallback(
@@ -458,6 +480,7 @@ export default function ColorMixerGame() {
         recipe={mixer.mixLog}
         colorId={potColorId}
         lastDrop={lastDrop}
+        hot={potHot}
         onLayout={handleZoneLayout}
         onResultDragEnd={handleResultDragEnd}
       />

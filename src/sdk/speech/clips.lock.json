@@ -76,6 +76,13 @@
   "durationS": 1.06,
   "generatedAt": "2026-10-24"
  },
+ "ar:اِسْحَبْ لَوْنًا إِلى الوِعاء!": {
+  "file": "ar-fd3a9a6020.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.94,
+  "generatedAt": "2026-10-29"
+ },
  "ar:اِصنعْ هذا اللون: أخضر": {
   "file": "ar-d4b7189cec.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
@@ -607,6 +614,13 @@
   "take": 3,
   "durationS": 1.42,
   "generatedAt": "2026-10-24"
+ },
+ "en:Drag a color into the bowl!": {
+  "file": "en-bfd0981a60.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.73,
+  "generatedAt": "2026-10-29"
  },
  "en:Duck": {
   "file": "en-202bb3525e.m4a",

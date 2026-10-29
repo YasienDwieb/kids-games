@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, EmojiImage, FONTS, OUTLINE, SHADOWS, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, FONTS, OUTLINE, SHADOWS, useReduceMotion, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { DraggableResult } from './DraggableResult';
 import { RecipeRow } from './RecipeRow';
@@ -27,6 +27,8 @@ type MixingZoneProps = {
   colorId: ColorId | null;
   /** The colour of the last drop in, for its splash (changes every drop). */
   lastDrop: { hex: string; at: number } | null;
+  /** A colour is being held over the pot. */
+  hot: boolean;
   onLayout: (position: { x: number; y: number; width: number; height: number }) => void;
   onResultDragEnd?: (position: { x: number; y: number }) => void;
 };
@@ -40,10 +42,12 @@ export function MixingZone({
   recipe,
   colorId,
   lastDrop,
+  hot,
   onLayout,
   onResultDragEnd,
 }: MixingZoneProps) {
   const { t } = useTranslation();
+  const calm = useReduceMotion();
   const resultScaleAnim = useRef(new Animated.Value(0)).current;
   const resultOpacity = useRef(new Animated.Value(0)).current;
   const viewRef = useRef<View>(null);
@@ -123,20 +127,15 @@ export function MixingZone({
   // four-year-old, but hitting the wall with no warning is worse.
   const showCount = dropCount >= dropCap - 4;
 
-  // The empty state scales with the pot, which is no longer a fixed 180: challenge mode
-  // spends ~19dp of diameter on the target strip, and the zone clamps as low as 112.
-  // Fixed 36/16 type stayed 128dp wide inside a 161dp circle — crowding the dashed ring,
-  // and overflowing it outright at the floor. Width is capped to the circle's inscribed
-  // box so the copy can never touch the border.
-  const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-  const iconSize = clamp(Math.round(size * 0.2), 20, 36);
-  const emptyFontSize = clamp(Math.round(size * 0.089), 11, 16);
-  const emptyMaxWidth = Math.round(size * 0.78);
 
   return (
     <Animated.View
       ref={viewRef}
       onLayout={handleLayout}
+      // The pot shows no words: most players can't read yet. The bowl wobbles, glows
+      // under a held colour, and the hint is spoken with the demo hand.
+      accessible
+      accessibilityLabel={t('color-mixer:mixingZone.dragHint')}
       style={[
         styles.frame,
         { transform: [{ translateX: nudge.interpolate({ inputRange: [-1, 1], outputRange: [-8, 8] }) }] },
@@ -151,26 +150,10 @@ export function MixingZone({
               StyleSheet.absoluteFill,
               styles.zone,
               { borderRadius: size / 2 },
-              currentMixHex != null && styles.zoneActive,
+              (currentMixHex != null || hot) && styles.zoneActive,
+              hot && styles.zoneHot,
             ]}
           >
-      {!currentMixHex && (
-        <View style={[styles.emptyState, { maxWidth: emptyMaxWidth }]}>
-          <EmojiImage
-            emoji="🎨"
-            size={iconSize}
-            style={{ marginBottom: clamp(Math.round(size * 0.045), 4, 8) }}
-          />
-          <Text
-            style={[
-              styles.emptyText,
-              { fontSize: emptyFontSize, lineHeight: Math.round(emptyFontSize * 1.25) },
-            ]}
-          >
-            {t('color-mixer:mixingZone.dropHere')}
-          </Text>
-        </View>
-      )}
 
       {currentMixHex && (
         <Animated.View
@@ -264,24 +247,9 @@ export function MixingZone({
           dropCount={dropCount}
           dropCap={dropCap}
           lastDrop={lastDrop}
+          hot={hot}
+          calm={calm}
         />
-      {!currentMixHex && (
-        <View style={[styles.emptyState, styles.emptyOnBowl, { maxWidth: emptyMaxWidth }]}>
-          <EmojiImage
-            emoji="🎨"
-            size={iconSize}
-            style={{ marginBottom: clamp(Math.round(size * 0.045), 4, 8) }}
-          />
-          <Text
-            style={[
-              styles.emptyText,
-              { fontSize: emptyFontSize, lineHeight: Math.round(emptyFontSize * 1.25) },
-            ]}
-          >
-            {t('color-mixer:mixingZone.dropHere')}
-          </Text>
-        </View>
-      )}
 
       </Suspense>
 
@@ -317,10 +285,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'visible',
   },
-  // The empty-pot hint sits in the bowl's mouth, a little above centre.
-  emptyOnBowl: {
-    marginTop: -12,
-  },
   zone: {
     borderWidth: OUTLINE.base,
     borderColor: OUTLINE.color,
@@ -334,9 +298,8 @@ const styles = StyleSheet.create({
     borderColor: TOKENS.brand,
     borderStyle: 'solid',
   },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  zoneHot: {
+    transform: [{ scale: 1.06 }],
   },
   overlay: {
     position: 'absolute',
@@ -402,11 +365,6 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.bodySemi,
     fontSize: 11,
     color: TOKENS.inkSoft,
-  },
-  emptyText: {
-    fontFamily: FONTS.body,
-    color: TOKENS.inkSoft,
-    textAlign: 'center',
   },
   resultContainer: {
     alignItems: 'center',

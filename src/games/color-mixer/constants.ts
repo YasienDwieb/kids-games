@@ -84,7 +84,7 @@ export const DIMENSIONS = {
   COLOR_BLOB_SIZE: 70,
   // The zone is sized from measured space (see index.tsx); these bound it. MIN keeps it a
   // usable drop target in challenge-mode landscape, where the panel is shortest.
-  MIXING_ZONE_MAX: 180,
+  MIXING_ZONE_MAX: 240,
   MIXING_ZONE_MIN: 112,
   MIXING_ZONE_MARGIN: 8,
   PALETTE_ITEM_SIZE: 60,

@@ -176,6 +176,16 @@
   },
   {
    "lang": "ar",
+   "text": "اِسْحَبْ لَوْنًا إِلى الوِعاء!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Empty pot hint"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "اِصنعْ هذا اللون: أخضر",
    "uses": [
     {
@@ -1143,6 +1153,16 @@
     {
      "game": "animal-safari",
      "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Drag a color into the bowl!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Empty pot hint"
     }
    ]
   },
