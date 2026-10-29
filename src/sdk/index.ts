@@ -107,6 +107,8 @@ export type { MascotPose } from './mascot/Mascot';
 export { MascotHelper } from './mascot/MascotHelper';
 export { Lulu3D, LULU_TAP_LINES } from './mascot/Lulu3D';
 export type { LuluMood } from './mascot/Lulu3D';
+export { useModel3D, preloadModels3D } from './three/models';
+export type { ModelSource } from './three/models';
 
 // Play time — the parent corner's log and the optional daily limit
 export {

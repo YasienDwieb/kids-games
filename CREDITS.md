@@ -48,6 +48,18 @@ license. Add an entry **before** importing any new third-party asset.
 - **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/nature-kit
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 
+### Higgsfield (Nano Banana Pro + Image to 3D) — 3D game models
+
+- **Used for:** Mouse Maze's 3D board (`src/games/mouse-maze/assets/models/`): the mouse
+  and the cheese.
+- **Source:** each model's reference image was generated with Higgsfield AI (Nano Banana
+  Pro) and turned into a textured mesh with Higgsfield's Image to 3D (Meshy), 2026-10-29,
+  on the project's Higgsfield account.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+- **Processing:** decimated and split into a texture-free GLB plus a raw RGBA texture
+  with `scripts/3d/prep_glb.py` (Blender), so React Native can load them.
+
 ## Audio assets
 
 ### Higgsfield (Seed Audio 1.0) — spoken praise (English)

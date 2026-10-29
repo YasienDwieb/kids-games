@@ -15,7 +15,8 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return (resolveDefault ?? context.resolveRequest)(context, moduleName, platform);
 };
 
-// 3D models for Turbo Road's 3D road ship as bundled assets.
-config.resolver.assetExts.push('glb');
+// 3D models ship as bundled assets: GLB geometry plus, for textured models,
+// raw RGBA8 texture bytes (see src/sdk/three/models.ts).
+config.resolver.assetExts.push('glb', 'rgba');
 
 module.exports = config;
