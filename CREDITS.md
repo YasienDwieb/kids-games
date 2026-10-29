@@ -54,6 +54,16 @@ license. Add an entry **before** importing any new third-party asset.
 - **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/nature-kit
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 
+### Higgsfield (Nano Banana Pro) — clay object pictures
+
+- **Used for:** 3D clay-toy versions of counting objects (`src/sdk/assets/clay/png/`, drawn
+  by `ClayEmoji`; Count & Pop's apple, star, balloon, ladybug, strawberry, car, fish, cat).
+- **Source:** generated with Higgsfield AI (Nano Banana Pro), 2026-10-29, on the project's
+  Higgsfield account; background removed with Higgsfield's background remover, trimmed to
+  160×160 and quantised with pngquant.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+
 ### Higgsfield (Nano Banana Pro) — home tile covers
 
 - **Used for:** the illustrated home-tile art of every game (`src/games/<id>/cover.jpg`,
