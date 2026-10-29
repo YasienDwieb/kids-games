@@ -304,15 +304,32 @@ function Markers({
 
 /**
  * Motion the drive hook asks for, consumed by the mouse's frame loop: the cells
- * still to walk (in order, so a lagging mouse never cuts a corner through a
- * wall), and when the last wall bump happened.
+ * still to walk (in order, so a lagging mouse never cuts through a wall), and
+ * when the last wall bump happened.
  */
 type MouseMotion = { path: Pos[]; bumpAt: number; bumpDir: [number, number]; won: boolean };
 
 /** Cells per second; a mouse running behind a fast finger speeds up. */
 const WALK_SPEED = 1000 / (STEP_MS * 1.3);
-const HOP_S = 0.2;
+/** Within this distance of a waypoint the mouse already turns toward the next one. */
+const CORNER = 0.2;
+/** Gait cycles per cell walked (one quick scurry patter per ~quarter cell). */
+const STRIDE = Math.PI * 2 * 3.5;
 
+const damp = (from: number, to: number, rate: number, dt: number) => from + (to - from) * (1 - Math.exp(-rate * dt));
+const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+
+/**
+ * The mouse is one rigid mesh, so all its life comes from motion layered on
+ * three nested groups — `root` (where it is), `yaw` (where it faces) and
+ * `body` (gait, lean, squash):
+ *   • it speeds up and slows down instead of sliding at a constant speed, and
+ *     curves round corners instead of pivoting on the spot;
+ *   • while moving it scurries — a quick patter bounce with a side-to-side
+ *     waddle, leaning into acceleration and banking into turns, stretched a
+ *     little along its run;
+ *   • standing still it breathes, looks about and now and then sniffs.
+ */
 function MouseToken({
   board,
   start,
@@ -325,59 +342,95 @@ function MouseToken({
   shared: Shared;
 }) {
   const root = useRef<Group>(null);
+  const yaw = useRef<Group>(null);
   const body = useRef<Group>(null);
-  const heading = useRef(0);
-  const hopAt = useRef(-10);
+  const s = useRef({ speed: 0, heading: 0, turn: 0, phase: 0, still: 0, look: 0, sniffAt: -10, winAt: -1 });
   // Placed once; afterwards only the frame loop moves it.
   const [x0, z0] = useState(() => [cellX(board, start.col), cellZ(board, start.row)])[0];
 
-  useFrame((state, dt) => {
+  useFrame((state, rawDt) => {
+    const dt = Math.min(rawDt, 0.05);
     const t = state.clock.elapsedTime;
     const m = motion.current;
     const r = root.current;
+    const y = yaw.current;
     const bd = body.current;
-    if (!r || !bd || !m) return;
+    if (!r || !y || !bd || !m) return;
+    const v = s.current;
+
+    // --- Travel: follow the waypoints with eased speed, rounding corners.
+    if (m.path.length > 1 && Math.hypot(cellX(board, m.path[0].col) - r.position.x, cellZ(board, m.path[0].row) - r.position.z) < CORNER) {
+      m.path.shift();
+    }
     const next = m.path[0];
+    let want = 0;
     if (next) {
-      if (t - hopAt.current > HOP_S) hopAt.current = t;
       const dx = cellX(board, next.col) - r.position.x;
       const dz = cellZ(board, next.row) - r.position.z;
       const dist = Math.hypot(dx, dz);
-      const step = WALK_SPEED * (m.path.length > 2 ? 2 : 1) * dt;
-      if (dist <= step) {
+      want = WALK_SPEED * (m.path.length > 2 ? 1.8 : 1);
+      // Brake into the last cell rather than stopping dead.
+      if (m.path.length === 1) want *= Math.min(1, 0.3 + dist / 0.45);
+      const step = Math.min(dist, Math.max(v.speed, 0.6) * dt);
+      if (dist < 0.01) {
         r.position.x += dx;
         r.position.z += dz;
         m.path.shift();
       } else {
         r.position.x += (dx / dist) * step;
         r.position.z += (dz / dist) * step;
+        const before = v.heading;
+        v.heading += wrap(Math.atan2(dx, dz) - v.heading) * (1 - Math.exp(-14 * dt));
+        v.turn = damp(v.turn, wrap(v.heading - before) / Math.max(dt, 1e-3), 10, dt);
       }
-      if (dist > 0.01) {
-        let diff = Math.atan2(dx, dz) - heading.current;
-        diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-        heading.current += diff * Math.min(1, dt * 16);
-      }
-    } else if (m.won) {
-      // At the cheese: happy bounces and a little twirl.
-      heading.current += dt * 3;
-      if (t - hopAt.current > HOP_S * 2) hopAt.current = t;
-    }
-    bd.rotation.y = heading.current;
-    // Hop while walking, a squash on landing, and a gentle idle breath.
-    const h = (t - hopAt.current) / (m.won ? HOP_S * 2 : HOP_S);
-    const hop = h < 1 ? Math.sin(h * Math.PI) * (m.won ? 0.3 : 0.1) : 0;
-    const breath = 1 + Math.sin(t * 3) * 0.02;
-    bd.position.y = hop;
-    bd.scale.set(breath, h > 0.8 && h < 1.2 ? 0.92 : breath, breath);
-    // Wall bump: a quick wobble and nudge toward the wall.
-    const b = t - m.bumpAt;
-    if (b >= 0 && b < 0.25) {
-      const w = Math.sin((b / 0.25) * Math.PI * 3) * (1 - b / 0.25);
-      bd.rotation.z = w * 0.25;
-      bd.position.x = m.bumpDir[0] * Math.abs(w) * 0.08;
-      bd.position.z = m.bumpDir[1] * Math.abs(w) * 0.08;
     } else {
-      bd.rotation.z = 0;
+      v.turn = damp(v.turn, 0, 8, dt);
+    }
+    const prevSpeed = v.speed;
+    v.speed = damp(v.speed, want, want > v.speed ? 10 : 14, dt);
+    const accel = (v.speed - prevSpeed) / Math.max(dt, 1e-3);
+    const run = Math.min(1, v.speed / WALK_SPEED); // 0 standing … 1 running
+
+    // --- Idle: look about now and then, with the odd quick sniff.
+    v.still = run < 0.05 ? v.still + dt : 0;
+    const idle = Math.min(1, Math.max(0, v.still - 0.6));
+    v.look = damp(v.look, idle * Math.sin(t * 0.9) * 0.45, 3, dt);
+    if (idle > 0 && t - v.sniffAt > 2.6 + Math.sin(t * 7.3) * 0.8) v.sniffAt = t;
+    const sn = t - v.sniffAt;
+    const sniff = sn < 0.5 ? Math.abs(Math.sin((sn / 0.5) * Math.PI * 3)) * 0.12 * idle : 0;
+
+    // --- Win: hop and twirl on the cheese.
+    if (m.won && !next) {
+      if (v.winAt < 0) v.winAt = t;
+      v.heading += dt * 3.2;
+    }
+    const w = v.winAt >= 0 ? t - v.winAt : -1;
+    const winHop = w >= 0 ? Math.abs(Math.sin(w * 6)) * 0.28 : 0;
+
+    // --- Gait: a patter bounce and waddle whose rate follows speed.
+    v.phase += v.speed * dt * STRIDE;
+    const bounce = Math.abs(Math.sin(v.phase)) * 0.06 * run;
+    const waddle = Math.sin(v.phase) * 0.09 * run;
+    const breath = Math.sin(t * 3.2) * 0.015 * (1 - run);
+
+    y.rotation.y = v.heading + v.look + Math.sin(v.phase * 0.5) * 0.06 * run;
+    bd.position.y = bounce + winHop;
+    // Lean forward when speeding up / back when braking, plus a sniff dip.
+    bd.rotation.x = Math.max(-0.18, Math.min(0.18, accel * 0.012)) + sniff;
+    // Bank into turns, and the side-to-side waddle.
+    bd.rotation.z = Math.max(-0.25, Math.min(0.25, -v.turn * 0.025)) + waddle;
+    // Stretch along the run, squash a touch on each footfall.
+    const foot = (1 - Math.abs(Math.sin(v.phase))) * 0.06 * run;
+    bd.scale.set(1 - 0.03 * run + breath, 1 - foot + breath, 1 + 0.08 * run - foot * 0.5);
+
+    // --- Wall bump: a quick wobble and nudge toward the wall.
+    const b = t - m.bumpAt;
+    if (b >= 0 && b < 0.3) {
+      const k = Math.sin((b / 0.3) * Math.PI * 3) * (1 - b / 0.3);
+      bd.rotation.z += k * 0.25;
+      bd.position.x = m.bumpDir[0] * Math.abs(k) * 0.08;
+      bd.position.z = m.bumpDir[1] * Math.abs(k) * 0.08;
+    } else {
       bd.position.x = 0;
       bd.position.z = 0;
     }
@@ -386,12 +439,14 @@ function MouseToken({
   return (
     <group ref={root} position={[x0, 0, z0]}>
       <mesh geometry={shared.disc} material={shared.shadow} position={[0, 0.005, 0]} scale={[0.3, 0.01, 0.3]} />
-      <group ref={body}>
-        <Model
-          src={MOUSE}
-          size={1}
-          fallback={<mesh geometry={shared.ball} material={shared.mouse} position={[0, 0.25, 0]} scale={0.25} />}
-        />
+      <group ref={yaw}>
+        <group ref={body}>
+          <Model
+            src={MOUSE}
+            size={1}
+            fallback={<mesh geometry={shared.ball} material={shared.mouse} position={[0, 0.25, 0]} scale={0.25} />}
+          />
+        </group>
       </group>
     </group>
   );
