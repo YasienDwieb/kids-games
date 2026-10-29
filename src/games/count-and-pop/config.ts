@@ -7,6 +7,7 @@ registerGame({
   name: 'Count & Pop', // English fallback; localized via count-and-pop:meta.name
   description: 'Count, pop, and learn your numbers!',
   icon: '🧮',
+  cover: require('./cover.jpg'),
   ageRange: { min: 3, max: 7 },
   component: CountAndPopGame,
   backgroundColor: COLORS.canvas, // soft pink (ACCENTS.pink.tint)

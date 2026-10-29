@@ -8,6 +8,8 @@ registerGame({
   name: 'Letter Land', // English fallback; localized via letter-land:meta.name
   description: 'Listen and find your letters!',
   icon: '🔤',
+  cover: require('./cover.jpg'),
+  coverByLanguage: { ar: require('./cover.ar.jpg') },
   ageRange: { min: 3, max: 7 },
   component: LetterLand,
   backgroundColor: COLORS.canvas,

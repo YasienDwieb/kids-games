@@ -29,7 +29,6 @@ export const en = {
     play: 'PLAY',
     levelA11y: 'Level {{n}}. {{left}} more stars to the next level',
     grownUps: 'Grown-ups',
-    wardrobeA11y: '{{n}} stars. Open Lulu’s wardrobe',
     categories: {
       all: 'All',
       numbers: 'Numbers',
@@ -46,7 +45,6 @@ export const en = {
     keepPlaying: 'Keep playing',
   },
   wardrobe: {
-    title: 'Dress up Lulu',
     hats: 'Hats',
     glasses: 'Glasses',
     stickers: 'Stickers',
@@ -143,11 +141,9 @@ export const en = {
   },
   break: {
     title: 'Recharge time!',
-    body: 'Lulu needs a rest. Let’s stretch and play again soon.',
     home: 'Back home',
     grownUp: 'Grown-ups: {{n}} more minutes',
     energy: 'Energy low',
-    stretchTitle: 'Do it with Lulu',
     stretch1: 'Reach up high',
     stretch2: 'Touch your toes',
     stretch3: 'Big deep breath',
@@ -162,6 +158,30 @@ export const en = {
       6: 'Wow!',
       7: 'Well done!',
       8: 'Amazing!',
+    },
+  },
+  buddy: {
+    pickTitle: 'Pick your buddy!',
+    anyTime: 'You can change your buddy any time',
+    go: "Let's go!",
+    choose: 'Play with {{name}}',
+    lulu: {
+      name: 'Lulu',
+      species: 'the owl',
+      hello: "Hi! I'm Lulu!",
+      dressUp: 'Dress up Lulu',
+      wardrobeA11y: '{{n}} stars. Open Lulu’s wardrobe',
+      rest: 'Lulu needs a rest. Let’s stretch and play again soon.',
+      stretchWith: 'Do it with Lulu',
+    },
+    zain: {
+      name: 'Zain',
+      species: 'the lion cub',
+      hello: "Hi! I'm Zain!",
+      dressUp: 'Dress up Zain',
+      wardrobeA11y: '{{n}} stars. Open Zain’s wardrobe',
+      rest: 'Zain needs a rest. Let’s stretch and play again soon.',
+      stretchWith: 'Do it with Zain',
     },
   },
   flow: {

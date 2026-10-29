@@ -22,6 +22,7 @@ export {
   hudTextStyle,
   EmojiFrame,
   EmojiImage,
+  ClayEmoji,
   Star,
   GameCard,
   BackButton,
@@ -36,6 +37,7 @@ export type { AssetId } from './assets/manifest';
 export { getAsset, findAssets, pickAsset, pickModule } from './assets/query';
 export type { SoundOverrides } from './assets/query';
 export { EMOJI_IMAGES, getEmojiImage } from './assets/emoji/images';
+export { CLAY_IMAGES, getClayImage } from './assets/clay/images';
 export type { AssetEntry, AssetType } from './assets/types';
 
 // Storage
@@ -101,12 +103,17 @@ export { Sticker } from './rewards/Sticker';
 // Player level & Lulu's wardrobe
 export * from './player';
 
-// Mascot — Lulu the owl
-export { Mascot } from './mascot/Mascot';
+// Buddy — the child's chosen mascot (Lulu the owl or Zain the lion cub)
+export { BUDDIES, DEFAULT_BUDDY, useBuddy, useBuddyPicked, chooseBuddy, currentBuddy } from './buddy';
+export type { BuddyId } from './buddy';
+// Mascot — draws the chosen buddy
+export { Mascot, MASCOT_POSES } from './mascot/Mascot';
 export type { MascotPose } from './mascot/Mascot';
 export { MascotHelper } from './mascot/MascotHelper';
-export { Lulu3D, LULU_TAP_LINES } from './mascot/Lulu3D';
+export { Lulu3D, Buddy3D, LULU_TAP_LINES } from './mascot/Lulu3D';
 export type { LuluMood } from './mascot/Lulu3D';
+export { useModel3D, preloadModels3D } from './three/models';
+export type { ModelSource } from './three/models';
 
 // Play time — the parent corner's log and the optional daily limit
 export {
@@ -191,7 +198,7 @@ export {
   applyLanguage,
   bootstrapLanguage,
 } from './i18n/useLanguage';
-export { gameName, gameShortName, gameDescription } from './i18n/gameMeta';
+export { gameName, gameShortName, gameDescription, gameCover } from './i18n/gameMeta';
 
 // Guided flow engine
 export * from './flow';

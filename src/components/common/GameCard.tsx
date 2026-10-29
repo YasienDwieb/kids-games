@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import {
   ACCENTS,
   COLORS,
@@ -15,6 +15,8 @@ import { Star } from './Star';
 
 type GameCardProps = {
   icon: string;
+  /** Illustrated art filling the window; falls back to the `icon` emoji. */
+  cover?: number;
   name: string;
   accent?: AccentName;
   tag?: string; // e.g. "NEW"
@@ -33,6 +35,7 @@ type GameCardProps = {
 // icon in a white window and the name in the display face underneath.
 export function GameCard({
   icon,
+  cover,
   name,
   accent = 'blue',
   tag,
@@ -59,7 +62,11 @@ export function GameCard({
       ]}
     >
       <View style={[styles.window, fill && styles.windowFill]}>
-        <EmojiImage emoji={icon} size={emojiSize ?? 52} />
+        {cover != null ? (
+          <Image source={cover} style={styles.cover} resizeMode="cover" accessibilityIgnoresInvertColors />
+        ) : (
+          <EmojiImage emoji={icon} size={emojiSize ?? 52} />
+        )}
       </View>
 
       <View style={styles.meta}>
@@ -109,7 +116,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  cover: { width: '100%', height: '100%' },
   // Fill mode: drop the fixed aspect so the window flexes to fill leftover height.
   windowFill: { aspectRatio: undefined, flex: 1, minHeight: 44 },
   meta: { gap: 4, paddingHorizontal: 2 },

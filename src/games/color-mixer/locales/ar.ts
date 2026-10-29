@@ -27,7 +27,7 @@ export const ar: GameTranslations = {
 
   mixingZone: {
     potFull: 'الوعاء ممتلئ! تراجع عن قطرة أو ابدأ من جديد.',
-    dropHere: 'ضع الألوان هنا!',
+    dragHint: 'اِسْحَبْ لَوْنًا إِلى الوِعاء!',
   },
 
   palette: {
@@ -70,6 +70,8 @@ export const ar: GameTranslations = {
   picker: {
     title: 'التحديات',
     complete: 'مكتملة',
+    endless: 'ألوان غامضة أكثر',
+    endlessSolved: 'حللت {{n}}',
     allDone: 'أتممت كل التحديات! 🏆',
     backButton: 'المزج ›',
     difficulty: {

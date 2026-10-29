@@ -5,3 +5,13 @@ import type { ColorId } from './types';
 export function colorTargetPhrase(id: ColorId, lng: LanguageCode): string {
   return `${i18n.t('color-mixer:challenge.makeThisColor', { lng })} ${i18n.t(`color-mixer:colors.${id}`, { lng })}`;
 }
+
+/** The empty pot's hint, said with the demo hand — the pot itself shows no words. */
+export function dragHintPhrase(lng: LanguageCode): string {
+  return i18n.t('color-mixer:mixingZone.dragHint', { lng });
+}
+
+/** The name of a colour on its own — said when the pot turns that colour. */
+export function colorNamePhrase(id: ColorId, lng: LanguageCode): string {
+  return i18n.t(`color-mixer:colors.${id}`, { lng });
+}

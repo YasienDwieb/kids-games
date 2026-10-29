@@ -7,6 +7,7 @@ registerGame({
   name: 'Balloon Archer',
   description: 'Aim your bow and pop the balloons!',
   icon: '🏹',
+  cover: require('./cover.jpg'),
   ageRange: { min: 5, max: 8 },
   component: BalloonArcherGame,
   backgroundColor: '#E0F2FB', // sky (ACCENTS.blue.tint)

@@ -1,14 +1,14 @@
 /**
  * Mouse Maze — guided-flow adapter.
  *
- * Each journey unit is one small maze (5×5 or 6×6) on the same MazeView the
+ * Each journey unit is one small maze (5×5 or 6×6) on the same maze board the
  * standalone game uses; it completes when the mouse reaches the cheese. If the
  * child stalls, the demo hand traces the next few cells.
  */
 import { useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { registerFlowAdapter, useFlowRound, useIdle } from '@/sdk';
-import { MazeView } from './components/MazeView';
+import { MazeStage } from './components/MazeStage';
 import { buildLevel, useMaze, type MazeState } from './hooks/useMaze';
 import { FRAME_PAD } from './constants';
 
@@ -34,7 +34,7 @@ function MazeFlowRound({ initial, onComplete }: { initial: MazeState; onComplete
 
   return (
     <View style={styles.root} onLayout={onLayout}>
-      <MazeView
+      <MazeStage
         maze={maze}
         cellSize={cellSize}
         showDemo={idle}

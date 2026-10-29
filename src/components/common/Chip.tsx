@@ -24,7 +24,7 @@ export function Chip({ label, active = false, onPress, fontFamily }: ChipProps) 
         pressed && styles.pressed,
       ]}
     >
-      <Text style={[styles.text, active && styles.textActive, fontFamily ? { fontFamily } : null]}>{label}</Text>
+      <Text numberOfLines={1} style={[styles.text, active && styles.textActive, fontFamily ? { fontFamily } : null]}>{label}</Text>
     </Pressable>
   );
 }

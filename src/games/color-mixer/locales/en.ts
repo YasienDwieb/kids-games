@@ -27,10 +27,10 @@ export const en = {
     save: '💾 Save',
   },
 
-  // Mixing zone empty state
+  // Mixing zone (dragHint is spoken, not shown)
   mixingZone: {
     potFull: "Pot's full! Undo a drop, or start over.",
-    dropHere: 'Drop colors here!',
+    dragHint: 'Drag a color into the bowl!',
   },
 
   // Palette section titles
@@ -78,6 +78,8 @@ export const en = {
   picker: {
     title: 'Challenges',
     complete: 'complete',
+    endless: 'More mystery colors',
+    endlessSolved: '{{n}} solved',
     allDone: 'All challenges complete!',
     backButton: '‹ Mix',
     difficulty: {

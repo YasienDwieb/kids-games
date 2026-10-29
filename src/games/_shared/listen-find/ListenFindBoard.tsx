@@ -71,9 +71,14 @@ export type ListenFindBoardProps = {
   choiceLabel: (item: FindItem) => string;
   /** Lulu's reaction in the end corner (null/omitted = hidden). */
   mascotPose?: MascotPose | null;
+  /**
+   * Draw an image choice yourself (e.g. a 3D model) instead of its picture,
+   * given the tile's state. Return null to keep the picture.
+   */
+  renderImage?: (item: FindItem, state: TileState) => React.ReactNode;
 };
 
-type TileState = 'default' | 'correct' | 'wrong';
+export type TileState = 'default' | 'correct' | 'wrong';
 
 const EDGE = 6; // depth of the hard ink edge under each tile (the face sinks into it)
 
@@ -88,8 +93,10 @@ function ChoiceTile({
   disabled,
   accessibilityLabel,
   accessibilityState,
+  renderImage,
 }: {
   item: FindItem;
+  renderImage?: ListenFindBoardProps['renderImage'];
   state: TileState;
   onPress: () => void;
   disabled: boolean;
@@ -154,7 +161,9 @@ function ChoiceTile({
           {/* Image face (animal art) when the choice carries an image; otherwise
               the literal glyph. Decorative within the labeled Pressable, so the
               image opts out of a11y to avoid a double announcement. */}
-          {item.image !== undefined ? (
+          {item.image !== undefined && renderImage ? (
+            (renderImage(item, state) ?? <Image source={item.image} style={styles.image} resizeMode="contain" accessible={false} />)
+          ) : item.image !== undefined ? (
             <Image
               source={item.image}
               style={styles.image}
@@ -194,6 +203,7 @@ export function ListenFindBoard({
   background = COLORS.canvas,
   choiceLabel,
   mascotPose = null,
+  renderImage,
 }: ListenFindBoardProps): React.JSX.Element {
   const answered = selectedIndex !== null;
   // Pulse the speaker so a child knows they can tap to hear it again.
@@ -238,6 +248,7 @@ export function ListenFindBoard({
                 disabled={disabled || answered}
                 accessibilityLabel={choiceLabel(choice)}
                 accessibilityState={{ disabled: disabled || answered, selected: state === 'correct' }}
+                renderImage={renderImage}
               />
             );
           })}

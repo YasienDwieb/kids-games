@@ -20,14 +20,20 @@ license. Add an entry **before** importing any new third-party asset.
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 - **Processing:** recolored (CC0 permits modification).
 
-### Higgsfield (Nano Banana) — Lulu the owl mascot
+### Higgsfield (Nano Banana Pro + Image to 3D) — Lulu and Zain, the buddies
 
-- **Used for:** the mascot's four poses (`src/sdk/assets/images/mascot/owl-{wave,cheer,point,encourage}.png`),
-  drawn by the `Mascot` SDK component.
-- **Source:** generated with Higgsfield AI (Nano Banana) as one 2×2 character sheet, 2026-10-08,
-  on the project's Higgsfield account; cut into poses with the white background removed.
+- **Used for:** each buddy's four 2D poses
+  (`src/sdk/assets/images/mascot/{owl,lion}-{wave,cheer,point,encourage}.png`, drawn by
+  `Mascot`) and their rigged 3D models (`src/sdk/assets/models/{lulu,zain}.*`, drawn by
+  `Lulu3D`).
+- **Source:** redrawn in a semi-realistic style with Higgsfield AI (Nano Banana Pro) from the
+  original 2D art, 2026-10-29, on the project's Higgsfield account; backgrounds removed with
+  Higgsfield's background remover. The 3D models are Higgsfield Image to 3D (Meshy) meshes
+  with its auto-rig, made from a front-view A-pose of each buddy.
 - **License:** generated content used under the Higgsfield account's terms, which the
   project owner confirmed permit commercial use in this app.
+- **Processing:** poses trimmed to 480×480 and quantised with pngquant; models decimated and
+  split into a GLB plus raw RGBA texture with `scripts/3d/prep_glb.py`.
 
 ### Kenney — Car Kit & Racing Kit (3D models)
 
@@ -47,6 +53,44 @@ license. Add an entry **before** importing any new third-party asset.
   rocks (`tree_*`, `cactus_*`, `rock_largeA`).
 - **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/nature-kit
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
+
+### Higgsfield (Nano Banana Pro) — clay object pictures
+
+- **Used for:** 3D clay-toy versions of counting objects (`src/sdk/assets/clay/png/`, drawn
+  by `ClayEmoji`; Count & Pop's apple, star, balloon, ladybug, strawberry, car, fish, cat; Numbers Land's
+  orange, banana, ball, rose, duck, frog, lemon; Letter Land's word pictures, A–Z and
+  ا–ي; Match Up's pair pictures). Most Letter Land cut-outs had their white background removed locally.
+- **Source:** generated with Higgsfield AI (Nano Banana Pro), 2026-10-29, on the project's
+  Higgsfield account; background removed with Higgsfield's background remover, trimmed to
+  160×160 and quantised with pngquant.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+
+### Higgsfield (Nano Banana Pro) — home tile covers
+
+- **Used for:** the illustrated home-tile art of every game (`src/games/<id>/cover.jpg`,
+  `GameConfig.cover`), plus Arabic-letter covers for Letter Land and Trace It (`cover.ar.jpg`,
+  `GameConfig.coverByLanguage`).
+- **Source:** generated with Higgsfield AI (Nano Banana Pro), 2026-10-29, on the project's
+  Higgsfield account; resized to 400×400 JPEG.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+
+### Higgsfield (Nano Banana Pro + Image to 3D) — 3D game models
+
+- **Used for:** Mouse Maze's 3D board (`src/games/mouse-maze/assets/models/`): the mouse
+  and the cheese; Candy Catch's wicker basket (`src/games/candy-catch/assets/models/`);
+  Animal Safari's 12 animals (`src/games/animal-safari/assets/models/`, lifted to 3D with
+  Higgsfield's SAM 3D Objects instead of Image to 3D);
+  Balloon Archer's painted meadow backdrop
+  (`src/games/balloon-archer/assets/meadow.jpg`, an image only).
+- **Source:** each model's reference image was generated with Higgsfield AI (Nano Banana
+  Pro) and turned into a textured mesh with Higgsfield's Image to 3D (Meshy), 2026-10-29,
+  on the project's Higgsfield account.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+- **Processing:** decimated and split into a texture-free GLB plus a raw RGBA texture
+  with `scripts/3d/prep_glb.py` (Blender), so React Native can load them.
 
 ## Audio assets
 
@@ -86,6 +130,16 @@ license. Add an entry **before** importing any new third-party asset.
   ownership claim to Google over generated content.
 - **Processing:** median-length take of three, loudness-normalized to the house level
   (≈ −25 dBFS active RMS, peak ≤ −6 dBFS), mono AAC 64 kbps.
+
+### Higgsfield (Seed Audio 1.0) — Zain's tap lines (English and Arabic)
+
+- **Used for:** what Zain says when a child taps him (`src/sdk/assets/audio/voice/zain-tap-{en,ar}-{1..3}.m4a`).
+- **Source:** generated with Higgsfield AI (model: Seed Audio 1.0, preset voice "Benji"),
+  2026-10-18, on the project's Higgsfield account; Arabic lines from fully vowelled text.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+- **Processing:** trimmed of silence, mono AAC 64 kbps at 44.1 kHz, loudness-matched to the
+  Arabic clips (−23.7 LUFS integrated, peak ≤ −6 dBFS).
 
 ### Kenney — feedback SFX
 

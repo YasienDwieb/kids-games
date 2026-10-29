@@ -11,7 +11,7 @@ import {
   useSound,
 } from '@/sdk';
 import { Hud } from './components/Hud';
-import { MazeView } from './components/MazeView';
+import { MazeStage } from './components/MazeStage';
 import { WinOverlay } from './components/WinOverlay';
 import { FRAME_PAD, HINT_MS, MAZE_COLORS } from './constants';
 import { useMaze, buildLevel, type StepResult } from './hooks/useMaze';
@@ -102,7 +102,7 @@ export default function MouseMazeGame() {
   }
 
   const mazeBoard = (
-    <MazeView maze={maze} cellSize={cellSize} hintCells={hintCells} showDemo={showDemo} onStep={handleStep} />
+    <MazeStage maze={maze} cellSize={cellSize} hintCells={hintCells} showDemo={showDemo} onStep={handleStep} />
   );
 
   if (landscape) {

@@ -7,6 +7,7 @@ registerGame({
   name: 'Color Mixer',
   description: 'Mix colors and discover new ones!',
   icon: '🎨',
+  cover: require('./cover.jpg'),
   ageRange: { min: 4, max: 8 },
   component: ColorMixerGame,
   backgroundColor: '#FBF3E6',

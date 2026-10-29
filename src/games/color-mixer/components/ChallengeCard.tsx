@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { ColorBlob } from './ColorBlob';
 import { ACCENTS, COLORS, FONTS, OUTLINE, SHADOWS, BORDER_RADIUS, useTranslation } from '@/sdk';
-import { COLORS as PALETTE } from '../constants';
+import { RecipeRow } from './RecipeRow';
+import { challengeHex } from '../utils';
 import type { Challenge } from '../types';
 
 type ChallengeCardProps = {
@@ -19,7 +20,7 @@ const DIFFICULTY_STARS: Record<Challenge['difficulty'], number> = {
 
 export function ChallengeCard({ challenge, isComplete, onSelect, style }: ChallengeCardProps) {
   const { t } = useTranslation();
-  const colorData = PALETTE[challenge.targetColor];
+  const hex = challengeHex(challenge);
   const stars = DIFFICULTY_STARS[challenge.difficulty];
 
   return (
@@ -35,7 +36,7 @@ export function ChallengeCard({ challenge, isComplete, onSelect, style }: Challe
       {/* Color preview */}
       <View style={styles.blobArea}>
         {isComplete ? (
-          <ColorBlob color={colorData.hex} size={48} showShine />
+          <ColorBlob color={hex} size={48} showShine />
         ) : (
           <View style={styles.mysteryBlob}>
             <Text style={styles.mysteryIcon}>?</Text>
@@ -51,7 +52,7 @@ export function ChallengeCard({ challenge, isComplete, onSelect, style }: Challe
       {/* Info */}
       <View style={styles.info}>
         <Text style={styles.targetName}>
-          {isComplete
+          {isComplete && challenge.targetColor
             ? t(`color-mixer:colors.${challenge.targetColor}`)
             : t('color-mixer:card.mysteryColor')}
         </Text>
@@ -62,11 +63,10 @@ export function ChallengeCard({ challenge, isComplete, onSelect, style }: Challe
           {'☆'.repeat(3 - stars)}
         </Text>
 
-        {challenge.hint && (
-          <Text style={styles.hint} numberOfLines={2}>
-            {t(`color-mixer:challengeHints.${challenge.id}`)}
-          </Text>
-        )}
+        {/* The hint is the recipe as pictures, so non-readers can use it too. */}
+        <View style={styles.recipe} accessible accessibilityLabel={challenge.hint ? t(`color-mixer:challengeHints.${challenge.id}`) : undefined}>
+          <RecipeRow recipe={challenge.recipe} size={16} />
+        </View>
       </View>
     </Pressable>
   );
@@ -144,9 +144,7 @@ const styles = StyleSheet.create({
     color: COLORS.gold,
     marginBottom: 4,
   },
-  hint: {
-    fontSize: 12,
-    fontFamily: FONTS.bodySemi,
-    color: COLORS.inkSoft,
+  recipe: {
+    alignSelf: 'flex-start',
   },
 });

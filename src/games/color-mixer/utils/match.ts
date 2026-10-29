@@ -6,7 +6,7 @@ import {
   STAR_DELTA_E,
 } from '../constants';
 import { deltaE00Hex } from './deltaE';
-import type { ColorId } from '../types';
+import type { ColorId, PigmentId } from '../types';
 
 /** The discoverable (non-primary) colors. */
 export const FAMOUS_IDS: ColorId[] = (Object.keys(COLORS) as ColorId[]).filter(
@@ -56,4 +56,14 @@ export function starsFor(mixHex: string | null, targetHex: string): 0 | 1 | 2 | 
 /** Whether a blend is good enough to finish a challenge. */
 export function isChallengeMet(mixHex: string | null, targetHex: string): boolean {
   return starsFor(mixHex, targetHex) >= STARS_TO_COMPLETE;
+}
+
+/**
+ * What to call the pot: the pigment itself while it holds only one kind, else the
+ * famous colour it has reached (null for an in-between colour with no name yet).
+ */
+export function mixColorId(log: readonly PigmentId[], hex: string | null): ColorId | null {
+  if (!hex || log.length === 0) return null;
+  if (log.every((p) => p === log[0])) return log[0];
+  return nearestFamous(hex);
 }
