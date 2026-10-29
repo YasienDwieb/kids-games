@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Card as CardType } from '../types';
 import { LAYOUT } from '../constants';
@@ -14,7 +14,19 @@ type GameBoardProps = {
 
 const BOARD_PADDING = SPACING.lg;
 
-export function GameBoard({ cards, onCardPress, disabled, columns }: GameBoardProps) {
+// three + react-three-fiber + expo-gl are only evaluated once a board is on screen.
+const GameBoard3D = lazy(() => import('./GameBoard3D').then((m) => ({ default: m.GameBoard3D })));
+
+/** The board the game and the guided flow render: 3D cards, with the flat board while it loads. */
+export function GameBoard(props: GameBoardProps) {
+  return (
+    <Suspense fallback={<GameBoard2D {...props} />}>
+      <GameBoard3D {...props} />
+    </Suspense>
+  );
+}
+
+export function GameBoard2D({ cards, onCardPress, disabled, columns }: GameBoardProps) {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const landscape = screenWidth > screenHeight;
 
