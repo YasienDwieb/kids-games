@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { BORDER_RADIUS, COLORS, EmojiImage, FONTS, OUTLINE, SHADOWS } from '@/sdk';
+import { BORDER_RADIUS, COLORS, ClayEmoji, FONTS, OUTLINE, SHADOWS } from '@/sdk';
 import type { MatchItem } from '../types';
 
 export type TileState = 'idle' | 'active' | 'matched';
@@ -36,7 +36,7 @@ export function Tile({ item, size, state, accentColor, lineColor }: TileProps) {
       ]}
     >
       {item.kind === 'emoji' ? (
-        <EmojiImage emoji={item.emoji} size={size * 0.62} />
+        <ClayEmoji emoji={item.emoji} size={size * 0.62} />
       ) : item.kind === 'number' ? (
         <Text style={[styles.numeral, { fontSize: size * 0.5, color: COLORS.ink }]}>
           {item.n}
@@ -44,7 +44,7 @@ export function Tile({ item, size, state, accentColor, lineColor }: TileProps) {
       ) : item.kind === 'group' ? (
         <View style={[styles.group, { maxWidth: size * 0.86 }]}>
           {Array.from({ length: item.n }).map((_, i) => (
-            <EmojiImage key={i} emoji={item.emoji} size={size * 0.26} />
+            <ClayEmoji key={i} emoji={item.emoji} size={size * 0.26} />
           ))}
         </View>
       ) : null}
