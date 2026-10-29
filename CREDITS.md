@@ -57,7 +57,8 @@ license. Add an entry **before** importing any new third-party asset.
 ### Higgsfield (Nano Banana Pro) — clay object pictures
 
 - **Used for:** 3D clay-toy versions of counting objects (`src/sdk/assets/clay/png/`, drawn
-  by `ClayEmoji`; Count & Pop's apple, star, balloon, ladybug, strawberry, car, fish, cat).
+  by `ClayEmoji`; Count & Pop's apple, star, balloon, ladybug, strawberry, car, fish, cat; Numbers Land's
+  orange, banana, ball, rose, duck, frog, lemon).
 - **Source:** generated with Higgsfield AI (Nano Banana Pro), 2026-10-29, on the project's
   Higgsfield account; background removed with Higgsfield's background remover, trimmed to
   160×160 and quantised with pngquant.

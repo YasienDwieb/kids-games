@@ -18,6 +18,13 @@ export const CLAY_IMAGES: Record<string, ImageSourcePropType> = {
   '🚗': require('./png/1F697.png'),
   '🐟': require('./png/1F41F.png'),
   '🐱': require('./png/1F431.png'),
+  '🍊': require('./png/1F34A.png'),
+  '🍌': require('./png/1F34C.png'),
+  '⚽': require('./png/26BD.png'),
+  '🌹': require('./png/1F339.png'),
+  '🦆': require('./png/1F986.png'),
+  '🐸': require('./png/1F438.png'),
+  '🍋': require('./png/1F34B.png'),
 };
 
 /** The clay picture for an emoji, or undefined if it has none. */
