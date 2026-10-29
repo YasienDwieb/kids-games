@@ -40,11 +40,11 @@ LogBox.ignoreLogs(['THREE.Clock']);
 
 const MOUSE: ModelSource = {
   glb: require('../assets/models/mouse.glb'),
-  rgba: require('../assets/models/mouse.rgba'),
+  rgba: require('../assets/models/mouse_tex.rgba'),
 };
 const CHEESE: ModelSource = {
   glb: require('../assets/models/cheese.glb'),
-  rgba: require('../assets/models/cheese.rgba'),
+  rgba: require('../assets/models/cheese_tex.rgba'),
   roughness: 0.6,
 };
 

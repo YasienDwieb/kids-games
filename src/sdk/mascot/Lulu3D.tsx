@@ -196,8 +196,8 @@ type RigProps = {
  * and the head turning to follow the child's finger.
  */
 const MODELS: Record<BuddyId, ModelSource> = {
-  lulu: { glb: require('../assets/models/lulu.glb'), rgba: require('../assets/models/lulu.rgba'), sheen: 0.5 },
-  zain: { glb: require('../assets/models/zain.glb'), rgba: require('../assets/models/zain.rgba'), sheen: 0.5 },
+  lulu: { glb: require('../assets/models/lulu.glb'), rgba: require('../assets/models/lulu_tex.rgba'), sheen: 0.5 },
+  zain: { glb: require('../assets/models/zain.glb'), rgba: require('../assets/models/zain_tex.rgba'), sheen: 0.5 },
 };
 
 /**

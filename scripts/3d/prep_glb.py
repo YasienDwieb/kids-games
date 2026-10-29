@@ -3,7 +3,8 @@
 React Native has no DOM Image, so three's GLTFLoader can't decode embedded
 textures. This script joins the meshes, optionally decimates them, strips every
 material image, and writes the base-colour texture next to the model as raw
-RGBA8 bytes (`<name>.rgba`, square, power of two) that the SDK uploads as a
+RGBA8 bytes (`<name>_tex.rgba`, square, power of two; a distinct basename since
+Android release builds key raw resources by name without extension) that the SDK uploads as a
 DataTexture.
 
     Blender -b -P scripts/3d/prep_glb.py -- in.glb out.glb [--tris 6000] [--tex 512]
@@ -121,7 +122,7 @@ if image is not None:
     # glTF UVs put v = 0 at the image's top row: write rows top-down.
     out = (np.clip(px[::-1], 0, 1) * 255 + 0.5).astype(np.uint8)
     out[..., 3] = 255
-    with open(dst.rsplit(".", 1)[0] + ".rgba", "wb") as f:
+    with open(dst.rsplit(".", 1)[0] + "_tex.rgba", "wb") as f:
         f.write(out.tobytes())
 
 # One plain material; the texture comes from the .rgba file at runtime.

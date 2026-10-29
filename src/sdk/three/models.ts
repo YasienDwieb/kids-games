@@ -8,7 +8,7 @@
  * Models without a texture (Kenney kits with baked vertex colours) pass only
  * `glb`.
  *
- *   const MOUSE = { glb: require('./mouse.glb'), rgba: require('./mouse.rgba') };
+ *   const MOUSE = { glb: require('./mouse.glb'), rgba: require('./mouse_tex.rgba') };
  *   const obj = useModel3D(MOUSE, 0.8);            // null while loading
  *   return obj ? <primitive object={obj} /> : <Fallback />;
  *

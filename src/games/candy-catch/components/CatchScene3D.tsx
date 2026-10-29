@@ -43,7 +43,7 @@ LogBox.ignoreLogs(['THREE.Clock']);
 const FOV = 38;
 const BASKET: ModelSource = {
   glb: require('../assets/models/basket.glb'),
-  rgba: require('../assets/models/basket.rgba'),
+  rgba: require('../assets/models/basket_tex.rgba'),
   roughness: 0.8,
 };
 
