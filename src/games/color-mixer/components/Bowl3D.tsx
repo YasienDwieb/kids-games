@@ -120,7 +120,14 @@ function Scene({ hex, dropCount, dropCap, lastDrop }: { hex: string | null; drop
     if (lastDrop && lastDrop.at !== dropSeen.current) {
       dropSeen.current = lastDrop.at;
       dropAt.current = t;
-      mat.swirl.color.set(lastDrop.hex);
+      // The streak is the drop's colour pushed away from the paint's, so it still
+      // reads when the two are close (blue into purple).
+      const drop = new Color(lastDrop.hex);
+      const paintNow = (paint.current?.material as MeshStandardMaterial | undefined)?.color;
+      const lum = (c: Color) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+      const toward = paintNow && lum(paintNow) > 0.45 ? new Color(TOKENS.ink) : new Color(TOKENS.surface);
+      mat.swirl.color.copy(drop).lerp(toward, 0.35);
+      mat.swirl.emissive.copy(mat.swirl.color).multiplyScalar(0.3);
       mat.drop.color.set(lastDrop.hex);
       mat.ring.color.set(lastDrop.hex);
     }

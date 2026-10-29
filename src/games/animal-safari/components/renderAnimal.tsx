@@ -14,7 +14,7 @@ export function renderAnimal(item: FindItem, state: AnimalTileState) {
   if (item.image === undefined) return null;
   return (
     <Suspense fallback={<Image source={item.image} style={styles.image} resizeMode="contain" accessible={false} />}>
-      <Animal3D id={item.id} state={state} />
+      <Animal3D id={item.id} state={state} image={item.image} />
     </Suspense>
   );
 }

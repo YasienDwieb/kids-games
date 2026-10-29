@@ -120,12 +120,13 @@ export function preloadModels3D(sources: readonly ModelSource[]): void {
 /**
  * A fresh, size-normalised copy of a model, or null while it loads (or if it
  * failed — keep a primitive fallback). `size` is the longest horizontal side
- * (`fit: 'length'`) or the height (`fit: 'height'`), in scene units.
+ * (`fit: 'length'`), the height (`fit: 'height'`) or the largest side
+ * (`fit: 'max'`, so tall and wide things fit the same box), in scene units.
  */
 export function useModel3D(
   src: ModelSource,
   size: number,
-  fit: 'length' | 'height' = 'length',
+  fit: 'length' | 'height' | 'max' = 'length',
 ): Object3D | null {
   const [obj, setObj] = useState<Object3D | null>(null);
   useEffect(() => {
@@ -142,7 +143,9 @@ export function useModel3D(
         });
         const box = new Box3().setFromObject(copy, true);
         const dims = box.getSize(new Vector3());
-        const s = size / Math.max(fit === 'height' ? dims.y : Math.max(dims.x, dims.z), 1e-6);
+        const extent =
+          fit === 'height' ? dims.y : fit === 'max' ? Math.max(dims.x, dims.y, dims.z) : Math.max(dims.x, dims.z);
+        const s = size / Math.max(extent, 1e-6);
         copy.scale.setScalar(s);
         const centre = box.getCenter(new Vector3());
         copy.position.set(-centre.x * s, -box.min.y * s, -centre.z * s);
