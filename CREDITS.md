@@ -67,6 +67,8 @@ license. Add an entry **before** importing any new third-party asset.
 
 - **Used for:** Mouse Maze's 3D board (`src/games/mouse-maze/assets/models/`): the mouse
   and the cheese; Candy Catch's wicker basket (`src/games/candy-catch/assets/models/`);
+  Animal Safari's 12 animals (`src/games/animal-safari/assets/models/`, lifted to 3D with
+  Higgsfield's SAM 3D Objects instead of Image to 3D);
   Balloon Archer's painted meadow backdrop
   (`src/games/balloon-archer/assets/meadow.jpg`, an image only).
 - **Source:** each model's reference image was generated with Higgsfield AI (Nano Banana
