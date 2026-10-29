@@ -318,8 +318,11 @@ export function HomeScreen({ navigation }: Props) {
                     // The rail mirrors natively under RTL, but a horizontal
                     // ScrollView still starts at x:0 (the far end). Snap to the
                     // reading start once the content is measured.
-                    onContentSizeChange={(w) => {
-                      if (I18nManager.isRTL) railRef.current?.scrollTo({ x: w, animated: false });
+                    // scrollToEnd, not scrollTo({ x: contentWidth }): the latter
+                    // over-scrolled by a viewport, sliding the cards over Lulu's
+                    // column (the rail doesn't clip, for the hard shadows).
+                    onContentSizeChange={() => {
+                      if (I18nManager.isRTL) railRef.current?.scrollToEnd({ animated: false });
                     }}
                   >
                     {category === null ? featured(featW, railH) : null}
