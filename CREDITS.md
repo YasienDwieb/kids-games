@@ -66,7 +66,8 @@ license. Add an entry **before** importing any new third-party asset.
 ### Higgsfield (Nano Banana Pro + Image to 3D) — 3D game models
 
 - **Used for:** Mouse Maze's 3D board (`src/games/mouse-maze/assets/models/`): the mouse
-  and the cheese; Balloon Archer's painted meadow backdrop
+  and the cheese; Candy Catch's wicker basket (`src/games/candy-catch/assets/models/`);
+  Balloon Archer's painted meadow backdrop
   (`src/games/balloon-archer/assets/meadow.jpg`, an image only).
 - **Source:** each model's reference image was generated with Higgsfield AI (Nano Banana
   Pro) and turned into a textured mesh with Higgsfield's Image to 3D (Meshy), 2026-10-29,
