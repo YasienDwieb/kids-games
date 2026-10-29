@@ -71,6 +71,7 @@ export const ar: CoreTranslations = {
     title: 'الإعدادات',
     sound: 'المؤثرات الصوتية',
     haptics: 'الاهتزاز',
+    analytics: 'مشاركة إحصاءات استخدام مجهولة الهوية',
     showGamesFor: 'ألعاب مناسبة لعمر',
     all: 'الكل',
     language: 'اللغة',

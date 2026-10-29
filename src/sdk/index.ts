@@ -127,6 +127,12 @@ export type { Playtime } from './playtime/playtime';
 export { maybeAskForReview, openStoreReview, shouldAskForReview } from './review/review';
 export type { ReviewState } from './review/review';
 
+// Analytics — vendor-neutral, anonymous usage events (backend picked in analytics/init.ts)
+export { track, trackRound, flushAnalytics } from './analytics/client';
+export { usePlaySession } from './analytics/usePlaySession';
+export type { AnalyticsEvents, EventName, PlayMode } from './analytics/events';
+export type { AnalyticsSink, EventProps } from './analytics/types';
+
 // Adaptive difficulty — a per-game skill tier that follows the child
 export { useAdaptive } from './adaptive/useAdaptive';
 export type { UseAdaptiveResult } from './adaptive/useAdaptive';

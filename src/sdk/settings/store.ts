@@ -18,6 +18,8 @@ export type Settings = {
   flowGameIds: string[] | null;
   /** Parent-set daily play limit in minutes; null = no limit. */
   dailyLimitMin: number | null;
+  /** Parent opt-out for anonymous usage stats (see src/sdk/analytics). */
+  analyticsEnabled: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -28,6 +30,7 @@ export const DEFAULT_SETTINGS: Settings = {
   mode: 'free',
   flowGameIds: null,
   dailyLimitMin: null,
+  analyticsEnabled: true,
 };
 
 export const settingsStore = createStore<Settings>('settings', DEFAULT_SETTINGS);

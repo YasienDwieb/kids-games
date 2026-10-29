@@ -28,6 +28,10 @@ it('exports every public member as defined (no barrel cycle)', () => {
     'GameShell',
     'GameOverlay',
     'useGameShell',
+    // analytics
+    'track',
+    'trackRound',
+    'usePlaySession',
     // config / registry
     'registerGame',
     'getGame',
