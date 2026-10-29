@@ -23,8 +23,8 @@ import { SHAPE_SIZE_PX } from '../constants';
 import type { Shape } from '../types';
 import { SHAPE_SPRITES } from './shapeSprites';
 
-/** The sprite's shape fills ~70% of its square; draw it larger than the slot so the shape itself matches the slot. */
-const SPRITE_SCALE = 1.3;
+/** The sprite's shape fills ~70% of its square; draw it a touch larger than the slot so the shape itself nearly fills it (larger overflowed the sort tray tiles). */
+const SPRITE_SCALE = 1.12;
 
 // ---------------------------------------------------------------------------
 // Types
