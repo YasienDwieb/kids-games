@@ -19,6 +19,12 @@ export type GameConfig = {
   name: string;
   description: string;
   icon: string;
+  /**
+   * Illustrated home-tile art (a bundled square image, `require('./cover.jpg')`).
+   * Shown instead of `icon` on the home tile; `icon` stays the small glyph used
+   * elsewhere (Settings rows, the featured card).
+   */
+  cover?: number;
   ageRange: { min: number; max: number };
   component: ComponentType;
   backgroundColor: string;

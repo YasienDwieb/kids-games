@@ -7,6 +7,7 @@ registerGame({
   name: 'Simple Pairs',
   description: 'Find matching pairs of cards',
   icon: '🃏',
+  cover: require('./cover.jpg'),
   ageRange: { min: 2, max: 5 },
   component: SimplePairsGame,
   backgroundColor: COLORS.canvas,

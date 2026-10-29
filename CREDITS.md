@@ -48,6 +48,15 @@ license. Add an entry **before** importing any new third-party asset.
 - **Source:** Kenney (www.kenney.nl) — https://kenney.nl/assets/nature-kit
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 
+### Higgsfield (Nano Banana Pro) — home tile covers
+
+- **Used for:** the illustrated home-tile art of every game (`src/games/<id>/cover.jpg`,
+  `GameConfig.cover`).
+- **Source:** generated with Higgsfield AI (Nano Banana Pro), 2026-10-29, on the project's
+  Higgsfield account; resized to 400×400 JPEG.
+- **License:** generated content used under the Higgsfield account's terms, which the
+  project owner confirmed permit commercial use in this app.
+
 ### Higgsfield (Nano Banana Pro + Image to 3D) — 3D game models
 
 - **Used for:** Mouse Maze's 3D board (`src/games/mouse-maze/assets/models/`): the mouse

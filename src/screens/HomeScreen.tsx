@@ -326,6 +326,7 @@ export function HomeScreen({ navigation }: Props) {
                               fill
                               emojiSize={emoji}
                               icon={game.icon}
+                              cover={game.cover}
                               // Short label so the icon gets the space; the full
                               // name still goes to screen readers.
                               name={gameShortName(game)}
@@ -371,6 +372,7 @@ export function HomeScreen({ navigation }: Props) {
                 <View key={game.id} style={{ width: (contentW - GAP * (columns - 1)) / columns }}>
                   <GameCard
                     icon={game.icon}
+                    cover={game.cover}
                     name={gameName(game)}
                     accent={accentForGame(game, i)}
                     onPress={() => openGame(game.id)}

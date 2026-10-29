@@ -8,6 +8,7 @@ registerGame({
   name: 'Trace It', // English fallback; localized via trace-it:meta.name
   description: 'Trace letters and numbers with your finger!',
   icon: '✏️',
+  cover: require('./cover.jpg'),
   ageRange: { min: 3, max: 6 },
   component: TraceIt,
   backgroundColor: COLORS.canvas,

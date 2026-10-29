@@ -7,6 +7,7 @@ registerGame({
   name: 'Shape Detective', // English fallback; localized via shape-detective:meta.name
   description: 'Spot the pattern and crack the case!',
   icon: '🔺',
+  cover: require('./cover.jpg'),
   ageRange: { min: 3, max: 10 },
   component: ShapeDetectiveGame,
   backgroundColor: COLORS.canvas, // soft violet (ACCENTS.purple.tint)

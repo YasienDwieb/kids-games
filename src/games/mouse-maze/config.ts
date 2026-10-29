@@ -7,6 +7,7 @@ registerGame({
   name: 'Mouse Maze',
   description: 'Draw a path to help the mouse find its cheese!',
   icon: '🐭',
+  cover: require('./cover.jpg'),
   ageRange: { min: 3, max: 8 },
   component: MouseMazeGame,
   backgroundColor: COLORS.canvas,

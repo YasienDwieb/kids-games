@@ -7,6 +7,7 @@ registerGame({
   name: 'Match Up', // English fallback; localized via match-up:meta.name
   description: 'Draw a line from each thing to its match!',
   icon: '🔗',
+  cover: require('./cover.jpg'),
   ageRange: { min: 3, max: 7 },
   component: MatchUpGame,
   backgroundColor: '#F1ECFB', // soft violet (ACCENTS.purple.tint)
