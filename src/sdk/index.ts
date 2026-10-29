@@ -198,7 +198,7 @@ export {
   applyLanguage,
   bootstrapLanguage,
 } from './i18n/useLanguage';
-export { gameName, gameShortName, gameDescription } from './i18n/gameMeta';
+export { gameName, gameShortName, gameDescription, gameCover } from './i18n/gameMeta';
 
 // Guided flow engine
 export * from './flow';

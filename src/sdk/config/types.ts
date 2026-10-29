@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import type { AccentName } from '@/constants';
 import type { SoundOverrides } from '@/sdk/assets/query';
+import type { LanguageCode } from '@/sdk/i18n/types';
 
 export type GameLayoutOptions = {
   /** 'shell' (default) wraps the game in GameShell; 'bare' gives a raw safe-area canvas. */
@@ -25,6 +26,11 @@ export type GameConfig = {
    * elsewhere (Settings rows, the featured card).
    */
   cover?: number;
+  /**
+   * Per-language cover art, for covers that show letters (`{ ar: require('./cover.ar.jpg') }`).
+   * Falls back to `cover`; resolve with `gameCover()`.
+   */
+  coverByLanguage?: Partial<Record<LanguageCode, number>>;
   ageRange: { min: number; max: number };
   component: ComponentType;
   backgroundColor: string;

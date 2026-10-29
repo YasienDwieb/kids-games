@@ -69,7 +69,8 @@ license. Add an entry **before** importing any new third-party asset.
 ### Higgsfield (Nano Banana Pro) — home tile covers
 
 - **Used for:** the illustrated home-tile art of every game (`src/games/<id>/cover.jpg`,
-  `GameConfig.cover`).
+  `GameConfig.cover`), plus Arabic-letter covers for Letter Land and Trace It (`cover.ar.jpg`,
+  `GameConfig.coverByLanguage`).
 - **Source:** generated with Higgsfield AI (Nano Banana Pro), 2026-10-29, on the project's
   Higgsfield account; resized to 400×400 JPEG.
 - **License:** generated content used under the Higgsfield account's terms, which the
