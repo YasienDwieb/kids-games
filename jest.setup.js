@@ -29,9 +29,13 @@ jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock
 jest.mock('@react-three/fiber/native', () => ({
   Canvas: () => null,
   useFrame: () => {},
+  createPortal: () => null,
 }));
 
 // three and its loaders ship as ESM; the 3D road's model helpers only touch
 // them at runtime, so tests get inert stand-ins.
-jest.mock('three', () => ({ Box3: class {}, Vector3: class {} }));
+// Every three export is an empty class, so module-level scratch objects
+// (`new Quaternion()`) construct fine.
+jest.mock('three', () => new Proxy({}, { get: (_, key) => (key === '__esModule' ? false : class {}) }));
 jest.mock('three/addons/loaders/GLTFLoader.js', () => ({ GLTFLoader: class {} }));
+jest.mock('three/addons/utils/SkeletonUtils.js', () => ({ clone: (o) => o }));

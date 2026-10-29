@@ -21,6 +21,13 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=src)
 
 meshes = [o for o in bpy.context.scene.objects if o.type == "MESH"]
+rigged = any(o.type == "ARMATURE" for o in bpy.context.scene.objects)
+if rigged:
+    # Auto-rigged exports carry helper meshes (an icosphere) outside the skeleton.
+    loose = [m for m in meshes if not (m.parent and m.parent.type == "ARMATURE")]
+    meshes = [m for m in meshes if m not in loose]
+    for o in loose:
+        bpy.data.objects.remove(o, do_unlink=True)
 bpy.ops.object.select_all(action="DESELECT")
 for o in meshes:
     o.select_set(True)
@@ -28,12 +35,17 @@ bpy.context.view_layer.objects.active = meshes[0]
 if len(meshes) > 1:
     bpy.ops.object.join()
 obj = bpy.context.view_layer.objects.active
-bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+# A skinned mesh keeps its transforms: baking them in would detach it from the
+# skeleton's bind pose.
+if not rigged:
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
 
 tris = sum(len(p.vertices) - 2 for p in obj.data.polygons)
 if tris > max_tris:
     mod = obj.modifiers.new("dec", "DECIMATE")
     mod.ratio = max_tris / tris
+    # First in the stack, so it decimates the undeformed mesh (weights follow).
+    bpy.ops.object.modifier_move_to_index(modifier=mod.name, index=0)
     bpy.ops.object.modifier_apply(modifier=mod.name)
 
 # The first image texture feeding a material is the base colour.
@@ -72,6 +84,9 @@ bpy.ops.export_scene.gltf(
     export_normals=True,
     export_materials="EXPORT",
     export_yup=True,
+    export_skins=True,
+    export_animations=False,
 )
 final = sum(len(p.vertices) - 2 for p in obj.data.polygons)
-print(f"PREP {dst}: {final} tris, texture={'yes' if image else 'no'}")
+bones = [b.name for o in bpy.context.scene.objects if o.type == "ARMATURE" for b in o.data.bones]
+print(f"PREP {dst}: {final} tris, texture={'yes' if image else 'no'}, bones={bones}")

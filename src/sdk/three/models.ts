@@ -22,17 +22,24 @@ import {
   Box3,
   DataTexture,
   LinearMipmapLinearFilter,
+  Color,
   Mesh,
+  MeshPhysicalMaterial,
   MeshStandardMaterial,
   RGBAFormat,
+  SkinnedMesh,
   SRGBColorSpace,
   Vector3,
   type Object3D,
 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
-/** A bundled model: the GLB module and, for textured models, its `.rgba` texture. */
-export type ModelSource = { glb: number; rgba?: number; roughness?: number };
+/**
+ * A bundled model: the GLB module and, for textured models, its `.rgba`
+ * texture. `sheen` (0..1) adds a soft velvet rim for fur and feathers.
+ */
+export type ModelSource = { glb: number; rgba?: number; roughness?: number; sheen?: number };
 
 // GLTFLoader decodes the GLB's JSON chunk with TextDecoder; provide a small
 // UTF-8 fallback in case the JS engine lacks one.
@@ -83,7 +90,16 @@ function load(src: ModelSource): Promise<Object3D> {
       ]);
       const gltf = await new GLTFLoader().parseAsync(buffer, '');
       if (map) {
-        const material = new MeshStandardMaterial({ map, roughness: src.roughness ?? 0.75, metalness: 0 });
+        const material = src.sheen
+          ? new MeshPhysicalMaterial({
+              map,
+              roughness: src.roughness ?? 0.85,
+              metalness: 0,
+              sheen: src.sheen,
+              sheenRoughness: 0.6,
+              sheenColor: new Color(1, 1, 1),
+            })
+          : new MeshStandardMaterial({ map, roughness: src.roughness ?? 0.75, metalness: 0 });
         gltf.scene.traverse((o) => {
           if (o instanceof Mesh) o.material = material;
         });
@@ -117,8 +133,14 @@ export function useModel3D(
     load(src)
       .then((scene) => {
         if (!alive) return;
-        const copy = scene.clone(true);
-        const box = new Box3().setFromObject(copy);
+        // SkeletonUtils' clone rebinds skinned meshes to the copy's own bones.
+        const copy = cloneSkinned(scene);
+        // Skinned bounds need the bone matrices, which normally update at render.
+        copy.updateMatrixWorld(true);
+        copy.traverse((o) => {
+          if (o instanceof SkinnedMesh) o.skeleton.update();
+        });
+        const box = new Box3().setFromObject(copy, true);
         const dims = box.getSize(new Vector3());
         const s = size / Math.max(fit === 'height' ? dims.y : Math.max(dims.x, dims.z), 1e-6);
         copy.scale.setScalar(s);

@@ -1,21 +1,22 @@
 /**
- * The buddy in 3D — Lulu the owl or Zain the lion cub, built from soft
- * toon-shaded shapes (no model file), so every part can move: they breathe,
- * blink, follow the child's finger with eyes and head, flap/wave on a cheer,
- * nod to encourage, and react to a tap with a hop, a spin and a giggle.
+ * The buddy in 3D — Lulu the owl or Zain the lion cub, rigged semi-realistic
+ * models moved bone by bone: they breathe, sway, follow the child's finger
+ * with their head, wave, hop and cheer, nod to encourage, point, and react to
+ * a tap with a hop, a spin and a giggle.
  *
  *   <Lulu3D size={140} mood="cheer" />
  *   <Lulu3D size={120} interactive />   // tap / drag
  *   <Lulu3D buddy="zain" />             // a specific buddy (default: the chosen one)
  *
  * `active={false}` stops the render loop (keep a mounted Lulu cheap while
- * hidden). Colours match the 2D art: lavender body, cream face and belly.
+ * hidden). They match the 2D poses in `Mascot`.
  */
 import { useEffect, useMemo, useRef } from 'react';
 import { PanResponder, StyleSheet, View, type LayoutChangeEvent, type ViewStyle } from 'react-native';
-import { Canvas, useFrame } from '@react-three/fiber/native';
-import type { Group, Mesh } from 'three';
-import { ACCENTS, BUDDY_COLORS, COLORS, POP } from '@/constants/colors';
+import { Canvas, createPortal, useFrame } from '@react-three/fiber/native';
+import { Bone, Euler, Group as GroupImpl, Quaternion, Vector3, type Group, type Object3D } from 'three';
+import { useModel3D, type ModelSource } from '@/sdk/three/models';
+import { COLORS, POP } from '@/constants/colors';
 import { useBuddy, type BuddyId } from '@/sdk/buddy';
 import { useWearing, type Wearing } from '@/sdk/player/outfitStore';
 import { useSound } from '@/sdk/audio/useSound';
@@ -24,21 +25,12 @@ import { useTranslation } from 'react-i18next';
 
 export type LuluMood = 'idle' | 'wave' | 'cheer' | 'encourage' | 'point';
 
-const PURPLE = ACCENTS.purple.base;
-const PURPLE_DEEP = ACCENTS.purple.deep;
-const CREAM = ACCENTS.orange.tint;
-const BELLY = COLORS.canvas2;
-const ORANGE = ACCENTS.orange.base;
 const INK = COLORS.ink;
-const WHITE = COLORS.surface;
 const GOLD = COLORS.gold;
 const PINK = POP.bubblegum;
 const BLUE = POP.splash;
-const LION = BUDDY_COLORS.zain;
 const DRAG_SLOP = 8;
 
-/** Hats that sit on top of the head hide the crown feathers under them. */
-const COVERS_FEATHERS = new Set(['party-hat', 'cap', 'crown', 'top-hat']);
 
 /** Lulu's wardrobe in 3D: each item hangs off the head so it turns with her. */
 function Hat({ id }: { id: string | null }) {
@@ -197,328 +189,194 @@ type RigProps = {
 };
 
 /**
- * The shared rig: both buddies breathe, blink, hop, wave an arm/wing, follow the
- * finger and spin on a tap the same way. Each model just hangs its meshes off
- * these refs (root > body > head, two arms, eyes, pupils).
+ * Each buddy is a rigged Higgsfield model (Image to 3D + auto-rig, see
+ * CREDITS.md) — a soft semi-realistic owl / lion cub — animated in code by
+ * turning its bones, so one model covers every mood: breathing and a gentle
+ * sway, an arm/wing wave, a cheering hop with both arms up, a nod, a point,
+ * and the head turning to follow the child's finger.
  */
-function useRig({ mood, pointer, reaction, spin }: RigProps) {
+const MODELS: Record<BuddyId, ModelSource> = {
+  lulu: { glb: require('../assets/models/lulu.glb'), rgba: require('../assets/models/lulu.rgba'), sheen: 0.5 },
+  zain: { glb: require('../assets/models/zain.glb'), rgba: require('../assets/models/zain.rgba'), sheen: 0.5 },
+};
+
+/**
+ * Model height in scene units; where the wardrobe sits on each head (head-bone
+ * space, scene units, then scaled by `wear`); and how far to lower the arms
+ * from the rig's A-pose so they hang naturally.
+ */
+const BUDDY_FIT: Record<
+  BuddyId,
+  { height: number; hat: [number, number, number]; glasses: [number, number, number]; wear: number; armRest: number }
+> = {
+  lulu: { height: 1.4, hat: [0, -0.12, 0], glasses: [0, 0.06, -0.25], wear: 1.2, armRest: -0.2 },
+  zain: { height: 1.5, hat: [0, 0.26, 0], glasses: [0, 0.07, -0.13], wear: 0.85, armRest: -0.4 },
+};
+
+/** Where the feet stand: the bottom of the camera's view, with a little room. */
+const FEET_Y = -0.84;
+
+const BONES = ['Hips', 'Spine', 'Spine01', 'neck', 'Head', 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm'] as const;
+type BoneName = (typeof BONES)[number];
+type BoneRig = { bone: Bone; rest: Quaternion; world: Quaternion; worldInv: Quaternion };
+
+const tmpQ = new Quaternion();
+const tmpE = new Euler();
+
+/**
+ * Rotate a bone by a model-space euler (x = nod down, y = turn toward +x,
+ * z = roll / raise an arm on the +x side), on top of its rest pose. Working in
+ * model space keeps the moods readable whatever the rig's local bone axes are.
+ */
+function pose(r: BoneRig | undefined, x: number, y: number, z: number) {
+  if (!r) return;
+  tmpE.set(x, y, z, 'YXZ');
+  tmpQ.setFromEuler(tmpE);
+  // local = rest · (worldRestInv · Δ · worldRest)
+  r.bone.quaternion.copy(r.rest).multiply(tmpQ.premultiply(r.worldInv).multiply(r.world));
+}
+
+function useBones(obj: Object3D | null) {
+  return useMemo(() => {
+    const rig: Partial<Record<BoneName, BoneRig>> = {};
+    if (!obj) return rig;
+    obj.updateMatrixWorld(true);
+    const rootInv = obj.getWorldQuaternion(new Quaternion()).invert();
+    obj.traverse((o) => {
+      const name = o.name as BoneName;
+      if (!(o instanceof Bone) || !BONES.includes(name) || rig[name]) return;
+      const world = o.getWorldQuaternion(new Quaternion()).premultiply(rootInv);
+      rig[name] = { bone: o, rest: o.quaternion.clone(), world, worldInv: world.clone().invert() };
+    });
+    return rig;
+  }, [obj]);
+}
+
+function BuddyBody({ buddy, mood, wearing, pointer, reaction, spin }: RigProps & { buddy: BuddyId }) {
+  const fit = BUDDY_FIT[buddy];
+  const obj = useModel3D(MODELS[buddy], fit.height, 'height');
+  const rig = useBones(obj);
   const root = useRef<Group>(null);
   const body = useRef<Group>(null);
-  const head = useRef<Group>(null);
-  const wingL = useRef<Group>(null);
-  const wingR = useRef<Group>(null);
-  const eyes = useRef<(Mesh | null)[]>([]);
-  const pupils = useRef<(Group | null)[]>([]);
-  const blinkAt = useRef(1.5);
   const turned = useRef(0); // eased copy of `spin`, so letting go glides back
+  const look = useRef({ x: 0, y: 0 });
 
-  useFrame(({ clock }) => {
+  // The wardrobe rides on the head bone, undoing the rig's own scale.
+  const wear = useMemo(() => {
+    const head = rig.Head?.bone;
+    if (!head || !obj) return null;
+    const g = new GroupImpl();
+    // Undo the bone's rest rotation and scale, so wear is authored upright in scene units.
+    g.quaternion.copy(rig.Head!.worldInv);
+    g.scale.setScalar(1 / Math.max(head.getWorldScale(new Vector3()).x, 1e-6));
+    head.add(g);
+    return g;
+  }, [rig, obj]);
+  useEffect(() => () => {
+    wear?.removeFromParent();
+  }, [wear]);
+
+  useFrame(({ clock }, dt) => {
     const t = clock.getElapsedTime();
     const r = root.current;
     const b = body.current;
-    const h = head.current;
-    if (!r || !b || !h) return;
+    if (!r || !b) return;
 
-    // Breathing + idle sway.
     let y = 0;
-    let sx = 1;
-    let sy = 1 + Math.sin(t * 2.2) * 0.02;
-    let rotY = Math.sin(t * 0.7) * 0.18;
+    let sy = 1 + Math.sin(t * 2.2) * 0.012;
+    let rotY = Math.sin(t * 0.7) * 0.15;
     let rotZ = 0;
-    let headX = 0;
-    let wingL0 = 0.15;
-    let wingR0 = 0.15;
+    let nod = 0;
+    let tilt = Math.sin(t * 0.9) * 0.04;
+    // Arms: [raise, forearm bend] — raise lifts the arm out to the side.
+    let lArm = 0.08 + Math.sin(t * 2.2) * 0.03;
+    let rArm = 0.08 + Math.sin(t * 2.2 + 0.4) * 0.03;
+    let lFore = 0;
+    let rFore = 0;
+    let lFwd = 0;
+    let rFwd = 0;
 
     if (mood === 'cheer') {
-      // Hop, flap, little spin.
       const hop = Math.abs(Math.sin(t * 5));
-      y = hop * 0.28;
-      sy = 0.9 + hop * 0.18;
-      sx = 1.08 - hop * 0.1;
-      wingL0 = wingR0 = 0.6 + Math.sin(t * 18) * 0.5;
-      rotY = Math.sin(t * 2) * 0.5;
+      y = hop * 0.22;
+      sy = 0.94 + hop * 0.1;
+      lArm = rArm = 2.0 + Math.sin(t * 14) * 0.25;
+      lFwd = rFwd = 0.45;
+      rotY = Math.sin(t * 2) * 0.35;
+      nod = -0.15;
     } else if (mood === 'wave') {
-      wingR0 = 1.4 + Math.sin(t * 7) * 0.45;
+      // Upper arm out at shoulder height and a little forward, forearm up,
+      // waving from the elbow.
+      lArm = 1.25;
+      lFwd = 0.55;
+      lFore = 1.1 + Math.sin(t * 7) * 0.4;
+      tilt = 0.08;
     } else if (mood === 'encourage') {
-      headX = Math.max(0, Math.sin(t * 4)) * 0.22; // nod
-      wingL0 = 1.3; // thumbs-up wing
+      nod = Math.max(0, Math.sin(t * 4)) * 0.25;
+      lArm = 1.2;
+      lFore = 1.2;
+      lFwd = 0.6;
+      tilt = 0.12;
     } else if (mood === 'point') {
-      rotZ = -0.12;
-      wingR0 = 1.6;
-      rotY = 0.35;
+      rotZ = -0.06;
+      lArm = 1.45;
+      lFwd = 0.35;
+      rotY = 0.3;
     }
 
     // Tap reaction: squash, jump, full spin over ~0.8 s.
     const since = t - reaction.current.at;
     if (reaction.current.at > 0 && since < 0.8) {
       const k = since / 0.8;
-      y += Math.sin(k * Math.PI) * 0.5;
-      sy *= k < 0.15 ? 1 - k * 1.5 : 1 + Math.sin(k * Math.PI) * 0.08;
+      y += Math.sin(k * Math.PI) * 0.45;
+      sy *= k < 0.15 ? 1 - k : 1 + Math.sin(k * Math.PI) * 0.06;
       rotY += k * Math.PI * 2;
-      wingL0 = wingR0 = 1 + Math.sin(since * 30) * 0.4;
+      lArm = rArm = 1.6 + Math.sin(since * 30) * 0.3;
+      lFwd = rFwd = 0.4;
     }
     if (reaction.current.at < 0) reaction.current.at = t; // a pending tap starts now
 
-    r.position.y = y - 0.05;
+    r.position.y = FEET_Y + y;
     turned.current += (spin.current - turned.current) * 0.2;
     r.rotation.y = rotY + turned.current;
     r.rotation.z = rotZ;
-    b.scale.set(sx, sy, sx);
-    if (wingL.current) wingL.current.rotation.z = wingL0;
-    if (wingR.current) wingR.current.rotation.z = -wingR0;
+    b.scale.set(1 + (1 - sy) * 0.5, sy, 1 + (1 - sy) * 0.5);
 
-    // Head + eyes follow the finger while it's down, else drift home.
+    // Head follows the finger while it's down, else glances about.
     const p = pointer.current;
-    const lookX = p.active ? p.x : Math.sin(t * 0.5) * 0.2;
-    const lookY = p.active ? p.y : 0;
-    h.rotation.y += (lookX * 0.5 - h.rotation.y) * 0.15;
-    h.rotation.x += (-lookY * 0.3 + headX - h.rotation.x) * 0.15;
-    pupils.current.forEach((pu) => {
-      if (!pu) return;
-      pu.position.x = lookX * 0.03;
-      pu.position.y = lookY * 0.03;
-    });
-
-    // Blink every few seconds.
-    if (t > blinkAt.current) blinkAt.current = t + 2.5 + Math.random() * 2.5;
-    const blink = blinkAt.current - t > 0.12 ? 1 : 0.1;
-    eyes.current.forEach((e) => {
-      if (e) e.scale.y = blink;
-    });
+    const k = 1 - Math.exp(-dt * 8);
+    look.current.x += ((p.active ? p.x : Math.sin(t * 0.5) * 0.25) - look.current.x) * k;
+    look.current.y += ((p.active ? p.y : 0) - look.current.y) * k;
+    pose(rig.Head, nod - look.current.y * 0.35, look.current.x * 0.55, tilt);
+    pose(rig.Spine, 0, look.current.x * 0.12, -tilt * 0.4);
+    // Arms: the character's left arm is on +x (it faces the camera).
+    // Raise = roll about the front axis; forward = swing about the vertical
+    // axis, so a raised paw comes out in front of the mane, not behind it.
+    pose(rig.LeftArm, 0, -lFwd, lArm + fit.armRest);
+    pose(rig.RightArm, 0, rFwd, -(rArm + fit.armRest));
+    pose(rig.LeftForeArm, 0, 0, lFore);
+    pose(rig.RightForeArm, 0, 0, -rFore);
   });
 
-  return { root, body, head, wingL, wingR, eyes, pupils };
-}
-
-function Owl(props: RigProps) {
-  const { wearing } = props;
-  const { root, body, head, wingL, wingR, eyes, pupils } = useRig(props);
-
+  if (!obj) return null;
   return (
-    <group ref={root}>
+    <group ref={root} position={[0, FEET_Y, 0]}>
       <group ref={body}>
-        {/* Body + belly */}
-        <mesh scale={[1, 1.02, 0.92]}>
-          <sphereGeometry args={[0.55, 32, 24]} />
-          <meshToonMaterial color={PURPLE} />
-        </mesh>
-        <mesh position={[0, -0.16, 0.3]} scale={[0.82, 0.85, 0.5]}>
-          <sphereGeometry args={[0.42, 28, 20]} />
-          <meshToonMaterial color={BELLY} />
-        </mesh>
-
-        {/* Wings, pivoting at the shoulder */}
-        <group ref={wingL} position={[-0.5, 0.05, 0]}>
-          <mesh position={[-0.05, -0.2, 0]} scale={[0.32, 0.75, 0.5]}>
-            <sphereGeometry args={[0.32, 20, 16]} />
-            <meshToonMaterial color={PURPLE_DEEP} />
-          </mesh>
-        </group>
-        <group ref={wingR} position={[0.5, 0.05, 0]}>
-          <mesh position={[0.05, -0.2, 0]} scale={[0.32, 0.75, 0.5]}>
-            <sphereGeometry args={[0.32, 20, 16]} />
-            <meshToonMaterial color={PURPLE_DEEP} />
-          </mesh>
-        </group>
-
-        {/* Feet */}
-        {[-0.18, 0.18].map((x) => (
-          <mesh key={x} position={[x, -0.55, 0.18]} scale={[1, 0.45, 1.3]}>
-            <sphereGeometry args={[0.1, 14, 10]} />
-            <meshToonMaterial color={ORANGE} />
-          </mesh>
-        ))}
-
-        {/* Head features (turn together) */}
-        <group ref={head} position={[0, 0.12, 0]}>
-          {/* Face mask */}
-          <mesh position={[0, 0.12, 0.36]} scale={[1.05, 0.62, 0.42]}>
-            <sphereGeometry args={[0.36, 28, 20]} />
-            <meshToonMaterial color={CREAM} />
-          </mesh>
-          {/* Eyes */}
-          {[-0.15, 0.15].map((x, i) => (
-            <group key={x} position={[x, 0.15, 0.49]}>
-              <mesh ref={(m) => { eyes.current[i] = m; }}>
-                <sphereGeometry args={[0.1, 20, 16]} />
-                <meshToonMaterial color={WHITE} />
-              </mesh>
-              <group ref={(g) => { pupils.current[i] = g; }} position={[0, 0, 0.07]}>
-                <mesh>
-                  <sphereGeometry args={[0.055, 16, 12]} />
-                  <meshBasicMaterial color={INK} />
-                </mesh>
-                <mesh position={[0.02, 0.025, 0.04]}>
-                  <sphereGeometry args={[0.015, 8, 6]} />
-                  <meshBasicMaterial color={WHITE} />
-                </mesh>
-              </group>
-            </group>
-          ))}
-          {/* Beak */}
-          <mesh position={[0, 0.03, 0.56]} rotation={[Math.PI / 2 + 0.25, 0, 0]}>
-            <coneGeometry args={[0.06, 0.14, 12]} />
-            <meshToonMaterial color={ORANGE} />
-          </mesh>
-          {/* Ear tufts + crown feathers */}
-          {[-1, 1].map((s) => (
-            <mesh key={s} position={[s * 0.32, 0.5, 0.02]} rotation={[0, 0, -s * 0.5]}>
-              <coneGeometry args={[0.1, 0.26, 10]} />
-              <meshToonMaterial color={PURPLE} />
-            </mesh>
-          ))}
-          {COVERS_FEATHERS.has(wearing.hat ?? '')
-            ? null
-            : [-0.06, 0, 0.06].map((x, i) => (
-                <mesh key={x} position={[x, 0.55 + (i === 1 ? 0.04 : 0), 0.05]} rotation={[0, 0, -x * 4]}>
-                  <coneGeometry args={[0.04, 0.16, 8]} />
-                  <meshToonMaterial color={PURPLE} />
-                </mesh>
-              ))}
-          <Hat id={wearing.hat} />
-          <Glasses id={wearing.glasses} />
-        </group>
+        <primitive object={obj} />
       </group>
-    </group>
-  );
-}
-
-/** Zain the lion cub: golden body, a mane ring round his face, paws for arms. */
-function Lion(props: RigProps) {
-  const { wearing } = props;
-  const { root, body, head, wingL, wingR, eyes, pupils } = useRig(props);
-  const MANE_TUFTS = 14;
-
-  return (
-    <group ref={root}>
-      <group ref={body}>
-        {/* Body + belly */}
-        <mesh position={[0, -0.24, 0]} scale={[1, 1.05, 0.9]}>
-          <sphereGeometry args={[0.42, 32, 24]} />
-          <meshToonMaterial color={LION.fur} />
-        </mesh>
-        <mesh position={[0, -0.32, 0.26]} scale={[0.7, 0.75, 0.45]}>
-          <sphereGeometry args={[0.3, 24, 18]} />
-          <meshToonMaterial color={LION.muzzle} />
-        </mesh>
-
-        {/* Neckerchief, a blue triangle under the chin */}
-        <mesh position={[0, 0.02, 0.3]} rotation={[0.25, 0, Math.PI]} scale={[1, 1, 0.35]}>
-          <coneGeometry args={[0.16, 0.22, 3]} />
-          <meshToonMaterial color={LION.scarf} />
-        </mesh>
-
-        {/* Arms (paws), pivoting at the shoulder */}
-        <group ref={wingL} position={[-0.36, -0.08, 0.02]}>
-          <mesh position={[-0.04, -0.18, 0]} scale={[0.36, 0.72, 0.42]}>
-            <sphereGeometry args={[0.3, 18, 14]} />
-            <meshToonMaterial color={LION.furDeep} />
-          </mesh>
-        </group>
-        <group ref={wingR} position={[0.36, -0.08, 0.02]}>
-          <mesh position={[0.04, -0.18, 0]} scale={[0.36, 0.72, 0.42]}>
-            <sphereGeometry args={[0.3, 18, 14]} />
-            <meshToonMaterial color={LION.furDeep} />
-          </mesh>
-        </group>
-
-        {/* Feet */}
-        {[-0.17, 0.17].map((x) => (
-          <mesh key={x} position={[x, -0.62, 0.12]} scale={[1, 0.55, 1.25]}>
-            <sphereGeometry args={[0.11, 14, 10]} />
-            <meshToonMaterial color={LION.furDeep} />
-          </mesh>
-        ))}
-
-        {/* Tail with a mane-coloured tuft */}
-        <group position={[0.28, -0.5, -0.28]} rotation={[0.5, 0, -0.9]}>
-          <mesh position={[0, 0.16, 0]}>
-            <cylinderGeometry args={[0.035, 0.035, 0.34, 8]} />
-            <meshToonMaterial color={LION.fur} />
-          </mesh>
-          <mesh position={[0, 0.36, 0]}>
-            <sphereGeometry args={[0.08, 12, 10]} />
-            <meshToonMaterial color={LION.mane} />
-          </mesh>
-        </group>
-
-        {/* Head (turns on its own) */}
-        <group ref={head} position={[0, 0.12, 0]}>
-          {/* Mane: a soft disc behind the face plus tufts round the rim */}
-          <mesh position={[0, 0.3, -0.08]} scale={[1, 1, 0.62]}>
-            <sphereGeometry args={[0.5, 28, 20]} />
-            <meshToonMaterial color={LION.mane} />
-          </mesh>
-          {Array.from({ length: MANE_TUFTS }, (_, i) => {
-            const a = (i / MANE_TUFTS) * Math.PI * 2;
-            return (
-              <mesh key={i} position={[Math.cos(a) * 0.47, 0.3 + Math.sin(a) * 0.47, -0.06]} scale={[1, 1, 0.7]}>
-                <sphereGeometry args={[0.13, 14, 10]} />
-                <meshToonMaterial color={LION.mane} />
-              </mesh>
-            );
-          })}
-          {/* Face */}
-          <mesh position={[0, 0.3, 0.06]}>
-            <sphereGeometry args={[0.38, 28, 22]} />
-            <meshToonMaterial color={LION.fur} />
-          </mesh>
-          {/* Ears */}
-          {[-1, 1].map((sgn) => (
-            <group key={sgn} position={[sgn * 0.3, 0.6, 0.04]}>
-              <mesh scale={[1, 1, 0.6]}>
-                <sphereGeometry args={[0.11, 14, 10]} />
-                <meshToonMaterial color={LION.fur} />
-              </mesh>
-              <mesh position={[0, 0, 0.05]} scale={[1, 1, 0.4]}>
-                <sphereGeometry args={[0.06, 12, 8]} />
-                <meshToonMaterial color={LION.cheek} />
-              </mesh>
-            </group>
-          ))}
-          {/* Muzzle, nose, cheeks */}
-          <mesh position={[0, 0.17, 0.36]} scale={[1.3, 0.85, 0.75]}>
-            <sphereGeometry args={[0.15, 20, 14]} />
-            <meshToonMaterial color={LION.muzzle} />
-          </mesh>
-          <mesh position={[0, 0.24, 0.47]} scale={[1.3, 0.9, 1]}>
-            <sphereGeometry args={[0.045, 12, 10]} />
-            <meshToonMaterial color={LION.nose} />
-          </mesh>
-          {[-0.22, 0.22].map((x) => (
-            <mesh key={x} position={[x, 0.22, 0.34]} scale={[1, 0.6, 0.4]}>
-              <sphereGeometry args={[0.06, 12, 8]} />
-              <meshBasicMaterial color={LION.cheek} />
-            </mesh>
-          ))}
-          {/* Eyes */}
-          {[-0.14, 0.14].map((x, i) => (
-            <group key={x} position={[x, 0.37, 0.37]}>
-              <mesh ref={(m) => { eyes.current[i] = m; }}>
-                <sphereGeometry args={[0.08, 18, 14]} />
-                <meshToonMaterial color={WHITE} />
-              </mesh>
-              <group ref={(g) => { pupils.current[i] = g; }} position={[0, 0, 0.055]}>
-                <mesh>
-                  <sphereGeometry args={[0.05, 14, 10]} />
-                  <meshBasicMaterial color={INK} />
-                </mesh>
-                <mesh position={[0.018, 0.022, 0.035]}>
-                  <sphereGeometry args={[0.014, 8, 6]} />
-                  <meshBasicMaterial color={WHITE} />
-                </mesh>
+      {wear
+        ? createPortal(
+            <group scale={fit.wear}>
+              <group position={fit.hat}>
+                <Hat id={wearing.hat} />
               </group>
-            </group>
-          ))}
-          {/* The wardrobe is shared with Lulu; shift it onto a lion's head. */}
-          <group position={[0, 0.2, 0]}>
-            <Hat id={wearing.hat} />
-          </group>
-          <group position={[0, 0.22, -0.12]}>
-            <Glasses id={wearing.glasses} />
-          </group>
-        </group>
-      </group>
+              <group position={fit.glasses}>
+                <Glasses id={wearing.glasses} />
+              </group>
+            </group>,
+            wear,
+          )
+        : null}
     </group>
   );
 }
@@ -622,16 +480,14 @@ export function Lulu3D({
         style={StyleSheet.absoluteFill}
         frameloop={active ? 'always' : 'never'}
         gl={{ alpha: true }}
-        camera={{ position: [0, 0.22, 3.4], fov: 34 }}
+        camera={{ position: [0, 0.3, 3.8], fov: 34 }}
         onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
       >
-        <ambientLight intensity={0.9} />
-        <directionalLight position={[2, 3, 4]} intensity={1.2} />
-        {who === 'zain' ? (
-          <Lion mood={mood} wearing={wearing ?? saved} pointer={pointer} reaction={reaction} spin={spin} />
-        ) : (
-          <Owl mood={mood} wearing={wearing ?? saved} pointer={pointer} reaction={reaction} spin={spin} />
-        )}
+        {/* Soft sky/ground fill, a warm key and a cool rim that lifts the fur edge. */}
+        <hemisphereLight args={[0xfff6e8, 0x8a7a9a, 1.1]} />
+        <directionalLight position={[2, 3, 4]} intensity={1.5} color={0xfff1dc} />
+        <directionalLight position={[-3, 2, -3]} intensity={0.9} color={0xdfe8ff} />
+        <BuddyBody buddy={who} mood={mood} wearing={wearing ?? saved} pointer={pointer} reaction={reaction} spin={spin} />
       </Canvas>
     </View>
   );

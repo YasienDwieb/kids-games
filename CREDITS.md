@@ -20,24 +20,20 @@ license. Add an entry **before** importing any new third-party asset.
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 - **Processing:** recolored (CC0 permits modification).
 
-### Higgsfield (Nano Banana) — Lulu the owl mascot
+### Higgsfield (Nano Banana Pro + Image to 3D) — Lulu and Zain, the buddies
 
-- **Used for:** the mascot's four poses (`src/sdk/assets/images/mascot/owl-{wave,cheer,point,encourage}.png`),
-  drawn by the `Mascot` SDK component.
-- **Source:** generated with Higgsfield AI (Nano Banana) as one 2×2 character sheet, 2026-10-08,
-  on the project's Higgsfield account; cut into poses with the white background removed.
+- **Used for:** each buddy's four 2D poses
+  (`src/sdk/assets/images/mascot/{owl,lion}-{wave,cheer,point,encourage}.png`, drawn by
+  `Mascot`) and their rigged 3D models (`src/sdk/assets/models/{lulu,zain}.*`, drawn by
+  `Lulu3D`).
+- **Source:** redrawn in a semi-realistic style with Higgsfield AI (Nano Banana Pro) from the
+  original 2D art, 2026-10-29, on the project's Higgsfield account; backgrounds removed with
+  Higgsfield's background remover. The 3D models are Higgsfield Image to 3D (Meshy) meshes
+  with its auto-rig, made from a front-view A-pose of each buddy.
 - **License:** generated content used under the Higgsfield account's terms, which the
   project owner confirmed permit commercial use in this app.
-
-### Higgsfield (Nano Banana Pro) — Zain the lion cub buddy
-
-- **Used for:** the boy buddy's four poses (`src/sdk/assets/images/mascot/lion-{wave,cheer,point,encourage}.png`),
-  drawn by the `Mascot` SDK component when the child picks Zain.
-- **Source:** generated with Higgsfield AI (Nano Banana Pro) using the Lulu art as the style
-  reference, 2026-10-18, on the project's Higgsfield account; background removed with
-  Higgsfield's background remover.
-- **License:** generated content used under the Higgsfield account's terms, which the
-  project owner confirmed permit commercial use in this app.
+- **Processing:** poses trimmed to 480×480 and quantised with pngquant; models decimated and
+  split into a GLB plus raw RGBA texture with `scripts/3d/prep_glb.py`.
 
 ### Kenney — Car Kit & Racing Kit (3D models)
 
