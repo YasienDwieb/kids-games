@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { COLORS as TOKENS, EmojiImage, FONTS, OUTLINE, SHADOWS, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
@@ -6,6 +6,9 @@ import { DraggableResult } from './DraggableResult';
 import { RecipeRow } from './RecipeRow';
 import { DIMENSIONS } from '../constants';
 import type { ColorId, PigmentId } from '../types';
+
+// three + react-three-fiber + expo-gl are only evaluated once the pot is on screen.
+const Bowl3D = lazy(() => import('./Bowl3D').then((m) => ({ default: m.Bowl3D })));
 
 /** Droplets thrown up by a splash. */
 const SPLASH_DROPS = 6;
@@ -135,16 +138,22 @@ export function MixingZone({
       ref={viewRef}
       onLayout={handleLayout}
       style={[
-        styles.zone,
+        styles.frame,
         { transform: [{ translateX: nudge.interpolate({ inputRange: [-1, 1], outputRange: [-8, 8] }) }] },
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-        },
-        currentMixHex != null && styles.zoneActive,
+        { width: size, height: size },
       ]}
     >
+      {/* The 3D bowl; the flat 2D pot stands in while three.js loads. */}
+      <Suspense
+        fallback={
+          <View
+            style={[
+              StyleSheet.absoluteFill,
+              styles.zone,
+              { borderRadius: size / 2 },
+              currentMixHex != null && styles.zoneActive,
+            ]}
+          >
       {!currentMixHex && (
         <View style={[styles.emptyState, { maxWidth: emptyMaxWidth }]}>
           <EmojiImage
@@ -246,6 +255,36 @@ export function MixingZone({
         </View>
       ) : null}
 
+          </View>
+        }
+      >
+        <Bowl3D
+          size={size}
+          hex={currentMixHex}
+          dropCount={dropCount}
+          dropCap={dropCap}
+          lastDrop={lastDrop}
+        />
+      {!currentMixHex && (
+        <View style={[styles.emptyState, styles.emptyOnBowl, { maxWidth: emptyMaxWidth }]}>
+          <EmojiImage
+            emoji="🎨"
+            size={iconSize}
+            style={{ marginBottom: clamp(Math.round(size * 0.045), 4, 8) }}
+          />
+          <Text
+            style={[
+              styles.emptyText,
+              { fontSize: emptyFontSize, lineHeight: Math.round(emptyFontSize * 1.25) },
+            ]}
+          >
+            {t('color-mixer:mixingZone.dropHere')}
+          </Text>
+        </View>
+      )}
+
+      </Suspense>
+
       {/* What went in, on a pill above the pot. */}
       {recipe.length > 0 ? (
         <View style={styles.recipePill} pointerEvents="none">
@@ -273,6 +312,15 @@ export function MixingZone({
 }
 
 const styles = StyleSheet.create({
+  frame: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+  // The empty-pot hint sits in the bowl's mouth, a little above centre.
+  emptyOnBowl: {
+    marginTop: -12,
+  },
   zone: {
     borderWidth: OUTLINE.base,
     borderColor: OUTLINE.color,

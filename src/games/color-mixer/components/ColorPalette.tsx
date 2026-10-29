@@ -164,6 +164,10 @@ function DraggableSlotBlob({
 }: DraggableSlotBlobProps) {
   const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  // The responder is created once; it must call the latest handlers, not the first
+  // render's (those held a stale mix, so the first drops after opening were lost).
+  const latest = useRef({ onDragStart, onDragMove, onDragEnd, instanceId });
+  latest.current = { onDragStart, onDragMove, onDragEnd, instanceId };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -179,11 +183,11 @@ function DraggableSlotBlob({
           useNativeDriver: true,
         }).start();
 
-        onDragStart(instanceId);
+        latest.current.onDragStart(latest.current.instanceId);
       },
       onPanResponderMove: (_evt, gs) => {
         pan.setValue({ x: gs.dx, y: gs.dy });
-        onDragMove(instanceId, { x: gs.moveX, y: gs.moveY });
+        latest.current.onDragMove(latest.current.instanceId, { x: gs.moveX, y: gs.moveY });
       },
       onPanResponderRelease: (_evt, gs) => {
         pan.flattenOffset();
@@ -196,7 +200,7 @@ function DraggableSlotBlob({
 
         // gestureState, not nativeEvent: a release event's touch list can be empty on
         // Android, and this matches the saved-swatch path that already works on device.
-        onDragEnd(instanceId, { x: gs.moveX, y: gs.moveY });
+        latest.current.onDragEnd(latest.current.instanceId, { x: gs.moveX, y: gs.moveY });
 
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
