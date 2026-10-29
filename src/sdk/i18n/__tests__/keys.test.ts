@@ -130,6 +130,8 @@ const KEYS: string[] = [
   'color-mixer:meta.name',
   'color-mixer:title',
   'color-mixer:mixingZone.dropHere',
+  'color-mixer:picker.endless',
+  'color-mixer:picker.endlessSolved',
   'color-mixer:mixingZone.potFull',
   'color-mixer:colors.red',
   'color-mixer:colors.lightBlue',

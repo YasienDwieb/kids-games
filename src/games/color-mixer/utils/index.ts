@@ -4,3 +4,4 @@ export * from './wheelMix';
 export * from './deltaE';
 export * from './match';
 export * from './savedStrip';
+export * from './challenges';

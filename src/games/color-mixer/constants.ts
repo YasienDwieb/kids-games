@@ -106,15 +106,16 @@ export const DISCOVERY_HINTS: Partial<Record<ColorId, string>> = {
   lightBlue: 'Add white to a cool color',
 };
 
-export const CHALLENGES: Challenge[] = [
+/** The authored challenges — each a famous colour. Endless ones come from utils/challenges. */
+export const CHALLENGES: (Challenge & { targetColor: ColorId })[] = [
   // Easy — basic secondary colors
-  { id: 'c1', targetColor: 'orange', hint: 'Mix a hot color with a sunny color', difficulty: 'easy' },
-  { id: 'c2', targetColor: 'green', hint: 'Mix the sky with sunshine', difficulty: 'easy' },
-  { id: 'c3', targetColor: 'purple', hint: 'Mix fire with water', difficulty: 'easy' },
+  { id: 'c1', targetColor: 'orange', recipe: ['red', 'yellow'], hint: 'Mix a hot color with a sunny color', difficulty: 'easy' },
+  { id: 'c2', targetColor: 'green', recipe: ['blue', 'yellow'], hint: 'Mix the sky with sunshine', difficulty: 'easy' },
+  { id: 'c3', targetColor: 'purple', recipe: ['red', 'blue'], hint: 'Mix fire with water', difficulty: 'easy' },
   // Medium — requires white or all primaries
-  { id: 'c4', targetColor: 'pink', hint: 'Make red lighter', difficulty: 'medium' },
-  { id: 'c5', targetColor: 'lightBlue', hint: 'Make blue lighter', difficulty: 'medium' },
-  { id: 'c6', targetColor: 'brown', hint: 'Mix ALL the primary colors', difficulty: 'hard' },
+  { id: 'c4', targetColor: 'pink', recipe: ['red', 'white'], hint: 'Make red lighter', difficulty: 'medium' },
+  { id: 'c5', targetColor: 'lightBlue', recipe: ['blue', 'white'], hint: 'Make blue lighter', difficulty: 'medium' },
+  { id: 'c6', targetColor: 'brown', recipe: ['red', 'yellow', 'blue'], hint: 'Mix ALL the primary colors', difficulty: 'hard' },
 ];
 
 /**

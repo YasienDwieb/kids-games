@@ -11,8 +11,8 @@ import {
   useTranslation,
 } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
-import { COLORS } from '../constants';
-import { closeness } from '../utils';
+import { RecipeRow } from './RecipeRow';
+import { challengeHex, closeness } from '../utils';
 import type { Challenge } from '../types';
 
 type ChallengeModeProps = {
@@ -23,6 +23,8 @@ type ChallengeModeProps = {
   /** Landscape packs the target, meter and hint into one short strip. */
   landscape: boolean;
   onBack: () => void;
+  /** Say the goal again (tap the target colour). */
+  onSay?: () => void;
 };
 
 /**
@@ -41,12 +43,15 @@ export function ChallengeMode({
   stars,
   landscape,
   onBack,
+  onSay,
 }: ChallengeModeProps) {
   const { t } = useTranslation();
   const [showHint, setShowHint] = useState(false);
-  const targetHex = COLORS[currentChallenge.targetColor].hex;
+  const targetHex = challengeHex(currentChallenge);
   const meter = currentMixHex ? closeness(currentMixHex, targetHex) : 0;
-  const targetName = t(`color-mixer:colors.${currentChallenge.targetColor}`);
+  const targetName = currentChallenge.targetColor
+    ? t(`color-mixer:colors.${currentChallenge.targetColor}`)
+    : t('color-mixer:card.mysteryColor');
 
   const meterLabel = (m: number): string => {
     if (m >= 1) return t('color-mixer:challenge.meter.perfect');
@@ -65,13 +70,16 @@ export function ChallengeMode({
     />
   );
 
-  const hintControl = currentChallenge.hint ? (
+  // The hint shows the recipe as pictures (🔴 + 🟡) — readable at four.
+  const hintControl = currentChallenge.recipe.length ? (
     showHint ? (
-      <View style={styles.hintBox}>
+      <View
+        style={styles.hintBox}
+        accessible
+        accessibilityLabel={currentChallenge.hint ? t(`color-mixer:challengeHints.${currentChallenge.id}`) : undefined}
+      >
         <EmojiImage emoji="💡" size={16} />
-        <Text style={styles.hintText} numberOfLines={landscape ? 2 : undefined}>
-          {t(`color-mixer:challengeHints.${currentChallenge.id}`)}
-        </Text>
+        <RecipeRow recipe={currentChallenge.recipe} size={landscape ? 18 : 22} />
       </View>
     ) : (
       <Pressable
@@ -108,7 +116,7 @@ export function ChallengeMode({
     return (
       <View style={styles.strip}>
         {backButton}
-        <ColorBlob color={targetHex} size={44} showShine pulsing />
+        <ColorBlob color={targetHex} size={44} showShine pulsing onPress={onSay} accessibilityLabel={targetName} />
         <View style={styles.stripLabels}>
           <Text style={styles.stripPrompt} numberOfLines={1}>
             {t('color-mixer:challenge.makeThisColor')}
@@ -130,7 +138,7 @@ export function ChallengeMode({
       <View style={styles.targetArea}>
         <Text style={styles.prompt}>{t('color-mixer:challenge.makeThisColor')}</Text>
         <View style={styles.targetBlob}>
-          <ColorBlob color={targetHex} size={80} showShine pulsing />
+          <ColorBlob color={targetHex} size={80} showShine pulsing onPress={onSay} accessibilityLabel={targetName} />
         </View>
         <Text style={styles.targetName}>{targetName}</Text>
       </View>
@@ -218,12 +226,6 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.soft,
     borderWidth: OUTLINE.thin,
     borderColor: OUTLINE.color,
-  },
-  hintText: {
-    flexShrink: 1,
-    fontFamily: FONTS.bodySemi,
-    fontSize: 13,
-    color: TOKENS.inkSoft,
   },
   meterArea: {
     width: '70%',

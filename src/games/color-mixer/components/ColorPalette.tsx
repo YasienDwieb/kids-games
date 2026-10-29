@@ -297,14 +297,14 @@ const styles = StyleSheet.create({
     ...SHADOWS.sm,
     overflow: 'visible',
   },
-  // Landscape: remove top-sheet rounding; the ink outline frames the panel
+  // Landscape: a floating rounded card (the parent insets it from the screen edges and
+  // the safe area), like every other panel in the app.
   paletteLandscape: {
     flex: 1,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    borderTopEndRadius: 0,
-    borderTopStartRadius: 0,
+    borderRadius: 28,
+    paddingVertical: 16,
     justifyContent: 'center',
+    ...SHADOWS.md,
   },
   title: {
     fontFamily: FONTS.body,

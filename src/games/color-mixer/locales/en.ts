@@ -78,6 +78,8 @@ export const en = {
   picker: {
     title: 'Challenges',
     complete: 'complete',
+    endless: 'More mystery colors',
+    endlessSolved: '{{n}} solved',
     allDone: 'All challenges complete!',
     backButton: '‹ Mix',
     difficulty: {

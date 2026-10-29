@@ -70,6 +70,8 @@ export const ar: GameTranslations = {
   picker: {
     title: 'التحديات',
     complete: 'مكتملة',
+    endless: 'ألوان غامضة أكثر',
+    endlessSolved: 'حللت {{n}}',
     allDone: 'أتممت كل التحديات! 🏆',
     backButton: 'المزج ›',
     difficulty: {
