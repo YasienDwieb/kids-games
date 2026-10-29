@@ -3,7 +3,3 @@ export { GamePlayerScreen } from './GamePlayerScreen';
 export { SettingsScreen } from './SettingsScreen';
 export { FlowPlayerScreen } from './FlowPlayerScreen';
 export { WardrobeScreen } from './WardrobeScreen';
-export { SchoolHubScreen } from './school/SchoolHubScreen';
-export { SchoolUnitScreen } from './school/SchoolUnitScreen';
-export { SchoolLessonScreen } from './school/SchoolLessonScreen';
-export { SchoolBackpackScreen } from './school/SchoolBackpackScreen';

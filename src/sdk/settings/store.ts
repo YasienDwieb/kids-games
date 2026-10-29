@@ -20,9 +20,6 @@ export type Settings = {
   dailyLimitMin: number | null;
   /** The child's buddy (mascot). Null until they pick one on first launch. */
   buddy: 'lulu' | 'zain' | null;
-  /** School: the child's KG level and term (Parents corner). */
-  schoolLevel: 'kg1' | 'kg2';
-  schoolTerm: 1 | 2;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -34,8 +31,6 @@ export const DEFAULT_SETTINGS: Settings = {
   flowGameIds: null,
   dailyLimitMin: null,
   buddy: null,
-  schoolLevel: 'kg1',
-  schoolTerm: 1,
 };
 
 export const settingsStore = createStore<Settings>('settings', DEFAULT_SETTINGS);

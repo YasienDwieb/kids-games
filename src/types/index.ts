@@ -8,10 +8,6 @@ export type RootStackParamList = {
   Settings: undefined;
   FlowPlayer: undefined;
   Wardrobe: undefined;
-  School: undefined;
-  SchoolUnit: { subject: 'arabic' | 'english' | 'math'; unitId?: string };
-  SchoolLesson: { lessonId: string };
-  SchoolBackpack: undefined;
 };
 
 /** Player profile (for future use) */
