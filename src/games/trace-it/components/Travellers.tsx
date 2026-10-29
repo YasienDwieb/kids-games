@@ -5,7 +5,7 @@
  */
 import { useEffect, useMemo, useRef } from 'react';
 import { Animated, Easing, StyleSheet } from 'react-native';
-import { EmojiImage, useReduceMotion, useSound } from '@/sdk';
+import { ClayEmoji, useReduceMotion, useSound } from '@/sdk';
 import { TRACK_WIDTH } from '../constants';
 import type { Glyph, Pt } from '../types';
 
@@ -109,8 +109,9 @@ export function Travellers({ glyph, from, to, faces, done, scale }: TravellersPr
   const input = route.map((_, k) => k / (route.length - 1));
   const lift = hop.interpolate({ inputRange: [0, 1], outputRange: [0, -size * 0.35] });
   const grow = hop.interpolate({ inputRange: [0, 1], outputRange: [1, 1.2] });
-  // Noto draws some animals looking left; turn them toward the goal.
-  const flip = faces === 'left' && spots.to[0] > spots.from[0];
+  // Turn the traveller toward the goal: art faces right unless marked `faces: 'left'`.
+  const goalRight = spots.to[0] > spots.from[0];
+  const flip = faces === 'left' ? goalRight : spots.to[0] < spots.from[0];
 
   return (
     <>
@@ -118,7 +119,7 @@ export function Travellers({ glyph, from, to, faces, done, scale }: TravellersPr
         testID="goal"
         style={[styles.abs, { width: size, height: size, transform: [{ translateX: px(spots.to[0]) }, { translateY: px(spots.to[1]) }, { translateY: lift }, { scale: grow }] }]}
       >
-        <EmojiImage emoji={to} size={size} />
+        <ClayEmoji emoji={to} size={size} />
       </Animated.View>
       <Animated.View
         testID="traveller"
@@ -137,7 +138,7 @@ export function Travellers({ glyph, from, to, faces, done, scale }: TravellersPr
           },
         ]}
       >
-        <EmojiImage emoji={from} size={size} />
+        <ClayEmoji emoji={from} size={size} />
       </Animated.View>
     </>
   );

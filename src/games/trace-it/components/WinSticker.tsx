@@ -8,7 +8,7 @@ import { Animated, Easing, I18nManager, StyleSheet, Text, View } from 'react-nat
 import {
   BORDER_RADIUS,
   COLORS,
-  EmojiImage,
+  ClayEmoji,
   FONTS,
   fontsFor,
   OUTLINE,
@@ -54,7 +54,7 @@ export function WinSticker({ char, onDone }: { char: TraceChar; onDone: () => vo
     <View style={styles.layer} pointerEvents="none">
       <Animated.View style={[styles.card, style]}>
         {warmup ? null : <Text style={[styles.glyph, { fontFamily: fontsFor(charLanguage(char)).display }]}>{char.label}</Text>}
-        {picture ? <EmojiImage emoji={picture} size={72} /> : null}
+        {picture ? <ClayEmoji emoji={picture} size={72} /> : null}
         <Text style={styles.caption}>{t(warmup ? 'trace-it:sticker.iCanDraw' : 'trace-it:sticker.iCanWrite', { glyph })}</Text>
       </Animated.View>
     </View>

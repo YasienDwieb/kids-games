@@ -210,7 +210,7 @@ const BUDDY_FIT: Record<
   { height: number; hat: [number, number, number]; glasses: [number, number, number]; wear: number; armRest: number }
 > = {
   lulu: { height: 1.4, hat: [0, -0.12, 0], glasses: [0, 0.06, -0.25], wear: 1.2, armRest: -0.2 },
-  zain: { height: 1.5, hat: [0, 0.26, 0], glasses: [0, 0.07, -0.13], wear: 0.85, armRest: -0.4 },
+  zain: { height: 1.5, hat: [0, 0.26, 0], glasses: [0, 0.15, -0.13], wear: 0.85, armRest: -0.4 },
 };
 
 /** Where the feet stand: the bottom of the camera's view, with a little room. */
