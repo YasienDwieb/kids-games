@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { I18nManager, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   COLORS as TOKENS,
   EmojiImage,
   FONTS,
   BORDER_RADIUS,
-  IconButton,
   OUTLINE,
   Star,
   useTranslation,
@@ -22,7 +21,6 @@ type ChallengeModeProps = {
   stars: number;
   /** Landscape packs the target, meter and hint into one short strip. */
   landscape: boolean;
-  onBack: () => void;
   /** Say the goal again (tap the target colour). */
   onSay?: () => void;
 };
@@ -34,6 +32,8 @@ type ChallengeModeProps = {
  * only ~393dp tall on a phone, and the portrait stack (~230dp) pushed the mixing zone and
  * its action buttons off the bottom of the screen entirely.
  *
+ * There is no back arrow here: the screen's back button already steps up to the picker.
+ *
  * Success detection and the celebration live in the parent, so the overlay can cover the
  * whole game rather than just this strip.
  */
@@ -42,7 +42,6 @@ export function ChallengeMode({
   currentMixHex,
   stars,
   landscape,
-  onBack,
   onSay,
 }: ChallengeModeProps) {
   const { t } = useTranslation();
@@ -59,16 +58,6 @@ export function ChallengeMode({
     if (m >= 0.6) return t('color-mixer:challenge.meter.gettingWarmer');
     return t('color-mixer:challenge.meter.keepMixing');
   };
-
-  const backButton = (
-    <IconButton
-      glyph={I18nManager.isRTL ? '→' : '←'}
-      onPress={onBack}
-      accessibilityLabel={t('color-mixer:challenge.backLabel')}
-      size={40}
-      glyphSize={18}
-    />
-  );
 
   // The hint shows the recipe as pictures (🔴 + 🟡) — readable at four.
   const hintControl = currentChallenge.recipe.length ? (
@@ -115,7 +104,6 @@ export function ChallengeMode({
   if (landscape) {
     return (
       <View style={styles.strip}>
-        {backButton}
         <ColorBlob color={targetHex} size={44} showShine pulsing onPress={onSay} accessibilityLabel={targetName} />
         <View style={styles.stripLabels}>
           <Text style={styles.stripPrompt} numberOfLines={1}>
@@ -133,8 +121,6 @@ export function ChallengeMode({
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>{backButton}</View>
-
       <View style={styles.targetArea}>
         <Text style={styles.prompt}>{t('color-mixer:challenge.makeThisColor')}</Text>
         <View style={styles.targetBlob}>
@@ -176,12 +162,6 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     paddingTop: 8,
-  },
-  header: {
-    width: '100%',
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    alignItems: 'flex-start',
   },
   targetArea: {
     alignItems: 'center',

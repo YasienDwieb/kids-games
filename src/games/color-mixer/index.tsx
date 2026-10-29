@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   COLORS as TOKENS,
   FONTS,
+  POP,
   SPACING,
   TOUCH_TARGET,
   Chip,
@@ -378,11 +379,24 @@ export default function ColorMixerGame() {
   }
 
   // Shared inner content blocks — used in both portrait and landscape layouts.
+  // One header row: back (floating) · Play / Challenges · My Colors. The game name
+  // already sits on the home tile, so the mode switch takes the title's place.
   const headerBlock = (
     <View style={[styles.header, { paddingTop: insets.top + SPACING.xs }]}>
       {/* reserves room for the floating BackButton */}
       <View style={styles.headerSide} />
-      <Text style={styles.title}>{t('color-mixer:title')}</Text>
+      <View style={styles.modeToggle}>
+        <Chip
+          label={t('color-mixer:mode.freeplay')}
+          active={mode === 'freeplay'}
+          onPress={() => handleSwitchMode('freeplay')}
+        />
+        <Chip
+          label={t('color-mixer:mode.challenges')}
+          active={mode === 'challenge'}
+          onPress={() => handleSwitchMode('challenge')}
+        />
+      </View>
       <View style={styles.headerSide}>
         <IconButton
           glyph="📚"
@@ -393,35 +407,47 @@ export default function ColorMixerGame() {
     </View>
   );
 
-  const modeToggleBlock = (
-    <View style={styles.modeToggle}>
-      <Chip
-        label={t('color-mixer:mode.freeplay')}
-        active={mode === 'freeplay'}
-        onPress={() => handleSwitchMode('freeplay')}
-      />
-      <Chip
-        label={t('color-mixer:mode.challenges')}
-        active={mode === 'challenge'}
-        onPress={() => handleSwitchMode('challenge')}
-      />
-    </View>
-  );
-
   const challengeBlock = activeChallenge ? (
     <ChallengeMode
       currentChallenge={activeChallenge}
       currentMixHex={mixer.currentMixHex}
       stars={stars}
       landscape={landscape}
-      onBack={() => setShowChallengePicker(true)}
       onSay={() => {
         if (activeChallenge.targetColor) void speak(colorTargetPhrase(activeChallenge.targetColor, currentLanguage()));
       }}
     />
   ) : null;
 
+  // Pot tools sit in one column beside the pot, as round icons: they only appear once
+  // there's paint, and never push the pot around.
+  const hasPaint = !!mixer.currentMixHex;
+  const toolsBlock = (
+    <View style={styles.tools}>
+      {hasPaint ? (
+        <>
+          <IconButton
+            glyph="↩️"
+            onPress={mixer.undoLastMix}
+            disabled={!mixer.canUndo}
+            accessibilityLabel={t('color-mixer:actions.undo')}
+          />
+          <IconButton glyph="🗑️" onPress={mixer.clearContinuousMix} accessibilityLabel={t('color-mixer:actions.clear')} />
+          <IconButton
+            glyph="💾"
+            color={POP.splash}
+            onPress={() => setSaveDialogOpen(true)}
+            accessibilityLabel={t('color-mixer:actions.save')}
+          />
+        </>
+      ) : null}
+    </View>
+  );
+
   const mixingZoneBlock = (
+    <View style={styles.potRow}>
+    {/* Mirror spacer, so the pot stays centred between it and the tools. */}
+    <View style={styles.tools} />
     <View style={styles.playArea} onLayout={handlePlayAreaLayout}>
       <MixingZone
         size={zoneSize}
@@ -435,6 +461,8 @@ export default function ColorMixerGame() {
         onLayout={handleZoneLayout}
         onResultDragEnd={handleResultDragEnd}
       />
+    </View>
+    {toolsBlock}
     </View>
   );
 
@@ -450,23 +478,6 @@ export default function ColorMixerGame() {
           label={t('color-mixer:actions.done')}
           accent="green"
           onPress={finishChallenge}
-        />
-      )}
-      {mixer.canUndo && (
-        <PressableButton label={t('color-mixer:actions.undo')} variant="ghost" onPress={mixer.undoLastMix} />
-      )}
-      {mixer.currentMixHex && (
-        <PressableButton
-          label={t('color-mixer:actions.clear')}
-          variant="ghost"
-          onPress={mixer.clearContinuousMix}
-        />
-      )}
-      {mixer.currentMixHex && (
-        <PressableButton
-          label={t('color-mixer:actions.save')}
-          accent="blue"
-          onPress={() => setSaveDialogOpen(true)}
         />
       )}
     </View>
@@ -497,7 +508,6 @@ export default function ColorMixerGame() {
           <>
             <View style={styles.leftPanel}>
               {headerBlock}
-              {modeToggleBlock}
               {challengeBlock}
               {mixingZoneBlock}
               {actionsBlock}
@@ -520,7 +530,6 @@ export default function ColorMixerGame() {
           /* ── Portrait: stacked ── */
           <>
             {headerBlock}
-            {modeToggleBlock}
             {challengeBlock}
             {mixingZoneBlock}
             {actionsBlock}
@@ -618,18 +627,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
-  title: {
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: FONTS.displayBold,
-    fontSize: 24,
-    color: TOKENS.ink,
-  },
   modeToggle: {
+    flex: 1,
     flexDirection: 'row',
-    alignSelf: 'center',
+    justifyContent: 'center',
     gap: SPACING.sm,
-    marginBottom: 8,
+  },
+  // Stretch, so the play area gets the full height to size the pot from.
+  potRow: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  tools: {
+    width: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.md,
   },
   playArea: {
     flex: 1,
@@ -653,7 +666,6 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     paddingHorizontal: 20,
     paddingBottom: 12,
-    minHeight: 56,
   },
   paletteContainer: {
     zIndex: 10,
