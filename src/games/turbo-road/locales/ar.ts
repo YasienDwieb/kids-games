@@ -17,7 +17,6 @@ export const ar: GameTranslations = {
     label: 'التحكم',
     drag: 'بالإصبع',
     tilt: 'بالإمالة',
-    view3d: 'ثلاثي الأبعاد (تجريبي)',
   },
   pause: {
     title: 'استراحة',

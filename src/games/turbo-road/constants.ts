@@ -169,7 +169,6 @@ export const DEFAULT_GARAGE = {
 
 export const DEFAULT_PREFS = {
   control: 'drag' as const,
-  view: '2d' as const,
 };
 
 /* ---------------- track themes (Sunny Adventure) ---------------- */
@@ -186,7 +185,6 @@ export const THEMES: Record<ThemeId, RoadTheme> = {
     groundPatch: ACCENTS.green.base,
     road: ASPHALT,
     dash: '#FFFAF1',
-    decorations: ['🌼', '🌳', '🌷', '🐞'],
   },
   beach: {
     id: 'beach',
@@ -196,7 +194,6 @@ export const THEMES: Record<ThemeId, RoadTheme> = {
     groundPatch: ACCENTS.orange.base,
     road: ASPHALT,
     dash: '#FFFAF1',
-    decorations: ['🌴', '🐚', '⛱️', '🦀'],
   },
   desert: {
     id: 'desert',
@@ -206,7 +203,6 @@ export const THEMES: Record<ThemeId, RoadTheme> = {
     groundPatch: '#F6C747',
     road: ASPHALT,
     dash: '#FFFAF1',
-    decorations: ['🌵', '🪨', '🦎'],
   },
   snow: {
     id: 'snow',
@@ -216,7 +212,6 @@ export const THEMES: Record<ThemeId, RoadTheme> = {
     groundPatch: ACCENTS.blue.tint,
     road: ASPHALT,
     dash: '#FFFAF1',
-    decorations: ['⛄', '🌲', '❄️'],
   },
 };
 
@@ -228,19 +223,9 @@ export const THEME_ORDER: readonly ThemeId[] = [
   'snow',
 ];
 
-/* ---------------- entity emoji ---------------- */
-
-export const ENTITY_EMOJI: Record<string, string> = {
-  coin: '🪙',
-  cone: '🚧',
-  barrel: '🛢️',
-  boost: '⚡',
-  shield: '🛡️',
-  magnet: '🧲',
-};
+/* ---------------- rival emoji ---------------- */
 
 export const RIVAL_EMOJI = ['🚙', '🚕'] as const;
-export const TRAFFIC_EMOJI = '🚚';
 
 /* ---------------- missions (rolling, coin-rewarded) ---------------- */
 
