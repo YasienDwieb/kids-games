@@ -7,6 +7,7 @@ registerGame({
   name: 'Numbers Land', // English fallback; localized via numbers-land:meta.name
   description: 'Listen and find your numbers!',
   icon: '🔢',
+  cover: require('./cover.jpg'),
   ageRange: { min: 3, max: 7 },
   component: NumbersLand,
   backgroundColor: COLORS.canvas,

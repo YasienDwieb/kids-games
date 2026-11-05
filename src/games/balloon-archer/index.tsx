@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
+import { Suspense, lazy, useCallback, useMemo, useState } from 'react';
+import { Image, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import {
   useSound,
   useLevels,
@@ -16,7 +16,11 @@ import { Hud } from './components/Hud';
 import { LevelOverlay } from './components/LevelOverlay';
 import { useArcheryGame } from './hooks/useArcheryGame';
 import { buildLevel, TOTAL_LEVELS } from './utils/levels';
-import { GROUND_COLOR, GROUND_H } from './constants';
+
+// three + react-three-fiber + expo-gl are only evaluated once a level is on screen.
+const Playfield3D = lazy(() => import('./components/Playfield3D').then((m) => ({ default: m.Playfield3D })));
+
+const MEADOW = require('./assets/meadow.jpg');
 
 export default function BalloonArcherGame() {
   const { play } = useSound();
@@ -99,16 +103,25 @@ export default function BalloonArcherGame() {
 
   return (
     <View style={styles.root} onLayout={onLayout} {...game.panHandlers}>
-      <View style={[styles.ground, { height: GROUND_H, backgroundColor: GROUND_COLOR }]} />
+      <Image source={MEADOW} style={styles.backdrop} resizeMode="cover" />
 
       {area.width > 0 && (
         <>
           {w.drawing && <LaneGuide x={game.archerX} y={w.laneY} width={area.width} />}
-          {w.balloons.map((b) => (
-            <Balloon key={b.id} x={b.x} y={b.y} r={b.r} color={b.color} popping={b.popping} />
-          ))}
-          {w.arrow && <Arrow x={w.arrow.x} y={w.arrow.y} angle={0} />}
-          <Archer x={game.archerX} y={w.laneY} drawing={w.drawing} />
+          {/* The 3D scene, with the flat 2D sprites standing in while it loads. */}
+          <Suspense
+            fallback={
+              <>
+                {w.balloons.map((b) => (
+                  <Balloon key={b.id} x={b.x} y={b.y} r={b.r} color={b.color} popping={b.popping} />
+                ))}
+                {w.arrow && <Arrow x={w.arrow.x} y={w.arrow.y} angle={0} />}
+                <Archer x={game.archerX} y={w.laneY} drawing={w.drawing} />
+              </>
+            }
+          >
+            <Playfield3D world={w} width={area.width} height={area.height} archerX={game.archerX} />
+          </Suspense>
         </>
       )}
 
@@ -131,5 +144,5 @@ export default function BalloonArcherGame() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, overflow: 'hidden' },
-  ground: { position: 'absolute', left: 0, right: 0, bottom: 0 },
+  backdrop: { ...StyleSheet.absoluteFill, width: '100%', height: '100%' },
 });

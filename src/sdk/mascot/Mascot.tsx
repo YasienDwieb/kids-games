@@ -1,8 +1,10 @@
 /**
- * Lulu the owl — the app's mascot. One character across every game: she cheers
- * on wins, points at hints, encourages after a miss, and hands out stickers.
+ * The child's buddy — Lulu the owl or Zain the lion cub (see `@/sdk/buddy`).
+ * One character across every game: cheers on wins, points at hints,
+ * encourages after a miss, and hands out stickers.
  *
  *   <Mascot pose="cheer" size={120} />
+ *   <Mascot pose="wave" buddy="zain" />   // a specific buddy (the picker)
  *
  * Poses are flat PNG cut-outs (Higgsfield-generated, see CREDITS.md). Motion is
  * done here: a gentle idle bob, and a squash-and-pop whenever the pose changes,
@@ -10,14 +12,23 @@
  */
 import { useEffect, useMemo } from 'react';
 import { Animated, Easing, I18nManager, type ImageSourcePropType, type ImageStyle } from 'react-native';
+import { useBuddy, type BuddyId } from '@/sdk/buddy';
 
 export type MascotPose = 'wave' | 'cheer' | 'point' | 'encourage';
 
-const POSES: Record<MascotPose, ImageSourcePropType> = {
-  wave: require('../assets/images/mascot/owl-wave.png'),
-  cheer: require('../assets/images/mascot/owl-cheer.png'),
-  point: require('../assets/images/mascot/owl-point.png'),
-  encourage: require('../assets/images/mascot/owl-encourage.png'),
+export const MASCOT_POSES: Record<BuddyId, Record<MascotPose, ImageSourcePropType>> = {
+  lulu: {
+    wave: require('../assets/images/mascot/owl-wave.png'),
+    cheer: require('../assets/images/mascot/owl-cheer.png'),
+    point: require('../assets/images/mascot/owl-point.png'),
+    encourage: require('../assets/images/mascot/owl-encourage.png'),
+  },
+  zain: {
+    wave: require('../assets/images/mascot/lion-wave.png'),
+    cheer: require('../assets/images/mascot/lion-cheer.png'),
+    point: require('../assets/images/mascot/lion-point.png'),
+    encourage: require('../assets/images/mascot/lion-encourage.png'),
+  },
 };
 
 type MascotProps = {
@@ -30,10 +41,13 @@ type MascotProps = {
    * direction's "forward" (right in English, left in Arabic).
    */
   pointTo?: 'left' | 'right';
+  /** Which buddy to draw; defaults to the child's chosen one. */
+  buddy?: BuddyId;
   style?: ImageStyle;
 };
 
-export function Mascot({ pose = 'wave', size = 96, bob = true, pointTo, style }: MascotProps) {
+export function Mascot({ pose = 'wave', size = 96, bob = true, pointTo, buddy, style }: MascotProps) {
+  const chosen = useBuddy();
   const pop = useMemo(() => new Animated.Value(0), []);
   const float = useMemo(() => new Animated.Value(0), []);
 
@@ -55,13 +69,13 @@ export function Mascot({ pose = 'wave', size = 96, bob = true, pointTo, style }:
     return () => loop.stop();
   }, [bob, float]);
 
-  // The art points right; mirror it when she should point left.
+  // Both buddies' art points right; mirror it to point left.
   const towardLeft = (pointTo ?? (I18nManager.isRTL ? 'left' : 'right')) === 'left';
   const flip = pose === 'point' && towardLeft ? -1 : 1;
 
   return (
     <Animated.Image
-      source={POSES[pose]}
+      source={MASCOT_POSES[buddy ?? chosen][pose]}
       accessibilityIgnoresInvertColors
       style={[
         {

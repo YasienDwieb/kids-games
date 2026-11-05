@@ -29,6 +29,7 @@ import {
 } from '@/sdk';
 import { animalPhrase } from './phrase';
 import { ListenFindBoard, type FindItem } from '@/games/_shared/listen-find';
+import { renderAnimal } from './components/renderAnimal';
 import { ANIMAL_IMAGES } from './animalImages';
 import { LEVEL_COUNT, roundForUnit } from './utils/levels';
 import type { Animal, Round } from './types';
@@ -87,6 +88,7 @@ function AnimalSafariFlowRound({
         accent="orange"
         background="transparent"
         choiceLabel={() => t('animal-safari:a11y.choiceTileGeneric')}
+        renderImage={renderAnimal}
       />
     </View>
   );

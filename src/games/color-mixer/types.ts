@@ -25,9 +25,16 @@ export type ColorData = {
 
 export type Challenge = {
   id: string;
-  targetColor: ColorId;
+  /** A famous colour to make; endless challenges have none and use `targetHex`. */
+  targetColor?: ColorId;
+  /** The exact colour to make (endless challenges), else the famous colour's hex. */
+  targetHex?: string;
+  /** One way to make it — shown as the hint (🔴 + 🟡), so no reading is needed. */
+  recipe: PigmentId[];
   hint?: string;
   difficulty: 'easy' | 'medium' | 'hard';
+  /** A generated "mystery colour" from the endless pool. */
+  endless?: boolean;
 };
 
 export type GameMode = 'freeplay' | 'challenge';

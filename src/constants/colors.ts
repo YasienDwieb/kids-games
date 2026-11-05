@@ -30,6 +30,19 @@ export const POP = {
   nightSoft: '#D9D3FF',
 } as const;
 
+// Buddy palettes (the 3D models and the picker cards). Lulu reuses ACCENTS.purple.
+export const BUDDY_COLORS = {
+  zain: {
+    fur: '#F7C04A', // golden lion cub
+    furDeep: '#E5A72E',
+    mane: '#F08A2E',
+    muzzle: '#FFF1D6',
+    nose: '#8A4B2A',
+    scarf: '#3F5FD6',
+    cheek: '#FF9C8A',
+  },
+} as const;
+
 export const COLORS = {
   // --- canvas & surfaces ---
   canvas: '#FFF7E0', // soft zap cream behind play

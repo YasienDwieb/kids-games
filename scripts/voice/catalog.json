@@ -54,6 +54,36 @@
  "lines": [
   {
    "lang": "ar",
+   "text": "أبيض",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "أحمر",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "أخضر",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "أَربَعة",
    "uses": [
     {
@@ -68,11 +98,51 @@
   },
   {
    "lang": "ar",
+   "text": "أزرق",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "أزرق فاتح",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "أسد",
    "uses": [
     {
      "game": "animal-safari",
      "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "أسود",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "أصفر",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
     }
    ]
   },
@@ -101,6 +171,16 @@
     {
      "game": "trace-it",
      "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِسْحَبْ لَوْنًا إِلى الوِعاء!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Empty pot hint"
     }
    ]
   },
@@ -180,6 +260,16 @@
   },
   {
    "lang": "ar",
+   "text": "برتقالي",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "بطة",
    "uses": [
     {
@@ -195,6 +285,26 @@
     {
      "game": "animal-safari",
      "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "بنفسجي",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "بني",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
     }
    ]
   },
@@ -828,6 +938,16 @@
   },
   {
    "lang": "ar",
+   "text": "وردي",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "يَاء. يَد",
    "uses": [
     {
@@ -940,11 +1060,41 @@
   },
   {
    "lang": "en",
+   "text": "Black",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Blue",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "bridges",
    "uses": [
     {
      "game": "trace-it",
      "where": "Warm-up"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Brown",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
     }
    ]
   },
@@ -1003,6 +1153,16 @@
     {
      "game": "animal-safari",
      "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Drag a color into the bowl!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Empty pot hint"
     }
    ]
   },
@@ -1122,6 +1282,16 @@
   },
   {
    "lang": "en",
+   "text": "Green",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "H! Hat",
    "uses": [
     {
@@ -1197,6 +1367,16 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Light Blue",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
     }
    ]
   },
@@ -1352,6 +1532,16 @@
   },
   {
    "lang": "en",
+   "text": "Orange",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "P! Panda",
    "uses": [
     {
@@ -1361,6 +1551,26 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pink",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Purple",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
     }
    ]
   },
@@ -1389,6 +1599,16 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Red",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
     }
    ]
   },
@@ -1550,6 +1770,16 @@
   },
   {
    "lang": "en",
+   "text": "White",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "X! Xylophone",
    "uses": [
     {
@@ -1573,6 +1803,16 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Yellow",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Pot colour name"
     }
    ]
   },

@@ -14,6 +14,7 @@ import {
   settingsStore,
   usePlaytimeTracker,
   useTranslation,
+  useBuddy,
   type Playtime,
 } from '@/sdk';
 import { ACCENTS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
@@ -75,9 +76,10 @@ const STRETCHES = [
   { key: 'break.stretch3', color: POP.splash },
 ];
 
-/** "Recharge time!" — a calm night scene: Lulu dozing, her battery low, three stretches. */
+/** "Recharge time!" — a calm night scene: the buddy dozing, battery low, three stretches. */
 function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => void }) {
   const { t } = useTranslation();
+  const buddy = useBuddy();
   const drain = useLoop(6000);
   const breathe = useLoop(4000);
   return (
@@ -85,7 +87,7 @@ function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => 
       <View style={styles.moon} />
       <View style={styles.moonBite} />
       <Text style={styles.title}>{t('break.title')}</Text>
-      <Text style={styles.body}>{t('break.body')}</Text>
+      <Text style={styles.body}>{t(`buddy.${buddy}.rest`)}</Text>
 
       <View style={styles.scene}>
         <View style={styles.battery} accessible accessibilityLabel={t('break.energy')}>
@@ -108,7 +110,7 @@ function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => 
         </Animated.View>
 
         <View style={[styles.stretchCard, SHADOWS.md]}>
-          <Text style={styles.stretchTitle}>{t('break.stretchTitle')}</Text>
+          <Text style={styles.stretchTitle}>{t(`buddy.${buddy}.stretchWith`)}</Text>
           {STRETCHES.map((s, i) => (
             <View key={s.key} style={styles.stretchRow}>
               <View style={[styles.stretchNum, { backgroundColor: s.color }]}>

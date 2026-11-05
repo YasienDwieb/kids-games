@@ -7,6 +7,7 @@ registerGame({
   name: 'Candy Catch', // English fallback; localized via candy-catch:meta.name
   description: 'Move the basket — catch the treats, dodge the yucky ones!',
   icon: '🍭',
+  cover: require('./cover.jpg'),
   ageRange: { min: 3, max: 7 },
   component: CandyCatchGame,
   backgroundColor: COLORS.canvas,

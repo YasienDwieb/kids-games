@@ -1,7 +1,7 @@
 import type { Glyph, Pt } from '../types';
 import { arc, line, mirrorX, path } from './build';
 
-/** `faces`: which way the `from` emoji looks when drawn (Noto's 🐝 and 🐦 look left). */
+/** `faces`: which way the `from` emoji looks when drawn (the clay 🐦 looks left). */
 export type Warmup = Glyph & { from: string; to: string; faces?: 'left' };
 
 function sample(n: number, f: (t: number) => Pt): Pt[] {
@@ -20,7 +20,7 @@ const ZIG: Pt[] = [
 // room on the board for `from` before the start and `to` after the end.
 export const WARMUPS: readonly Warmup[] = [
   { id: 'line', from: '🐶', to: '🦴', strokes: [path(line([24, 50], [76, 50]))] },
-  { id: 'zigzag', from: '🐝', to: '🌻', faces: 'left', strokes: [path(ZIG)] },
+  { id: 'zigzag', from: '🐝', to: '🌻', strokes: [path(ZIG)] },
   {
     id: 'wave',
     from: '🐱',

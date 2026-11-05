@@ -7,6 +7,7 @@ registerGame({
   name: 'Turbo Road',
   description: 'A sunny road-trip race — steer, dodge and collect!',
   icon: '🏎️',
+  cover: require('./cover.jpg'),
   ageRange: { min: 4, max: 12 },
   component: TurboRoad,
   backgroundColor: '#FCE5E1',

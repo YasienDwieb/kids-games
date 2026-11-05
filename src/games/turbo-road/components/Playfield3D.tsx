@@ -1,12 +1,13 @@
 /**
- * Turbo Road — 3D playfield (beta, 3D-1 spike).
+ * Turbo Road — the 3D road (the game's only renderer).
  *
- * A drop-in replacement for <Playfield> with the same props: the race engine,
- * HUD, overlays and steering contract are untouched; only the rendering moves
- * to a low-poly three.js scene (react-three-fiber + expo-gl) with a chase
- * camera. Cars, cones, trees and the finish arch are Kenney CC0 models (see
- * utils/models3d.ts); coins, barrels and pads stay primitive shapes. Each model
- * shows a primitive stand-in for the moment it takes to load.
+ * The race engine, HUD, overlays and steering contract live elsewhere; this is
+ * a low-poly three.js scene (react-three-fiber + expo-gl) with a chase camera.
+ * Cars, cones, trees and the finish arch are Kenney CC0 models (see
+ * utils/models3d.ts); coins, barrels and pads are primitive shapes. Each model
+ * shows a primitive stand-in for the moment it takes to load. Around the road:
+ * a gradient sky dome, distant hills and drifting clouds, red-and-white kerbs,
+ * soft shadows under every car, and speed streaks while boosting.
  *
  * Per-frame values are read straight from the race loop's Animated.Value
  * channels inside useFrame (both run on the JS thread), so nothing re-renders
@@ -18,11 +19,22 @@ import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { LogBox, PanResponder, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { Canvas, useFrame } from '@react-three/fiber/native';
 import {
+  BackSide,
+  BoxGeometry,
+  CircleGeometry,
+  Color,
   CylinderGeometry,
+  Float32BufferAttribute,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   PlaneGeometry,
+  SphereGeometry,
   TetrahedronGeometry,
-  type Group, type Object3D, type PerspectiveCamera } from 'three';
+  TorusGeometry,
+  type Group,
+  type Object3D,
+  type PerspectiveCamera,
+} from 'three';
 import { ACCENTS, COLORS } from '@/sdk';
 import type { Animated } from 'react-native';
 import type { CarId, EntityKind, PlayfieldProps } from '../types';
@@ -129,6 +141,8 @@ function EntityMesh({
             material={shared.coin}
             dispose={null}
           />
+          {/* A raised rim on both faces reads as a real coin. */}
+          <mesh geometry={shared.coinRim} material={shared.coin} dispose={null} />
         </group>
       );
     case 'cone':
@@ -213,7 +227,10 @@ function EntityMesh({
 type Shared = {
   coin: MeshStandardMaterial;
   boost: MeshStandardMaterial;
+  shadow: MeshBasicMaterial;
   coinGeo: CylinderGeometry;
+  coinRim: TorusGeometry;
+  shadowGeo: CircleGeometry;
   boostGeo: PlaneGeometry;
   sparkGeo: TetrahedronGeometry;
 };
@@ -222,15 +239,25 @@ type Shared = {
 const SPARK_COUNT = 10;
 const SPARK_LIFE = 0.55; // seconds
 
-/** A car model facing −z, with a box-car stand-in while it loads. */
-function Car({ model, color, flip = false }: { model: ModelName; color: string; flip?: boolean }) {
+/** A car model facing −z, with a box-car stand-in while it loads, on a soft shadow. */
+function Car({ model, color, flip = false, shared }: { model: ModelName; color: string; flip?: boolean; shared: Shared }) {
   return (
-    <Model
-      name={model}
-      length={CAR_LEN}
-      rotationY={flip ? 0 : FACE_FORWARD}
-      fallback={<BoxCar color={color} />}
-    />
+    <>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.02, 0]}
+        scale={[1.15, CAR_LEN * 0.62, 1]}
+        geometry={shared.shadowGeo}
+        material={shared.shadow}
+        dispose={null}
+      />
+      <Model
+        name={model}
+        length={CAR_LEN}
+        rotationY={flip ? 0 : FACE_FORWARD}
+        fallback={<BoxCar color={color} />}
+      />
+    </>
   );
 }
 
@@ -282,6 +309,145 @@ function ConeTree({ color }: { color: string }) {
   );
 }
 
+/** Sky dome radius; the camera's far plane reaches past it. */
+const SKY_R = 140;
+const FAR = SKY_R + 20;
+const HILLS = 9;
+const CLOUD_COUNT = 5;
+const STREAKS = 16;
+
+/** A colour part-way from `a` to `b`. */
+const mix = (a: string, b: string, k: number) => new Color(a).lerp(new Color(b), k);
+
+/**
+ * Everything beyond the road: a sky dome fading from a deeper blue overhead to
+ * the theme's sky at the horizon, a ring of soft hills in the theme's colour
+ * hazed toward the sky, and slow clouds. Fog is off for all of it, so it frames
+ * the road instead of vanishing into the haze.
+ */
+function Backdrop({ theme }: { theme: SceneProps['theme'] }) {
+  const sky = useMemo(() => {
+    const g = new SphereGeometry(SKY_R, 32, 16);
+    const top = mix(theme.sky, ACCENTS.blue.base, 0.75);
+    const horizon = new Color(theme.sky);
+    const pos = g.getAttribute('position');
+    const colors: number[] = [];
+    for (let i = 0; i < pos.count; i++) {
+      const k = Math.max(0, pos.getY(i) / SKY_R);
+      const c = horizon.clone().lerp(top, Math.pow(k, 0.6));
+      colors.push(c.r, c.g, c.b);
+    }
+    g.setAttribute('color', new Float32BufferAttribute(colors, 3));
+    return g;
+  }, [theme.sky]);
+  const hillMat = useMemo(
+    () => new MeshBasicMaterial({ color: mix(theme.groundPatch, theme.sky, 0.45), fog: false }),
+    [theme.groundPatch, theme.sky],
+  );
+  const farHillMat = useMemo(
+    () => new MeshBasicMaterial({ color: mix(theme.groundPatch, theme.sky, 0.7), fog: false }),
+    [theme.groundPatch, theme.sky],
+  );
+  const cloudMat = useMemo(() => new MeshBasicMaterial({ color: COLORS.surface, fog: false }), []);
+  const hillGeo = useMemo(() => new SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), []);
+  const clouds = useRef<Group>(null);
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    clouds.current?.children.forEach((c, i) => {
+      c.position.x = ((i * 47 + t * (1.2 + i * 0.3)) % 180) - 90;
+    });
+  });
+  return (
+    <group>
+      <mesh geometry={sky}>
+        <meshBasicMaterial vertexColors side={BackSide} fog={false} depthWrite={false} />
+      </mesh>
+      {/* Two rows of hills: the far row paler, as if through haze. */}
+      {Array.from({ length: HILLS }, (_, i) => {
+        const x = (i - (HILLS - 1) / 2) * 22;
+        return (
+          <group key={i}>
+            <mesh
+              geometry={hillGeo}
+              material={farHillMat}
+              position={[x + 11, -0.5, -118]}
+              scale={[26, 14 + (i % 3) * 4, 10]}
+            />
+            <mesh
+              geometry={hillGeo}
+              material={hillMat}
+              position={[x, -0.5, -100]}
+              scale={[20, 8 + ((i + 1) % 3) * 3, 8]}
+            />
+          </group>
+        );
+      })}
+      <group ref={clouds}>
+        {Array.from({ length: CLOUD_COUNT }, (_, i) => (
+          <group key={i} position={[0, 22 + (i % 3) * 5, -90 - (i % 2) * 15]}>
+            {[
+              [0, 0, 5],
+              [4.5, -0.8, 3.6],
+              [-4.5, -1, 3.4],
+              [1.8, 2, 3.4],
+            ].map(([x, y, r], j) => (
+              <mesh key={j} geometry={hillGeo} material={cloudMat} position={[x, y, 0]} scale={[r * 1.3, r, r * 0.6]} />
+            ))}
+          </group>
+        ))}
+      </group>
+    </group>
+  );
+}
+
+/** Red-and-white kerb blocks for one dash period, on both road edges. */
+function KerbBlocks({ z }: { z: number }) {
+  return (
+    <>
+      {[-1, 1].map((side) =>
+        [0, 1].map((k) => (
+          <mesh key={`${side}${k}`} position={[side * (ROAD_W / 2 + 0.3), 0.06, z - k * (DASH_PERIOD / 2)]}>
+            <boxGeometry args={[0.6, 0.12, DASH_PERIOD / 2]} />
+            <meshLambertMaterial color={k === 0 ? ACCENTS.coral.base : COLORS.surface} />
+          </mesh>
+        )),
+      )}
+    </>
+  );
+}
+
+/** White streaks rushing past while boosting. */
+function SpeedStreaks({ active }: { active: boolean }) {
+  const g = useRef<Group>(null);
+  const streaks = useMemo(
+    () =>
+      Array.from({ length: STREAKS }, (_, i) => ({
+        x: (i % 2 ? 1 : -1) * (ROAD_W / 2 + 1 + (i % 5) * 1.3),
+        y: 0.6 + ((i * 7) % 5) * 0.9,
+        offset: (i * 13) % 40,
+      })),
+    [],
+  );
+  const mat = useMemo(() => new MeshBasicMaterial({ color: COLORS.surface, transparent: true, opacity: 0, fog: false }), []);
+  const geo = useMemo(() => new BoxGeometry(0.06, 0.06, 4), []);
+  useFrame(({ clock }, delta) => {
+    const t = clock.getElapsedTime();
+    mat.opacity += ((active ? 0.7 : 0) - mat.opacity) * Math.min(1, delta * 6);
+    if (!g.current) return;
+    g.current.visible = mat.opacity > 0.02;
+    g.current.children.forEach((c, i) => {
+      c.position.z = 6 - ((streaks[i].offset + t * 70) % 46);
+    });
+  });
+  return (
+    <group ref={g} visible={false}>
+      {streaks.map((st, i) => (
+        <mesh key={i} geometry={geo} material={mat} position={[st.x, st.y, 0]} />
+      ))}
+    </group>
+  );
+}
+
 const RIVAL_COLORS = [ACCENTS.blue.base, ACCENTS.purple.base];
 
 type SceneProps = Omit<PlayfieldProps, 'onSteerTo' | 'playerEmoji'> & { carId: CarId };
@@ -310,7 +476,10 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
         emissive: ACCENTS.green.base,
         emissiveIntensity: 0.4,
       }),
+      shadow: new MeshBasicMaterial({ color: COLORS.ink, transparent: true, opacity: 0.22, depthWrite: false }),
       coinGeo: new CylinderGeometry(0.6, 0.6, 0.16, 20),
+      coinRim: new TorusGeometry(0.56, 0.07, 6, 24),
+      shadowGeo: new CircleGeometry(1, 20),
       boostGeo: new PlaneGeometry(LANE_W * 0.75, 2.6),
       sparkGeo: new TetrahedronGeometry(0.18),
     }),
@@ -343,6 +512,8 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
   // Spike instrumentation: average frame rate, logged in dev every ~3 s.
   const fps = useRef({ frames: 0, time: 0 });
   const fov = useRef(58);
+  const lastX = useRef(0);
+  const yaw = useRef(0);
 
   useFrame(({ camera, clock }, delta) => {
     const t = clock.getElapsedTime();
@@ -375,8 +546,15 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
     shared.boost.emissiveIntensity = 0.35 + Math.sin(t * 6) * 0.25;
 
     if (player.current) {
+      // Steering: the car leans (bank) and noses toward where it's heading;
+      // a light suspension hum keeps it feeling like it's on a real road.
+      const vx = delta > 0 ? (lx - lastX.current) / delta : 0;
+      lastX.current = lx;
+      yaw.current += (Math.max(-0.35, Math.min(0.35, -vx * 0.06)) - yaw.current) * Math.min(1, delta * 10);
       player.current.position.x = lx;
+      player.current.position.y = Math.sin(t * 22) * 0.025 + Math.abs(shake) * 0.15;
       player.current.rotation.z = (-read(anim.bank) * Math.PI) / 180;
+      player.current.rotation.y = yaw.current;
     }
     // Cars that drop behind the camera are hidden instead of filling the lens.
     anim.rivals.forEach((r, i) => {
@@ -429,20 +607,35 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
     <>
       <color attach="background" args={[theme.sky]} />
       <fog attach="fog" args={[theme.sky, AHEAD * 0.55, AHEAD]} />
-      <ambientLight intensity={0.75} />
-      <directionalLight position={[6, 12, 6]} intensity={1.1} />
+      <hemisphereLight args={[theme.sky, theme.ground, 0.7]} />
+      <ambientLight intensity={0.35} />
+      <directionalLight position={[6, 12, 6]} intensity={1.2} />
+      <Backdrop theme={theme} />
+      <SpeedStreaks active={ui.boostActive} />
 
       {/* Ground + road, long enough to always reach the horizon. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, -AHEAD / 2]}>
         <planeGeometry args={[200, AHEAD + 40]} />
-        <meshLambertMaterial color={theme.ground} />
+        {/* The flat theme tint reads grey once lit; push it toward the patch colour. */}
+        <meshLambertMaterial color={mix(theme.ground, theme.groundPatch, 0.35)} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -AHEAD / 2]}>
         <planeGeometry args={[ROAD_W, AHEAD + 40]} />
         <meshLambertMaterial color={theme.road} />
       </mesh>
 
+      {/* Solid white edge lines just inside the kerbs. */}
+      {[-1, 1].map((side) => (
+        <mesh key={side} rotation={[-Math.PI / 2, 0, 0]} position={[side * (ROAD_W / 2 - 0.25), 0.012, -AHEAD / 2]}>
+          <planeGeometry args={[0.16, AHEAD + 40]} />
+          <meshBasicMaterial color={theme.dash} />
+        </mesh>
+      ))}
+
       <group ref={dashes}>
+        {Array.from({ length: DASH_COUNT }, (_, i) => (
+          <KerbBlocks key={`k${i}`} z={8 - i * DASH_PERIOD} />
+        ))}
         {Array.from({ length: DASH_COUNT }, (_, i) =>
           [-0.5, 0.5].map((side) => (
             <mesh
@@ -499,18 +692,18 @@ function Scene({ theme, level, ui, anim, carId }: SceneProps) {
 
       {level.rivals.map((r, i) => (
         <group key={r.id} ref={(g) => { rivals.current[i] = g; }}>
-          <Car model={RIVAL_MODELS[i % RIVAL_MODELS.length]} color={RIVAL_COLORS[i % RIVAL_COLORS.length]} />
+          <Car model={RIVAL_MODELS[i % RIVAL_MODELS.length]} color={RIVAL_COLORS[i % RIVAL_COLORS.length]} shared={shared} />
         </group>
       ))}
       {level.traffic.map((_, i) => (
         <group key={i} ref={(g) => { traffic.current[i] = g; }}>
           {/* Oncoming: faces the player. */}
-          <Car model={TRAFFIC_MODEL} color={ACCENTS.orange.base} flip />
+          <Car model={TRAFFIC_MODEL} color={ACCENTS.orange.base} flip shared={shared} />
         </group>
       ))}
 
       <group ref={player}>
-        <Car model={CAR_MODEL[carId]} color={ui.slowActive ? ACCENTS.coral.tint : ACCENTS.coral.base} />
+        <Car model={CAR_MODEL[carId]} color={ui.slowActive ? ACCENTS.coral.tint : ACCENTS.coral.base} shared={shared} />
         {ui.shieldActive ? (
           <mesh position={[0, 0.9, 0]}>
             <sphereGeometry args={[2, 16, 12]} />
@@ -583,7 +776,7 @@ export function Playfield3D({
       }}
       {...pan.panHandlers}
     >
-      <Canvas camera={{ position: [0, 4.6, 8.5], fov: 58, near: 0.1, far: AHEAD + 12 }}>
+      <Canvas flat camera={{ position: [0, 4.6, 8.5], fov: 58, near: 0.1, far: FAR }}>
         <Scene theme={theme} level={level} ui={ui} anim={anim} carId={carId} />
       </Canvas>
     </View>

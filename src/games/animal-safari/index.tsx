@@ -54,6 +54,7 @@ import {
   type ListenFindLevel,
 } from '@/games/_shared/listen-find';
 import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
+import { renderAnimal } from './components/renderAnimal';
 import { ANIMAL_IMAGES } from './animalImages';
 import { buildRound, seedForLevel } from './utils/generate';
 import { LEVEL_COUNT } from './utils/levels';
@@ -163,6 +164,7 @@ export default function AnimalSafari(): React.JSX.Element {
         disabled={lf.solved}
         accent="orange"
         choiceLabel={() => t('animal-safari:a11y.choiceTileGeneric')}
+        renderImage={renderAnimal}
       />
     </View>
   );

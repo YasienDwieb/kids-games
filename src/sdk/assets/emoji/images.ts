@@ -127,6 +127,16 @@ export const EMOJI_IMAGES: Record<string, ImageSourcePropType> = {
   "🏆": require("./png/1F3C6.png"),
   // Trace It home tile
   "✏": require("./png/270F.png"),
+  // Candy Catch treats and hazards (3D tiles)
+  "🍪": require("./png/1F36A.png"),
+  "🧁": require("./png/1F9C1.png"),
+  "🍩": require("./png/1F369.png"),
+  "🍫": require("./png/1F36B.png"),
+  "🍬": require("./png/1F36C.png"),
+  "🍭": require("./png/1F36D.png"),
+  "🍰": require("./png/1F370.png"),
+  "🌶": require("./png/1F336.png"),
+  "💣": require("./png/1F4A3.png"),
 };
 
 /** Resolve an emoji glyph to its bundled image, or undefined if not available. */

@@ -11,3 +11,4 @@ export { ChallengeSuccess } from './ChallengeSuccess';
 export { ChallengePicker } from './ChallengePicker';
 export { DraggableResult } from './DraggableResult';
 export { ColorNamingDialog } from './ColorNamingDialog';
+export { RecipeRow } from './RecipeRow';

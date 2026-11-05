@@ -1,5 +1,6 @@
 import { i18n } from './index';
 import type { GameConfig } from '@/sdk/config/types';
+import type { LanguageCode } from './types';
 
 // Resolve a game's display name / description for the active language.
 // Convention: each game registers `meta.name` and `meta.description` in its own
@@ -26,4 +27,9 @@ export function gameShortName(game: GameConfig): string {
 export function gameDescription(game: GameConfig): string {
   const key = `${game.id}:meta.description`;
   return i18n.exists(key) ? i18n.t(key) : game.description;
+}
+
+/** The home-tile art for the active language: its `coverByLanguage` entry, else `cover`. */
+export function gameCover(game: GameConfig): number | undefined {
+  return game.coverByLanguage?.[i18n.language as LanguageCode] ?? game.cover;
 }

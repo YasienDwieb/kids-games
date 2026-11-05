@@ -11,7 +11,8 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const PNG_DIR = path.join('src', 'sdk', 'assets', 'emoji', 'png');
-const BASE = 'https://raw.githubusercontent.com/googlefonts/noto-emoji/main/png/128';
+// Pinned release: the repo's main branch no longer carries png/128.
+const BASE = 'https://cdn.jsdelivr.net/gh/googlefonts/noto-emoji@v2.047/png/128';
 
 /** Codepoints of a glyph, uppercase hex, FE0F stripped, hyphen-joined. */
 const codeOf = (g) =>

@@ -14,7 +14,7 @@
  * unit) own HUD, overlays and progression, and remount the field with a new
  * `key` for the next level or a retry. */
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -44,6 +44,9 @@ import {
   type ItemKind,
   type LevelSpec,
 } from '../constants';
+
+// three + react-three-fiber + expo-gl are only evaluated once a field is on screen.
+const CatchScene3D = lazy(() => import('./CatchScene3D').then((m) => ({ default: m.CatchScene3D })));
 
 const SOUND_INTENTS = ['pop', 'success', 'powerup', 'hit', 'wrong', 'win', 'transition'];
 
@@ -105,6 +108,9 @@ export function CatchField({
 }: CatchFieldProps) {
   const { play, prewarm } = useSound();
   const [pops, setPops] = useState<Pop[]>([]);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  // When the last good catch landed, for the 3D basket's bounce.
+  const caughtAt = useRef(0);
   const [contents, setContents] = useState<(SlotContent | null)[]>(() =>
     Array(ITEM_POOL).fill(null),
   );
@@ -250,6 +256,7 @@ export function CatchField({
       }
 
       play(item.kind === 'gold' ? 'powerup' : 'pop');
+      caughtAt.current = Date.now();
       scoreRef.current += item.points;
       onScore?.(scoreRef.current);
       addPop(x, y, `+${item.points}`, '#E66FA0');
@@ -369,6 +376,7 @@ export function CatchField({
   const onLayout = useCallback(
     (e: LayoutChangeEvent) => {
       const { width, height } = e.nativeEvent.layout;
+      setSize({ w: width, h: height });
       const first = areaW.value === 0;
       areaW.value = width;
       areaH.value = height;
@@ -387,17 +395,34 @@ export function CatchField({
   return (
     <GestureDetector gesture={pan}>
       <View style={[styles.field, styles.ltr]} onLayout={onLayout}>
-        {slots.map((slot, i) => (
-          <PooledItem key={i} slot={slot} content={contents[i]} />
-        ))}
+        {/* The 3D scene draws the items and basket; the flat views stand in while it loads. */}
+        <Suspense
+          fallback={
+            <>
+              {slots.map((slot, i) => (
+                <PooledItem key={i} slot={slot} content={contents[i]} />
+              ))}
+              <Animated.View pointerEvents="none" style={[styles.basketWrap, basketStyle]}>
+                <Basket />
+              </Animated.View>
+            </>
+          }
+        >
+          <CatchScene3D
+            width={size.w}
+            height={size.h}
+            slots={slots}
+            contents={contents}
+            basketX={basketX}
+            basketTilt={basketTilt}
+            caughtAt={caughtAt}
+          />
+        </Suspense>
 
         {pops.map((p) => (
           <ScorePop key={p.id} x={p.x} y={p.y} text={p.text} color={p.color} />
         ))}
 
-        <Animated.View pointerEvents="none" style={[styles.basketWrap, basketStyle]}>
-          <Basket />
-        </Animated.View>
       </View>
     </GestureDetector>
   );

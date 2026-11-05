@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   COLORS as TOKENS,
   FONTS,
+  POP,
   SPACING,
   TOUCH_TARGET,
   Chip,
@@ -18,8 +19,14 @@ import {
   PressableButton,
   useScreenBack,
   awardStars,
+  currentLanguage,
+  DemoHand,
+  useFirstRun,
+  useIdle,
   useSound,
+  useSpeech,
   useTranslation,
+  type DemoPoint,
 } from '@/sdk';
 import {
   ColorBlob,
@@ -34,7 +41,8 @@ import {
 } from './components';
 import { useColorMixer, useChallengeMode } from './hooks';
 import { COLORS, DIMENSIONS } from './constants';
-import { MIX_CAP, isChallengeMet, starsFor } from './utils';
+import { MIX_CAP, challengeHex, endlessChallenge, isChallengeMet, mixColorId, starsFor } from './utils';
+import { colorNamePhrase, colorTargetPhrase, dragHintPhrase } from './phrase';
 import type { ColorId, GameMode, PigmentId, SavedColor } from './types';
 
 export default function ColorMixerGame() {
@@ -48,6 +56,7 @@ export default function ColorMixerGame() {
   const challenge = useChallengeMode();
   const insets = useSafeAreaInsets();
   const { play } = useSound();
+  const { speak } = useSpeech();
   const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
@@ -59,6 +68,8 @@ export default function ColorMixerGame() {
 
   // Bumped whenever a full pot refuses a drop, so the zone can shake.
   const [rejectedAt, setRejectedAt] = useState(0);
+  // The last drop's colour, for the pot's splash.
+  const [lastDrop, setLastDrop] = useState<{ hex: string; at: number } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
@@ -70,7 +81,8 @@ export default function ColorMixerGame() {
   const handlePlayAreaLayout = useCallback((e: LayoutChangeEvent) => {
     const { width: w, height: h } = e.nativeEvent.layout;
     if (w <= 0 || h <= 0) return;
-    const fit = Math.min(w, h) - DIMENSIONS.MIXING_ZONE_MARGIN * 2;
+    // The play area pads 40dp vertically for the recipe and name pills.
+    const fit = Math.min(w, h - 40) - DIMENSIONS.MIXING_ZONE_MARGIN * 2;
     const next = Math.round(
       Math.max(DIMENSIONS.MIXING_ZONE_MIN, Math.min(DIMENSIONS.MIXING_ZONE_MAX, fit)),
     );
@@ -103,28 +115,100 @@ export default function ColorMixerGame() {
     setRejectedAt((n) => n + 1);
   }, [play]);
 
+  // First play: a ghost hand drags red into the pot. It comes back whenever the pot
+  // sits empty for a while, so a child who hasn't worked out the drag is shown again.
+  const firstRun = useFirstRun('color-mixer');
+  const potEmpty = mixer.mixLog.length === 0;
+  const { idle, poke } = useIdle(8000, potEmpty);
+  const onFirstDrop = () => {
+    poke();
+    if (firstRun.status === 'show') firstRun.complete();
+  };
+  const rootRef = useRef<View>(null);
+  const [demoPoints, setDemoPoints] = useState<DemoPoint[]>([]);
+  const showDemo = potEmpty && (firstRun.status === 'show' || idle) && !mixer.newDiscovery && !showChallengePicker;
+  useEffect(() => {
+    if (!showDemo) {
+      setDemoPoints([]);
+      return;
+    }
+    // Palette and pot positions are page coordinates; the hand draws in the root's.
+    const timer = setTimeout(() => {
+      // In a challenge, show the recipe's first pigment, not always red.
+      const live = mode === 'challenge' && !showChallengePicker ? challenge.currentChallenge : null;
+      const red = palettePositions.current.get(live?.recipe[0] ?? 'red');
+      const z = zoneRect.current;
+      if (!red || z.width === 0) return;
+      rootRef.current?.measure((_x, _y, _w, _h, px, py) => {
+        setDemoPoints([
+          { x: red.x + red.width / 2 - px, y: red.y + red.height / 2 - py },
+          { x: z.x + z.width / 2 - px, y: z.y + z.height / 2 - py },
+        ]);
+      });
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showDemo, mode, landscape, showChallengePicker, challenge.currentChallenge]);
+
+  // The demo hand says what it shows. In a challenge the goal was just spoken, so the
+  // hint waits until the child is actually stuck.
+  const demoShown = demoPoints.length > 1;
+  const speakHint = demoShown && (mode !== 'challenge' || idle);
+  useEffect(() => {
+    if (speakHint) void speak(dragHintPhrase(currentLanguage()));
+  }, [speakHint, speak]);
+
+  // Say the colour the pot turns into — the name is the lesson, and most players can't
+  // read the label yet. Only when the name changes, so stirring the same colour is quiet.
+  const potColorId = mixColorId(mixer.mixLog, mixer.currentMixHex);
+  const spokenColor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!potColorId) {
+      spokenColor.current = null;
+      return;
+    }
+    if (spokenColor.current === potColorId) return;
+    spokenColor.current = potColorId;
+    void speak(colorNamePhrase(potColorId, currentLanguage()));
+  }, [potColorId, speak]);
+
   const dragColorRef = useRef<PigmentId | null>(null);
 
   const handleDragStart = useCallback((colorId: PigmentId, _instanceId: string) => {
     dragColorRef.current = colorId;
   }, []);
 
-  const handleDragMove = useCallback((_instanceId: string, _pos: { x: number; y: number }) => {
+  // Light the pot up while a colour is held over it; state only changes on enter/leave.
+  const [potHot, setPotHot] = useState(false);
+  const hotRef = useRef(false);
+  const setHot = useCallback((next: boolean) => {
+    if (hotRef.current === next) return;
+    hotRef.current = next;
+    setPotHot(next);
   }, []);
+
+  const handleDragMove = useCallback(
+    (_instanceId: string, pos: { x: number; y: number }) => setHot(isInsideZone(pos)),
+    [isInsideZone, setHot],
+  );
 
   const handleDragEnd = useCallback(
     (_instanceId: string, pos: { x: number; y: number }) => {
+      setHot(false);
       if (dragColorRef.current && isInsideZone(pos)) {
         if (mixer.potFull) refuseDrop();
         else {
-          // The core action of the game: every drop lands with a soft bloop.
+          // The core action of the game: every drop lands with a soft bloop and a splash.
           mixer.addPigment(dragColorRef.current);
+          setLastDrop({ hex: COLORS[dragColorRef.current].hex, at: Date.now() });
           play('balloon');
+          onFirstDrop();
         }
       }
       dragColorRef.current = null;
     },
-    [isInsideZone, mixer.addPigment, mixer.potFull, play, refuseDrop],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isInsideZone, mixer.addPigment, mixer.potFull, play, refuseDrop, setHot],
   );
 
   // Discovering a famous color is free play's reward moment — it gets a cue, not silence.
@@ -143,6 +227,7 @@ export default function ColorMixerGame() {
         return;
       }
       mixer.addSavedColor(saved);
+      setLastDrop({ hex: saved.hex, at: Date.now() });
       play('pop');
     },
     [mixer.addSavedColor, mixer.potFull, play, refuseDrop],
@@ -167,18 +252,20 @@ export default function ColorMixerGame() {
   const handleSavedLiftMove = useCallback(
     (x: number, y: number) => {
       ghostPos.setValue({ x: x - GHOST_SIZE / 2, y: y - GHOST_SIZE / 2 });
+      setHot(isInsideZone({ x, y }));
     },
-    [GHOST_SIZE, ghostPos],
+    [GHOST_SIZE, ghostPos, isInsideZone, setHot],
   );
 
   const handleSavedLiftEnd = useCallback(
     (x: number, y: number) => {
+      setHot(false);
       const saved = liftedSaved.current;
       liftedSaved.current = null;
       if (saved && isInsideZone({ x, y })) addSavedToMix(saved);
       setLiftedHex(null);
     },
-    [isInsideZone, addSavedToMix],
+    [isInsideZone, addSavedToMix, setHot],
   );
 
   const isPositionInBounds = useCallback(
@@ -220,14 +307,23 @@ export default function ColorMixerGame() {
   );
 
   const handleChallengeComplete = useCallback(() => {
-    challenge.markChallengeComplete();
-    setShowChallengePicker(true);
-  }, [challenge.markChallengeComplete]);
+    // An endless mystery colour rolls straight on to the next; authored ones go back to
+    // the picker.
+    const next = challenge.markChallengeComplete();
+    mixer.clearContinuousMix();
+    if (!next) setShowChallengePicker(true);
+  }, [challenge.markChallengeComplete, mixer.clearContinuousMix]);
 
   // Success detection lives here, not in ChallengeMode: the celebration has to cover the
   // whole game, and in landscape ChallengeMode is only a ~76dp strip.
   const activeChallenge = mode === 'challenge' && !showChallengePicker ? challenge.currentChallenge : null;
-  const challengeTargetHex = activeChallenge ? COLORS[activeChallenge.targetColor].hex : null;
+  const challengeTargetHex = activeChallenge ? challengeHex(activeChallenge) : null;
+
+  // A new challenge says what to make ("Make this color: orange"), like the guided flow.
+  useEffect(() => {
+    if (!activeChallenge) return;
+    if (activeChallenge.targetColor) void speak(colorTargetPhrase(activeChallenge.targetColor, currentLanguage()));
+  }, [activeChallenge, speak]);
   const stars = challengeTargetHex ? starsFor(mixer.currentMixHex, challengeTargetHex) : 0;
   const canFinishChallenge = !!challengeTargetHex && isChallengeMet(mixer.currentMixHex, challengeTargetHex);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -291,6 +387,8 @@ export default function ColorMixerGame() {
         <ChallengePicker
           challenges={challenge.challenges}
           completedChallenges={challenge.completedChallenges}
+          endlessSolved={challenge.endlessSolved}
+          nextEndless={challenge.nextEndless}
           onSelectChallenge={(c) => {
             challenge.selectChallenge(c);
             mixer.clearContinuousMix();
@@ -303,11 +401,24 @@ export default function ColorMixerGame() {
   }
 
   // Shared inner content blocks — used in both portrait and landscape layouts.
+  // One header row: back (floating) · Play / Challenges · My Colors. The game name
+  // already sits on the home tile, so the mode switch takes the title's place.
   const headerBlock = (
     <View style={[styles.header, { paddingTop: insets.top + SPACING.xs }]}>
       {/* reserves room for the floating BackButton */}
       <View style={styles.headerSide} />
-      <Text style={styles.title}>{t('color-mixer:title')}</Text>
+      <View style={styles.modeToggle}>
+        <Chip
+          label={t('color-mixer:mode.freeplay')}
+          active={mode === 'freeplay'}
+          onPress={() => handleSwitchMode('freeplay')}
+        />
+        <Chip
+          label={t('color-mixer:mode.challenges')}
+          active={mode === 'challenge'}
+          onPress={() => handleSwitchMode('challenge')}
+        />
+      </View>
       <View style={styles.headerSide}>
         <IconButton
           glyph="📚"
@@ -318,32 +429,47 @@ export default function ColorMixerGame() {
     </View>
   );
 
-  const modeToggleBlock = (
-    <View style={styles.modeToggle}>
-      <Chip
-        label={t('color-mixer:mode.freeplay')}
-        active={mode === 'freeplay'}
-        onPress={() => handleSwitchMode('freeplay')}
-      />
-      <Chip
-        label={t('color-mixer:mode.challenges')}
-        active={mode === 'challenge'}
-        onPress={() => handleSwitchMode('challenge')}
-      />
-    </View>
-  );
-
   const challengeBlock = activeChallenge ? (
     <ChallengeMode
       currentChallenge={activeChallenge}
       currentMixHex={mixer.currentMixHex}
       stars={stars}
       landscape={landscape}
-      onBack={() => setShowChallengePicker(true)}
+      onSay={() => {
+        if (activeChallenge.targetColor) void speak(colorTargetPhrase(activeChallenge.targetColor, currentLanguage()));
+      }}
     />
   ) : null;
 
+  // Pot tools sit in one column beside the pot, as round icons: they only appear once
+  // there's paint, and never push the pot around.
+  const hasPaint = !!mixer.currentMixHex;
+  const toolsBlock = (
+    <View style={styles.tools}>
+      {hasPaint ? (
+        <>
+          <IconButton
+            glyph="↩️"
+            onPress={mixer.undoLastMix}
+            disabled={!mixer.canUndo}
+            accessibilityLabel={t('color-mixer:actions.undo')}
+          />
+          <IconButton glyph="🗑️" onPress={mixer.clearContinuousMix} accessibilityLabel={t('color-mixer:actions.clear')} />
+          <IconButton
+            glyph="💾"
+            color={POP.splash}
+            onPress={() => setSaveDialogOpen(true)}
+            accessibilityLabel={t('color-mixer:actions.save')}
+          />
+        </>
+      ) : null}
+    </View>
+  );
+
   const mixingZoneBlock = (
+    <View style={styles.potRow}>
+    {/* Mirror spacer, so the pot stays centred between it and the tools. */}
+    <View style={styles.tools} />
     <View style={styles.playArea} onLayout={handlePlayAreaLayout}>
       <MixingZone
         size={zoneSize}
@@ -351,9 +477,15 @@ export default function ColorMixerGame() {
         dropCount={mixer.mixLog.length}
         dropCap={MIX_CAP}
         rejectedAt={rejectedAt}
+        recipe={mixer.mixLog}
+        colorId={potColorId}
+        lastDrop={lastDrop}
+        hot={potHot}
         onLayout={handleZoneLayout}
         onResultDragEnd={handleResultDragEnd}
       />
+    </View>
+    {toolsBlock}
     </View>
   );
 
@@ -369,23 +501,6 @@ export default function ColorMixerGame() {
           label={t('color-mixer:actions.done')}
           accent="green"
           onPress={finishChallenge}
-        />
-      )}
-      {mixer.canUndo && (
-        <PressableButton label={t('color-mixer:actions.undo')} variant="ghost" onPress={mixer.undoLastMix} />
-      )}
-      {mixer.currentMixHex && (
-        <PressableButton
-          label={t('color-mixer:actions.clear')}
-          variant="ghost"
-          onPress={mixer.clearContinuousMix}
-        />
-      )}
-      {mixer.currentMixHex && (
-        <PressableButton
-          label={t('color-mixer:actions.save')}
-          accent="blue"
-          onPress={() => setSaveDialogOpen(true)}
         />
       )}
     </View>
@@ -409,19 +524,28 @@ export default function ColorMixerGame() {
   );
 
   return (
-    <View style={styles.root}>
+    <View style={styles.root} ref={rootRef}>
       <View style={[styles.container, landscape && styles.containerLandscape]}>
         {landscape ? (
           /* ── Landscape: left = mixing zone, right = palette ── */
           <>
             <View style={styles.leftPanel}>
               {headerBlock}
-              {modeToggleBlock}
               {challengeBlock}
               {mixingZoneBlock}
               {actionsBlock}
             </View>
-            <View style={styles.rightPanel}>
+            <View
+              style={[
+                styles.rightPanel,
+                {
+                  paddingTop: insets.top + SPACING.md,
+                  paddingBottom: insets.bottom + SPACING.md,
+                  paddingStart: SPACING.md,
+                  paddingEnd: Math.max(insets.right, insets.left) + SPACING.md,
+                },
+              ]}
+            >
               {paletteBlock}
             </View>
           </>
@@ -429,7 +553,6 @@ export default function ColorMixerGame() {
           /* ── Portrait: stacked ── */
           <>
             {headerBlock}
-            {modeToggleBlock}
             {challengeBlock}
             {mixingZoneBlock}
             {actionsBlock}
@@ -452,6 +575,8 @@ export default function ColorMixerGame() {
         </Animated.View>
       )}
 
+      {demoPoints.length > 1 ? <DemoHand mode="drag" points={demoPoints} /> : null}
+
       {/* Modals */}
       <DiscoveryCelebration
         colorId={mixer.newDiscovery}
@@ -469,7 +594,11 @@ export default function ColorMixerGame() {
       <ChallengeSuccess
         visible={showSuccess}
         targetHex={challengeTargetHex ?? '#FFFFFF'}
-        targetName={activeChallenge ? t(`color-mixer:colors.${activeChallenge.targetColor}`) : ''}
+        targetName={
+          activeChallenge?.targetColor
+            ? t(`color-mixer:colors.${activeChallenge.targetColor}`)
+            : t('color-mixer:card.mysteryColor')
+        }
         stars={stars}
         onDismiss={dismissSuccess}
       />
@@ -521,23 +650,30 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
-  title: {
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: FONTS.displayBold,
-    fontSize: 24,
-    color: TOKENS.ink,
-  },
   modeToggle: {
+    flex: 1,
     flexDirection: 'row',
-    alignSelf: 'center',
+    justifyContent: 'center',
     gap: SPACING.sm,
-    marginBottom: 8,
+  },
+  // Stretch, so the play area gets the full height to size the pot from.
+  potRow: {
+    flex: 1,
+    flexDirection: 'row',
+  },
+  tools: {
+    width: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.md,
   },
   playArea: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    // Room for the recipe pill above the pot and the name pill below it.
+    paddingTop: 18,
+    paddingBottom: 22,
   },
   potFull: {
     flexShrink: 1,
@@ -553,7 +689,6 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     paddingHorizontal: 20,
     paddingBottom: 12,
-    minHeight: 56,
   },
   paletteContainer: {
     zIndex: 10,

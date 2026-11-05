@@ -7,6 +7,7 @@ registerGame({
   name: 'Animal Safari', // English fallback; localized via animal-safari:meta.name
   description: 'Listen and find the animals!',
   icon: '🐾',
+  cover: require('./cover.jpg'),
   ageRange: { min: 3, max: 7 },
   component: AnimalSafari,
   backgroundColor: COLORS.canvas,

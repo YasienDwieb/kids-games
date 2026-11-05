@@ -6,13 +6,12 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { DemoHand, EmojiImage, useSound, type DemoPoint } from '@/sdk';
+import { DemoHand, EmojiImage, type DemoPoint } from '@/sdk';
 import { ClayDisc, MazeBoard } from './MazeBoard';
 import { CLAY_DEPTH, EMOJI, FLOOR_RADIUS, FRAME_PAD, MAZE_COLORS, STEP_MS, pieceSize } from '../constants';
+import { useMazeDrive } from '../hooks/useMazeDrive';
 import type { StepResult, useMaze } from '../hooks/useMaze';
 import type { Pos } from '../types';
-
-const towards = (from: number, to: number) => from + Math.sign(to - from);
 
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
 
@@ -32,8 +31,7 @@ type MazeViewProps = {
 const NO_HINTS = new Set<string>();
 
 export function MazeView({ maze, cellSize, hintCells = NO_HINTS, showDemo = false, onStep }: MazeViewProps) {
-  const { play } = useSound();
-  const { state, tryStep, hintPath } = maze;
+  const { state, hintPath } = maze;
 
   // Fresh value per level so the mouse always starts at the top-left start cell.
   const pan = useMemo(() => new Animated.ValueXY({ x: 0, y: 0 }), [state.level]);
@@ -51,83 +49,34 @@ export function MazeView({ maze, cellSize, hintCells = NO_HINTS, showDemo = fals
   }, [cellSize, pan]);
 
   // Follow the finger: step the mouse into the cell under the finger, but only
-  // when that cell is directly adjacent and open (handled in the hook). The mouse
-  // is therefore finger-paced — it moves as fast as you drag, never faster — and
-  // ignores taps on far/off-path cells. Held in a ref so the (stable) pan gesture
-  // always calls the latest closure.
+  // when that cell is directly adjacent and open (handled in the hooks). The
+  // mouse is therefore finger-paced — it moves as fast as you drag, never
+  // faster — and ignores taps on far/off-path cells.
   const bump = useRef(new Animated.Value(0)).current;
-  const lastBump = useRef<string | null>(null);
-  const dragRef = useRef<(localX: number, localY: number) => void>(() => {});
   const hop = useRef(new Animated.Value(0)).current;
+  const drive = useMazeDrive(maze, {
+    onStep,
+    onBump: () => {
+      bump.setValue(0);
+      Animated.sequence([
+        Animated.timing(bump, { toValue: 1, duration: 60, useNativeDriver: true }),
+        Animated.timing(bump, { toValue: -1, duration: 60, useNativeDriver: true }),
+        Animated.timing(bump, { toValue: 0, duration: 60, useNativeDriver: true }),
+      ]).start();
+    },
+    onMove: (cell) => {
+      Animated.timing(pan, { toValue: cellToXY(cell), duration: STEP_MS, useNativeDriver: true }).start();
+      hop.setValue(1);
+      Animated.spring(hop, { toValue: 0, friction: 4, tension: 160, useNativeDriver: true }).start();
+    },
+  });
+  const dragRef = useRef<(localX: number, localY: number) => void>(() => {});
   dragRef.current = (localX, localY) => {
-    if (cellSize <= 0 || state.won) return;
-    const target: Pos = {
+    if (cellSize <= 0) return;
+    drive.current({
       row: clamp(Math.floor(localY / cellSize), 0, state.rows - 1),
       col: clamp(Math.floor(localX / cellSize), 0, state.cols - 1),
-    };
-    // A fast drag can skip cells; along a straight corridor, glide the mouse
-    // cell by cell to the finger instead of leaving it stuck behind.
-    const from = state.player;
-    const straight = from.row === target.row || from.col === target.col;
-    let last: StepResult | null = null;
-    let collected = false;
-    let pos = from;
-    while (straight && !(pos.row === target.row && pos.col === target.col)) {
-      const next: Pos = {
-        row: towards(pos.row, target.row),
-        col: towards(pos.col, target.col),
-      };
-      const res = tryStep(next);
-      if (res.blocked && last === null) {
-        // Pushing into a wall answers with a bump — once per wall, not on every
-        // move event while the finger rests there — so it never feels broken.
-        const k = `${pos.row},${pos.col}>${next.row},${next.col}`;
-        if (lastBump.current !== k) {
-          lastBump.current = k;
-          play('hit');
-          bump.setValue(0);
-          Animated.sequence([
-            Animated.timing(bump, {
-              toValue: 1,
-              duration: 60,
-              useNativeDriver: true,
-            }),
-            Animated.timing(bump, {
-              toValue: -1,
-              duration: 60,
-              useNativeDriver: true,
-            }),
-            Animated.timing(bump, {
-              toValue: 0,
-              duration: 60,
-              useNativeDriver: true,
-            }),
-          ]).start();
-        }
-      }
-      if (!res.cell) break;
-      last = res;
-      collected = collected || res.collected;
-      pos = res.cell;
-      onStep?.(res);
-      if (res.reachedGoal) break;
-    }
-    if (!last?.cell) return;
-    lastBump.current = null;
-
-    play(collected ? 'success' : 'pop');
-    Animated.timing(pan, {
-      toValue: cellToXY(last.cell),
-      duration: STEP_MS,
-      useNativeDriver: true,
-    }).start();
-    hop.setValue(1);
-    Animated.spring(hop, {
-      toValue: 0,
-      friction: 4,
-      tension: 160,
-      useNativeDriver: true,
-    }).start();
+    });
   };
 
   // Native gesture recognition (RNGH); callbacks on JS since there's no reanimated.

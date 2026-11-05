@@ -6,13 +6,13 @@
  */
 
 import { StyleSheet, View } from 'react-native';
-import { EmojiImage } from '@/components/common';
+import { ClayEmoji } from '@/components/common';
 import type { Letter } from '../types';
 
 export function LetterHero({ letter }: { letter: Letter }): React.JSX.Element {
   return (
     <View style={styles.root}>
-      <EmojiImage emoji={letter.emoji} size={150} />
+      <ClayEmoji emoji={letter.emoji} size={150} />
     </View>
   );
 }

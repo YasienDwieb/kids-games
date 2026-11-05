@@ -11,7 +11,7 @@ import {
   BORDER_RADIUS,
   COLORS,
   Chip,
-  EmojiImage,
+  ClayEmoji,
   FONTS,
   OUTLINE,
   POP,
@@ -164,7 +164,7 @@ function Tile({ char, stars, next, onPress, onLayoutX }: TileProps) {
         ]}
       >
         {warmup && char.from ? (
-          <EmojiImage emoji={char.from} size={64} />
+          <ClayEmoji emoji={char.from} size={64} />
         ) : (
           <Text style={[styles.glyph, char.script && { fontFamily: fontsFor(charLanguage(char)).display }]} numberOfLines={1}>
             {char.label}

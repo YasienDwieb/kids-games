@@ -1,5 +1,9 @@
 /**
- * ShapeView — renders a single Shape (kind + color + size) using plain Views.
+ * ShapeView — renders a single Shape (kind + color + size).
+ *
+ * Palette colours draw a pre-rendered 3D clay sprite (see shapeSprites.ts):
+ * a glossy sphere, rounded cube and puffy triangle / star / heart / diamond.
+ * Any other colour falls back to the View-built flat shapes below.
  *
  * No SVG dependency. Each kind is approximated with View + borderRadius / transforms:
  *   circle   → fully rounded square
@@ -13,10 +17,14 @@
  * accessibilityLabel encodes kind + size.
  */
 
-import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { Image, StyleSheet, View, type ViewStyle } from 'react-native';
 import { SHADOWS, useTranslation } from '@/sdk';
 import { SHAPE_SIZE_PX } from '../constants';
 import type { Shape } from '../types';
+import { SHAPE_SPRITES } from './shapeSprites';
+
+/** The sprite's shape fills ~70% of its square; draw it a touch larger than the slot so the shape itself nearly fills it (larger overflowed the sort tray tiles). */
+const SPRITE_SCALE = 1.12;
 
 // ---------------------------------------------------------------------------
 // Types
@@ -251,26 +259,32 @@ export function ShapeView({ shape, style, accessibilityLabel }: ShapeViewProps):
   const { t } = useTranslation();
   const px = SHAPE_SIZE_PX[shape.size];
 
+  const sprite = SHAPE_SPRITES[shape.kind]?.[shape.color];
   let inner: React.JSX.Element;
-  switch (shape.kind) {
-    case 'circle':
-      inner = <CircleShape size={px} color={shape.color} />;
-      break;
-    case 'square':
-      inner = <SquareShape size={px} color={shape.color} />;
-      break;
-    case 'triangle':
-      inner = <TriangleShape size={px} color={shape.color} />;
-      break;
-    case 'diamond':
-      inner = <DiamondShape size={px} color={shape.color} />;
-      break;
-    case 'star':
-      inner = <StarShape size={px} color={shape.color} />;
-      break;
-    case 'heart':
-      inner = <HeartShape size={px} color={shape.color} />;
-      break;
+  if (sprite) {
+    const s = px * SPRITE_SCALE;
+    inner = <Image source={sprite} style={{ width: s, height: s }} resizeMode="contain" accessible={false} />;
+  } else {
+    switch (shape.kind) {
+      case 'circle':
+        inner = <CircleShape size={px} color={shape.color} />;
+        break;
+      case 'square':
+        inner = <SquareShape size={px} color={shape.color} />;
+        break;
+      case 'triangle':
+        inner = <TriangleShape size={px} color={shape.color} />;
+        break;
+      case 'diamond':
+        inner = <DiamondShape size={px} color={shape.color} />;
+        break;
+      case 'star':
+        inner = <StarShape size={px} color={shape.color} />;
+        break;
+      case 'heart':
+        inner = <HeartShape size={px} color={shape.color} />;
+        break;
+    }
   }
 
   // Bug #4: build label from translated kind/size so screen readers speak the

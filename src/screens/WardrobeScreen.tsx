@@ -1,5 +1,6 @@
-// Lulu's wardrobe — dress Lulu in what levels unlock (hats, glasses) and browse
-// the sticker collection. Opening it clears the "new sticker" marks.
+// The buddy's wardrobe — switch between Lulu and Zain, dress them in what
+// levels unlock (hats, glasses; shared by both buddies) and browse the sticker
+// collection. Opening it clears the "new sticker" marks.
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +11,10 @@ import { AppBar, Chip, EmojiImage, Icon } from '../components/common';
 import { LevelPill, PopBackdrop, ProgressBar } from '../components/pop';
 import {
   ALL_STICKERS,
+  BUDDIES,
+  Mascot,
+  chooseBuddy,
+  useBuddy,
   Lulu3D,
   OUTFITS,
   STARS_PER_STICKER,
@@ -39,6 +44,7 @@ export function WardrobeScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const rewards = useRewards();
   const wearing = useWearing();
+  const buddy = useBuddy();
   const focused = useIsFocused();
   const [tab, setTab] = useState<Tab>('hat');
   const { level } = levelInfo(rewards.stars);
@@ -60,14 +66,36 @@ export function WardrobeScreen({ navigation }: Props) {
       <PopBackdrop color={POP.bubblegum} stripe="#FF66B0" />
       <SafeAreaView style={styles.flex} edges={['top', 'left', 'right', 'bottom']}>
         <AppBar
-          title={t('wardrobe.title')}
+          title={t(`buddy.${buddy}.dressUp`)}
           titleColor={COLORS.surface}
           onBack={() => navigation.goBack()}
-          right={<LevelPill stars={rewards.stars} />}
+          right={
+            <View style={styles.barRight}>
+              <View style={styles.switch} accessibilityRole="radiogroup">
+                {BUDDIES.map((b) => {
+                  const on = b === buddy;
+                  return (
+                    <Pressable
+                      key={b}
+                      onPress={() => void chooseBuddy(b)}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: on }}
+                      accessibilityLabel={t('buddy.choose', { name: t(`buddy.${b}.name`) })}
+                      style={[styles.switchItem, on && styles.switchOn]}
+                    >
+                      <Mascot buddy={b} pose="wave" size={34} bob={false} />
+                      <Text style={[styles.switchText, on && styles.switchTextOn]}>{t(`buddy.${b}.name`)}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <LevelPill stars={rewards.stars} compact />
+            </View>
+          }
         />
         <View style={styles.body}>
           <View style={styles.stage}>
-            <Lulu3D size={210} mood="wave" interactive active={focused} />
+            <Lulu3D key={buddy} size={210} mood="wave" interactive active={focused} />
             <View style={styles.shadow} />
           </View>
 
@@ -167,6 +195,20 @@ export function WardrobeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  barRight: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  switch: {
+    flexDirection: 'row',
+    gap: 4,
+    padding: 4,
+    borderRadius: 999,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
+    backgroundColor: COLORS.surface,
+  },
+  switchItem: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingEnd: 12, paddingStart: 4, height: 40, borderRadius: 999 },
+  switchOn: { backgroundColor: COLORS.ink },
+  switchText: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.ink },
+  switchTextOn: { color: COLORS.surface },
   body: { flex: 1, flexDirection: 'row', gap: SPACING.md, paddingHorizontal: SPACING.md, paddingBottom: SPACING.md },
   stage: { width: 240, alignItems: 'center', justifyContent: 'center' },
   shadow: { width: 170, height: 16, borderRadius: 8, backgroundColor: 'rgba(27,27,47,0.18)', marginTop: -10 },

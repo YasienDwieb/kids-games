@@ -30,6 +30,16 @@ import '@/games'; // register games + translations
 import { HomeScreen } from '../HomeScreen';
 import { getAllGames } from '@/sdk';
 
+const mounted: any[] = [];
+
+// Unmount after each test so looping animations (and the first-launch buddy
+// picker, which appears once settings load) don't outlive the test environment.
+afterEach(() => {
+  act(() => {
+    mounted.splice(0).forEach((t) => t.unmount());
+  });
+});
+
 function renderHome() {
   const navigation = { navigate: jest.fn() } as any;
   let tree: any;
@@ -38,6 +48,7 @@ function renderHome() {
       <HomeScreen navigation={navigation} route={{ key: 'Home', name: 'Home' } as any} />,
     );
   });
+  mounted.push(tree);
   return tree;
 }
 

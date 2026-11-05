@@ -7,6 +7,9 @@ import type { Challenge } from '../types';
 type ChallengePickerProps = {
   challenges: Challenge[];
   completedChallenges: string[];
+  /** Endless mystery colours solved so far, and the next one to play. */
+  endlessSolved: number;
+  nextEndless: Challenge;
   onSelectChallenge: (challenge: Challenge) => void;
   onBack: () => void;
 };
@@ -16,6 +19,8 @@ const DIFFICULTY_ORDER: Challenge['difficulty'][] = ['easy', 'medium', 'hard'];
 export function ChallengePicker({
   challenges,
   completedChallenges,
+  endlessSolved,
+  nextEndless,
   onSelectChallenge,
   onBack,
 }: ChallengePickerProps) {
@@ -78,6 +83,21 @@ export function ChallengePicker({
             <Text style={styles.allDoneText}>{t('color-mixer:picker.allDone')}</Text>
           </View>
         )}
+
+        {/* Never runs out: a fresh mystery colour every time, a little harder as you go. */}
+        <View style={styles.group}>
+          <View style={styles.endlessHeader}>
+            <EmojiImage emoji="🎲" size={20} />
+            <Text style={[styles.groupTitle, styles.inlineTitle]}>{t('color-mixer:picker.endless')}</Text>
+            <Text style={styles.endlessCount}>{t('color-mixer:picker.endlessSolved', { n: endlessSolved })}</Text>
+          </View>
+          <ChallengeCard
+            challenge={nextEndless}
+            isComplete={false}
+            onSelect={() => onSelectChallenge(nextEndless)}
+            style={landscape ? styles.gridCard : undefined}
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -149,6 +169,18 @@ const styles = StyleSheet.create({
   gridCard: {
     // Two per row, accounting for the 10dp gap.
     width: '48.5%',
+  },
+  endlessHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
+  inlineTitle: { marginBottom: 0 },
+  endlessCount: {
+    fontSize: 13,
+    fontFamily: FONTS.bodySemi,
+    color: COLORS.inkSoft,
   },
   allDone: {
     alignItems: 'center',

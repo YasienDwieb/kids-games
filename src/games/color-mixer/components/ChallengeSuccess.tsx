@@ -1,6 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, Mascot, PressableButton, Star, useTranslation } from '@/sdk';
+import {
+  BORDER_RADIUS,
+  COLORS as TOKENS,
+  FONTS,
+  Mascot,
+  OUTLINE,
+  PressableButton,
+  SHADOWS,
+  Star,
+  useTranslation,
+} from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { Sparkles } from './Sparkles';
 
@@ -56,16 +66,16 @@ export function ChallengeSuccess({
         <View style={styles.overlay}>
           <Animated.View style={[styles.content, { transform: [{ scale }] }]}>
             <Sparkles color={targetHex} radius={100} />
-            <Mascot pose="cheer" size={80} style={styles.emoji} />
+            <Mascot pose="cheer" size={60} style={styles.emoji} />
             <Text style={styles.text}>{t('color-mixer:challenge.success')}</Text>
 
             <View style={styles.stars}>
               {[1, 2, 3].map((n) => (
-                <Star key={n} size={30} filled={n <= stars} />
+                <Star key={n} size={26} filled={n <= stars} />
               ))}
             </View>
 
-            <ColorBlob color={targetHex} size={64} showShine />
+            <ColorBlob color={targetHex} size={48} showShine />
             <Text style={styles.color}>{targetName}</Text>
 
             <PressableButton
@@ -91,8 +101,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // A card like the other games' "well done" panels: the dimmed game behind is
+  // busy, and white text straight on it was hard to read.
   content: {
     alignItems: 'center',
+    minWidth: 260,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: BORDER_RADIUS.card,
+    backgroundColor: TOKENS.surface,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
+    ...SHADOWS.lg,
   },
   emoji: {
     marginBottom: 4,
@@ -100,7 +120,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: FONTS.displayBold,
     fontSize: 26,
-    color: TOKENS.surface,
+    color: TOKENS.ink,
     marginBottom: 6,
   },
   stars: {
@@ -112,7 +132,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontFamily: FONTS.displayBold,
     fontSize: 20,
-    color: TOKENS.surface,
+    color: TOKENS.ink,
   },
   cta: {
     marginTop: 14,

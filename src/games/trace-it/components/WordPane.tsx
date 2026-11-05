@@ -4,7 +4,7 @@
  * word, and a replay button that speaks it again.
  */
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS, EmojiImage, FONTS, Icon, IconButton, SPACING, fontsFor, useTranslation } from '@/sdk';
+import { COLORS, ClayEmoji, FONTS, Icon, IconButton, SPACING, fontsFor, useTranslation } from '@/sdk';
 import { charLanguage, type TraceChar } from '../catalog';
 
 type WordPaneProps = {
@@ -42,12 +42,12 @@ function Picture({ char, width }: { char: TraceChar; width: number }) {
     return (
       <View style={[styles.balloons, { width: size * 3 + SPACING.xs * 2 }]}>
         {Array.from({ length: char.count }, (_, i) => (
-          <EmojiImage key={i} emoji={char.emoji!} size={size} />
+          <ClayEmoji key={i} emoji={char.emoji!} size={size} />
         ))}
       </View>
     );
   }
-  if (char.emoji) return <EmojiImage emoji={char.emoji} size={Math.min(140, width * 0.6)} />;
+  if (char.emoji) return <ClayEmoji emoji={char.emoji} size={Math.min(140, width * 0.6)} />;
   return null;
 }
 

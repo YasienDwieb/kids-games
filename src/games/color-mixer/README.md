@@ -59,8 +59,10 @@ Challenge scoring is graded: 3 stars under ΔE00 3, 2 under 6, 1 under 12. One s
 Add to `CHALLENGES` in `constants.ts`:
 
 ```ts
-{ id: 'c7', targetColor: 'newColor', hint: 'A helpful hint', difficulty: 'hard' },
+{ id: 'c7', targetColor: 'newColor', recipe: ['red', 'white', 'white'], hint: 'A helpful hint', difficulty: 'hard' },
 ```
+
+`recipe` is shown as the (picture) hint and is checked by `__tests__/challenges.test.ts` to really make the target. After the authored challenges, the picker offers endless generated "mystery colours" (`endlessChallenge(n)` in `utils/challenges.ts`).
 
 ## File Structure
 
