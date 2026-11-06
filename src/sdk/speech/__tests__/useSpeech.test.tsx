@@ -4,12 +4,22 @@ import { createAudioPlayer } from 'expo-audio';
 import * as Speech from 'expo-speech';
 import { stopSpeech, useSpeech } from '../useSpeech';
 import { clipKey } from '../clipKey';
+import { STALL_MS } from '@/sdk/audio/releasePlayer';
 
 jest.mock('expo-speech', () => ({ speak: jest.fn(), stop: jest.fn() }));
 jest.mock('../clips.generated', () => ({ CLIPS: { 'ar:كَاف. كُرَة': 1, 'en:Q. Queen': 2 } }));
 
 type Api = ReturnType<typeof useSpeech>;
-type Player = { play: jest.Mock; pause: jest.Mock; seekTo: jest.Mock; remove: jest.Mock };
+type Player = {
+  play: jest.Mock;
+  pause: jest.Mock;
+  seekTo: jest.Mock;
+  remove: jest.Mock;
+  release: jest.Mock;
+  addListener: jest.Mock;
+};
+
+const mounted: ReactTestRenderer[] = [];
 
 function mount(): { api: Api; tree: ReactTestRenderer } {
   let api!: Api;
@@ -21,6 +31,7 @@ function mount(): { api: Api; tree: ReactTestRenderer } {
   act(() => {
     tree = create(<Probe />);
   });
+  mounted.push(tree);
   return { api, tree };
 }
 
@@ -36,6 +47,11 @@ const makePlayer = (createAudioPlayer as jest.Mock).getMockImplementation()!;
 const playerFor = (module: number): Player => created.get(module)!;
 
 beforeEach(() => jest.clearAllMocks());
+
+// The clip is module state; unmounting releases it so tests can't share a player.
+afterEach(() => {
+  act(() => mounted.splice(0).forEach((tree) => tree.unmount()));
+});
 
 it('plays the clip and skips TTS when a clip exists', async () => {
   const { api } = mount();
@@ -70,7 +86,7 @@ it('a new speak stops the previous clip', async () => {
 it('unmount stops a playing clip', async () => {
   const { api, tree } = mount();
   await act(() => api.speak('Q. Queen', { language: 'en' }));
-  act(() => tree.unmount());
+  act(() => tree.update(<></>));
   expect(playerFor(2).pause).toHaveBeenCalled();
 });
 
@@ -80,6 +96,7 @@ it('switching clips releases the previous player', async () => {
   const first = playerFor(2);
   await act(() => api.speak('كَاف. كُرَة', { language: 'ar' }));
   expect(first.remove).toHaveBeenCalled();
+  expect(first.release).toHaveBeenCalled(); // remove() alone keeps the native track
 });
 
 it('replaying the same clip reuses its player from the start', async () => {
@@ -88,7 +105,7 @@ it('replaying the same clip reuses its player from the start', async () => {
   const player = playerFor(2);
   await act(() => api.speak('Q. Queen', { language: 'en' }));
   expect(playerFor(2)).toBe(player);
-  expect(player.remove).not.toHaveBeenCalled();
+  expect(player.release).not.toHaveBeenCalled();
   expect(player.seekTo).toHaveBeenLastCalledWith(0);
   expect(player.play).toHaveBeenCalledTimes(2);
 });
@@ -96,8 +113,65 @@ it('replaying the same clip reuses its player from the start', async () => {
 it('unmount releases the clip player', async () => {
   const { api, tree } = mount();
   await act(() => api.speak('كَاف. كُرَة', { language: 'ar' }));
-  act(() => tree.unmount());
-  expect(playerFor(1).remove).toHaveBeenCalled();
+  act(() => tree.update(<></>));
+  expect(playerFor(1).release).toHaveBeenCalled();
+});
+
+describe('a clip that fails natively (play() does not throw)', () => {
+  const fail = (player: Player) => {
+    const [, onStatus] = player.addListener.mock.calls[0];
+    act(() => onStatus({ error: 'AudioTrack init failed' }));
+  };
+
+  it('says the line with the device voice', async () => {
+    const { api } = mount();
+    await act(() => api.speak('Q. Queen', { language: 'en' }));
+    fail(playerFor(2));
+    expect(Speech.speak).toHaveBeenCalledWith('Q. Queen', expect.objectContaining({ language: 'en-US' }));
+  });
+
+  it('drops the dead player so the next speak builds a fresh one', async () => {
+    const { api } = mount();
+    await act(() => api.speak('Q. Queen', { language: 'en' }));
+    const dead = playerFor(2);
+    fail(dead);
+    expect(dead.release).toHaveBeenCalled();
+    await act(() => api.speak('Q. Queen', { language: 'en' }));
+    expect(playerFor(2)).not.toBe(dead);
+    expect(playerFor(2).play).toHaveBeenCalled();
+  });
+
+  it('gives a clip stuck in buffering to the device voice', async () => {
+    jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask'] });
+    try {
+      const stuck = () => {
+        const player = makePlayer(2);
+        player.isBuffering = true;
+        created.set(2, player);
+        return player;
+      };
+      (createAudioPlayer as jest.Mock).mockImplementationOnce(stuck);
+      const { api } = mount();
+      await act(() => api.speak('Q. Queen', { language: 'en' }));
+      expect(Speech.speak).not.toHaveBeenCalled();
+      act(() => {
+        jest.advanceTimersByTime(STALL_MS);
+      });
+      expect(Speech.speak).toHaveBeenCalledWith('Q. Queen', expect.objectContaining({ language: 'en-US' }));
+      expect(playerFor(2).release).toHaveBeenCalled();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('stays quiet after the screen has gone', async () => {
+    const { api, tree } = mount();
+    await act(() => api.speak('Q. Queen', { language: 'en' }));
+    const dead = playerFor(2);
+    act(() => tree.update(<></>));
+    fail(dead);
+    expect(Speech.speak).not.toHaveBeenCalled();
+  });
 });
 
 it('falls back to device TTS when the clip cannot play', async () => {

@@ -60,6 +60,12 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (process.env.EXPO_PUBLIC_AUDIO_STRESS) {
+      void require('./src/sdk/audio/dev/trackStress').runTrackStress();
+    }
+  }, []);
+
+  useEffect(() => {
     initAnalytics();
   }, []);
 

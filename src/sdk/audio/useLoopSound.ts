@@ -2,13 +2,14 @@ import { useEffect, useRef } from 'react';
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { pickModule } from '@/sdk/assets/query';
 import { useSettings } from '@/sdk/settings/useSettings';
+import { releasePlayer } from './releasePlayer';
 
 /**
  * Looping ambient sound (engine rumble, wind, …) tied to component lifecycle.
  *
  * While `active` and the soundEnabled setting are both true, a sound resolved
  * via pickModule(intent) plays with looping. Toggling `active` (or the
- * setting) pauses/resumes the same loaded player; it is removed on unmount.
+ * setting) pauses/resumes the same loaded player; it is released on unmount.
  * Unknown intents are a silent no-op (mirrors useSound).
  */
 export function useLoopSound(
@@ -36,11 +37,7 @@ export function useLoopSound(
     const sync = async () => {
       // Intent changed under a loaded player → drop it and recreate below.
       if (playerRef.current && loadedIntentRef.current !== intent) {
-        try {
-          playerRef.current.remove();
-        } catch {
-          // already released — ignore
-        }
+        releasePlayer(playerRef.current);
         playerRef.current = null;
         loadedIntentRef.current = null;
       }
@@ -73,11 +70,7 @@ export function useLoopSound(
         const player = createAudioPlayer(module);
         if (!mountedRef.current) {
           // Unmounted while the effect was in flight.
-          try {
-            player.remove();
-          } catch {
-            // already released — ignore
-          }
+          releasePlayer(player);
           return;
         }
         player.loop = true;
@@ -128,11 +121,7 @@ export function useLoopSound(
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
-      try {
-        playerRef.current?.remove();
-      } catch {
-        // already released — ignore
-      }
+      if (playerRef.current) releasePlayer(playerRef.current);
       playerRef.current = null;
       loadedIntentRef.current = null;
     };

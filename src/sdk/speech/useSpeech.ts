@@ -3,6 +3,7 @@ import * as Speech from 'expo-speech';
 import { createAudioPlayer, type AudioPlayer } from 'expo-audio';
 import { currentLanguage } from '@/sdk/i18n';
 import type { LanguageCode } from '@/sdk/i18n/types';
+import { onPlayerFailed, releasePlayer } from '@/sdk/audio/releasePlayer';
 import { settingsStore } from '@/sdk/settings/store';
 import { voiceHoldRemaining } from './voiceGate';
 import { clipKey } from './clipKey';
@@ -23,7 +24,7 @@ const DEFAULT_PITCH = 1.1;
 
 // Bundled clips (docs/VOICE.md): one native player at a time app-wide, kept only
 // while its clip may be replayed, so a long session doesn't pile up players.
-let clip: { module: number; player: AudioPlayer } | null = null;
+let clip: { module: number; player: AudioPlayer; onFail: () => void } | null = null;
 
 function stopAll() {
   try {
@@ -44,19 +45,23 @@ export function stopSpeech(): void {
 }
 
 function releaseClip() {
-  try {
-    clip?.player.remove();
-  } catch {
-    // already released
-  }
+  if (clip) releasePlayer(clip.player);
   clip = null;
 }
 
-function playClip(module: number) {
+function playClip(module: number, onFail: () => void) {
   if (clip?.module !== module) {
     releaseClip();
-    clip = { module, player: createAudioPlayer(module) };
+    const player = createAudioPlayer(module);
+    onPlayerFailed(player, () => {
+      if (clip?.player !== player) return; // already replaced or unmounted
+      const fail = clip.onFail;
+      releaseClip();
+      fail();
+    });
+    clip = { module, player, onFail };
   }
+  clip.onFail = onFail;
   clip.player.seekTo(0); // expo-audio doesn't auto-rewind on finish
   clip.player.play();
 }
@@ -98,20 +103,22 @@ export function useSpeech() {
     try {
       // Replace any in-flight clip/utterance — expo-speech queues otherwise.
       stopAll();
+      const deviceVoice = () =>
+        Speech.speak(text, {
+          language,
+          rate: options.rate ?? DEFAULT_RATE,
+          pitch: options.pitch ?? DEFAULT_PITCH,
+        });
       const module = CLIPS[clipKey(lang, text)];
       if (module !== undefined) {
         try {
-          playClip(module);
+          playClip(module, deviceVoice);
           return;
         } catch {
           releaseClip(); // the device voice still asks the question
         }
       }
-      Speech.speak(text, {
-        language,
-        rate: options.rate ?? DEFAULT_RATE,
-        pitch: options.pitch ?? DEFAULT_PITCH,
-      });
+      deviceVoice();
     } catch {
       // graceful degradation — game works without speech
     }
