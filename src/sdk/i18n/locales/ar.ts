@@ -161,6 +161,9 @@ export const ar: CoreTranslations = {
       8: 'مذهل!',
     },
   },
+  feedback: {
+    miss: { tryAgain: 'مَرَّةً أُخْرى!' },
+  },
   buddy: {
     pickTitle: 'اختر صديقك!',
     anyTime: 'يمكنك تغيير صديقك في أي وقت',

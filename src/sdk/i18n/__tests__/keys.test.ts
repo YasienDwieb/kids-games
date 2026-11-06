@@ -116,6 +116,7 @@ const KEYS: string[] = [
   'core:stickers.complete',
   'core:celebrate.praise.4',
   'core:celebrate.praise.8',
+  'core:feedback.miss.tryAgain',
   // simple-pairs
   'simple-pairs:meta.name',
   'simple-pairs:meta.description',

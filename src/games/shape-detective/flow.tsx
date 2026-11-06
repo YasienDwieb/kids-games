@@ -20,7 +20,7 @@ function ShapeDetectiveFlowRound({
   level: LevelData;
   onComplete: () => void;
 }) {
-  const { play, solved, selectedIndex, complete, pick } = useFlowRound(onComplete);
+  const { play, solved, selectedIndex, complete, pick, miss } = useFlowRound(onComplete);
   const { puzzle } = level;
 
   if (puzzle.type === 'sort') {
@@ -30,7 +30,9 @@ function ShapeDetectiveFlowRound({
           puzzle={puzzle}
           onDrop={(itemIndex, binIndex) => {
             if (binIndex === -1) return void play('wrong');
-            void play(binIndex === puzzle.assignments[itemIndex] ? 'success' : 'wrong');
+            if (binIndex === puzzle.assignments[itemIndex]) return void play('success');
+            miss();
+            void play('wrong');
           }}
           onSolved={complete}
         />

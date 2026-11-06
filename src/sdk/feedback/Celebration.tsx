@@ -17,12 +17,21 @@ import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
-import { holdVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
-import { stopSpeech } from '@/sdk/speech/useSpeech';
+import { holdVoice, reserveVoice, voiceBusyRemaining, voiceHoldRemaining } from '@/sdk/speech/voiceGate';
+import { isSpeaking, stopSpeech, useSpeech } from '@/sdk/speech/useSpeech';
+import { useSettings } from '@/sdk/settings/useSettings';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { LevelUp } from './LevelUp';
 import { bumpCombo } from './combo';
+import {
+  MISS_HOLD_MS,
+  MISS_SFX_GAP_MS,
+  MissVoiceContext,
+  missPhrase,
+  shouldSpeakMiss,
+  type MissVoice,
+} from './missVoice';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
 import { FONT_SIZES, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
@@ -118,6 +127,32 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
   const nextId = useRef(1);
   const lastPraise = useRef(0);
   const { play, prewarm } = useSound();
+  const { speak } = useSpeech();
+  const { settings } = useSettings();
+  const soundOn = useRef(settings.soundEnabled);
+  soundOn.current = settings.soundEnabled;
+  const cueUntil = useRef(0);
+  const missTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => clearTimeout(missTimer.current), []);
+
+  // Unlike a game's prompt, the cue follows the sound setting like the praise does.
+  // A new miss cuts the last cue off; anyone else's voice keeps the floor.
+  const missVoice = useCallback<MissVoice>(
+    (misses) => {
+      if (!soundOn.current || !shouldSpeakMiss(misses)) return;
+      const now = Date.now();
+      if (now < cueUntil.current) stopSpeech();
+      else if (voiceHoldRemaining() > 0 || isSpeaking()) return;
+      const lang = currentLanguage();
+      const window = MISS_SFX_GAP_MS + MISS_HOLD_MS[lang];
+      cueUntil.current = now + window;
+      reserveVoice(window); // a prompt starting now waits for the cue
+      clearTimeout(missTimer.current);
+      missTimer.current = setTimeout(() => void speak(missPhrase(lang), { now: true }), MISS_SFX_GAP_MS);
+    },
+    [speak],
+  );
 
   // Load this language's praise clips up front so the voice lands with the burst.
   useEffect(() => {
@@ -126,6 +161,7 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
 
   const celebrate = useCallback<Celebrate>((size = 'small', options = {}) => {
     return new Promise<void>((resolve) => {
+      clearTimeout(missTimer.current); // the child got it; no cue after the fact
       // Never repeat the previous line back-to-back.
       let n = 1 + Math.floor(Math.random() * PRAISE_COUNT);
       if (n === lastPraise.current) n = (n % PRAISE_COUNT) + 1;
@@ -174,17 +210,19 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
 
   return (
     <CelebrationContext.Provider value={celebrate}>
-      <View style={styles.fill}>
-        {children}
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          {bursts.map((b) => (
-            <BurstView key={b.id} burst={b} onDone={finish} />
-          ))}
-          <CheeringLulu show={bursts.length > 0} big={bursts.some((b) => b.size === 'big')} />
-          <StickerToast />
+      <MissVoiceContext.Provider value={missVoice}>
+        <View style={styles.fill}>
+          {children}
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            {bursts.map((b) => (
+              <BurstView key={b.id} burst={b} onDone={finish} />
+            ))}
+            <CheeringLulu show={bursts.length > 0} big={bursts.some((b) => b.size === 'big')} />
+            <StickerToast />
+          </View>
+          <LevelUp />
         </View>
-        <LevelUp />
-      </View>
+      </MissVoiceContext.Provider>
     </CelebrationContext.Provider>
   );
 }

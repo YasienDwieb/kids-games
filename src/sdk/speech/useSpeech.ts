@@ -9,7 +9,13 @@ import { clipKey } from './clipKey';
 import { CLIPS } from './clips.generated';
 
 /** `language` overrides the app language, e.g. an Arabic letter spoken in an English UI. */
-export type SpeakOptions = { rate?: number; pitch?: number; language?: LanguageCode };
+export type SpeakOptions = {
+  rate?: number;
+  pitch?: number;
+  language?: LanguageCode;
+  /** Skip the voice-hold wait, for a caller that booked the window itself. */
+  now?: boolean;
+};
 
 /** IETF BCP 47 locale per app language. */
 const LOCALE: Record<LanguageCode, string> = {
@@ -41,6 +47,15 @@ function stopAll() {
 /** Stop whatever a game is saying — e.g. when praise starts, so voices never overlap. */
 export function stopSpeech(): void {
   stopAll();
+}
+
+/** True while a bundled clip is playing, e.g. a game's prompt. */
+export function isSpeaking(): boolean {
+  try {
+    return clip?.player.playing ?? false;
+  } catch {
+    return false; // already released
+  }
 }
 
 function releaseClip() {
@@ -85,7 +100,7 @@ export function useSpeech() {
 
   const speak = useCallback(async (text: string, options: SpeakOptions = {}) => {
     await settingsStore.get();
-    const wait = voiceHoldRemaining();
+    const wait = options.now ? 0 : voiceHoldRemaining();
     if (wait > 0) await new Promise((r) => setTimeout(r, wait));
 
     // Bail if we unmounted during the AsyncStorage await — otherwise the

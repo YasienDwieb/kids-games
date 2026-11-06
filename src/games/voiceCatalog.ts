@@ -1,4 +1,4 @@
-import { ACCENTS, getAllGames, type LanguageCode } from '@/sdk';
+import { ACCENTS, getAllGames, missPhrase, type LanguageCode } from '@/sdk';
 import { ARABIC_LETTERS, LATIN_LETTERS } from './_shared/letters';
 import { letterPhrase } from './_shared/letters/phrase';
 import { ANIMALS } from './animal-safari/constants';
@@ -18,6 +18,9 @@ export type VoiceLine = { lang: LanguageCode; text: string; uses: VoiceUse[] };
 export type VoiceGame = { id: string; name: string; icon: string; accent: { base: string; deep: string; tint: string } };
 
 const LANGS: readonly LanguageCode[] = ['en', 'ar'];
+
+/** Studio section for lines the SDK speaks in any game. */
+const EVERY_GAME: VoiceGame = { id: 'every-game', name: 'Every game', icon: '💬', accent: { ...ACCENTS.blue } };
 
 /**
  * Every phrase the games speak, built by the same phrase builders the games use,
@@ -49,6 +52,7 @@ export function voiceCatalog(): VoiceLine[] {
       add(lang, colorNamePhrase(id, lang), { game: 'color-mixer', where: 'Pot colour name' }),
     );
     add(lang, dragHintPhrase(lang), { game: 'color-mixer', where: 'Empty pot hint' });
+    add(lang, missPhrase(lang), { game: EVERY_GAME.id, where: 'Stuck on a round' });
     for (const [track, where] of [['warmup', 'Warm-up'], ['numbers', 'Numbers tab']] as const) {
       charsFor(track, 'latin').forEach((c) => {
         const p = charPhrase(c, lang);
@@ -62,7 +66,8 @@ export function voiceCatalog(): VoiceLine[] {
 /** The games that speak, in home order, with what the Voice Studio needs to label them. */
 export function voiceGames(): VoiceGame[] {
   const speaking = new Set(voiceCatalog().flatMap((l) => l.uses.map((u) => u.game)));
-  return getAllGames()
+  const games = getAllGames()
     .filter((g) => speaking.has(g.id))
     .map((g) => ({ id: g.id, name: g.name, icon: g.icon, accent: { ...ACCENTS[g.accent ?? 'blue'] } }));
+  return [...games, EVERY_GAME];
 }

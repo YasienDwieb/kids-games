@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   useGameShell,
+  useHintLadder,
   useLevels,
   useSound,
   voiceHoldRemaining,
@@ -52,7 +53,7 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
   const [solved, setSolved] = useState(false);
   // Wrong picks this round: Lulu encourages after the first, and from the
   // second on she points and the prompt is said again.
-  const [misses, setMisses] = useState(0);
+  const hints = useHintLadder(level, { voice: false });
 
   // Single timer ref — cleared before reassign and on unmount.
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -84,7 +85,6 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
     shellRef.current.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
-    setMisses(0);
     // Wait out a "New sticker!" voice so the prompt isn't talked over.
     const id = setTimeout(() => speakRef.current(), voiceHoldRemaining());
     return () => clearTimeout(id);
@@ -117,20 +117,19 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
           shellRef.current.showOverlay('win', renderSolvedRef.current(isLast, handleNext));
         }, SOLVE_DELAY);
       } else {
+        const step = hints.miss();
         void play('wrong');
-        const nextMisses = misses + 1;
-        setMisses(nextMisses);
         setTimer(() => {
           setSelectedIndex(null);
-          if (nextMisses >= 2) speakRef.current();
+          if (step !== 'retry') speakRef.current();
         }, WRONG_RESET_DELAY);
       }
     },
-    [selectedIndex, solved, status, isLast, misses, play, addScore, setTimer, handleNext],
+    [selectedIndex, solved, status, isLast, hints, play, addScore, setTimer, handleNext],
   );
 
   const mascotPose: MascotPose | null =
-    solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point';
+    solved || !hints.step ? null : hints.step === 'retry' ? 'encourage' : 'point';
 
   return { ...levels, selectedIndex, solved, handlePick, handleNext, mascotPose };
 }

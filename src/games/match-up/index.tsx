@@ -29,6 +29,7 @@ import {
   SHADOWS,
   SPACING,
   Star,
+  useHintLadder,
   useLevels,
   useTranslation,
 } from '@/sdk';
@@ -54,12 +55,11 @@ export default function MatchUpGame(): React.JSX.Element {
 
   const [solved, setSolved] = useState(false);
   // Wrong links this round — Lulu encourages, then points after repeated misses.
-  const [misses, setMisses] = useState(0);
+  const hints = useHintLadder(level);
 
   // Reset the per-round gates whenever the level changes.
   useEffect(() => {
     setSolved(false);
-    setMisses(0);
   }, [level]);
 
   const startNewGame = useCallback(() => {
@@ -122,11 +122,11 @@ export default function MatchUpGame(): React.JSX.Element {
         round={data}
         accent={ACCENT}
         onCorrect={() => addScore(POINTS_PER_MATCH)}
-        onWrong={() => setMisses((m) => m + 1)}
+        onWrong={hints.miss}
         onSolved={handleSolved}
       />
 
-      <MascotHelper pose={solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point'} />
+      <MascotHelper pose={solved || !hints.step ? null : hints.step === 'retry' ? 'encourage' : 'point'} />
 
       {solved ? (
         <View style={styles.overlay}>

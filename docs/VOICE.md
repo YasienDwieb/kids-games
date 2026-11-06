@@ -25,6 +25,25 @@ text in the app and the text that was recorded can't drift apart.
 | Colour goal | `<makeThisColor> <colour>` | `Make this color: Green` | `اِصنعْ هذا اللون: أخضر` |
 | Trace-it warm-up / digit | `<name>` | `a zigzag` | `مَوْجَةْ` |
 
+## Wrong answers
+
+The first miss on a round is sound-only: the wrong sound is 0.19 s and children retry within
+about 0.4 to 0.9 s, so anything spoken has to be nearly that short. Sentences were tried and
+overlapped constantly.
+
+From the second miss, `useHintLadder().miss()` asks the `CelebrationProvider` for one short cue
+(`core:feedback.miss.tryAgain`, `src/sdk/feedback/missVoice.ts`), started as the sound ends.
+
+- A new miss cuts the cue off and restarts it, so voices never stack.
+- It gives way to anyone else: skipped if a prompt or praise is talking, dropped if a celebration
+  starts first, and a prompt starting meanwhile waits for it.
+- Unlike prompts, it follows the sound setting, as the praise does.
+- Listen-and-find games pass `voice: false`: they repeat the question instead, which helps more.
+  Tracing does too, since a slip isn't a wrong answer. Guided-journey rounds of those games have
+  no repeated question, so they use the cue.
+- Memory-card mismatches, refused drops and a failed Balloon Archer level don't use the ladder's voice.
+- `missVoice.test.ts` fails if the recording outgrows `MISS_HOLD_MS`.
+
 ## Writing rules
 
 Write the text **the way a reader would write it**. The voice gets that text, unchanged.

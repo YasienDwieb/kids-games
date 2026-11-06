@@ -49,6 +49,16 @@
     "deep": "#E58600",
     "tint": "#FFEFCF"
    }
+  },
+  {
+   "id": "every-game",
+   "name": "Every game",
+   "icon": "💬",
+   "accent": {
+    "base": "#2EC4F1",
+    "deep": "#0FA5D4",
+    "tint": "#DDF5FD"
+   }
   }
  ],
  "lines": [
@@ -843,6 +853,16 @@
     {
      "game": "trace-it",
      "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "مَرَّةً أُخْرى!",
+   "uses": [
+    {
+     "game": "every-game",
+     "where": "Stuck on a round"
     }
    ]
   },
@@ -1709,6 +1729,16 @@
     {
      "game": "trace-it",
      "where": "Numbers tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Try again!",
+   "uses": [
+    {
+     "game": "every-game",
+     "where": "Stuck on a round"
     }
    ]
   },
