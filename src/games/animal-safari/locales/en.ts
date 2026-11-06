@@ -17,12 +17,10 @@ export const en = {
   hearName: {
     listen: 'LISTEN…',
     tapAgain: 'Tap to hear it again',
-    which: 'Which animal is it?',
   },
   whichSound: {
     listen: 'LISTEN…',
     tapAgain: 'Tap to hear it again',
-    which: 'Which animal makes this sound?',
   },
   a11y: {
     replay: 'Say the animal name again',

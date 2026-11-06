@@ -1,7 +1,7 @@
 /**
  * "LEVEL UP!" — the big moment when lifetime stars cross into a new level.
  * Full-screen sunburst, Lulu jumping, the new level, and whatever wardrobe item
- * just unlocked with a "Try it on" button. Mounted inside CelebrationProvider,
+ * just unlocked with a try-it-on button. Mounted inside CelebrationProvider,
  * so every play screen gets it.
  */
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -9,7 +9,9 @@ import { Animated, StyleSheet, Text, View } from 'react-native';
 import { NavigationContext } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { EmojiImage } from '@/components/common/EmojiImage';
+import { Icon } from '@/components/common/Icon';
 import { PressableButton } from '@/components/common/PressableButton';
+import { Star } from '@/components/common/Star';
 import { Sunburst } from '@/components/pop/Sunburst';
 import { pulse, useLoop } from '@/components/pop/motion';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
@@ -93,27 +95,34 @@ export function LevelUp() {
         <Sunburst color={ACCENTS.purple.base} size={1400} />
       </View>
 
-      <Animated.View style={[styles.header, SHADOWS.md, pulse(beat, 0.06)]}>
-        <Text style={styles.headerText}>{t('levelUp.title')}</Text>
+      <Animated.View
+        style={[styles.header, SHADOWS.md, pulse(beat, 0.06)]}
+        accessible
+        accessibilityLabel={t('levelUp.title')}
+      >
+        <Star size={36} />
+        <Star size={44} />
+        <Star size={36} />
       </Animated.View>
 
       <View style={styles.middle}>
-        <View style={[styles.card, SHADOWS.md]}>
+        <View style={[styles.card, SHADOWS.md]} accessible accessibilityLabel={t('levelUp.level', { n: level })}>
           <View style={styles.levelBadge}>
             <Text style={styles.levelNum}>{level}</Text>
           </View>
-          <Text style={styles.cardTitle}>{t('levelUp.level', { n: level })}</Text>
         </View>
 
         <Lulu3D size={200} mood="cheer" />
 
         {item ? (
-          <View style={[styles.card, styles.unlock, SHADOWS.md]}>
-            <Text style={styles.cardTitle}>{t('levelUp.unlocked')}</Text>
+          <View
+            style={[styles.card, styles.unlock, SHADOWS.md]}
+            accessible
+            accessibilityLabel={`${t('levelUp.unlocked')} ${t(`wardrobe.items.${item.id}`)}`}
+          >
             <View style={styles.itemWindow}>
               <EmojiImage emoji={item.emoji} size={48} />
             </View>
-            <Text style={styles.cardTitle}>{t(`wardrobe.items.${item.id}`)}</Text>
           </View>
         ) : (
           <View style={styles.spacer} />
@@ -121,9 +130,15 @@ export function LevelUp() {
       </View>
 
       <View style={styles.actions}>
-        {item && navigation ? <PressableButton label={t('levelUp.tryOn')} variant="ghost" onPress={tryOn} /> : null}
+        {item && navigation ? (
+          <PressableButton accessibilityLabel={t('levelUp.tryOn')} variant="ghost" onPress={tryOn}>
+            <Icon name="shirt" size={30} />
+          </PressableButton>
+        ) : null}
         <Animated.View style={pulse(beat, 0.08)}>
-          <PressableButton label={t('levelUp.keepPlaying')} color={ACCENTS.green.base} onPress={close} />
+          <PressableButton accessibilityLabel={t('levelUp.keepPlaying')} color={ACCENTS.green.base} onPress={close}>
+            <Icon name="play" size={30} />
+          </PressableButton>
         </Animated.View>
       </View>
     </Animated.View>
@@ -141,6 +156,9 @@ const styles = StyleSheet.create({
   },
   burst: { position: 'absolute', top: '50%', left: '50%', marginTop: -700, marginLeft: -700 },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
     paddingVertical: 4,
     paddingHorizontal: 26,
     borderRadius: 18,
@@ -148,7 +166,6 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     backgroundColor: POP.zap,
   },
-  headerText: { fontFamily: FONTS.display, fontSize: 40, color: COLORS.ink },
   middle: { flexDirection: 'row', alignItems: 'center', gap: SPACING.lg },
   spacer: { width: 200 },
   card: {
@@ -173,7 +190,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   levelNum: { fontFamily: FONTS.display, fontSize: 32, color: COLORS.surface },
-  cardTitle: { fontFamily: FONTS.display, fontSize: 20, color: COLORS.ink, textAlign: 'center' },
   itemWindow: {
     width: 76,
     height: 76,

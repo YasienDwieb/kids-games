@@ -13,7 +13,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
-import { Chip, GameCard, Icon, IconButton, PressableButton } from '../components/common';
+import { Chip, GameCard, Icon, IconButton, PressableButton, type IconName } from '../components/common';
 import { BuddyPicker, FeaturedCard, LevelPill, PopBackdrop } from '../components/pop';
 import { isTablet } from '../utils/responsive';
 import { BORDER_RADIUS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
@@ -29,7 +29,6 @@ import {
   useTranslation,
   gameCover,
   gameName,
-  gameShortName,
   selectedAdapters,
   sequenceLength,
   buildSequence,
@@ -47,6 +46,13 @@ import {
 import { reloadApp } from '@/sdk/i18n/reload';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+
+const CATEGORY_ICONS: Record<GameCategory, IconName> = {
+  numbers: 'calculator',
+  words: 'book',
+  action: 'flash',
+  puzzles: 'extension-puzzle',
+};
 
 const ACCENT_CYCLE: AccentName[] = ['green', 'blue', 'orange', 'coral', 'purple', 'pink'];
 
@@ -187,11 +193,12 @@ export function HomeScreen({ navigation }: Props) {
   const chips =
     categories.length > 1 ? (
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-        <Chip label={t('home.categories.all')} active={category === null} onPress={() => setCategory(null)} />
+        <Chip label={t('home.categories.all')} icon="apps" active={category === null} onPress={() => setCategory(null)} />
         {categories.map((c) => (
           <Chip
             key={c}
             label={t(`home.categories.${c}`)}
+            icon={CATEGORY_ICONS[c]}
             active={category === c}
             onPress={() => setCategory(category === c ? null : c)}
           />
@@ -338,10 +345,7 @@ export function HomeScreen({ navigation }: Props) {
                               emojiSize={emoji}
                               icon={game.icon}
                               cover={gameCover(game)}
-                              // Short label so the icon gets the space; the full
-                              // name still goes to screen readers.
-                              name={gameShortName(game)}
-                              accessibilityLabel={gameName(game)}
+                              name={gameName(game)}
                               accent={accentForGame(game, i)}
                               onPress={() => openGame(game.id)}
                             />

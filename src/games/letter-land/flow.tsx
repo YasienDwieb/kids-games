@@ -49,7 +49,6 @@ function LetterFlowRound({
     <View style={styles.root}>
       <ListenFindBoard
         hero={<LetterHero letter={target} />}
-        instruction={t('letter-land:hearFind.which')}
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={selectedIndex}

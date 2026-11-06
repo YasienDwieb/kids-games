@@ -260,15 +260,6 @@ export function MixingZone({
         </View>
       ) : null}
 
-      {/* The colour's name, on a pill straddling the bottom of the pot. */}
-      {colorId ? (
-        <View style={styles.namePill} pointerEvents="none">
-          <Text style={styles.nameText} numberOfLines={1}>
-            {t(`color-mixer:colors.${colorId}`)}
-          </Text>
-        </View>
-      ) : null}
-
       {showCount && (
         <View style={styles.counter} pointerEvents="none">
           {/* Pinned LTR: a number pair must not reverse under RTL. */}
@@ -332,22 +323,6 @@ const styles = StyleSheet.create({
     borderWidth: OUTLINE.thin,
     borderColor: OUTLINE.color,
     ...SHADOWS.sm,
-  },
-  namePill: {
-    position: 'absolute',
-    bottom: -18,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: TOKENS.surface,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    ...SHADOWS.sm,
-  },
-  nameText: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 20,
-    color: TOKENS.ink,
   },
   counter: {
     position: 'absolute',

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
   type LayoutChangeEvent,
@@ -10,7 +9,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   COLORS as TOKENS,
-  FONTS,
   POP,
   SPACING,
   TOUCH_TARGET,
@@ -34,7 +32,6 @@ import {
   MixingZone,
   DiscoveryCelebration,
   ColorCollection,
-  ColorNamingDialog,
   ChallengeMode,
   ChallengePicker,
   ChallengeSuccess,
@@ -71,7 +68,6 @@ export default function ColorMixerGame() {
   // The last drop's colour, for the pot's splash.
   const [lastDrop, setLastDrop] = useState<{ hex: string; at: number } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
   // The mixing zone is sized from the space the play area actually gets, not a fixed
   // number: in challenge mode the landscape left panel has ~180dp less room, and a hard
@@ -297,14 +293,11 @@ export default function ColorMixerGame() {
     [isPositionInBounds, mixer.savedColors, mixer.addPigment, mixer.addSavedColor],
   );
 
-  const handleSaveColor = useCallback(
-    (name: string) => {
-      // Keep the current mix so the child can keep building on top of it.
-      mixer.saveCurrentMix(name);
-      setSaveDialogOpen(false);
-    },
-    [mixer.saveCurrentMix],
-  );
+  const handleSaveColor = useCallback(() => {
+    // Keep the current mix so the child can keep building on top of it.
+    mixer.saveCurrentMix(t('color-mixer:defaultSavedName'));
+    void play('success');
+  }, [mixer.saveCurrentMix, play, t]);
 
   const handleChallengeComplete = useCallback(() => {
     // An endless mystery colour rolls straight on to the next; authored ones go back to
@@ -410,11 +403,13 @@ export default function ColorMixerGame() {
       <View style={styles.modeToggle}>
         <Chip
           label={t('color-mixer:mode.freeplay')}
+          icon="color-palette"
           active={mode === 'freeplay'}
           onPress={() => handleSwitchMode('freeplay')}
         />
         <Chip
           label={t('color-mixer:mode.challenges')}
+          icon="trophy"
           active={mode === 'challenge'}
           onPress={() => handleSwitchMode('challenge')}
         />
@@ -458,7 +453,7 @@ export default function ColorMixerGame() {
           <IconButton
             glyph="💾"
             color={POP.splash}
-            onPress={() => setSaveDialogOpen(true)}
+            onPress={handleSaveColor}
             accessibilityLabel={t('color-mixer:actions.save')}
           />
         </>
@@ -491,11 +486,6 @@ export default function ColorMixerGame() {
 
   const actionsBlock = (
     <View style={styles.actions}>
-      {mixer.potFull && (
-        <Text style={styles.potFull} numberOfLines={2}>
-          {t('color-mixer:mixingZone.potFull')}
-        </Text>
-      )}
       {canFinishChallenge && (
         <PressableButton
           label={t('color-mixer:actions.done')}
@@ -584,12 +574,6 @@ export default function ColorMixerGame() {
         onComplete={mixer.acknowledgeDiscovery}
       />
 
-      <ColorNamingDialog
-        visible={saveDialogOpen}
-        colorHex={mixer.currentMixHex}
-        onSave={handleSaveColor}
-        onCancel={() => setSaveDialogOpen(false)}
-      />
 
       <ChallengeSuccess
         visible={showSuccess}
@@ -674,13 +658,6 @@ const styles = StyleSheet.create({
     // Room for the recipe pill above the pot and the name pill below it.
     paddingTop: 18,
     paddingBottom: 22,
-  },
-  potFull: {
-    flexShrink: 1,
-    fontFamily: FONTS.bodySemi,
-    fontSize: 12,
-    color: TOKENS.inkSoft,
-    textAlign: 'center',
   },
   actions: {
     flexDirection: 'row',

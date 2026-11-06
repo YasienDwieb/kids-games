@@ -45,7 +45,6 @@ function NumberFlowRound({
     <View style={styles.root}>
       <ListenFindBoard
         hero={<NumberHero item={target} />}
-        instruction={t('numbers-land:hearFind.which')}
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={selectedIndex}

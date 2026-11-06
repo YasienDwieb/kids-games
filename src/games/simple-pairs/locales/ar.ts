@@ -14,9 +14,6 @@ export const ar: GameTranslations = {
     description: 'اقلب البطاقات وابحث عن المتطابقة',
   },
   difficulty: {
-    select: {
-      subtitle: 'كم بطاقة متطابقة تستطيع أن تجد؟',
-    },
     easy: 'سهل',
     medium: 'متوسط',
     hard: 'صعب',

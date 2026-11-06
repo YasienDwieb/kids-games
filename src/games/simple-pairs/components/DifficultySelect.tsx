@@ -1,10 +1,10 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Difficulty } from '../types';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from '../constants';
 import { PressableButton, EmojiFrame } from '../../../components/common';
-import { COLORS, FONTS, SPACING, TOUCH_TARGET } from '../../../constants';
+import { BORDER_RADIUS, COLORS, OUTLINE, SPACING, TOUCH_TARGET } from '../../../constants';
 import type { AccentName } from '../../../constants';
 import { useTranslation } from '@/sdk';
 
@@ -42,10 +42,6 @@ export function DifficultySelect({ onSelect }: DifficultySelectProps) {
           : { paddingTop: insets.top + SPACING.xxl },
       ]}
     >
-      {!landscape && (
-        <Text style={styles.subtitle}>{t('simple-pairs:difficulty.select.subtitle')}</Text>
-      )}
-
       <ScrollView
         contentContainerStyle={[styles.options, landscape && styles.optionsLandscape]}
         showsVerticalScrollIndicator={false}
@@ -58,6 +54,7 @@ export function DifficultySelect({ onSelect }: DifficultySelectProps) {
               key={difficulty}
               accent={accent}
               align="flex-start"
+              accessibilityLabel={`${t(`simple-pairs:difficulty.${difficulty}`)}, ${t('simple-pairs:difficulty.meta', { pairs, cards })}`}
               onPress={() => onSelect(difficulty)}
               style={landscape ? styles.buttonLandscape : styles.button}
             >
@@ -68,13 +65,11 @@ export function DifficultySelect({ onSelect }: DifficultySelectProps) {
                 radius={14}
                 tint="rgba(255,255,255,0.25)"
               />
-              <View style={styles.labelCol}>
-                <Text style={[styles.levelName, landscape && styles.levelNameLandscape]}>
-                  {t(`simple-pairs:difficulty.${difficulty}`)}
-                </Text>
-                <Text style={styles.levelMeta}>
-                  {t('simple-pairs:difficulty.meta', { pairs, cards })}
-                </Text>
+              {/* One little card per card in the game: more cards, harder game. */}
+              <View style={styles.pips}>
+                {Array.from({ length: cards }, (_, i) => (
+                  <View key={i} style={styles.pip} />
+                ))}
               </View>
             </PressableButton>
           );
@@ -89,13 +84,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: GAME_COLORS.background,
     paddingHorizontal: 22,
-  },
-  subtitle: {
-    fontFamily: FONTS.body,
-    fontSize: 16,
-    color: COLORS.inkSoft,
-    textAlign: 'center',
-    marginBottom: 22,
   },
   options: {
     gap: 14,
@@ -116,20 +104,13 @@ const styles = StyleSheet.create({
   },
   button: { width: '100%' },
   buttonLandscape: { width: '48.5%' },
-  labelCol: { gap: 2 },
-  levelName: {
-    fontFamily: FONTS.display,
-    fontSize: 20,
-    // Ink, not white: the pop accents are bright enough that white labels
-    // fall far below AA.
-    color: COLORS.ink,
-  },
-  levelNameLandscape: {
-    fontSize: 16,
-  },
-  levelMeta: {
-    fontFamily: FONTS.body,
-    fontSize: 13,
-    color: COLORS.ink,
+  pips: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 4 },
+  pip: {
+    width: 12,
+    height: 16,
+    borderRadius: BORDER_RADIUS.sm,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
+    backgroundColor: COLORS.surface,
   },
 });

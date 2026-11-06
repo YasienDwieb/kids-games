@@ -10,9 +10,6 @@ export const en = {
     description: 'Listen and find your numbers!',
   },
   loading: 'Getting your numbers ready…',
-  hearFind: {
-    which: 'Which number is it?',
-  },
   speak: {
     carrier: '{{name}}',
   },

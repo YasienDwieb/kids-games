@@ -10,9 +10,6 @@ export const ar: GameTranslations = {
     description: 'اسمع الرقم واعثر عليه!',
   },
   loading: 'نحضّر أرقامك…',
-  hearFind: {
-    which: 'أي رقم هذا؟',
-  },
   speak: {
     carrier: '{{name}}',
   },

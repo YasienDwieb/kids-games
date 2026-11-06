@@ -66,8 +66,6 @@ it('walks guided then solo, takes the min stars and records them', async () => {
       nativeEvent: { layout: { width: 800, height: 400 } },
     });
   });
-  const texts = () => tree!.root.findAllByType(Text).map((n: { props: { children?: unknown } }) => n.props.children);
-  expect(texts()).toContain('Follow the arrow!');
   const board = () => tree!.root.findByType(TraceBoard);
   expect(board().props.step.pass).toBe('guided');
   await act(async () => board().props.onDone(2));
@@ -75,7 +73,6 @@ it('walks guided then solo, takes the min stars and records them', async () => {
   expect(board().props.step.pass).toBe('guided');
   await held();
   expect(board().props.step.pass).toBe('solo');
-  expect(texts()).toContain('Now on your own!');
   await act(async () => board().props.onDone(3));
   await held();
   await flush();
@@ -154,7 +151,7 @@ it('Lulu encourages from the side pane after two misses, and never cheers over t
   act(() => tree.unmount());
 });
 
-it('a warm-up sticker says "I can draw", a letter sticker "I can write"', () => {
+it('the finish sticker has no sentence: a warm-up is a picture, a letter just its glyph', () => {
   const zig = charsFor('warmup', 'latin').find((c) => c.id === 'w:zigzag')!;
   const a = charsFor('letters', 'latin')[0];
   const caption = (c: typeof a) => {
@@ -166,8 +163,8 @@ it('a warm-up sticker says "I can draw", a letter sticker "I can write"', () => 
     act(() => tree!.unmount());
     return texts;
   };
-  expect(caption(zig)).toContain('I can draw a zigzag!');
-  expect(caption(a)).toContain(`I can write ${a.label}!`);
+  expect(caption(zig)).toEqual([]);
+  expect(caption(a)).toEqual([a.label]);
 });
 
 it('speaks an Arabic letter in Arabic in an English UI', async () => {

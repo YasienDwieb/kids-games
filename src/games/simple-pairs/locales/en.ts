@@ -5,9 +5,6 @@ export const en = {
     description: 'Find matching pairs of cards',
   },
   difficulty: {
-    select: {
-      subtitle: 'How many pairs can you match?',
-    },
     easy: 'Easy',
     medium: 'Medium',
     hard: 'Hard',

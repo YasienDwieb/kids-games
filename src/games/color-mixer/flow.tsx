@@ -7,10 +7,9 @@
  * drag keeps it quick for a journey step; the target is spoken for pre-readers.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {
   COLORS as TOKENS,
-  FONTS,
   IconButton,
   OUTLINE,
   SPACING,
@@ -36,7 +35,6 @@ function MixFlowRound({ target, onComplete }: { target: ColorId; onComplete: () 
   const [log, setLog] = useState<PigmentId[]>([]);
   const hex = useMemo(() => mixHex(log), [log]);
   const targetHex = COLORS[target].hex;
-  const targetName = t(`color-mixer:colors.${target}`);
 
   const sayTarget = () => void speak(colorTargetPhrase(target, currentLanguage()));
   // Say the goal once when the unit appears (each unit remounts via its key).
@@ -62,9 +60,7 @@ function MixFlowRound({ target, onComplete }: { target: ColorId; onComplete: () 
   return (
     <View style={styles.root}>
       <View style={styles.col}>
-        <Text style={styles.prompt}>{t('color-mixer:challenge.makeThisColor')}</Text>
         <ColorBlob color={targetHex} size={96} pulsing onPress={sayTarget} />
-        <Text style={styles.name}>{targetName}</Text>
       </View>
 
       <View style={styles.col}>
@@ -98,8 +94,6 @@ const styles = StyleSheet.create({
   // Transparent so the flow's shared backdrop shows through (continuous world).
   root: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly' },
   col: { alignItems: 'center', gap: SPACING.sm },
-  prompt: { fontFamily: FONTS.display, fontSize: 18, color: TOKENS.ink },
-  name: { fontFamily: FONTS.displayBold, fontSize: 22, color: TOKENS.ink },
   pot: {
     width: POT,
     height: POT,

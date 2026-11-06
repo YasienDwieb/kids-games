@@ -145,16 +145,11 @@ export default function AnimalSafari(): React.JSX.Element {
   }
 
   const round = lf.data.round;
-  const instruction =
-    round.mode === 'hearName'
-      ? t('animal-safari:hearName.which')
-      : t('animal-safari:whichSound.which');
 
   return (
     <View style={styles.root}>
       <ListenFindBoard
         hero={<AnimalHero mode={round.mode} />}
-        instruction={instruction}
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={lf.selectedIndex}

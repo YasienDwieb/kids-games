@@ -2,8 +2,8 @@
 // parent-set daily limit is used up, swaps the game for a gentle break screen.
 // A grown-up can grant 15 more minutes behind the parent gate.
 import { useEffect, useState, type ReactNode } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
-import { ParentGate, PressableButton } from '../components/common';
+import { Animated, StyleSheet, View } from 'react-native';
+import { Icon, ParentGate, PressableButton, type IconName } from '../components/common';
 import { useLoop } from '../components/pop';
 import {
   EXTRA_MINUTES,
@@ -70,13 +70,13 @@ export function PlayLimitGate({ trackId, onHome, children }: Props) {
   return <Recharge onHome={onHome} onGrownUp={() => setAsking(true)} />;
 }
 
-const STRETCHES = [
-  { key: 'break.stretch1', color: ACCENTS.green.base },
-  { key: 'break.stretch2', color: POP.zap },
-  { key: 'break.stretch3', color: POP.splash },
+const STRETCHES: { key: string; color: string; icon: IconName }[] = [
+  { key: 'break.stretch1', color: ACCENTS.green.base, icon: 'arrow-up' },
+  { key: 'break.stretch2', color: POP.zap, icon: 'arrow-down' },
+  { key: 'break.stretch3', color: POP.splash, icon: 'leaf' },
 ];
 
-/** "Recharge time!" — a calm night scene: the buddy dozing, battery low, three stretches. */
+/** A calm night scene: the buddy dozing, battery low, three stretches. */
 function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => void }) {
   const { t } = useTranslation();
   const buddy = useBuddy();
@@ -86,9 +86,6 @@ function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => 
     <View style={[styles.root, styles.night]}>
       <View style={styles.moon} />
       <View style={styles.moonBite} />
-      <Text style={styles.title}>{t('break.title')}</Text>
-      <Text style={styles.body}>{t(`buddy.${buddy}.rest`)}</Text>
-
       <View style={styles.scene}>
         <View style={styles.battery} accessible accessibilityLabel={t('break.energy')}>
           <View style={styles.batteryCap} />
@@ -100,7 +97,6 @@ function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => 
               ]}
             />
           </View>
-          <Text style={styles.energy}>{t('break.energy')}</Text>
         </View>
 
         <Animated.View
@@ -109,21 +105,23 @@ function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => 
           <Lulu3D size={190} mood="encourage" />
         </Animated.View>
 
-        <View style={[styles.stretchCard, SHADOWS.md]}>
-          <Text style={styles.stretchTitle}>{t(`buddy.${buddy}.stretchWith`)}</Text>
-          {STRETCHES.map((s, i) => (
-            <View key={s.key} style={styles.stretchRow}>
-              <View style={[styles.stretchNum, { backgroundColor: s.color }]}>
-                <Text style={styles.stretchNumText}>{i + 1}</Text>
-              </View>
-              <Text style={styles.stretchText}>{t(s.key)}</Text>
+        <View
+          style={[styles.stretchCard, SHADOWS.md]}
+          accessible
+          accessibilityLabel={`${t(`buddy.${buddy}.rest`)} ${STRETCHES.map((s) => t(s.key)).join(', ')}`}
+        >
+          {STRETCHES.map((s) => (
+            <View key={s.key} style={[styles.stretchIcon, { backgroundColor: s.color }]}>
+              <Icon name={s.icon} size={30} />
             </View>
           ))}
         </View>
       </View>
 
       <View style={styles.row}>
-        <PressableButton label={t('break.home')} color={POP.zap} onPress={onHome} />
+        <PressableButton accessibilityLabel={t('break.home')} color={POP.zap} onPress={onHome}>
+          <Icon name="home" size={30} />
+        </PressableButton>
         <PressableButton label={t('break.grownUp', { n: EXTRA_MINUTES })} variant="ghost" onPress={onGrownUp} />
       </View>
     </View>
@@ -141,16 +139,6 @@ const styles = StyleSheet.create({
   },
   moon: { position: 'absolute', top: 24, end: 40, width: 60, height: 60, borderRadius: 30, backgroundColor: POP.zap },
   moonBite: { position: 'absolute', top: 14, end: 26, width: 56, height: 56, borderRadius: 28, backgroundColor: POP.night },
-  title: {
-    fontFamily: FONTS.display,
-    fontSize: 36,
-    color: COLORS.surface,
-    textAlign: 'center',
-    textShadowColor: OUTLINE.color,
-    textShadowOffset: { width: 3, height: 3 },
-    textShadowRadius: 0.1,
-  },
-  body: { fontFamily: FONTS.body, fontSize: 16, color: POP.nightSoft, textAlign: 'center', marginTop: -SPACING.sm },
   scene: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: SPACING.xl },
   battery: { alignItems: 'center' },
   batteryCap: {
@@ -176,9 +164,7 @@ const styles = StyleSheet.create({
   },
   // Scaled from the bottom: the fill is full height, anchored low.
   batteryFill: { height: '100%', borderRadius: 9, backgroundColor: POP.bubblegum, transformOrigin: 'bottom' },
-  energy: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.surface, marginTop: 6 },
   stretchCard: {
-    width: 210,
     gap: 8,
     padding: 14,
     borderRadius: 22,
@@ -186,18 +172,14 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     backgroundColor: COLORS.surface,
   },
-  stretchTitle: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink, textAlign: 'left' },
-  stretchRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  stretchNum: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  stretchIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     borderWidth: OUTLINE.thin,
     borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stretchNumText: { fontFamily: FONTS.display, fontSize: 14, color: COLORS.ink },
-  stretchText: { flex: 1, fontFamily: FONTS.bodyExtra, fontSize: 15, color: COLORS.ink, textAlign: 'left' },
   row: { flexDirection: 'row', gap: SPACING.md },
 });

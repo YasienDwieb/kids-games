@@ -10,21 +10,7 @@ export const en = {
     // The letters themselves, so a pre-reader knows the subject.
     latin: 'ABC',
     arabic: 'أ ب ت',
-    numbers: 'Numbers',
-  },
-  picker: {
-    next: 'Next',
-  },
-  round: {
-    guided: 'Follow the arrow!',
-    solo: 'Now on your own!',
-    dots: 'Add the dots!',
-    warmup: 'Help them get there!',
-  },
-  sticker: {
-    iCanWrite: 'I can write {{glyph}}!',
-    // Warm-up names carry their own article so they read here and when spoken.
-    iCanDraw: 'I can draw {{glyph}}!',
+    numbers: '123',
   },
   digits: {
     d0: 'zero',

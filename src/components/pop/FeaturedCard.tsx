@@ -5,6 +5,7 @@ import { ACCENTS, COLORS, FONTS, OUTLINE, POP, SHADOWS, type AccentName } from '
 import { EmojiImage } from '../common/EmojiImage';
 import { Icon } from '../common/Icon';
 import { PressableButton } from '../common/PressableButton';
+import { Star } from '../common/Star';
 import { ProgressBar } from './ProgressBar';
 import { bob, pulse, useLoop, wiggle } from './motion';
 
@@ -23,8 +24,8 @@ type FeaturedCardProps = {
 };
 
 /**
- * The big "PLAY NOW" card at the front of Home: the guided adventure's next
- * game, alive with its own icon bouncing around, and one huge PLAY button.
+ * The big card at the front of Home: the guided adventure's next game, alive
+ * with its own icon bouncing around, and one huge play button.
  */
 export function FeaturedCard({
   width,
@@ -45,7 +46,7 @@ export function FeaturedCard({
   const beat = useLoop(1100);
   const shake = useLoop(900);
   const done = total > 0 && savedStep >= total;
-  // The preview sizes to whatever room the text and button leave it.
+  // The preview sizes to whatever room the button leaves it.
   const [stageH, setStageH] = useState(0);
   const big = Math.max(0, Math.min(stageH * 0.86, width * 0.34));
 
@@ -67,9 +68,11 @@ export function FeaturedCard({
 
   return (
     <View style={[styles.card, SHADOWS.lg, { width, height, backgroundColor: a.base }]}>
-      <View style={styles.tag}>
-        <Text style={styles.tagText}>{t(done ? 'flow.allCaughtUp' : 'home.playNow')}</Text>
-      </View>
+      {done ? (
+        <View style={styles.tag} accessible accessibilityLabel={t('flow.allCaughtUp')}>
+          <Star size={24} />
+        </View>
+      ) : null}
 
       {/* Live preview: the next game's icon bobbing, plus two smaller echoes. */}
       <View style={styles.stage} pointerEvents="none" onLayout={(e) => setStageH(e.nativeEvent.layout.height)}>
@@ -90,9 +93,6 @@ export function FeaturedCard({
         ) : null}
       </View>
 
-      <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit>
-        {nextName ?? ''}
-      </Text>
       <View style={styles.footer}>
         <ProgressBar
           value={total > 0 ? savedStep / total : 0}
@@ -102,7 +102,9 @@ export function FeaturedCard({
           style={styles.flex}
         />
         {done ? (
-          <PressableButton label={t('flow.startOver')} color={POP.zap} onPress={onStartOver} />
+          <PressableButton accessibilityLabel={t('flow.startOver')} color={POP.zap} onPress={onStartOver}>
+            <Icon name="refresh" size={30} />
+          </PressableButton>
         ) : (
           <Animated.View style={pulse(beat, 0.07)}>
             <PressableButton
@@ -110,8 +112,7 @@ export function FeaturedCard({
               color={ACCENTS.green.base}
               accessibilityLabel={`${t('home.play')} ${nextName ?? ''}`}
             >
-              <Icon name="play" size={22} />
-              <Text style={styles.playText}>{t('home.play')}</Text>
+              <Icon name="play" size={34} />
             </PressableButton>
           </Animated.View>
         )}
@@ -136,15 +137,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     start: 12,
-    paddingVertical: 3,
-    paddingHorizontal: 12,
+    paddingVertical: 2,
+    paddingHorizontal: 10,
     borderRadius: 999,
     borderWidth: OUTLINE.thin,
     borderColor: OUTLINE.color,
     backgroundColor: POP.zap,
     zIndex: 2,
   },
-  tagText: { fontFamily: FONTS.display, fontSize: 14, color: COLORS.ink },
   stage: { flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   hero: { alignItems: 'center', justifyContent: 'center' },
   heroWindow: {
@@ -159,16 +159,4 @@ const styles = StyleSheet.create({
   echoB: { position: 'absolute', bottom: '6%', start: '4%', opacity: 0.9 },
   flex: { flex: 1 },
   footer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  name: {
-    fontFamily: FONTS.display,
-    fontSize: 26,
-    // Fixed box: Arabic display glyphs run much taller than Latin and would
-    // otherwise squeeze the preview stage to nothing.
-    height: 38,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-    color: COLORS.ink,
-    textAlign: 'left',
-  },
-  playText: { fontFamily: FONTS.display, fontSize: 24, lineHeight: 30, includeFontPadding: false, color: COLORS.ink },
 });

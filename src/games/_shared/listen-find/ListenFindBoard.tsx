@@ -3,7 +3,7 @@
  *
  * Landscape-native two-column layout (app is globally landscape):
  *   ┌───────────────────────┬──────────────────────────────┐
- *   │   tappable hero pic    │  Which … is it? (instruction)│
+ *   │   tappable hero pic    │                              │
  *   │   + 🔊 replay badge     │  [ tile ] [ tile ] [ tile ]  │
  *   └───────────────────────┴──────────────────────────────┘
  *
@@ -45,8 +45,6 @@ import type { FindItem } from './types';
 export type ListenFindBoardProps = {
   /** The hero visual (game-supplied: word picture / count cluster). */
   hero: React.ReactNode;
-  /** The instruction line (already localized). */
-  instruction: string;
   /** The round's choices (includes the target). */
   choices: readonly FindItem[];
   /** 0-based index of the correct choice. */
@@ -192,7 +190,6 @@ function ChoiceTile({
 
 export function ListenFindBoard({
   hero,
-  instruction,
   choices,
   correctIndex,
   selectedIndex,
@@ -233,9 +230,8 @@ export function ListenFindBoard({
         </Pressable>
       </View>
 
-      {/* Right column — instruction + choice row. */}
+      {/* Right column — choice row; the voice asks the question. */}
       <View style={styles.choiceCol}>
-        <Text style={styles.instruction}>{instruction}</Text>
         <View style={styles.row}>
           {choices.map((choice, idx) => {
             const state = tileState(idx);
@@ -311,12 +307,6 @@ const styles = StyleSheet.create({
 
   // Choice column
   choiceCol: { flex: 1.2, alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
-  instruction: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 24,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

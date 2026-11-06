@@ -1,5 +1,5 @@
 /**
- * Celebration kit — a confetti burst + a short praise bubble, spoken aloud by a
+ * Celebration kit — a confetti burst + a star bubble, with praise spoken aloud by a
  * real (recorded) voice in the app's language, that plays OVER the game and then
  * gets out of the way. Replaces the "tap to continue" modal after
  * every small win; games keep a modal only for real milestones.
@@ -19,12 +19,13 @@ import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { holdVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 import { stopSpeech } from '@/sdk/speech/useSpeech';
+import { Star } from '@/components/common/Star';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { LevelUp } from './LevelUp';
 import { bumpCombo } from './combo';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
-import { FONT_SIZES, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
+import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { FONTS } from '@/constants/typography';
 
 export type CelebrationSize = 'small' | 'big';
@@ -293,10 +294,12 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
             </View>
           ) : null}
           {burst.praiseKey ? (
-            <View style={[styles.bubble, burst.size === 'big' && styles.bubbleBig, SHADOWS.lg]}>
-              <Text style={[styles.praise, burst.size === 'big' && styles.praiseBig]}>
-                {t(burst.praiseKey)}
-              </Text>
+            <View
+              style={[styles.bubble, burst.size === 'big' && styles.bubbleBig, SHADOWS.lg]}
+              accessible
+              accessibilityLabel={t(burst.praiseKey)}
+            >
+              <Star size={burst.size === 'big' ? 72 : 48} />
             </View>
           ) : null}
         </Animated.View>
@@ -331,11 +334,4 @@ const styles = StyleSheet.create({
   },
   comboText: { fontFamily: FONTS.display, fontSize: 24, color: COLORS.ink },
   bubbleBig: { paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md },
-  praise: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-  praiseBig: { fontSize: FONT_SIZES.xl },
 });

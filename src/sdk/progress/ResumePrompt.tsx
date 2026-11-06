@@ -1,43 +1,39 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 // Import useTranslation from react-i18next directly (not via @/sdk): this is an
 // SDK-internal module and importing the barrel back would create a cycle.
 import { useTranslation } from 'react-i18next';
-import { BigButton } from '@/components/common/BigButton';
-import { COLORS, FONTS, SHADOWS, BORDER_RADIUS, SPACING, OUTLINE } from '@/constants';
+import { Icon } from '@/components/common/Icon';
+import { PressableButton } from '@/components/common/PressableButton';
+import { COLORS, SHADOWS, BORDER_RADIUS, SPACING, OUTLINE } from '@/constants';
 
 export type ResumePromptProps = {
   level: number;
   onContinue: () => void;
   onStartOver: () => void;
-  /** Optional overrides; default to the localized core strings. */
-  title?: string;
-  continueLabel?: string;
-  startOverLabel?: string;
 };
 
-export function ResumePrompt({
-  level,
-  onContinue,
-  onStartOver,
-  title,
-  continueLabel,
-  startOverLabel,
-}: ResumePromptProps) {
+// Keep going or start over, as two pictures a pre-reader can tell apart.
+export function ResumePrompt({ level, onContinue, onStartOver }: ResumePromptProps) {
   const { t } = useTranslation();
   return (
     <View style={styles.root}>
       <View style={styles.card}>
-        <Text style={styles.title}>{title ?? t('resume.welcomeBack')}</Text>
-        <BigButton
-          title={continueLabel ?? t('resume.continueLevel', { level })}
-          onPress={onContinue}
-          accent="green"
-        />
-        <BigButton
-          title={startOverLabel ?? t('resume.startOver')}
-          onPress={onStartOver}
+        <PressableButton
+          accessibilityLabel={t('resume.startOver')}
           variant="ghost"
-        />
+          onPress={onStartOver}
+          style={styles.button}
+        >
+          <Icon name="refresh" size={36} />
+        </PressableButton>
+        <PressableButton
+          accessibilityLabel={t('resume.continueLevel', { level })}
+          accent="green"
+          onPress={onContinue}
+          style={styles.button}
+        >
+          <Icon name="play" size={48} />
+        </PressableButton>
       </View>
     </View>
   );
@@ -46,10 +42,9 @@ export function ResumePrompt({
 const styles = StyleSheet.create({
   root: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: SPACING.lg },
   card: {
-    width: '100%',
-    maxWidth: 420,
-    alignItems: 'stretch',
-    gap: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.lg,
     padding: SPACING.lg,
     borderRadius: BORDER_RADIUS.tile,
     backgroundColor: COLORS.surface,
@@ -57,11 +52,5 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     ...SHADOWS.lg,
   },
-  title: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 26,
-    color: COLORS.ink,
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
-  },
+  button: { minWidth: 120 },
 });

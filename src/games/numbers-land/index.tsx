@@ -106,7 +106,6 @@ function NumbersLandRun({
     <View style={styles.root}>
       <ListenFindBoard
         hero={<NumberHero item={round.target} />}
-        instruction={t('numbers-land:hearFind.which')}
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={lf.selectedIndex}

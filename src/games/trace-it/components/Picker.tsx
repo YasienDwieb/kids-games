@@ -16,6 +16,7 @@ import {
   OUTLINE,
   POP,
   SHADOWS,
+  Icon,
   SPACING,
   Star,
   fontsFor,
@@ -61,11 +62,11 @@ export function Picker({ script, tab, onTab, onPick }: PickerProps) {
     <View style={styles.root}>
       <AppBar
         left={<View style={styles.backSpace} />}
-        title={t('trace-it:meta.name')}
         right={tabsFor(script).map((k) => (
           <Chip
             key={k}
             label={t(`trace-it:tabs.${k}`)}
+            icon={k === 'warmup' ? 'brush' : undefined}
             active={k === tab}
             onPress={() => onTab(k)}
             fontFamily={k === 'arabic' || k === 'latin' ? fontsFor(k === 'arabic' ? 'ar' : 'en').display : undefined}
@@ -178,7 +179,7 @@ function Tile({ char, stars, next, onPress, onLayoutX }: TileProps) {
       </Pressable>
       {next ? (
         <View style={styles.badge} pointerEvents="none">
-          <Text style={styles.badgeText}>{t('trace-it:picker.next')}</Text>
+          <Icon name="play" size={18} />
         </View>
       ) : null}
     </Animated.View>
@@ -222,5 +223,4 @@ const styles = StyleSheet.create({
     backgroundColor: POP.zap,
     ...SHADOWS.sm,
   },
-  badgeText: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.ink },
 });

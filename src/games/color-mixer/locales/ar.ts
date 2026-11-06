@@ -8,6 +8,7 @@ export const ar: GameTranslations = {
   },
 
   title: 'خلّاط الألوان',
+  defaultSavedName: 'لوني',
 
   mode: {
     freeplay: 'اللعب الحر',
@@ -26,14 +27,9 @@ export const ar: GameTranslations = {
   },
 
   mixingZone: {
-    potFull: 'الوعاء ممتلئ! تراجع عن قطرة أو ابدأ من جديد.',
     dragHint: 'اِسْحَبْ لَوْنًا إِلى الوِعاء!',
   },
 
-  palette: {
-    colorsTitle: 'الألوان',
-    savedTitle: 'محفوظة · اضغط أو اسحب للأعلى',
-  },
 
   colors: {
     red: 'أحمر',
@@ -49,14 +45,6 @@ export const ar: GameTranslations = {
     lightBlue: 'أزرق فاتح',
   },
 
-  discoveryHints: {
-    orange: 'امزج لونَين دافئَين',
-    green: 'امزج لوناً دافئاً مع لون بارد',
-    purple: 'امزج لونَين قويَّين',
-    brown: 'امزج الألوان الثلاثة الأساسية',
-    pink: 'أضف الأبيض إلى لون دافئ',
-    lightBlue: 'أضف الأبيض إلى الأزرق',
-  },
 
   challengeHints: {
     c1: 'امزج لوناً ساخناً مع لون مشمس',
@@ -101,26 +89,11 @@ export const ar: GameTranslations = {
 
   discovery: {
     title: 'لون جديد!',
-    yay: 'رائع!',
   },
 
-  namingDialog: {
-    title: 'احفظ لونك! 🎨',
-    label: 'سمِّ لونك:',
-    placeholder: 'مثلاً: غروب الشمس',
-    defaultName: 'لوني',
-    cancel: 'إلغاء',
-    save: 'حفظ',
-  },
 
   collection: {
-    title: 'ألواني',
     done: 'تمّ',
-    famousShelf: 'الألوان المشهورة',
-    found: 'مكتشَفة',
-    creationsShelf: 'إبداعاتي',
-    emptyCreations: 'امزج لوناً واضغط حفظ!',
-    lockedName: '???',
     deleteLabel: 'حذف',
   },
 };

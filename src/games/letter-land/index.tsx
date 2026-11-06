@@ -121,7 +121,6 @@ function LetterLandRun({
     <View style={styles.root}>
       <ListenFindBoard
         hero={<LetterHero letter={round.target} />}
-        instruction={t('letter-land:hearFind.which')}
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={lf.selectedIndex}

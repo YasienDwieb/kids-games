@@ -17,6 +17,7 @@ type GameCardProps = {
   icon: string;
   /** Illustrated art filling the window; falls back to the `icon` emoji. */
   cover?: number;
+  /** Screen-reader name; tiles show no text, the picture is the title. */
   name: string;
   accent?: AccentName;
   tag?: string; // e.g. "NEW"
@@ -27,12 +28,10 @@ type GameCardProps = {
   // window flexes to absorb leftover height so cards stay a uniform size.
   fill?: boolean;
   emojiSize?: number;
-  /** Full game name for screen readers when `name` is an abbreviated tile label. */
-  accessibilityLabel?: string;
 };
 
 // Home tile: the game's own loud colour, an ink outline and hard shadow, the
-// icon in a white window and the name in the display face underneath.
+// art in a white window. No title: children know a game by its picture.
 export function GameCard({
   icon,
   cover,
@@ -44,7 +43,6 @@ export function GameCard({
   style,
   fill = false,
   emojiSize,
-  accessibilityLabel,
 }: GameCardProps) {
   const a = ACCENTS[accent];
   const label = bestTextOn(a.base);
@@ -52,7 +50,7 @@ export function GameCard({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel ?? name}
+      accessibilityLabel={name}
       style={({ pressed }) => [
         styles.card,
         { backgroundColor: a.base },
@@ -69,22 +67,12 @@ export function GameCard({
         )}
       </View>
 
-      <View style={styles.meta}>
-        <Text
-          style={[styles.name, fill && styles.nameFill, { color: label }]}
-          numberOfLines={fill ? 1 : 2}
-          adjustsFontSizeToFit={fill}
-          minimumFontScale={0.75}
-        >
-          {name}
-        </Text>
-        {progress > 0 ? (
-          <View style={styles.progress}>
-            <Star size={13} />
-            <Text style={[styles.progressText, { color: label }]}>{Math.round(progress * 100)}%</Text>
-          </View>
-        ) : null}
-      </View>
+      {progress > 0 ? (
+        <View style={styles.progress}>
+          <Star size={13} />
+          <Text style={[styles.progressText, { color: label }]}>{Math.round(progress * 100)}%</Text>
+        </View>
+      ) : null}
 
       {tag ? (
         <View style={styles.tag}>
@@ -121,16 +109,6 @@ const styles = StyleSheet.create({
   cover: { width: '100%', height: '100%' },
   // Fill mode: drop the fixed aspect so the window flexes to fill leftover height.
   windowFill: { aspectRatio: undefined, flex: 1, minHeight: 44 },
-  meta: { gap: 4, paddingHorizontal: 2 },
-  name: {
-    fontFamily: FONTS.display,
-    fontSize: 19,
-    lineHeight: 23,
-    textAlign: 'center',
-  },
-  // Rail tiles are ~116dp wide, so the label comes down a step to hold a full
-  // short name on one line. Still well above the 12dp caption floor.
-  nameFill: { fontSize: 16, lineHeight: 20 },
   progress: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
   progressText: { fontFamily: FONTS.display, fontSize: 12 },
   tag: {

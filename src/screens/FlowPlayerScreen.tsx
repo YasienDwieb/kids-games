@@ -1,13 +1,13 @@
 // src/screens/FlowPlayerScreen.tsx
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
+import { Animated, I18nManager, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
   awardStars, CelebrationProvider, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
   track, usePlaySession,
-  FONTS, FONT_SIZES, COLORS, SPACING, TOUCH_TARGET,
+  COLORS, SPACING, Star, TOUCH_TARGET,
 } from '@/sdk';
 import { BackButton } from '../components/common';
 import { PlayLimitGate } from './PlayLimitGate';
@@ -83,8 +83,8 @@ export function FlowPlayerScreen({ navigation }: Props) {
               </Animated.View>
             ) : null}
             {status === 'done' ? (
-              <View style={styles.rest} pointerEvents="box-none">
-                <Text style={styles.restText}>{t('flow.allCaughtUp')}</Text>
+              <View style={styles.rest} pointerEvents="box-none" accessible accessibilityLabel={t('flow.allCaughtUp')}>
+                <Star size={96} />
               </View>
             ) : null}
           </SceneCanvas>
@@ -99,10 +99,4 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: COLORS.canvas },
   fill: { flex: 1 },
   rest: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
-  restText: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.xl,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
 });
