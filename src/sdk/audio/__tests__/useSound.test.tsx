@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createAudioPlayer } from 'expo-audio';
 import { act, create } from 'react-test-renderer';
 import { useSound } from '../useSound';
+import { STALL_MS } from '../releasePlayer';
 import { SoundOverridesContext } from '../SoundOverridesContext';
 import { getAsset } from '../../assets/query';
 import type { SoundOverrides } from '../../assets/query';
@@ -9,20 +10,21 @@ import { settingsStore, DEFAULT_SETTINGS } from '../../settings/store';
 
 type Api = ReturnType<typeof useSound>;
 
-function mountSound(overrides: SoundOverrides = {}): { api: () => Api } {
+function mountSound(overrides: SoundOverrides = {}): { api: () => Api; unmount: () => void } {
   let latest: Api | null = null;
   function Probe() {
     latest = useSound();
     return null;
   }
+  let tree!: ReturnType<typeof create>;
   act(() => {
-    create(
+    tree = create(
       <SoundOverridesContext.Provider value={overrides}>
         <Probe />
       </SoundOverridesContext.Provider>,
     );
   });
-  return { api: () => latest as Api };
+  return { api: () => latest as Api, unmount: () => act(() => tree.unmount()) };
 }
 
 /** Let the mount-time settings prime resolve. */
@@ -132,5 +134,85 @@ describe('useSound', () => {
     });
 
     expect(createAudioPlayer).toHaveBeenCalledWith(getAsset('jingle.steel-15').modules[0]);
+  });
+
+  describe('player lifetime', () => {
+    const lastPlayer = () => (createAudioPlayer as jest.Mock).mock.results.at(-1)!.value;
+
+    it('releases its players on unmount', async () => {
+      const { api, unmount } = mountSound();
+      await settle();
+      act(() => {
+        api().prewarm(['pop']);
+      });
+      const player = lastPlayer();
+      unmount();
+      expect(player.release).toHaveBeenCalled();
+    });
+
+    // A round that unmounts right after its win sound must not cut it off.
+    it('lets a sound that is still playing finish after unmount', async () => {
+      jest.useFakeTimers();
+      try {
+        const { api, unmount } = mountSound();
+        await settle();
+        act(() => {
+          api().prewarm(['pop']);
+        });
+        const player = lastPlayer();
+        Object.assign(player, { playing: true, duration: 2, currentTime: 0 });
+        unmount();
+        expect(player.release).not.toHaveBeenCalled();
+        act(() => {
+          jest.advanceTimersByTime(3000);
+        });
+        expect(player.release).toHaveBeenCalled();
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('rebuilds a player stuck in buffering', async () => {
+      jest.useFakeTimers({ doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask'] });
+      try {
+        const overrides = { 'sfx.win': 'jingle.steel-15' } as SoundOverrides;
+        const { api } = mountSound(overrides);
+        await settle();
+        act(() => {
+          api().play('win');
+        });
+        const stuck = lastPlayer();
+        stuck.isBuffering = true;
+        act(() => {
+          jest.advanceTimersByTime(STALL_MS);
+        });
+        expect(stuck.release).toHaveBeenCalled();
+        act(() => {
+          api().play('win');
+        });
+        expect(lastPlayer()).not.toBe(stuck);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('rebuilds a player that failed natively instead of replaying a dead one', async () => {
+      const module = getAsset('jingle.steel-15').modules[0];
+      const overrides = { 'sfx.win': 'jingle.steel-15' } as SoundOverrides;
+      const { api } = mountSound(overrides);
+      await settle();
+      act(() => {
+        api().play('win');
+      });
+      const dead = lastPlayer();
+      const [, onStatus] = dead.addListener.mock.calls[0];
+      act(() => onStatus({ error: 'AudioTrack init failed' }));
+      expect(dead.release).toHaveBeenCalled();
+      act(() => {
+        api().play('win');
+      });
+      expect(lastPlayer()).not.toBe(dead);
+      expect(createAudioPlayer).toHaveBeenLastCalledWith(module);
+    });
   });
 });

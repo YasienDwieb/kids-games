@@ -4,6 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { modulesFor, pickModule } from '@/sdk/assets/query';
 import { settingsStore, DEFAULT_SETTINGS, type Settings } from '@/sdk/settings/store';
 import { SoundOverridesContext } from './SoundOverridesContext';
+import { onPlayerFailed, releasePlayer, releaseWhenDone } from './releasePlayer';
 
 export type PlayOptions = { haptic?: boolean };
 
@@ -36,13 +37,7 @@ export function useSound() {
     return () => {
       mounted = false;
       unsub();
-      Object.values(cache).forEach((p) => {
-        try {
-          p.remove();
-        } catch {
-          // already released — ignore
-        }
-      });
+      Object.values(cache).forEach(releaseWhenDone);
       loaded.current = {};
     };
   }, []);
@@ -54,6 +49,11 @@ export function useSound() {
     try {
       const player = createAudioPlayer(module);
       loaded.current[key] = player;
+      // A failed player is dead for good; the next play() builds a fresh one.
+      onPlayerFailed(player, () => {
+        if (loaded.current[key] === player) delete loaded.current[key];
+        releasePlayer(player);
+      });
       return player;
     } catch {
       return undefined; // graceful degradation — game works without sound
