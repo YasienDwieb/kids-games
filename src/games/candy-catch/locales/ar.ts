@@ -8,7 +8,7 @@ export const ar: GameTranslations = {
     description: 'حرّك السلة — التقط الحلويات وتجنّب الأشياء المقززة!',
   },
   start: {
-    title: 'اِلتَقِطِ الحَلوَياتِ!',
+    title: 'اِلتَقِطِ الحَلوِيات!',
     tap: 'المس للبدء',
   },
   a11y: {

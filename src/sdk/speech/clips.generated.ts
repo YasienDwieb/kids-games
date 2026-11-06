@@ -31,7 +31,7 @@ export const CLIPS: Record<string, number> = {
   "ar:اِضغطْ سِتّة!": require('../assets/audio/speech/ar-d78a55a95c.m4a'),
   "ar:اِضغطْ عَشَرة!": require('../assets/audio/speech/ar-b0d27c11bb.m4a'),
   "ar:اِضغطْ وَاحِد!": require('../assets/audio/speech/ar-7609b255ca.m4a'),
-  "ar:اِلتَقِطِ الحَلوَياتِ!": require('../assets/audio/speech/ar-f2146f571d.m4a'),
+  "ar:اِلتَقِطِ الحَلوِيات!": require('../assets/audio/speech/ar-6df518380c.m4a'),
   "ar:برتقالي": require('../assets/audio/speech/ar-f68c759c51.m4a'),
   "ar:بطة": require('../assets/audio/speech/ar-d93dde9de2.m4a'),
   "ar:بقرة": require('../assets/audio/speech/ar-6e3a43430c.m4a'),
