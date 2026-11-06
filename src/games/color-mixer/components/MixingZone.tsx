@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, View, type ViewInstance } from 'react-native';
 import { COLORS as TOKENS, FONTS, OUTLINE, SHADOWS, useReduceMotion, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { DraggableResult } from './DraggableResult';
@@ -50,7 +50,7 @@ export function MixingZone({
   const calm = useReduceMotion();
   const resultScaleAnim = useRef(new Animated.Value(0)).current;
   const resultOpacity = useRef(new Animated.Value(0)).current;
-  const viewRef = useRef<View>(null);
+  const viewRef = useRef<ViewInstance>(null);
   const nudge = useRef(new Animated.Value(0)).current;
 
   // A full pot silently ignoring drops reads as a broken game. Shake so the refusal is

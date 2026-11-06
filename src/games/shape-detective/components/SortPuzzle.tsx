@@ -68,6 +68,7 @@ import {
   Text,
   useWindowDimensions,
   View,
+  type ViewInstance,
 } from 'react-native';
 import {
   Gesture,
@@ -170,7 +171,7 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   // so they share the same coordinate space as event.nativeEvent.x/y from
   // the GestureDetector that wraps this same View.
   // -------------------------------------------------------------------------
-  const surfaceRef = useRef<View>(null);
+  const surfaceRef = useRef<ViewInstance>(null);
 
   // Surface-local rects for each bin and each tray slot.
   // Populated by measureLayout(surfaceRef) inside child onLayout callbacks.
@@ -178,8 +179,8 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   const trayRects = useRef<(Rect | null)[]>(puzzle.items.map(() => null));
 
   // Per-child View refs so we can call measureLayout on them.
-  const binViewRefs = useRef<(View | null)[]>(puzzle.bins.map(() => null));
-  const trayViewRefs = useRef<(View | null)[]>(puzzle.items.map(() => null));
+  const binViewRefs = useRef<(ViewInstance | null)[]>(puzzle.bins.map(() => null));
+  const trayViewRefs = useRef<(ViewInstance | null)[]>(puzzle.items.map(() => null));
 
   // Currently dragged item index (-1 = none)
   const draggingIdxRef = useRef<number>(-1);

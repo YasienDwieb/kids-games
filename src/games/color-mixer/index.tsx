@@ -5,6 +5,7 @@ import {
   useWindowDimensions,
   View,
   type LayoutChangeEvent,
+  type ViewInstance,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -120,7 +121,7 @@ export default function ColorMixerGame() {
     poke();
     if (firstRun.status === 'show') firstRun.complete();
   };
-  const rootRef = useRef<View>(null);
+  const rootRef = useRef<ViewInstance>(null);
   const [demoPoints, setDemoPoints] = useState<DemoPoint[]>([]);
   const showDemo = potEmpty && (firstRun.status === 'show' || idle) && !mixer.newDiscovery && !showChallengePicker;
   useEffect(() => {

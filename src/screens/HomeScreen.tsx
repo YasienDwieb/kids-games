@@ -8,6 +8,7 @@ import {
   View,
   useWindowDimensions,
   type LayoutChangeEvent,
+  type ScrollViewInstance,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
@@ -92,7 +93,7 @@ export function HomeScreen({ navigation }: Props) {
   // Measured, not derived from insets: system bars differ per device and the
   // rail must fill exactly what's left above the chips.
   const [railBox, setRailBox] = useState(0);
-  const railRef = useRef<ScrollView>(null);
+  const railRef = useRef<ScrollViewInstance>(null);
 
   // Games shown on Home are filtered by the parent-set age band (Settings).
   const visible = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
