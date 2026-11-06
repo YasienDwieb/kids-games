@@ -28,6 +28,8 @@ jest.mock('expo-haptics', () => ({
 
 // worklets 0.10+ installs its native module on import; use the shipped mocks.
 jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
+// Reanimated 4.7 runs initializers.native at import; JSReanimated, its Jest backend, throws on it.
+jest.mock('react-native-reanimated/src/initializers', () => ({ initializeReanimatedModule: () => {} }));
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 
 // The 3D road (react-three-fiber + three, ESM + a native GL view) never renders

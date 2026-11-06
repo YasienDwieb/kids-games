@@ -1,5 +1,5 @@
 import { act, create } from 'react-test-renderer';
-import { GestureDetector, State } from 'react-native-gesture-handler';
+import { GestureDetector, GestureHandlerRootView, State } from 'react-native-gesture-handler';
 import { fireGestureHandler } from 'react-native-gesture-handler/jest-utils';
 import { StyleSheet } from 'react-native';
 import { DIGITS } from '../glyphs/digits';
@@ -10,6 +10,9 @@ import { TrackLayer } from '../components/TrackLayer';
 import { EMOJI, GAP, REACH, routeFor, spotsFor } from '../components/Travellers';
 import { TRACK_WIDTH } from '../constants';
 import { prepareGlyph } from '../utils/resample';
+
+// RNGH 3's GestureDetector requires a root ancestor; App.tsx provides it in the app.
+const render = (el: React.ReactElement) => create(<GestureHandlerRootView>{el}</GestureHandlerRootView>);
 
 const mockPlay = jest.fn();
 jest.mock('@/sdk', () => ({ ...jest.requireActual('@/sdk'), useSound: () => ({ play: mockPlay }) }));
@@ -26,7 +29,7 @@ it('traces digit 1 to done', () => {
   const onActivity = jest.fn();
   let tree: ReturnType<typeof create>;
   act(() => {
-    tree = create(<TraceBoard step={{ glyph: g, pass: 'guided' }} side={232} accent="coral" onDone={onDone} onActivity={onActivity} />);
+    tree = render(<TraceBoard step={{ glyph: g, pass: 'guided' }} side={232} accent="coral" onDone={onDone} onActivity={onActivity} />);
   });
   const gesture = tree!.root.findByType(GestureDetector).props.gesture;
   // A tap off the start is a miss: 2 stars instead of 3.
@@ -51,7 +54,7 @@ it('path then dot reports next kind and finishes on dot tap', () => {
   const onStrokeDone = jest.fn();
   let tree: ReturnType<typeof create>;
   act(() => {
-    tree = create(<TraceBoard step={{ glyph: g, pass: 'solo' }} side={232} accent="coral" onDone={onDone} onStrokeDone={onStrokeDone} />);
+    tree = render(<TraceBoard step={{ glyph: g, pass: 'solo' }} side={232} accent="coral" onDone={onDone} onStrokeDone={onStrokeDone} />);
   });
   const gesture = tree!.root.findByType(GestureDetector).props.gesture;
   for (const s of pg.strokes) {
@@ -79,7 +82,7 @@ function traceD1(props: Partial<React.ComponentProps<typeof TraceBoard>> = {}) {
   const onMisses = jest.fn();
   let tree: ReturnType<typeof create>;
   act(() => {
-    tree = create(
+    tree = render(
       <TraceBoard step={{ glyph: g, pass: 'guided' }} side={232} accent="coral" onDone={jest.fn()} onMisses={onMisses} {...props} />,
     );
   });
@@ -137,7 +140,7 @@ it('dims strokes still to come in the guided pass only', () => {
 it('warm-up board shows the traveller and its goal', () => {
   let tree: ReturnType<typeof create>;
   act(() => {
-    tree = create(
+    tree = render(
       <TraceBoard step={{ glyph: warmupFor('line', false), pass: 'guided' }} side={232} accent="coral" onDone={jest.fn()} travel={{ from: '🐶', to: '🦴' }} />,
     );
   });
