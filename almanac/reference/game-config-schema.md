@@ -24,6 +24,9 @@ sources:
   - id: win-jingles-test
     type: file
     path: src/games/__tests__/winJingles.test.ts
+  - id: game-meta
+    type: file
+    path: src/sdk/i18n/gameMeta.ts
 ---
 
 This page is the exact field-by-field contract for `GameConfig`, the object
@@ -46,6 +49,8 @@ new game, see [Add a new game](../guides/add-a-new-game).
 | `ageRange` | `{ min: number; max: number }` | yes | Both fields must be numbers; `min` must be `<= max` [@config-types] [@validate-ts] |
 | `component` | `ComponentType` | yes | Must be a function [@config-types] [@validate-ts] |
 | `backgroundColor` | `string` | yes | Non-empty [@config-types] [@validate-ts] |
+| `cover` | `number` | no | A bundled square image (`require('./cover.jpg')`) shown on the Home tile instead of `icon`; `icon` remains the small glyph used in Settings rows and the featured card [@config-types] |
+| `coverByLanguage` | `Partial<Record<LanguageCode, number>>` | no | Per-language override of `cover`, for cover art that bakes in letters (e.g. `{ ar: require('./cover.ar.jpg') }` for a cover that shows a Latin letter in the English version and an Arabic letter in the Arabic one); not checked by `validateGameConfig` — resolve it at render time with `gameCover(game)` rather than reading `cover`/`coverByLanguage` directly [@config-types] |
 | `accent` | `AccentName` | no | One of the six accent names from `ACCENTS` (`green`, `orange`, `coral`, `purple`, `blue`, `pink`); falls back to a derived accent when omitted [@config-types] |
 | `order` | `number` | no | Ascending Home-screen sort weight; not validated. Omitted games sort after every game that declares one, in registration order — see [Game registry](../architecture/game-registry) for the exact `byOrder()` behavior [@config-types] [@order-test] |
 | `tags` | `string[]` | no | Free-form; not validated [@config-types] |
@@ -54,6 +59,14 @@ new game, see [Add a new game](../guides/add-a-new-game).
 | `bands` | `string[]` | no | Explicit age-band override, bypassing the derivation from `ageRange` [@config-types] |
 | `version` | `string` | no | Free-form; not validated [@config-types] |
 | `author` | `string` | no | Free-form; not validated [@config-types] |
+
+`gameCover(game)` is the one function that should read `cover`/`coverByLanguage`:
+it returns `game.coverByLanguage?.[i18n.language] ?? game.cover`, so a game that
+never sets `coverByLanguage` behaves exactly as before and a game that does gets
+the active-language art without any caller branching on the current language
+itself [@game-meta]. `GameCard` on Home calls `gameCover(game)` rather than
+`game.cover` for this reason; see the `GameCard` discussion on the
+[Design system](../architecture/design-system) page.
 
 ## `GameLayoutOptions` fields
 

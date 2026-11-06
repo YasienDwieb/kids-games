@@ -15,6 +15,9 @@ sources:
   - id: store-config-json
     type: file
     path: store.config.json
+  - id: aab-workflow
+    type: file
+    path: .github/workflows/release-aab.yml
 ---
 
 Building and shipping this app is governed by three small config files —
@@ -33,20 +36,34 @@ than the repo tracking it in `app.json` [@eas-json].
 | Profile | Key settings |
 |---|---|
 | `development` | `developmentClient: true`, `distribution: "internal"` — a dev-client build for local iteration. |
-| `preview` | `distribution: "internal"` — the profile the APK release workflow builds from. |
-| `production` | `autoIncrement: true` — the profile the AAB release workflow builds from, letting EAS bump the version automatically. |
+| `preview` | `distribution: "internal"`, `channel: "preview"` — the profile the APK release workflow builds from. |
+| `production` | `autoIncrement: true`, `channel: "production"` — the profile the AAB release workflow builds from, letting EAS bump the version automatically. |
+
+Each build profile's `channel` is the same string the OTA update workflow
+publishes to (`eas update --channel preview|production`) — a device running a
+build from the `preview` profile only ever receives OTA updates published to
+the `preview` channel, never `production`, and vice versa [@eas-json]. See
+[Release an OTA update](../guides/release-an-ota-update) for how that
+publish step works and why it can only reach binaries sharing the installed
+build's `runtimeVersion`.
 
 `submit.production.android` submits with `serviceAccountKeyPath:
 "./fastlane/play-store-key.json"` as its Google service account credential, to
 `track: "production"`, with `releaseStatus: "draft"` — every automated submit
 lands as a draft on the production track, staying behind a manual "Start
 rollout" click in the Play Console rather than going live automatically
-[@eas-json]. A separate `submit.internal` profile holds the same service
-account credential targeting `track: "internal"` (also `releaseStatus:
-"draft"`), for a deliberate manual test submit outside the normal
-`production`-only release path [@eas-json]. This profile only ships the
-binary; the separate Play Store listing text, screenshots, and changelog are
-maintained independently as fastlane metadata, a split recorded on the
+[@eas-json]. The `release-aab.yml` workflow that builds and submits from this
+profile takes one `workflow_dispatch` boolean input, `rollout` (default
+`false`), that decides whether the job itself finishes by running `fastlane
+rollout` to take the draft to `completed`, or leaves it as a draft with a
+printed reminder — it does not change the `track`/`releaseStatus` this
+profile submits with, only what happens after submission [@aab-workflow]. A
+separate `submit.internal` profile holds the same service account credential
+targeting `track: "internal"` (also `releaseStatus: "draft"`), for a
+deliberate manual test submit outside the normal `production`-only release
+path [@eas-json]. This profile only ships the binary; the separate Play Store
+listing text, screenshots, and changelog are maintained independently as
+fastlane metadata, a split recorded on the
 [Play Store listing as code](../decisions/play-store-listing-as-code) decision
 page. The [Release an Android build](../guides/release-an-android-build)
 guide walks through choosing between the `preview` (APK) and `production`
@@ -69,7 +86,9 @@ full build/submit/metadata flow this profile feeds.
 |---|---|
 | `expo.name` | `"Kids Zone"` |
 | `expo.slug` | `"kids-zone"` |
-| `expo.version` | `"1.2.1"` |
+| `expo.version` | `"1.3.2"` |
+| `expo.runtimeVersion.policy` | `"fingerprint"` |
+| `expo.updates.url` | `"https://u.expo.dev/9da83bd2-d191-4696-9770-b2bb066dd7ec"` |
 | `expo.orientation` | `"landscape"` |
 | `expo.ios.bundleIdentifier` | `"dev.waybeyond.kidszone"` |
 | `expo.ios.config.usesNonExemptEncryption` | `false` |
@@ -77,6 +96,9 @@ full build/submit/metadata flow this profile feeds.
 | `expo.android.predictiveBackGestureEnabled` | `false` |
 | `expo.android.blockedPermissions` | `["android.permission.ACTIVITY_RECOGNITION"]` |
 | `expo.web.favicon` | `"./assets/favicon.png"` |
+| `expo.extra.eas.projectId` | `"9da83bd2-d191-4696-9770-b2bb066dd7ec"` |
+| `expo.extra.supportsRTL` | `true` |
+| `expo.owner` | `"waybeyond"` |
 | `expo.plugins` | `["expo-localization", "expo-audio", "expo-font", "expo-status-bar", "expo-asset", ["expo-splash-screen", {...}]]` |
 
 These fields are read directly off `app.json`'s `expo` key [@app-json]. The
@@ -94,6 +116,16 @@ going to review without this declaration answered [@app-json]. `expo.version`
 is shared between platforms — bumping it for an Android release also bumps
 the version iOS ships next, so the two release flows are not fully
 independent even though their build/submit tooling is.
+
+`runtimeVersion.policy: "fingerprint"` and `updates.url` are what make
+over-the-air updates possible at all: `updates.url` is the EAS Update server
+a running app polls on launch, and the `fingerprint` policy derives a
+`runtimeVersion` from a hash of the native parts of the project (SDK version,
+native modules, config plugins) rather than from a manually bumped number
+[@app-json]. An installed binary only ever accepts an OTA update whose
+`runtimeVersion` fingerprint matches its own — see
+[Release an OTA update](../guides/release-an-ota-update) for the workflow this
+enables and the native-change gotcha it implies.
 
 The Expo SDK 57 upgrade (React Native 0.86, React 19.2) removed
 `newArchEnabled`, `android.edgeToEdgeEnabled`, and the top-level `splash` key

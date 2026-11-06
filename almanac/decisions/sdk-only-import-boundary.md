@@ -1,6 +1,6 @@
 ---
 title: "Decision: SDK-Only Import Boundary Between Games"
-summary: "Games may import only from the @/sdk barrel, never from each other or from deep src/ paths, with a single carved-out exception for a shared listen-and-find engine."
+summary: "Games may import only from the @/sdk barrel, never from each other or from deep src/ paths, with two narrow carved-out exceptions: a shared listen-and-find engine and a shared letter-data module."
 topics: [decisions, sdk, games]
 sources:
   - id: contributing
@@ -12,11 +12,14 @@ sources:
   - id: listen-find-dir
     type: file
     path: src/games/_shared/listen-find/
+  - id: shared-letters-dir
+    type: file
+    path: src/games/_shared/letters/
 ---
 
-This decision fixes how the twelve game modules under `src/games/` are allowed
-to depend on each other: not at all, except through the `@/sdk` barrel, with one
-narrow, explicitly named exception. It is what keeps a codebase built by many
+This decision fixes how the thirteen game modules under `src/games/` are allowed
+to depend on each other: not at all, except through the `@/sdk` barrel, with two
+narrow, explicitly named exceptions. It is what keeps a codebase built by many
 different contributors — human and AI agent alike — from turning into a web of
 undocumented cross-game coupling. The rule that results is the
 [SDK boundary](../concepts/sdk-boundary), and it is what makes a
@@ -51,7 +54,7 @@ repeats the same rule for the project's own repo intent — "Games never share
 mutable state or import from one another" — and lists `@/sdk` as "the single
 import surface for games" [@claude-md].
 
-The one exception the project has carved out is `src/games/_shared/listen-find/`,
+The first exception the project carved out is `src/games/_shared/listen-find/`,
 a reusable listen-and-find engine that exports board rendering
 (`ListenFindBoard`), pick/replay/correct-index state (`useListenFind`), and level
 generation logic (`generate.ts`, `orderStore.ts`) through a single `index.ts`
@@ -60,9 +63,19 @@ barrel [@listen-find-dir]. Three sibling games import it directly —
 standalone play mode and its flow adapter. This module deliberately does not
 live inside `@/sdk`; it lives inside `src/games/`, one level below the game
 folders it serves, which marks it as scoped to this one shared mechanic rather
-than promoted to the general SDK surface. No other `_shared` subfolder exists
-in the repository, and no game reaches into another game's own folder — the
-`_shared/listen-find` path is the only sanctioned crack in the boundary.
+than promoted to the general SDK surface.
+
+A second exception, `src/games/_shared/letters/`, followed the same shape
+later: the Latin and Arabic letter inventories, the Egyptian school teaching
+order, and a spoken-phrase builder, imported directly by `letter-land` and by
+`trace-it` (see [Trace It: the tracing engine](../architecture/trace-it-tracing))
+[@shared-letters-dir]. It carries no component or hook, only data and one
+function, but it is still a game's folder reaching into a shared location
+outside `@/sdk` rather than through the barrel, so it is the same kind of
+exception as `listen-find`, not a different one. No game reaches into
+*another game's own folder* directly — both exceptions live in `_shared/`,
+one level below the game folders, and `listen-find` and `letters` are the
+only two sanctioned cracks in the boundary.
 
 ## Status
 
@@ -79,7 +92,7 @@ a game's folder cannot silently break a sibling, because nothing outside
 `_shared/listen-find` is allowed to depend on that folder's internals. The
 tradeoff moves onto the SDK instead — because it is the one surface every game
 touches, any breaking change to `@/sdk` now has to be considered against all
-twelve games at once, which raises the bar for changing that surface casually.
+thirteen games at once, which raises the bar for changing that surface casually.
 This is the same reason the [game registry](../architecture/game-registry) can
 stay a simple in-memory map: it only ever has to reason about one game at a
 time, never about one game reaching into another.
@@ -87,8 +100,9 @@ time, never about one game reaching into another.
 The decision also creates a recurring question whenever a mechanic turns out to
 be shared by more than one or two games: duplicate the logic, promote it into
 `@/sdk` for good, or add a new narrowly-scoped `_shared/<name>` module the way
-`listen-find` was added. So far the project has chosen the narrow-module path
-exactly once. Because the rule is convention rather than a lint rule, staying
+`listen-find` and, later, `letters` were added. So far the project has chosen
+the narrow-module path twice rather than promoting either into `@/sdk` or
+accepting duplication. Because the rule is convention rather than a lint rule, staying
 inside the boundary depends on contributors (and the agents acting on their
 behalf) reading and following `CONTRIBUTING.md`, not on a build failure catching
 a violation.

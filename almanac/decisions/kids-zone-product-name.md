@@ -1,41 +1,45 @@
 ---
 title: "Kids Zone Product Name"
-summary: "The repository, license, and trademark notice are named Kids Games, but every native and store-facing identifier in the shipped app uses the different name Kids Zone."
+summary: "The GitHub repository and package.json still use the older name kids-games, while every store-facing identifier in app.json/eas.json — and NOTICE's own header — now uses Kids Zone; NOTICE reserves both names, plus the buddies Lulu and Zain, as trademarks of the licensor."
 topics: [decisions, release]
 sources:
   - id: app-json
     type: file
     path: app.json
-  - id: build-gradle
+  - id: eas-json
     type: file
-    path: android/app/build.gradle
-  - id: ios-project
-    type: file
-    path: ios/KidsZone.xcodeproj/
+    path: eas.json
   - id: notice
     type: file
     path: NOTICE
 ---
 
-The open-source repository is named and licensed as "Kids Games" — that is
-the GitHub repo name, and `NOTICE` explicitly reserves it: "The 'Kids Games'
-name, logo, and app icon are trademarks of the author and are NOT licensed
-under Apache-2.0 ... Forks and derivative works must use a different name and
-branding" [@notice]. The app the maintainer actually ships to app stores,
-however, is branded under a different name entirely. This page records that
-split so a future maintainer or forker does not mistake one name for the
-other.
+The open-source repository's GitHub URL and `package.json` `name` field are
+still "kids-games" — the project's original name. `NOTICE` has since moved
+on: it now opens by calling the project "Kids Zone (formerly \"Kids Games\")"
+and reserves both names as trademarks together, alongside the buddies: "'Kids
+Zone', 'Kids Games', 'Lulu', 'Zain', and the Kids Zone logo and app icon are
+trademarks of the licensor and are not licensed," and "Forks and derivative
+works must use a different name and branding" [@notice]. The app the
+maintainer actually ships to app stores uses that same "Kids Zone" name, not
+the repository's older "Kids Games." This page records that lag — the repo
+slug and package name not yet caught up to the rest of the project's naming —
+so a future maintainer or forker does not mistake one name for the other.
 
 ## Decision (a fact about the current build, not a choice being made here)
 
-Every native and store-facing identifier uses "Kids Zone" instead of "Kids
-Games." `app.json` sets `expo.name` to `"Kids Zone"` and `expo.slug` to
-`"kids-zone"` [@app-json]. Both `android.package` in `app.json` and
-`applicationId` in `android/app/build.gradle` are
-`dev.waybeyond.kidszone` [@app-json] [@build-gradle], and `ios.bundleIdentifier`
-in `app.json` matches it [@app-json]. The iOS native project directory and
-Xcode project are literally named `KidsZone` and `KidsZone.xcodeproj`
-[@ios-project]. The naming is consistent across every native config and store
+Every store-facing identifier uses "Kids Zone" instead of "Kids Games."
+`app.json` sets `expo.name` to `"Kids Zone"` and `expo.slug` to `"kids-zone"`
+[@app-json]. Both `expo.android.package` and `expo.ios.bundleIdentifier` in
+`app.json` are `dev.waybeyond.kidszone` [@app-json], and `eas.json`'s
+`submit.production.ios` block carries the matching Apple-side identity (Team
+ID, App Store Connect app id) under that same bundle id [@eas-json]. There is
+no committed native `ios/` or `android/` project directory in this
+repository — the app is an Expo-managed project, built and signed by EAS
+rather than by a checked-in Xcode project or Gradle module — so `app.json`
+and `eas.json` are the only places these identifiers live; there is no
+second, native-side copy of the package name or bundle id to drift out of
+sync [@app-json] [@eas-json]. The naming is consistent across every store
 metadata location — this is the deliberate, live branding of the shipped
 product, not a leftover or a typo.
 
@@ -45,13 +49,15 @@ Current.
 
 ## Consequences
 
-A future maintainer or forker needs to keep two names straight. "Kids Games"
-is the open-source project's own reserved trademark, scoped specifically to
-that name per `NOTICE` [@notice] — someone forking the *code* is free to pick
-any brand for their own app, as long as it is not "Kids Games" itself. "Kids
-Zone" is the specific shipped app's brand under a different name and bundle
-identifier, and it carries no special protection of its own beyond being the
-live product name. A maintainer who wanted to rename the shipped app again
+A future maintainer or forker needs to keep two names straight, even though
+`NOTICE` now reserves both as trademarks in the same clause [@notice]. "Kids
+Games" is the repository's original, still-current GitHub/`package.json`
+name; "Kids Zone" is the one `app.json`, `eas.json`, the store listings, and
+`NOTICE`'s own header actually use today. Someone forking the *code* is free
+to pick any brand for their own app, as long as it is neither "Kids Games"
+nor "Kids Zone" — both, along with "Lulu" and "Zain," are reserved regardless
+of which one a fork might assume is the safer, less-branded choice.
+A maintainer who wanted to rename the shipped app again
 would need to change `app.json`'s `expo.name`/`expo.slug`, the Android package
 name, and the iOS bundle identifier consistently — and the Android package
 name in particular cannot change after a Play Store release without becoming

@@ -64,6 +64,21 @@ topics:
     description: Continuous per-frame movement — the UI-thread game loop and worklet-safe easing math games use to animate without touching React state
     parents: [sdk]
 
+  - slug: 3d
+    title: 3D
+    description: react-three-fiber/expo-gl scenes rendered inside game tiles — the SDK's shared GLB model loader and the lazy-module, flat-fallback idiom games follow so three.js is never part of the default bundle
+    parents: [sdk, games]
+
+  - slug: engagement
+    title: Engagement
+    description: Cross-game kits that make every game feel rewarding and teachable — celebration bursts, combo streaks, the shared hint ladder, first-run tutorials, and the stars/sticker reward economy
+    parents: [sdk]
+
+  - slug: buddy
+    title: Buddy
+    description: The Lulu/Zain mascot choice every child makes on first launch, the 2D Mascot and rigged Lulu3D model that render it, and the level-gated wardrobe outfits unlocked from the player's lifetime star total
+    parents: [sdk, engagement]
+
   - slug: storage
     title: Storage
     description: The single AsyncStorage-backed persistence primitive and the systems built on it
@@ -73,6 +88,11 @@ topics:
     title: Settings
     description: The one persisted app-wide preferences record and what each field controls
     parents: [storage]
+
+  - slug: analytics
+    title: Analytics
+    description: Vendor-neutral, anonymous usage events (game sessions, rounds, journey completion) and the tested boundary that confines a vendor SDK to one sink folder
+    parents: [sdk]
 
   - slug: navigation
     title: Navigation

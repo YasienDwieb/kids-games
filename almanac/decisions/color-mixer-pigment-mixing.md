@@ -42,11 +42,17 @@ sources:
   - id: migrate-saved-test
     type: file
     path: src/games/color-mixer/hooks/__tests__/migrateSaved.test.ts
+  - id: color-palette
+    type: file
+    path: src/games/color-mixer/components/ColorPalette.tsx
 ---
 
 [Color Mixer](../reference/games-catalog) is a drag-and-drop [game
 module](../concepts/game-module) where a child drops paint primaries into a
 pot to discover named "famous" colors and complete color-matching challenges.
+The pot itself is drawn as a 3D paint bowl by `Bowl3D`, covered on the
+[3D rendering](../architecture/3d-rendering) page; this page is about the
+math `Bowl3D` visualises, not the bowl's own rendering.
 Its original mixing and matching math modeled light, not paint, and that
 mismatch was visible enough in the actual rendered colors that it was
 replaced wholesale with an authored color-wheel engine and a perceptual
@@ -176,3 +182,23 @@ interpreted. A full pot is a hard stop, not a soft dilution: `addDrop` past
 something into the pot must handle the rejection explicitly — Color Mixer
 answers a refused drop with a sound cue and a shake of the mixing zone rather
 than letting the drop vanish silently [@wheel-mix] [@index].
+
+Feeding that drop log reliably from the drag gesture turned out to have its
+own sharp edge. `ColorPalette.tsx`'s `DraggableSlotBlob` builds its
+`PanResponder` once, in a `useRef(PanResponder.create({...})).current`
+initializer, so the closures captured inside `onPanResponderGrant`/`Move`/
+`Release` are whichever `onDragStart`/`onDragMove`/`onDragEnd` props existed
+on that very first render [@color-palette]. Because those callbacks are
+recreated on every re-render as the mix changes, the responder's stale
+closures could call back into an `onDragEnd` that still read the pot as
+empty — the symptom was the first drop or two after opening the mixing zone
+silently failing to register, while every drop after that worked, since by
+then the stale callback happened to already match current state closely
+enough not to matter. The fix mirrors the latest callbacks into a plain
+`useRef` on every render (`latest.current = { onDragStart, onDragMove,
+onDragEnd, instanceId }`) and has the `PanResponder` call through
+`latest.current.fn(...)` instead of the closed-over prop directly
+[@color-palette]. Any other one-time `useRef(...).current` gesture responder
+in this codebase that closes over props or state needs the same indirection —
+a `PanResponder` created once cannot otherwise see anything that changes
+after its first render.

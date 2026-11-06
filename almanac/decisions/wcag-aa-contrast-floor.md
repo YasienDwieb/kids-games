@@ -1,6 +1,6 @@
 ---
 title: "Decision: Enforce a WCAG AA Contrast Floor on Every Fill"
-summary: "Every accent in ACCENTS is tuned to roughly the same lightness, which made white button labels fall to ~2.2-2.8:1 contrast; colors.ts now computes the winning label color per fill with bestTextOn, PressableButton and Chip default to the purple accent instead of the too-light COLORS.brand, and a Jest suite pins the floor so it cannot silently regress."
+summary: "A device audit found the app's accent-filled buttons and secondary text well under WCAG AA; colors.ts added bestTextOn/contrastRatio to compute a winning label color per fill, and a Jest suite pins the floor so it cannot silently regress. The palette has since been rebranded wholesale as \"Pop Quest\" (see the design system page), which changed every hex value involved and moved COLORS.brand out of the contrast dead zone the original fix had to work around — this page's historical numbers are from the original, now-superseded palette."
 topics: [decisions, design-system]
 sources:
   - id: colors-ts

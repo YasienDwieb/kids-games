@@ -1,6 +1,6 @@
 ---
 title: "Games Catalog Reference"
-summary: "The exact id, age range, accent, layout mode, and flow eligibility of all 12 games currently registered in src/games/index.ts, verified against each game's own config.ts."
+summary: "The exact id, age range, accent, layout mode, and flow eligibility of all 13 games currently registered in src/games/index.ts, verified against each game's own config.ts."
 topics: [reference, games]
 sources:
   - id: games-index
@@ -45,12 +45,15 @@ sources:
   - id: candy-catch-config
     type: file
     path: src/games/candy-catch/config.ts
+  - id: trace-it-config
+    type: file
+    path: src/games/trace-it/config.ts
   - id: win-jingles-test
     type: file
     path: src/games/__tests__/winJingles.test.ts
 ---
 
-This page is a lookup table for the 12 games currently registered by
+This page is a lookup table for the 13 games currently registered by
 `src/games/index.ts`, one `import './<id>/config'` line per game
 [@games-index]. Each row's age range, accent, layout mode, and `order` is
 read directly from that game's own `config.ts`; each is a
@@ -62,7 +65,7 @@ own `flow.tsx` adapter and can appear in a guided-play session
 how those ranges map onto the [age bands](../concepts/age-bands) shown in
 Home and Settings is a separate derivation covered on that page.
 
-## The 12 registered games
+## The 13 registered games
 
 Rows are listed in ascending `order` — the same sequence `getAllGames()`
 returns, and so the same left-to-right/top-to-bottom sequence the games rail
@@ -73,17 +76,18 @@ and how ties or omissions are broken.
 | id | order | ages | accent | layout mode | flow-eligible | win jingle | mechanic |
 |---|---|---|---|---|---|---|---|
 | `animal-safari` | 10 | 3–7 | orange | shell | yes | `jingle.steel-06` | Listen-and-find animals via spoken name or sound effect [@animal-safari-config] [@flow-registrar] |
-| `mouse-maze` | 20 | 3–8 | orange | bare | no | `jingle.pizzi-15` | Swipe-to-navigate maze (mouse to cheese) with procedurally generated levels [@mouse-maze-config] |
-| `color-mixer` | 30 | 4–8 | blue | bare | no | `jingle.steel-02` | Drag-and-drop color mixing and discovery sandbox [@color-mixer-config] |
+| `trace-it` | 15 | 3–6 | coral | bare | yes | `jingle.pizzi-06` | Finger-trace warm-up strokes, Latin and Arabic letters, and digits on a guided-then-solo touch board [@trace-it-config] [@flow-registrar] |
+| `mouse-maze` | 20 | 3–8 | orange | bare | yes | `jingle.pizzi-15` | Swipe-to-navigate maze (mouse to cheese) with procedurally generated levels [@mouse-maze-config] [@flow-registrar] |
+| `color-mixer` | 30 | 4–8 | blue | bare | yes | `jingle.steel-02` | Drag-and-drop color mixing and discovery sandbox [@color-mixer-config] [@flow-registrar] |
 | `turbo-road` | 40 | 4–12 | coral | bare | no | `jingle.sax-10` | Steering/reflex road-trip racer with a garage and unlockable cars, tilt controls [@turbo-road-config] |
 | `balloon-archer` | 50 | 5–8 | green | bare | no | `jingle.steel-10` | Aim and shoot a bow-and-arrow to pop balloons [@balloon-archer-config] |
-| `simple-pairs` | 60 | 2–5 | green | bare | no | `jingle.pizzi-10` | Classic memory/matching card-flip pairs [@simple-pairs-config] |
+| `simple-pairs` | 60 | 2–5 | green | bare | yes | `jingle.pizzi-10` | Classic memory/matching card-flip pairs [@simple-pairs-config] [@flow-registrar] |
 | `match-up` | 70 | 3–7 | purple | bare | yes | `jingle.steel-15` | Drag a line connecting each item to its match [@match-up-config] [@flow-registrar] |
 | `shape-detective` | 80 | 3–10 | purple | shell | yes | `jingle.sax-15` | Pattern-completion, odd-one-out, and sort-into-bins puzzles [@shape-detective-config] [@flow-registrar] |
 | `count-and-pop` | 90 | 3–7 | pink | shell | yes | *(none)* | Counting: tap to pop N objects, or pick the numeral matching a shown group [@count-and-pop-config] [@flow-registrar] |
 | `letter-land` | 100 | 3–7 | blue | shell | yes | `jingle.pizzi-02` | Listen-and-find letters via text-to-speech, plus finger-trace letter shapes [@letter-land-config] [@flow-registrar] |
 | `numbers-land` | 110 | 3–7 | orange | shell | yes | `jingle.sax-06` | Listen-and-find digits, the audio-first sibling of Count & Pop [@numbers-land-config] [@flow-registrar] |
-| `candy-catch` | 130 | 3–7 | pink | bare | no | `jingle.sax-02` | Drag a basket left/right to catch falling treats and dodge chili/bomb hazards across an endless level curve [@candy-catch-config] |
+| `candy-catch` | 130 | 3–7 | pink | bare | yes | `jingle.sax-02` | Drag a basket left/right to catch falling treats and dodge chili/bomb hazards across an endless level curve [@candy-catch-config] [@flow-registrar] |
 
 `count-and-pop` has no win jingle because it only ever plays a `'success'`
 sound on a correct pop, never `'win'` — a test asserts this game specifically
@@ -116,3 +120,11 @@ an authored pigment wheel and matches with a perceptual color-distance
 metric, a deliberate replacement for an earlier engine that modeled light
 instead of paint. See
 [Mix paint, not light](../decisions/color-mixer-pigment-mixing) for why.
+
+`trace-it`'s "finger-trace" mechanic is its own tracking engine, not a reuse
+of any other game's gesture code: a shared glyph format (box-unit strokes)
+feeds both a pure touch-tracking state machine and the Latin/Arabic/digit
+shape data, including the Egyptian school-order letter list it shares with
+`letter-land`. See
+[Trace It: the tracing engine](../architecture/trace-it-tracing) for the
+glyph model, the RTL-specific authoring rules, and the touch contract.

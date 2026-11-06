@@ -17,7 +17,7 @@ sources:
     path: src/games/turbo-road/components/PauseOverlay.tsx
   - id: turbo-road-playfield
     type: file
-    path: src/games/turbo-road/components/Playfield.tsx
+    path: src/games/turbo-road/components/Playfield3D.tsx
   - id: turbo-road-constants
     type: file
     path: src/games/turbo-road/constants.ts
@@ -145,38 +145,24 @@ fits a screen whose landscape shape needs a genuinely different composition
 approach fits a screen whose landscape shape is the same composition at
 different proportions.
 
-`Playfield` is not a third variant of the same `landscape` idiom — it does
-not branch on orientation at all. It never calls `useWindowDimensions()` and
-never computes a `landscape` boolean; every occurrence of the word
-"landscape" in the file is a comment, not a runtime check
-[@turbo-road-playfield]. Instead, `Playfield` measures its own container via
-`onLayout` into a `size` of `{ w, h }` and derives every dimension —
-sky-band height, road width, lane width, and sprite scale — continuously
-from that measured size, so the same code adapts to any aspect ratio rather
-than forking at a `width > height` threshold [@turbo-road-playfield]. The
-sprite scale specifically cannot live as a static `StyleSheet.create()`
-entry: `Playfield` keeps sprite dimensions (`PLAYER_BOX`, `RIVAL_BOX`,
-`ENTITY_BOX`, `BOOST_PAD`, ...) as plain module constants, multiplies each by
-a runtime `sprite` factor derived from lane width, and applies the result as
-inline `width`/`height`/`fontSize` at render time; the matching
-`StyleSheet` entries for those elements deliberately carry no fixed
-dimensions at all [@turbo-road-playfield]. In `turbo-road` specifically, the
-lane width itself is capped by `ROAD_HEIGHT_CAP_RATIO` (a cap expressed
-against playfield height, so it only binds when the playfield is wide
-relative to its height — in practice, landscape — where a pure width-based
-ratio would make the road absurdly wide) and the sprite scale is derived
-from that same lane width via `SPRITE_BASE_LANE` and `SPRITE_MAX_SCALE`, so
-road width and sprite size scale together [@turbo-road-constants]
-[@turbo-road-playfield]. That coupling is what keeps the lane-unit collision
-math in `turbo-road`'s engine feeling the same at any sprite scale — see
-[Motion and the game loop](../architecture/motion-and-game-loop) for why that
-engine's collision constants live untouched in JS-thread world state rather
-than reanimated shared values. Anyone touching `turbo-road` lane geometry has
-to preserve the road-width/sprite-scale coupling, not just one side of it.
-`Playfield`'s dimension-derived approach only works because it already owns
-its full-bleed rectangle without competing layout siblings; a screen with a
-header, chips, and CTAs to arrange still needs an explicit `landscape`
-branch to decide *composition*, not just scale.
+The playfield itself is not a third variant of the same `landscape` idiom —
+it does not branch on orientation at all. `Playfield3D.tsx`, the renderer
+`turbo-road` plays on today after the game went 3D-only, never calls
+`useWindowDimensions()` and never computes a `landscape` boolean; it
+measures its own container via `onLayout` purely to convert a touch's x
+position into a continuous steer value, not to pick between two layouts
+[@turbo-road-playfield]. The same full-bleed, dimension-derived idea the
+2D predecessor used for its road/sprite scaling still applies at the level
+of "this component owns its whole rectangle and adapts continuously rather
+than forking at a `width > height` threshold" — but the specific mechanism
+(static sprite-box constants scaled by a lane-width-derived factor, capped
+by a `ROAD_HEIGHT_CAP_RATIO`/`SPRITE_BASE_LANE` pair in `constants.ts`) was
+part of the deleted 2D `Playfield.tsx` and is now dead code: those two
+constants remain in `constants.ts` but nothing in the current renderer
+reads them [@turbo-road-constants]. A screen that owns its full rectangle
+without competing layout siblings can keep scaling continuously like this;
+a screen with a header, chips, and CTAs to arrange still needs an explicit
+`landscape` branch to decide *composition*, not just scale.
 
 ## A prop-threaded variant: color-mixer's challenge screens
 

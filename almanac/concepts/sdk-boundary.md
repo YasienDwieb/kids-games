@@ -1,6 +1,6 @@
 ---
 title: "SDK Boundary"
-summary: "The rule that every game imports only from @/sdk, never from another game or a deep src/ path, with one narrow sanctioned exception."
+summary: "The rule that every game imports only from @/sdk, never from another game or a deep src/ path, with two narrow sanctioned exceptions."
 topics: [concepts, sdk, games]
 sources:
   - id: claude-md
@@ -21,6 +21,12 @@ sources:
   - id: listen-find-index
     type: file
     path: src/games/_shared/listen-find/index.ts
+  - id: shared-letters-dir
+    type: file
+    path: src/games/_shared/letters/
+  - id: shared-letters-index
+    type: file
+    path: src/games/_shared/letters/index.ts
 ---
 
 The SDK boundary is the rule that every game folder under `src/games/` imports
@@ -30,7 +36,7 @@ deep `src/` path such as `@/sdk/audio/useSound` or `../../components/common`
 re-exports everything a game is allowed to touch: the config/registry API,
 design tokens, UI primitives, the asset manifest, storage, settings, audio,
 speech, motion, layout (`GameShell`), age bands, progress/levels, i18n, and the
-flow engine [@sdk-barrel]. The boundary exists so that twelve independently
+flow engine [@sdk-barrel]. The boundary exists so that thirteen independently
 built games, written at different times by different contributors, cannot
 develop hidden coupling to each other's internals — a game can only break by
 changing its own code or the SDK's public contract, never by another game
@@ -62,7 +68,7 @@ place its code lives, and the [Game registry](../architecture/game-registry)
 is the only channel through which that folder's existence becomes visible to
 the rest of the app.
 
-## The one sanctioned exception
+## Two sanctioned exceptions
 
 `src/games/_shared/listen-find/` breaks the "never import another game's
 folder" half of the rule, deliberately and narrowly. It is a reusable
@@ -76,8 +82,22 @@ into its individual files [@listen-find-index]. The exception is scoped
 tightly on purpose: it is one mechanic (hear a prompt, tap the matching tile
 among a set of choices) reused by exactly three games that all need the same
 generation and playback logic, not a general escape hatch for cross-game
-sharing. Any other cross-game reuse is expected to be promoted into `@/sdk`
-itself rather than added as a second `_shared/` folder.
+sharing.
+
+A second, narrower exception was added later: `src/games/_shared/letters/`
+exports the Latin and Arabic letter inventories (`LATIN_LETTERS`,
+`ARABIC_LETTERS`), the Egyptian school teaching order (`SCHOOL_ORDER`), and a
+spoken-phrase builder, consumed directly by `letter-land` and
+[Trace It](../architecture/trace-it-tracing) [@shared-letters-dir]
+[@shared-letters-index]. Unlike `listen-find`, this module has no component
+and no hook — it is pure letter data plus one phrase-building function — but
+it is still a second game's folder reaching into a third location outside
+`@/sdk`, so it counts as a second instance of the same exception, not a
+one-off. The rule this sets going forward: a cross-game mechanic gets its own
+narrowly-scoped `_shared/<name>` module, with one entry point, when more than
+one game needs the exact same logic or data and promoting it all the way into
+`@/sdk` would pull game-specific content (letter inventories, a
+listen-and-find board) into the general platform surface.
 
 The [SDK-only import boundary](../decisions/sdk-only-import-boundary) decision
 page records why this exception was accepted instead of generalized, and the

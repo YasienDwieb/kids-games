@@ -40,12 +40,16 @@ page for the mechanism.
 
 Re-exported from `src/constants/` so games have one surface instead of
 reaching into `@/constants/*` directly: `COLORS`, `ACCENTS` (typed by
-`AccentName`), `SPACING`, `BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES`,
-`SHADOWS`, and `FONTS` [@sdk-barrel]. The barrel also re-exports
+`AccentName`), `POP` (named chrome colors — `zap`, `grape`, `bubblegum`,
+`splash`, `lime`, `night`, and their soft/deep variants), `SPACING`,
+`BORDER_RADIUS`, `TOUCH_TARGET`, `FONT_SIZES`, `SHADOWS`, `OUTLINE` (ink
+border widths), and `FONTS` [@sdk-barrel]. The barrel also re-exports
 `bestTextOn` and `contrastRatio`, the two contrast-math functions behind the
 [WCAG AA contrast floor](../decisions/wcag-aa-contrast-floor) — any component
 drawing text on an arbitrary or game-supplied fill should call `bestTextOn`
-rather than hardcoding a label color [@sdk-barrel].
+rather than hardcoding a label color [@sdk-barrel]. See
+[Design system](../architecture/design-system) for what each token actually
+looks like under the current "Pop Quest" visual language.
 
 ## UI primitives
 
@@ -65,6 +69,7 @@ the barrel [@alias-test].
 | `getAsset`, `findAssets`, `pickAsset`, `pickModule` | query functions over the manifest |
 | `SoundOverrides` | type — `Partial<Record<AssetId, AssetId>>`, a per-game swap map used by `GameConfig.sounds` |
 | `EMOJI_IMAGES`, `getEmojiImage` | bundled emoji PNG lookup |
+| `CLAY_IMAGES`, `getClayImage` | bundled clay-toy PNG lookup — Higgsfield-rendered clay-toy art, resolved through the `ClayEmoji` component and used across several games (Trace It, Match Up, Count & Pop, Letter Land, Numbers Land) as an alternative to the plain emoji set; see [Licensing and attribution](../reference/licensing-and-attribution) for the generation provenance |
 | `AssetEntry`, `AssetType` | types describing one manifest entry |
 
 The exact tag vocabulary and entry shape are documented in full on the
@@ -122,6 +127,132 @@ reference consumer [@sdk-barrel].
 | `useGameShell` | hook into shell state (`GameShellApi` is its return type) |
 | `ScreenBackContext`, `useScreenBack`, `BackInterceptor` | the back-press interception protocol |
 | `GameShellProps`, `OverlaySlot` | supporting types |
+
+## Feedback
+
+| Export | Kind |
+|---|---|
+| `CelebrationProvider` | component — mounted once by `GamePlayerScreen`/`FlowPlayerScreen`; renders every burst, the cheering mascot, and the reward toasts |
+| `useCelebrate` | hook — returns `celebrate(size?, options?)`; a no-op resolving immediately when no provider is mounted |
+| `PRAISE_COUNT` | the number of recorded praise lines per language `celebrate()` picks from |
+| `Celebrate`, `CelebrationSize`, `CelebrateOptions` | types for the function above |
+| `hintStepFor`, `starsForMisses` | pure functions implementing the shared miss-escalation and stars-per-attempt policy |
+| `HintStep` | type — `'retry' \| 'highlight' \| 'reveal'` |
+| `useHintLadder` | hook — per-round miss counter wired to the policy above; resets when its `roundKey` argument changes |
+| `UseHintLadderResult` | its return type |
+
+See [Celebration, combo streaks, and the hint ladder](../architecture/celebration-and-hints)
+for how these fit together and what a burst actually renders.
+
+## Tutorials
+
+| Export | Kind |
+|---|---|
+| `DemoHand` | component — looping ghost-hand demo (`mode="tap"\|"drag"`), physical (non-mirrored) coordinates |
+| `DemoPoint` | type — `{ x, y }` |
+| `useFirstRun` | hook — persisted once-per-id gate (`status: 'loading'\|'show'\|'done'`, `complete()`) |
+| `tutorialStore` | the underlying `kg:tutorial` store, `{ seen: string[] }` |
+| `FirstRunStatus`, `TutorialProgress` | supporting types |
+| `useIdle` | hook — `{ idle, poke }`; flips `idle` after `ms` without a `poke()` while `active` |
+
+See [First-run tutorials](../architecture/first-run-tutorials) for how
+`mouse-maze` wires all three together.
+
+## Rewards
+
+| Export | Kind |
+|---|---|
+| `rewardsStore`, `DEFAULT_REWARDS`, `Rewards` | the single `kg:rewards` record — lifetime stars, owned/unseen stickers, today's star count, stars by game |
+| `awardStars` | function — the one entry point a game calls to grant stars; serialized so concurrent calls never lose a star |
+| `useRewards` | hook — live, subscribed `Rewards` for a screen |
+| `markStickersSeen` | clears the `unseen` list once the collection screen has been opened |
+| `onStickerUnlocked` | listener registration — called with a sticker id, or the `DAILY_GOAL_EVENT` sentinel |
+| `onLevelUp` | listener registration — called with the new player level whenever `awardStars` makes lifetime stars cross into it; consumed by the full-screen "LEVEL UP!" card. See [Buddy, mascot, and wardrobe](../architecture/buddy-and-wardrobe) for how player level drives outfit unlocks |
+| `DAILY_GOAL`, `DAILY_GOAL_EVENT` | the gentle daily-goal threshold and its unlock-listener sentinel |
+| `starsToday`, `localDay` | derive today's star count and today's `YYYY-MM-DD` key from local wall-clock time |
+| `STICKER_SETS`, `StickerSetId`, `ALL_STICKERS`, `STARS_PER_STICKER` | the per-game sticker catalog and the stars-per-sticker constant |
+| `nextSticker`, `stickerId`, `stickerEmoji`, `setOf` | catalog helpers — which sticker a game's next star pays for, and how to read an id apart |
+| `Sticker` | component — a die-cut sticker card, locked (`?`) or showing its glyph |
+
+See [Rewards, stars, and stickers](../architecture/rewards-and-stickers) for
+the full economy, including what later grew on top of `awardStars` that
+this reference does not cover.
+
+## Buddy, mascot, and wardrobe
+
+| Export | Kind |
+|---|---|
+| `BUDDIES`, `DEFAULT_BUDDY` | the two-item buddy roster (`'lulu' \| 'zain'`) and its default |
+| `useBuddy`, `useBuddyPicked`, `currentBuddy`, `chooseBuddy` | hooks/functions over the child's persisted buddy choice (`settings.buddy`) |
+| `BuddyId` | type |
+| `Mascot`, `MASCOT_POSES`, `MascotPose` | the cheap 2D mascot (four poses, plain `Animated.Image`) and its pose names |
+| `MascotHelper` | component — `Mascot` plus slide animation and a speech bubble, for a buddy that pops in to react |
+| `Lulu3D`, `Buddy3D` (alias), `LULU_TAP_LINES`, `LuluMood` | the rigged, bone-animated `@react-three/fiber` model shared by both buddies, and its mood type |
+
+See [Buddy, mascot, and wardrobe](../architecture/buddy-and-wardrobe) for how
+these fit together, including why `Lulu3D`, unlike the rest of this barrel's
+3D-adjacent exports, is not behind any `lazy()`/`Suspense` boundary at its
+call sites.
+
+## Player level and wardrobe
+
+| Export | Kind |
+|---|---|
+| `levelInfo`, `starsForLevel`, `LevelInfo` | pure functions deriving player level from lifetime stars, never stored |
+| `OUTFITS`, `Outfit`, `OutfitSlot`, `OutfitId` | the static, level-gated outfit catalog (`'hat' \| 'glasses'`) |
+| `outfitById`, `unlocksAt`, `isUnlocked` | catalog lookup helpers |
+| `outfitStore`, `DEFAULT_WEARING`, `Wearing`, `wear`, `useWearing` | the single `kg:outfit` record (one hat/glasses slot, shared by both buddies) and its mutator/hook |
+
+See [Buddy, mascot, and wardrobe](../architecture/buddy-and-wardrobe) for the
+full stars → level → unlock chain and `WardrobeScreen`'s own shape.
+
+## Store review
+
+| Export | Kind |
+|---|---|
+| `maybeAskForReview` | function — the automatic path; shows the native rating sheet if `shouldAskForReview` and `expo-store-review`'s `hasAction()` both allow it |
+| `openStoreReview` | function — opens the app's store listing page directly, for a manual "Rate" button |
+| `shouldAskForReview` | pure function — the stars/days-played/cooldown threshold `maybeAskForReview` checks before asking |
+| `ReviewState` | type — `{ askedAt: number \| null }`, the shape persisted at `kg:review` |
+
+Both functions are only ever called from behind the
+[parent gate](../decisions/parent-gate-for-settings) — see
+[Store review prompt](../architecture/store-review-prompt) for why and for
+the exact thresholds [@sdk-barrel].
+
+## Play time
+
+| Export | Kind |
+|---|---|
+| `playtimeStore`, `DEFAULT_PLAYTIME`, `Playtime` | the single `kg:playtime` record — seconds played per day and per game, plus granted extra minutes per day |
+| `usePlaytime` | hook — live, subscribed `Playtime` |
+| `usePlaytimeTracker` | hook — `usePlaytimeTracker(trackId \| null)`; accumulates seconds for `trackId` while mounted and the app is foregrounded, `null` to pause |
+| `addPlaytime`, `grantExtraTime` | functions — log elapsed seconds for a day/game, and add `EXTRA_MINUTES` to a day's granted extra |
+| `secondsToday`, `secondsThisWeek`, `overLimit` | pure functions over a `Playtime` value — today's total, the trailing 7-day total, and the daily-limit check |
+| `EXTRA_MINUTES` | the extra minutes (`15`) one `grantExtraTime()` call adds |
+
+See [Play time limit](../architecture/play-time-limit) for how `PlayLimitGate`
+wires these together with `settings.dailyLimitMin` and the parent gate.
+
+## Analytics
+
+| Export | Kind |
+|---|---|
+| `track` | function — `track(event, props)`, typed against the `AnalyticsEvents` catalogue; queues until setup finishes, then fans out to every configured sink |
+| `trackRound` | function — `trackRound(gameId, stars)`; called from `awardStars` itself, not normally from game code |
+| `flushAnalytics` | function — flushes every sink; called automatically on app background |
+| `usePlaySession` | hook — `usePlaySession(gameId \| null, mode)`; fires `game_start` on mount and `game_end` on unmount |
+| `AnalyticsEvents`, `EventName`, `PlayMode` | types — the event catalogue and its event-name union and `'free' \| 'journey'` mode |
+| `AnalyticsSink`, `EventProps` | types — the interface a backend (`sinks/*.ts`) implements |
+
+`setupAnalytics` and the sink implementations themselves are intentionally
+**not** exported from the barrel — they are wired once from `App.tsx` via
+`analytics/init.ts`, which stays outside `@/sdk` so no test importing the
+barrel can transitively load a vendor SDK [@sdk-barrel]. See
+[Analytics: anonymous usage events](../architecture/analytics) for the full
+module shape, the parent opt-out, and the
+[tested vendor boundary](../decisions/analytics-vendor-boundary) that keeps a
+vendor import confined to `sinks/`.
 
 ## Age
 

@@ -101,10 +101,14 @@ requires.
 - Attach the uploaded build to the version, set "What's New" (release notes),
   and set the version's Copyright field.
 - Upload screenshots if they changed — see the sizing rules below.
-- Confirm Category (Education), Age Rating (4+), and App Privacy ("Data Not
-  Collected") — these normally carry over from the previous version, but App
-  Privacy may need an ASC Admin to confirm [@submit-md]. The app uses the
-  ordinary Education listing, not Apple's Kids Category [@submit-md].
+- Confirm Category (Education), Age Rating (4+), and App Privacy (Usage Data
+  → Product Interaction, not linked to the user, not used for tracking — the
+  anonymous analytics layer described on
+  [Analytics: anonymous usage events](../architecture/analytics) replaced the
+  older "Data Not Collected" declaration) — these normally carry over from
+  the previous version, but App Privacy may need an ASC Admin to confirm
+  [@submit-md]. The app uses the ordinary Education listing, not Apple's Kids
+  Category [@submit-md].
 - Pricing is app-level (Free) and is set once, not per version.
 - Select the build and choose Add for Review, then Submit.
 
