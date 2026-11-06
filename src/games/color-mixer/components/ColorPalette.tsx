@@ -1,5 +1,5 @@
 import React, { useCallback, useRef } from 'react';
-import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View, type ViewInstance } from 'react-native';
 import { COLORS as TOKENS, FONTS, OUTLINE, SHADOWS, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { ColorLabel } from './ColorLabel';
@@ -96,7 +96,7 @@ type PaletteSlotProps = {
 
 function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemPositions }: PaletteSlotProps) {
   const { t } = useTranslation();
-  const slotRef = useRef<View>(null);
+  const slotRef = useRef<ViewInstance>(null);
   const instanceCounter = useRef(0);
 
   const measureSlot = useCallback(() => {

@@ -60,7 +60,7 @@ jobs:
 
       - uses: expo/expo-github-action@v8
         with:
-          eas-version: 20.1.0 # must satisfy eas.json cli.version (>= 20.1.0)
+          eas-version: 27.5.0 # must satisfy eas.json cli.version (>= 27.5.0)
           token: ${{ secrets.EXPO_TOKEN }}
 
       # EAS resolves config plugins locally, so node_modules must be present.

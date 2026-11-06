@@ -17,7 +17,7 @@
  *     run on the JS thread so setState is safe.
  */
 import { useEffect, useRef, useState } from 'react';
-import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, StyleSheet, Text, View, type ViewInstance } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import {
   ACCENTS,
@@ -133,9 +133,9 @@ export function MatchBoard({
   const { play } = useSound();
   const accentColor = ACCENTS[accent].base;
 
-  const surfaceRef = useRef<View>(null);
-  const topRefs = useRef<(View | null)[]>(round.top.map(() => null));
-  const botRefs = useRef<(View | null)[]>(round.bottom.map(() => null));
+  const surfaceRef = useRef<ViewInstance>(null);
+  const topRefs = useRef<(ViewInstance | null)[]>(round.top.map(() => null));
+  const botRefs = useRef<(ViewInstance | null)[]>(round.bottom.map(() => null));
   const topRects = useRef<(Rect | null)[]>(round.top.map(() => null));
   const botRects = useRef<(Rect | null)[]>(round.bottom.map(() => null));
 

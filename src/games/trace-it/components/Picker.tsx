@@ -4,7 +4,7 @@
  * with a "Next" badge, but every tile stays tappable.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, I18nManager, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import {
   ACCENTS,
   AppBar,
@@ -91,7 +91,7 @@ type RailProps = {
  */
 function Rail({ chars, done, onPick }: RailProps) {
   const next = nextSuggested(chars, done);
-  const rail = useRef<ScrollView>(null);
+  const rail = useRef<ScrollViewInstance>(null);
   const [viewW, setViewW] = useState(0);
   const [contentW, setContentW] = useState(0);
   const [nextX, setNextX] = useState<number | null>(null);

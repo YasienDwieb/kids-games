@@ -6,7 +6,7 @@ How the app is put together: the source layout, the boot/registration flow, and 
 
 ## Tech stack
 
-- Expo SDK 57, React 19.2, React Native 0.86 (New Architecture)
+- Expo SDK 58, React 19.3, React Native 0.88 (New Architecture)
 - TypeScript (strict mode)
 - React Navigation (native-stack)
 - `react-native-safe-area-context`, `react-native-gesture-handler`, `expo-audio`, `expo-haptics`, `expo-speech`, `expo-screen-orientation`

@@ -14,6 +14,7 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
+      "requireFullScreen": true,
       "bundleIdentifier": "dev.waybeyond.kidszone",
       "config": {
         "usesNonExemptEncryption": false
@@ -53,6 +54,14 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "imageWidth": 200
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraProguardRules": "# expo-gl: GLView is built by reflection and isn't an ExpoView; C++ looks up GLContext.flush by name.\n-keep class expo.modules.gl.** { *; }\n"
+          }
         }
       ]
     ]
