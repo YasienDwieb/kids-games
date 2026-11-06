@@ -468,6 +468,13 @@
   "durationS": 2.09,
   "generatedAt": "2026-10-24"
  },
+ "ar:مَرَّةً أُخْرى!": {
+  "file": "ar-3da8e6d6c8.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.22,
+  "generatedAt": "2026-11-05"
+ },
  "ar:مَوْجَةْ": {
   "file": "ar-a4d12ecf56.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
@@ -866,6 +873,13 @@
   "take": 2,
   "durationS": 1.01,
   "generatedAt": "2026-10-24"
+ },
+ "en:Try again!": {
+  "file": "en-28386f1963.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.01,
+  "generatedAt": "2026-11-05"
  },
  "en:U! Umbrella": {
   "file": "en-1878344bc9.m4a",

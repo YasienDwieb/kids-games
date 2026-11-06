@@ -34,6 +34,7 @@ import {
   SPACING,
   Star,
   useGameShell,
+  useHintLadder,
   useLevels,
   useSound,
   useTranslation,
@@ -143,7 +144,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
   // Wrong attempts this level — drives Lulu: encourage first, then point.
-  const [misses, setMisses] = useState(0);
+  const hints = useHintLadder(level);
 
   // Scale pop for correct answer — gentle bounce to 1.06 then back
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -163,7 +164,6 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
     shell.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
-    setMisses(0);
   }, [level, shell]);
 
   // Clear pending timers on unmount.
@@ -240,14 +240,14 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
       if (idx === puzzle.correctIndex) {
         handleCorrect();
       } else {
+        hints.miss();
         void play('wrong');
-        setMisses((m) => m + 1);
         triggerShake();
         if (timerRef.current !== null) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => setSelectedIndex(null), 900);
       }
     },
-    [selectedIndex, solved, data.puzzle, handleCorrect, play, triggerShake],
+    [selectedIndex, solved, data.puzzle, handleCorrect, hints, play, triggerShake],
   );
 
   // handleSortSolved: called by SortPuzzle when every item is correctly placed.
@@ -269,11 +269,11 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
       if (binIndex === puzzle.assignments[itemIndex]) {
         void play('success');
       } else {
+        hints.miss();
         void play('wrong');
-        setMisses((m) => m + 1);
       }
     },
-    [data.puzzle, play],
+    [data.puzzle, hints, play],
   );
 
   // ---------------------------------------------------------------------------
@@ -305,7 +305,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   const puzzle = data.puzzle;
 
   const helper = (
-    <MascotHelper pose={solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point'} />
+    <MascotHelper pose={solved || !hints.step ? null : hints.step === 'retry' ? 'encourage' : 'point'} />
   );
 
   if (puzzle.type === 'oddOneOut') {

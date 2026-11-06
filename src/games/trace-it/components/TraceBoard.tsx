@@ -84,7 +84,7 @@ export function TraceBoard({
   const [, setTick] = useState(0);
   const s = session.state;
   // Keyed on the pass too, so a single-stroke glyph's guided misses don't leak into its solo pass.
-  const ladder = useHintLadder(`${step.pass}:${glyph.id}:${s.stroke}`);
+  const ladder = useHintLadder(`${step.pass}:${glyph.id}:${s.stroke}`, { voice: false });
   const { scale, pad } = boardMetrics(side);
   const guided = step.pass === 'guided';
 

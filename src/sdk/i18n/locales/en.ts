@@ -160,6 +160,9 @@ export const en = {
       8: 'Amazing!',
     },
   },
+  feedback: {
+    miss: { tryAgain: 'Try again!' },
+  },
   buddy: {
     pickTitle: 'Pick your buddy!',
     anyTime: 'You can change your buddy any time',

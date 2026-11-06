@@ -73,6 +73,7 @@ export { hintStepFor, starsForMisses } from './feedback/hints';
 export type { HintStep } from './feedback/hints';
 export { useHintLadder } from './feedback/useHintLadder';
 export type { UseHintLadderResult } from './feedback/useHintLadder';
+export { missPhrase } from './feedback/missVoice';
 
 // Rewards — app-wide stars & the sticker book
 export {

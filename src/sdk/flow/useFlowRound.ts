@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSound } from '../audio/useSound';
 import { useCelebrate } from '../feedback/Celebration';
+import { useHintLadder } from '../feedback/useHintLadder';
 
 /**
  * Shared interaction host for a guided-flow round. Both games' flow adapters
@@ -11,6 +12,8 @@ import { useCelebrate } from '../feedback/Celebration';
 export function useFlowRound(onComplete: () => void) {
   const { play } = useSound();
   const celebrate = useCelebrate();
+  // Flow adapters key each unit, so a new round is a fresh mount.
+  const { miss } = useHintLadder('flow-round');
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [solved, setSolved] = useState(false);
   const solveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -42,12 +45,13 @@ export function useFlowRound(onComplete: () => void) {
       if (index === correctIndex) {
         complete();
       } else {
+        miss();
         void play('wrong');
         wrongTimer.current = setTimeout(() => setSelectedIndex(null), 900);
       }
     },
-    [selectedIndex, solved, complete, play],
+    [selectedIndex, solved, complete, play, miss],
   );
 
-  return { play, solved, selectedIndex, complete, pick };
+  return { play, solved, selectedIndex, complete, pick, miss };
 }

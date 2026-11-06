@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { breakCombo } from './combo';
 import { hintStepFor, starsForMisses, type HintStep } from './hints';
+import { MissVoiceContext } from './missVoice';
 
 export type UseHintLadderResult = {
   /** Wrong attempts on the current round. */
@@ -17,9 +18,15 @@ export type UseHintLadderResult = {
 
 /**
  * Per-round miss counter wired to the shared hint policy. Resets whenever
- * `roundKey` changes (pass the level number or round id).
+ * `roundKey` changes (pass the level number or round id). From the second miss
+ * it also speaks a short cue; pass `voice: false` when the game repeats its own
+ * question, or when a miss is a slip rather than a wrong answer (tracing).
  */
-export function useHintLadder(roundKey: unknown): UseHintLadderResult {
+export function useHintLadder(
+  roundKey: unknown,
+  { voice = true }: { voice?: boolean } = {},
+): UseHintLadderResult {
+  const missVoice = useContext(MissVoiceContext);
   // The ref is the source of truth so miss() can answer synchronously, even
   // when two taps land in the same frame; state only drives re-renders.
   const missesRef = useRef(0);
@@ -34,8 +41,9 @@ export function useHintLadder(roundKey: unknown): UseHintLadderResult {
     missesRef.current += 1;
     breakCombo();
     setMisses(missesRef.current);
+    if (voice) missVoice(missesRef.current);
     return hintStepFor(missesRef.current);
-  }, []);
+  }, [voice, missVoice]);
 
   return {
     misses,

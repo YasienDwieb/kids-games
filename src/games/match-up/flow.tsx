@@ -6,7 +6,7 @@
  * uses, scoreless, calling onComplete when every pair is connected.
  */
 import { StyleSheet, View } from 'react-native';
-import { registerFlowAdapter } from '@/sdk';
+import { registerFlowAdapter, useHintLadder } from '@/sdk';
 import { MatchBoard } from './components/MatchBoard';
 import { buildLevel } from './utils/levels';
 import { TOTAL_LEVELS } from './constants';
@@ -19,9 +19,10 @@ function MatchUpFlowRound({
   round: RoundData;
   onComplete: () => void;
 }) {
+  const { miss } = useHintLadder(round);
   return (
     <View style={styles.root}>
-      <MatchBoard round={round} onSolved={onComplete} />
+      <MatchBoard round={round} onSolved={onComplete} onWrong={miss} />
     </View>
   );
 }
