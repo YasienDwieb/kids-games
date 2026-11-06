@@ -51,8 +51,20 @@ it('records where each phrase is used', () => {
 
 it('exports the speaking games in home order', () => {
   // getAllGames() order = the home rail's (each config's `order`).
-  expect(voiceGames().map((g) => g.id)).toEqual(['animal-safari', 'trace-it', 'color-mixer', 'letter-land', 'numbers-land']);
-  expect(voiceGames()[2]).toMatchObject({ name: 'Color Mixer', icon: '🎨', accent: { base: expect.stringMatching(/^#/) } });
+  expect(voiceGames().map((g) => g.id)).toEqual([
+    'animal-safari',
+    'trace-it',
+    'mouse-maze',
+    'color-mixer',
+    'simple-pairs',
+    'match-up',
+    'shape-detective',
+    'count-and-pop',
+    'letter-land',
+    'numbers-land',
+    'candy-catch',
+  ]);
+  expect(voiceGames()[3]).toMatchObject({ name: 'Color Mixer', icon: '🎨', accent: { base: expect.stringMatching(/^#/) } });
 });
 
 it('writes catalog.json when VOICE_CATALOG_OUT is set', () => {

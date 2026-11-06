@@ -7,22 +7,30 @@ export const en = {
   },
   placeholder: 'Count & Pop is coming soon! 🔢',
   loading: 'Getting your numbers ready…',
+  // Spoken prompts (docs/VOICE.md).
+  say: {
+    pop: "Pop {{name}}!",
+    howMany: "How many?",
+    makeN: "How many more?",
+    addition: "How many altogether?",
+  },
+  numbers: {
+    '1': 'one',
+    '2': 'two',
+    '3': 'three',
+    '4': 'four',
+    '5': 'five',
+    '6': 'six',
+    '7': 'seven',
+    '8': 'eight',
+    '9': 'nine',
+    '10': 'ten',
+  },
   // Prompt instructions per mode
   countThisMany: {
-    title: 'TAP THIS MANY',
-    instruction: 'Pop {{count}} {{emoji}}!',
     progress: '{{popped}} / {{target}}',
   },
-  howMany: {
-    title: 'HOW MANY?',
-    instruction: 'How many {{emoji}}?',
-  },
-  makeN: {
-    title: 'MAKE IT',
-    instruction: 'Add {{needed}} more to make {{target}} {{emoji}}!',
-  },
   addition: {
-    title: 'ADD THEM UP',
     instruction: '{{a}} + {{b}} = ?',
   },
   // Level solved overlay

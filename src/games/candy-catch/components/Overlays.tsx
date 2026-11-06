@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
 import {
+  ACCENTS,
+  Icon,
   Mascot,
   PressableButton,
   COLORS,
@@ -33,15 +35,22 @@ export function StartOverlay({ onStart }: { onStart: () => void }) {
   const { t } = useTranslation();
   return (
     <Card>
-      <Text style={styles.burst}>🍬🍭🍪</Text>
-      <Text style={styles.title}>{t('candy-catch:start.title')}</Text>
-      <Text style={styles.sub}>{t('candy-catch:start.subtitle')}</Text>
+      <View style={styles.choiceRow}>
+        <Text style={styles.burst}>🍬🍭🍪</Text>
+        <Icon name="checkmark-circle" size={40} color={ACCENTS.green.deep} />
+      </View>
+      <View style={styles.choiceRow}>
+        <Text style={styles.burst}>🌶️💣</Text>
+        <Icon name="close-circle" size={40} color={ACCENTS.coral.deep} />
+      </View>
       <PressableButton
-        label={t('candy-catch:start.tap')}
+        accessibilityLabel={t('candy-catch:start.tap')}
         accent="pink"
         onPress={onStart}
         style={styles.button}
-      />
+      >
+        <Icon name="play" size={34} />
+      </PressableButton>
     </Card>
   );
 }
@@ -79,6 +88,7 @@ export function LoseOverlay({ onRetry }: { onRetry: () => void }) {
 }
 
 const styles = StyleSheet.create({
+  choiceRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   backdrop: {
     ...StyleSheet.absoluteFill,
     backgroundColor: COLORS.overlay,

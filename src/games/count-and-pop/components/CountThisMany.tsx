@@ -30,15 +30,19 @@ import {
 } from 'react-native';
 import {
   ACCENTS,
+  AreaDemo,
   BORDER_RADIUS,
   COLORS,
+  currentLanguage,
   FONT_SIZES,
   FONTS,
   OUTLINE,
   SHADOWS,
   SPACING,
+  useGuide,
   useTranslation,
 } from '@/sdk';
+import { popPhrase } from '../phrase';
 import { CountObject } from './CountObject';
 import { FitColumn } from './FitColumn';
 import type { CountThisManyRound } from '../types';
@@ -216,6 +220,13 @@ export function CountThisMany({
 
   const poppedCount = poppedSet.size;
   const allDone = poppedCount >= target;
+  const guide = useGuide({
+    id: 'count-and-pop',
+    phrase: popPhrase(target, currentLanguage()),
+    roundKey: round,
+    active: !disabled && !allDone,
+  });
+  const firstLoose = Array.from({ length: tileCount }, (_, i) => i).find((i) => !poppedSet.has(i));
 
   // Bob animation on the target numeral chip
   const bobAnim = useRef(new Animated.Value(0)).current;
@@ -244,16 +255,8 @@ export function CountThisMany({
     <>
       {/* Prompt card */}
       <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
-        <Text style={styles.promptTitle}>
-          {t('count-and-pop:countThisMany.title')}
-        </Text>
         <View style={styles.promptRow}>
-          <Text style={styles.promptInstruction}>
-            {t('count-and-pop:countThisMany.instruction', {
-              count: target,
-              emoji: objectEmoji,
-            })}
-          </Text>
+          <Text style={styles.promptInstruction}>{objectEmoji}</Text>
           {/* Big bobbing pink numeral chip */}
           <Animated.View
             style={[
@@ -288,14 +291,19 @@ export function CountThisMany({
             ? t('count-and-pop:a11y.objectPopped', { emoji: objectEmoji })
             : t('count-and-pop:a11y.objectTile', { emoji: objectEmoji });
           return (
-            <CountObject
-              key={i}
-              emoji={objectEmoji}
-              popped={isPopped}
-              onPop={() => handlePop(i)}
-              disabled={isDisabled}
-              accessibilityLabel={a11yLabel}
-            />
+            <View key={i}>
+              <CountObject
+                emoji={objectEmoji}
+                popped={isPopped}
+                onPop={() => {
+                  guide.poke();
+                  handlePop(i);
+                }}
+                disabled={isDisabled}
+                accessibilityLabel={a11yLabel}
+              />
+              {guide.showDemo && i === firstLoose ? <AreaDemo /> : null}
+            </View>
           );
         })}
       </View>
@@ -343,13 +351,6 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     alignItems: 'center',
     gap: SPACING.sm,
-  },
-  promptTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.sm,
-    color: ACCENTS.pink.deep,
-    textAlign: 'center',
-    letterSpacing: 1,
   },
   promptRow: {
     flexDirection: 'row',

@@ -26,7 +26,7 @@ function NumberFlowRound({
 }) {
   const { t } = useTranslation();
   const { speak } = useSpeech();
-  const { solved, selectedIndex, pick } = useFlowRound(onComplete);
+  const { solved, selectedIndex, pick, hintIndex, revealCorrect } = useFlowRound(onComplete);
 
   const order = orderFor(NUMBERS.length, seed);
   const round = buildRound(NUMBERS, order, index + 1, (index + 1) * 7919, CHOICES_PER_ROUND);
@@ -49,6 +49,9 @@ function NumberFlowRound({
         correctIndex={round.correctIndex}
         selectedIndex={selectedIndex}
         onPick={(i) => pick(i, round.correctIndex)}
+        guideId="numbers-land"
+        hintIndex={hintIndex}
+        revealCorrect={revealCorrect}
         onReplay={speakTarget}
         disabled={solved}
         accent="orange"

@@ -24,6 +24,8 @@ text in the app and the text that was recorded can't drift apart.
 | Animal | `<name>` | `Lion` | `أسد` |
 | Colour goal | `<makeThisColor> <colour>` | `Make this color: Green` | `اِصنعْ هذا اللون: أخضر` |
 | Trace-it warm-up / digit | `<name>` | `a zigzag` | `مَوْجَةْ` |
+| Round prompt | the instruction | `What comes next?` | `ماذا يَأتي بَعدَ ذلِكَ؟` |
+| Count & Pop goal | `Pop <number>!` | `Pop three!` | `اِضغطْ ثَلاثة!` |
 
 ## Writing rules
 

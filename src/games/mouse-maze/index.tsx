@@ -3,18 +3,21 @@ import { I18nManager, LayoutChangeEvent, StyleSheet, useWindowDimensions, View }
 import {
   MascotHelper,
   ResumePrompt,
+  currentLanguage,
   levelsFromGenerator,
   useCelebrate,
   useFirstRun,
   useIdle,
   useLevels,
   useSound,
+  useSpeech,
 } from '@/sdk';
 import { Hud } from './components/Hud';
 import { MazeStage } from './components/MazeStage';
 import { WinOverlay } from './components/WinOverlay';
 import { FRAME_PAD, HINT_MS, MAZE_COLORS } from './constants';
 import { useMaze, buildLevel, type StepResult } from './hooks/useMaze';
+import { mazePhrase } from './phrase';
 
 // Show the hand again after this long without a successful step.
 const IDLE_HINT_MS = 9000;
@@ -41,6 +44,11 @@ export default function MouseMazeGame() {
   // only comes back when the child has been stuck for a while.
   const firstRun = useFirstRun('mouse-maze');
   const { idle, poke } = useIdle(IDLE_HINT_MS, status === 'playing' && !state.won);
+
+  const { speak } = useSpeech();
+  useEffect(() => {
+    if (status === 'playing') void speak(mazePhrase(currentLanguage()));
+  }, [status, level, speak]);
 
   const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 

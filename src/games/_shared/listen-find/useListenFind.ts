@@ -18,6 +18,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  useChoiceHints,
   useGameShell,
   useLevels,
   useSound,
@@ -51,8 +52,8 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [solved, setSolved] = useState(false);
   // Wrong picks this round: Lulu encourages after the first, and from the
-  // second on she points and the prompt is said again.
-  const [misses, setMisses] = useState(0);
+  // second on she points, the answer pulses and the prompt is said again.
+  const { misses, miss, hintIndex, revealCorrect } = useChoiceHints(level);
 
   // Single timer ref — cleared before reassign and on unmount.
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -84,7 +85,6 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
     shellRef.current.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
-    setMisses(0);
     // Wait out a "New sticker!" voice so the prompt isn't talked over.
     const id = setTimeout(() => speakRef.current(), voiceHoldRemaining());
     return () => clearTimeout(id);
@@ -118,19 +118,19 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
         }, SOLVE_DELAY);
       } else {
         void play('wrong');
-        const nextMisses = misses + 1;
-        setMisses(nextMisses);
+        const afterClear = miss(correctIndex);
         setTimer(() => {
           setSelectedIndex(null);
-          if (nextMisses >= 2) speakRef.current();
+          afterClear();
+          if (misses >= 1) speakRef.current();
         }, WRONG_RESET_DELAY);
       }
     },
-    [selectedIndex, solved, status, isLast, misses, play, addScore, setTimer, handleNext],
+    [selectedIndex, solved, status, isLast, misses, miss, play, addScore, setTimer, handleNext],
   );
 
   const mascotPose: MascotPose | null =
     solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point';
 
-  return { ...levels, selectedIndex, solved, handlePick, handleNext, mascotPose };
+  return { ...levels, selectedIndex, solved, handlePick, handleNext, mascotPose, hintIndex, revealCorrect };
 }

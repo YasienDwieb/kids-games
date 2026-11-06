@@ -7,6 +7,9 @@ export const ar: GameTranslations = {
     name: 'متاهة الفأر',
     description: 'حرّك الفأر ليجد الجبنة!',
   },
+  say: {
+    find: 'ساعِدِ الفَأرَ لِيَصِلَ إلى الجُبنِ!',
+  },
   hud: {
     level: 'المستوى {{level}}',
     hintLabel: 'أرني الطريق',

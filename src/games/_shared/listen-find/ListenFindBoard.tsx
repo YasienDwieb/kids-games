@@ -24,14 +24,17 @@ import { useEffect, useRef } from 'react';
 import { Animated, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   ACCENTS,
+  AreaDemo,
   BORDER_RADIUS,
   COLORS,
   FONTS,
+  HintPulse,
   MascotHelper,
   OUTLINE,
   SHADOWS,
   SPACING,
   pulse,
+  useGuide,
   useLoop,
   type AccentName,
   type MascotPose,
@@ -55,6 +58,12 @@ export type ListenFindBoardProps = {
   onPick: (index: number) => void;
   /** Re-speak the target (host owns the speech). */
   onReplay: () => void;
+  /** First-run id for the tap demo (the host's game id). */
+  guideId: string;
+  /** Choice the hint ladder is pointing at. */
+  hintIndex: number | null;
+  /** Show the answer in green as a wrong pick flashes (the ladder's last step). */
+  revealCorrect: boolean;
   /** Ignore taps during the post-answer cooldown / overlay. */
   disabled?: boolean;
   /** Accent family for the hero surface + speaker badge. */
@@ -195,6 +204,9 @@ export function ListenFindBoard({
   selectedIndex,
   onPick,
   onReplay,
+  guideId,
+  hintIndex,
+  revealCorrect,
   disabled = false,
   accent = 'blue',
   background = COLORS.canvas,
@@ -203,12 +215,13 @@ export function ListenFindBoard({
   renderImage,
 }: ListenFindBoardProps): React.JSX.Element {
   const answered = selectedIndex !== null;
+  const guide = useGuide({ id: guideId, roundKey: correctIndex, active: !disabled });
   // Pulse the speaker so a child knows they can tap to hear it again.
   const beat = useLoop(1200, { enabled: !disabled });
 
   const tileState = (idx: number): TileState => {
     if (selectedIndex === null) return 'default';
-    if (idx === correctIndex) return 'correct';
+    if (idx === correctIndex) return revealCorrect || idx === selectedIndex ? 'correct' : 'default';
     if (idx === selectedIndex) return 'wrong';
     return 'default';
   };
@@ -236,16 +249,21 @@ export function ListenFindBoard({
           {choices.map((choice, idx) => {
             const state = tileState(idx);
             return (
-              <ChoiceTile
-                key={choice.id}
-                item={choice}
-                state={state}
-                onPress={() => onPick(idx)}
-                disabled={disabled || answered}
-                accessibilityLabel={choiceLabel(choice)}
-                accessibilityState={{ disabled: disabled || answered, selected: state === 'correct' }}
-                renderImage={renderImage}
-              />
+              <HintPulse key={choice.id} active={hintIndex === idx && !answered} style={styles.tileCell}>
+                <ChoiceTile
+                  item={choice}
+                  state={state}
+                  onPress={() => {
+                    guide.poke();
+                    onPick(idx);
+                  }}
+                  disabled={disabled || answered}
+                  accessibilityLabel={choiceLabel(choice)}
+                  accessibilityState={{ disabled: disabled || answered, selected: state === 'correct' }}
+                  renderImage={renderImage}
+                />
+                {guide.showDemo && idx === correctIndex && !answered ? <AreaDemo /> : null}
+              </HintPulse>
             );
           })}
         </View>
@@ -307,6 +325,7 @@ const styles = StyleSheet.create({
 
   // Choice column
   choiceCol: { flex: 1.2, alignItems: 'center', justifyContent: 'center', gap: SPACING.lg },
+  tileCell: { flex: 1, maxWidth: 150 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,7 +336,7 @@ const styles = StyleSheet.create({
   },
 
   // Choice tile (ported)
-  tileWrap: { flex: 1, maxWidth: 150 },
+  tileWrap: { width: '100%' },
   // Ink socket = the hard comic shadow under the face; pressing sinks the face into it.
   socket: { borderRadius: BORDER_RADIUS.card, paddingBottom: EDGE, backgroundColor: OUTLINE.color },
   face: {

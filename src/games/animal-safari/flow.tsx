@@ -45,7 +45,7 @@ function AnimalSafariFlowRound({
   round: Round;
   onComplete: () => void;
 }) {
-  const { solved, selectedIndex, pick } = useFlowRound(onComplete);
+  const { solved, selectedIndex, pick, hintIndex, revealCorrect } = useFlowRound(onComplete);
   const { speak } = useSpeech();
   const { play } = useSound();
   const { t } = useTranslation();
@@ -78,6 +78,9 @@ function AnimalSafariFlowRound({
         correctIndex={round.correctIndex}
         selectedIndex={selectedIndex}
         onPick={(i) => pick(i, round.correctIndex)}
+        guideId="animal-safari"
+        hintIndex={hintIndex}
+        revealCorrect={revealCorrect}
         onReplay={() => presentRef.current()}
         disabled={solved}
         accent="orange"

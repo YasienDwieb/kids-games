@@ -126,6 +126,9 @@ function LetterLandRun({
         selectedIndex={lf.selectedIndex}
         mascotPose={lf.mascotPose}
         onPick={(i) => lf.handlePick(i, round.correctIndex)}
+        guideId="letter-land"
+        hintIndex={lf.hintIndex}
+        revealCorrect={lf.revealCorrect}
         onReplay={speakTarget}
         disabled={lf.solved}
         accent="blue"

@@ -40,16 +40,21 @@ import {
 } from 'react-native';
 import {
   ACCENTS,
+  AreaDemo,
   BORDER_RADIUS,
   COLORS,
   ClayEmoji,
+  currentLanguage,
   FONT_SIZES,
   FONTS,
+  HintPulse,
   OUTLINE,
   SHADOWS,
   SPACING,
+  useGuide,
   useTranslation,
 } from '@/sdk';
+import { questionPhrase } from '../phrase';
 import { NumberChoice } from './NumberChoice';
 import { GroupCount } from './GroupCount';
 import { FitColumn } from './FitColumn';
@@ -84,25 +89,6 @@ type HowManyProps = {
 };
 
 // Gentle "look here" pulse for a hinted choice.
-function HintPulse({ active, children }: { active: boolean; children: React.ReactNode }) {
-  const scale = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    if (!active) {
-      scale.setValue(1);
-      return;
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scale, { toValue: 1.12, duration: 380, useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1, duration: 380, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [active, scale]);
-  return <Animated.View style={[styles.hintCell, { transform: [{ scale }] }]}>{children}</Animated.View>;
-}
-
 // ---------------------------------------------------------------------------
 // Swim animation for the flat howMany object group
 // ---------------------------------------------------------------------------
@@ -171,30 +157,21 @@ export function HowMany({
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
-  // Derive prompt text based on mode
-  let promptTitle: string;
-  let promptInstruction: string;
+  const answered = selectedIndex !== null;
+  const guide = useGuide({
+    id: 'count-and-pop',
+    phrase: questionPhrase(mode, currentLanguage()),
+    roundKey: round,
+    active: !disabled,
+  });
 
-  if (mode === 'howMany') {
-    promptTitle = t('count-and-pop:howMany.title');
-    promptInstruction = t('count-and-pop:howMany.instruction', {
-      emoji: objectEmoji,
-    });
-  } else if (mode === 'makeN') {
-    promptTitle = t('count-and-pop:makeN.title');
-    promptInstruction = t('count-and-pop:makeN.instruction', {
-      needed: round.target - round.have,
-      target: round.target,
-      emoji: objectEmoji,
-    });
-  } else {
-    // addition
-    promptTitle = t('count-and-pop:addition.title');
-    promptInstruction = t('count-and-pop:addition.instruction', {
-      a: round.a,
-      b: round.b,
-    });
-  }
+  // The voice asks; the card only shows the goal a child has to reach.
+  const goal =
+    mode === 'howMany'
+      ? null
+      : mode === 'makeN'
+        ? `${round.target} ${objectEmoji}`
+        : t('count-and-pop:addition.instruction', { a: round.a, b: round.b });
 
   // Build per-choice state
   const getChoiceState = (idx: number): NumberChoiceState => {
@@ -245,10 +222,11 @@ export function HowMany({
   const body = (
     <>
       {/* Prompt card */}
-      <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
-        <Text style={styles.promptTitle}>{promptTitle}</Text>
-        <Text style={styles.promptInstruction}>{promptInstruction}</Text>
-      </View>
+      {goal ? (
+        <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
+          <Text style={styles.promptInstruction}>{goal}</Text>
+        </View>
+      ) : null}
 
       {/* Object display */}
       {objectVisual}
@@ -257,22 +235,25 @@ export function HowMany({
       <View style={[styles.choiceRow, landscape && styles.choiceRowLandscape]}>
         {choices.map((value, idx) => {
           const state = getChoiceState(idx);
-          const isAnswered = selectedIndex !== null;
           return (
-            <HintPulse key={idx} active={hintIndex === idx && selectedIndex === null}>
+            <HintPulse key={idx} active={hintIndex === idx && !answered} style={styles.hintCell}>
               <NumberChoice
                 value={value}
                 state={state}
-                onPress={() => onPick(idx)}
-                disabled={disabled || isAnswered}
+                onPress={() => {
+                  guide.poke();
+                  onPick(idx);
+                }}
+                disabled={disabled || answered}
                 accessibilityLabel={t('count-and-pop:a11y.choiceButton', {
                   value,
                 })}
                 accessibilityState={{
-                  disabled: disabled || isAnswered,
+                  disabled: disabled || answered,
                   selected: state === 'correct',
                 }}
               />
+              {guide.showDemo && idx === correctIndex && !answered ? <AreaDemo /> : null}
             </HintPulse>
           );
         })}
@@ -325,13 +306,6 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     alignItems: 'center',
     gap: SPACING.xs,
-  },
-  promptTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.sm,
-    color: ACCENTS.pink.deep,
-    textAlign: 'center',
-    letterSpacing: 1,
   },
   promptInstruction: {
     fontFamily: FONTS.display,

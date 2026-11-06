@@ -4,6 +4,9 @@ export const en = {
     shortName: 'Pairs',
     description: 'Find matching pairs of cards',
   },
+  say: {
+    find: 'Find the matching pairs!',
+  },
   difficulty: {
     easy: 'Easy',
     medium: 'Medium',

@@ -11,8 +11,7 @@ export const ar: GameTranslations = {
   loading: 'نجهّز لك اللغز…',
   // Pattern puzzle strings
   pattern: {
-    instruction: 'ماذا يأتي بعد ذلك؟',
-    choose: '— اختر —',
+    instruction: 'ماذا يَأتي بَعدَ ذلِكَ؟',
     optionLabel: 'خيار {{index}}: {{size}} {{kind}}',
   },
   // Level solve overlay
@@ -23,13 +22,12 @@ export const ar: GameTranslations = {
   },
   // Odd-one-out puzzle strings
   oddOneOut: {
-    instruction: 'أيّ شكل لا ينتمي إلى المجموعة؟',
+    instruction: 'أَيُّ شَكلٍ لا يَنتَمي إلى المَجموعَةِ؟',
     itemLabel: 'عنصر {{index}}: {{size}} {{kind}}',
   },
   // Sort puzzle strings
   sort: {
-    instruction: 'رتّب كل شكل في مجموعته الصحيحة!',
-    dropHere: 'ضعه هنا',
+    instruction: 'رَتِّبْ كُلَّ شَكلٍ في مَجموعَتِهِ الصَّحيحَةِ!',
     binLabel: '{{name}} ({{count}} أشكال)',
     itemLabel: 'شكل {{index}}: {{size}} {{kind}}',
   },

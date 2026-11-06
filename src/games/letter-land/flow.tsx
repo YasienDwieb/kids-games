@@ -28,7 +28,7 @@ function LetterFlowRound({
 }) {
   const { t } = useTranslation();
   const { speak } = useSpeech();
-  const { solved, selectedIndex, pick } = useFlowRound(onComplete);
+  const { solved, selectedIndex, pick, hintIndex, revealCorrect } = useFlowRound(onComplete);
 
   const set = letterSet();
   const order = orderFor(set.length, seed);
@@ -53,6 +53,9 @@ function LetterFlowRound({
         correctIndex={round.correctIndex}
         selectedIndex={selectedIndex}
         onPick={(i) => pick(i, round.correctIndex)}
+        guideId="letter-land"
+        hintIndex={hintIndex}
+        revealCorrect={revealCorrect}
         onReplay={speakTarget}
         disabled={solved}
         accent="blue"

@@ -12,8 +12,7 @@ export const ar: GameTranslations = {
     score: 'النقاط {{score}}',
   },
   start: {
-    title: 'التقط الحلويات!',
-    subtitle: 'جيد: 🍬 🍭 🍪   مقزز: 🌶️ 💣',
+    title: 'اِلتَقِطِ الحَلوَياتِ!',
     tap: 'المس للبدء',
   },
   win: {

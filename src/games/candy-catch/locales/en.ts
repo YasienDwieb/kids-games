@@ -11,7 +11,6 @@ export const en = {
   },
   start: {
     title: 'Catch the treats!',
-    subtitle: 'Good: 🍬 🍭 🍪   Yucky: 🌶️ 💣',
     tap: 'Tap to start',
   },
   win: {

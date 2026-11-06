@@ -5,12 +5,13 @@
  * standalone game uses; it completes when the mouse reaches the cheese. If the
  * child stalls, the demo hand traces the next few cells.
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import { registerFlowAdapter, useFlowRound, useIdle } from '@/sdk';
+import { currentLanguage, registerFlowAdapter, useFlowRound, useIdle, useSpeech } from '@/sdk';
 import { MazeStage } from './components/MazeStage';
 import { buildLevel, useMaze, type MazeState } from './hooks/useMaze';
 import { FRAME_PAD } from './constants';
+import { mazePhrase } from './phrase';
 
 // Sizes stay small: a journey step, not a marathon. Level 1 = 5×5, 2 = 6×6.
 const LADDER = [1, 1, 2, 1, 2, 2];
@@ -20,6 +21,10 @@ function MazeFlowRound({ initial, onComplete }: { initial: MazeState; onComplete
   const maze = useMaze(initial);
   const { complete, solved } = useFlowRound(onComplete);
   const { idle, poke } = useIdle(IDLE_HINT_MS, !solved);
+  const { speak } = useSpeech();
+  useEffect(() => {
+    void speak(mazePhrase(currentLanguage()));
+  }, [speak]);
   const [area, setArea] = useState({ width: 0, height: 0 });
 
   const cellSize = useMemo(() => {

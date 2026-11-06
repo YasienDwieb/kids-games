@@ -152,6 +152,10 @@ export type { DemoPoint } from './tutorial/DemoHand';
 export { useFirstRun, tutorialStore } from './tutorial/useFirstRun';
 export type { FirstRunStatus, TutorialProgress } from './tutorial/useFirstRun';
 export { useIdle } from './tutorial/useIdle';
+export { useGuide } from './tutorial/useGuide';
+export { AreaDemo } from './tutorial/AreaDemo';
+export { HintPulse } from './feedback/HintPulse';
+export { useChoiceHints } from './feedback/useChoiceHints';
 
 // Layout
 export { GameShell } from './layout/GameShell';

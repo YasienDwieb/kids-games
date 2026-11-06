@@ -13,6 +13,9 @@ export const ar: GameTranslations = {
     shortName: 'الذاكرة',
     description: 'اقلب البطاقات وابحث عن المتطابقة',
   },
+  say: {
+    find: 'اِبحَثْ عَنِ البِطاقاتِ المُتَشابِهَةِ!',
+  },
   difficulty: {
     easy: 'سهل',
     medium: 'متوسط',

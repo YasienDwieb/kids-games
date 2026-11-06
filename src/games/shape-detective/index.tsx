@@ -33,6 +33,7 @@ import {
   SHADOWS,
   SPACING,
   Star,
+  useChoiceHints,
   useGameShell,
   useLevels,
   useSound,
@@ -142,8 +143,9 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   // Shake animation for wrong answer
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
-  // Wrong attempts this level — drives Lulu: encourage first, then point.
-  const [misses, setMisses] = useState(0);
+  // Wrong attempts this level — Lulu encourages first, then points as the answer pulses.
+  const { misses, miss, hintIndex, revealCorrect } = useChoiceHints(level);
+  const [sortMisses, setSortMisses] = useState(0);
 
   // Scale pop for correct answer — gentle bounce to 1.06 then back
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -163,7 +165,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
     shell.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
-    setMisses(0);
+    setSortMisses(0);
   }, [level, shell]);
 
   // Clear pending timers on unmount.
@@ -241,13 +243,16 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
         handleCorrect();
       } else {
         void play('wrong');
-        setMisses((m) => m + 1);
+        const afterClear = miss(puzzle.correctIndex);
         triggerShake();
         if (timerRef.current !== null) clearTimeout(timerRef.current);
-        timerRef.current = setTimeout(() => setSelectedIndex(null), 900);
+        timerRef.current = setTimeout(() => {
+          setSelectedIndex(null);
+          afterClear();
+        }, 900);
       }
     },
-    [selectedIndex, solved, data.puzzle, handleCorrect, play, triggerShake],
+    [selectedIndex, solved, data.puzzle, handleCorrect, play, triggerShake, miss],
   );
 
   // handleSortSolved: called by SortPuzzle when every item is correctly placed.
@@ -270,7 +275,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
         void play('success');
       } else {
         void play('wrong');
-        setMisses((m) => m + 1);
+        setSortMisses((m) => m + 1);
       }
     },
     [data.puzzle, play],
@@ -303,9 +308,10 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   // ---------------------------------------------------------------------------
 
   const puzzle = data.puzzle;
+  const wrongs = misses + sortMisses;
 
   const helper = (
-    <MascotHelper pose={solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point'} />
+    <MascotHelper pose={solved || wrongs === 0 ? null : wrongs === 1 ? 'encourage' : 'point'} />
   );
 
   if (puzzle.type === 'oddOneOut') {
@@ -319,6 +325,8 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
         <OddOneOutPuzzle
           puzzle={puzzle}
           selectedIndex={selectedIndex}
+          hintIndex={hintIndex}
+          revealCorrect={revealCorrect}
           onPick={handlePick}
           disabled={selectedIndex !== null}
         />
@@ -353,6 +361,8 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
       <PatternPuzzle
         puzzle={puzzle}
         selectedIndex={selectedIndex}
+        hintIndex={hintIndex}
+        revealCorrect={revealCorrect}
         onPick={handlePick}
         disabled={selectedIndex !== null}
       />

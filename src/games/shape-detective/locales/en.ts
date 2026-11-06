@@ -12,7 +12,6 @@ export const en = {
   // Pattern puzzle strings
   pattern: {
     instruction: 'What comes next?',
-    choose: '— choose —',
     optionLabel: 'Option {{index}}: {{size}} {{kind}}',
   },
   // Level solve overlay
@@ -29,7 +28,6 @@ export const en = {
   // Sort puzzle strings
   sort: {
     instruction: 'Drag each shape into the right group!',
-    dropHere: 'Drop here',
     binLabel: '{{name}} ({{count}} shapes)',
     itemLabel: 'Shape {{index}}: {{size}} {{kind}}',
   },

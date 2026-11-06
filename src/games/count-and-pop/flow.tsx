@@ -19,7 +19,7 @@ function CountAndPopFlowRound({
   level: LevelData;
   onComplete: () => void;
 }) {
-  const { play, solved, selectedIndex, complete, pick } = useFlowRound(onComplete);
+  const { play, solved, selectedIndex, complete, pick, hintIndex, revealCorrect } = useFlowRound(onComplete);
   const { round } = level;
 
   if (round.mode === 'countThisMany') {
@@ -40,6 +40,8 @@ function CountAndPopFlowRound({
       <HowMany
         round={round}
         selectedIndex={selectedIndex}
+        hintIndex={hintIndex}
+        revealCorrect={revealCorrect}
         onPick={(i) => pick(i, round.correctIndex)}
         disabled={solved || selectedIndex !== null}
       />

@@ -111,6 +111,9 @@ function NumbersLandRun({
         selectedIndex={lf.selectedIndex}
         mascotPose={lf.mascotPose}
         onPick={(i) => lf.handlePick(i, round.correctIndex)}
+        guideId="numbers-land"
+        hintIndex={lf.hintIndex}
+        revealCorrect={lf.revealCorrect}
         onReplay={speakTarget}
         disabled={lf.solved}
         accent="orange"
