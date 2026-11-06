@@ -98,6 +98,13 @@ export const MODE_ROTATION_ENDLESS: ReadonlyArray<RoundMode> = [
   'addition',      // 16
 ] as const;
 
+/**
+ * Readiness (useAdaptive tier) a child needs before a harder mode replaces a
+ * counting round. Tiers follow first-try answers, so these open up by play.
+ */
+export const MAKE_N_TIER = 1;
+export const ADDITION_TIER = 2;
+
 // ---------------------------------------------------------------------------
 // Count ranges per level band
 // ---------------------------------------------------------------------------

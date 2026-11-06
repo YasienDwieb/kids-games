@@ -23,10 +23,13 @@ import {
   TOTAL_LEVELS,
   countAndPopLevels,
   makeCountAndPopLevels,
+  modeForTier,
   MODE_ROTATION,
 } from '../utils/levels';
 import type { LevelData } from '../types';
 import {
+  ADDITION_TIER,
+  MAKE_N_TIER,
   MODE_ROTATION_ENDLESS,
   MIN_CHOICE_COUNT,
   MAX_CHOICE_COUNT,
@@ -457,5 +460,47 @@ describe('makeCountAndPopLevels factory', () => {
     const source = makeCountAndPopLevels(99);
     const data = source.get(1000);
     assertRoundValid(data);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Readiness: harder modes wait until a child has earned them
+// ---------------------------------------------------------------------------
+
+describe('readiness', () => {
+  const modesAt = (tier: number) =>
+    new Set(Array.from({ length: 200 }, (_, i) => buildLevel(i + 1, FIXED_SEED, tier).mode));
+
+  it('keeps younger players on counting', () => {
+    for (const tier of [-2, -1, 0]) {
+      expect([...modesAt(tier)].sort()).toEqual(['countThisMany', 'howMany']);
+    }
+  });
+
+  it('opens make-N first, then addition', () => {
+    expect([...modesAt(MAKE_N_TIER)].sort()).toEqual(['countThisMany', 'howMany', 'makeN']);
+    expect(modesAt(ADDITION_TIER).has('addition')).toBe(true);
+  });
+
+  it('turns an unearned slot into the next easier mode', () => {
+    expect(modeForTier('addition', ADDITION_TIER)).toBe('addition');
+    expect(modeForTier('addition', MAKE_N_TIER)).toBe('makeN');
+    expect(modeForTier('addition', 0)).toBe('howMany');
+    expect(modeForTier('makeN', 0)).toBe('howMany');
+    expect(modeForTier('countThisMany', -2)).toBe('countThisMany');
+  });
+
+  it('every level stays valid at every tier', () => {
+    for (const tier of [-2, -1, 0, 1, 2]) {
+      for (let lvl = 1; lvl <= 200; lvl += 1) assertRoundValid(buildLevel(lvl, FIXED_SEED, tier));
+    }
+  });
+
+  it('reads readiness when a level is built', () => {
+    let tier = 0;
+    const source = makeCountAndPopLevels(FIXED_SEED, () => tier);
+    expect(source.get(7).mode).toBe('howMany');
+    tier = MAKE_N_TIER;
+    expect(source.get(7).mode).toBe('makeN');
   });
 });

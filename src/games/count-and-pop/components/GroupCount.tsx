@@ -1,15 +1,7 @@
 /**
- * GroupCount — visual object-group display for makeN and addition rounds.
+ * GroupCount — visual object-group display for addition rounds.
  *
- * makeN layout:
- *   ┌──────────────────────────────────────────────────┐
- *   │  [filled objects × have]  +  [empty slots × needed] │
- *   └──────────────────────────────────────────────────┘
- *   Left group: filled emoji tiles (green tint bg, swimming anim).
- *   Right group: empty dashed slots (faint, no emoji).
- *   Divider: "+" sign between the two groups.
- *
- * addition layout:
+ * Layout:
  *   ┌──────────────────────────────────────────────────┐
  *   │  [group A × a]  +  [group B × b]               │
  *   └──────────────────────────────────────────────────┘
@@ -44,14 +36,14 @@ import {
   SHADOWS,
   SPACING,
 } from '@/sdk';
-import type { MakeNRound, AdditionRound } from '../types';
+import type { AdditionRound } from '../types';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 type GroupCountProps = {
-  round: MakeNRound | AdditionRound;
+  round: AdditionRound;
 };
 
 // ---------------------------------------------------------------------------
@@ -131,14 +123,6 @@ function EmojiTile({
   );
 }
 
-// ---------------------------------------------------------------------------
-// EmptySlot — a dashed outline slot for the "needed" portion in makeN
-// ---------------------------------------------------------------------------
-
-function EmptySlot({ size }: { size: number }): React.JSX.Element {
-  return <View style={[tileStyles.emptySlot, { width: size, height: size }]} />;
-}
-
 const TILE_SIZE = 56;
 const LANDSCAPE_TILE_SIZE = 40;
 
@@ -151,15 +135,6 @@ const tileStyles = StyleSheet.create({
     borderColor: OUTLINE.color,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emptySlot: {
-    width: TILE_SIZE,
-    height: TILE_SIZE,
-    borderRadius: BORDER_RADIUS.soft,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: COLORS.inkFaint,
-    backgroundColor: COLORS.canvas2,
   },
 });
 
@@ -174,7 +149,6 @@ function ObjectGroup({
   tintColor,
   tileSize,
   landscape = false,
-  empty = false,
 }: {
   count: number;
   emoji: string;
@@ -182,23 +156,18 @@ function ObjectGroup({
   tintColor: string;
   tileSize: number;
   landscape?: boolean;
-  empty?: boolean;
 }): React.JSX.Element {
   return (
     <View style={[groupStyles.group, landscape && groupStyles.groupLandscape]}>
-      {Array.from({ length: count }, (_, i) =>
-        empty ? (
-          <EmptySlot key={i} size={tileSize} />
-        ) : (
-          <EmojiTile
-            key={i}
-            emoji={emoji}
-            delayMs={(delayOffset + i) * 280}
-            tintColor={tintColor}
-            size={tileSize}
-          />
-        ),
-      )}
+      {Array.from({ length: count }, (_, i) => (
+        <EmojiTile
+          key={i}
+          emoji={emoji}
+          delayMs={(delayOffset + i) * 280}
+          tintColor={tintColor}
+          size={tileSize}
+        />
+      ))}
     </View>
   );
 }
@@ -209,7 +178,7 @@ const groupStyles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: SPACING.xs,
-    flex: 1,
+    flexShrink: 1,
     minWidth: 60,
   },
   // Landscape: roomier gaps between the (smaller) tiles so they don't touch.
@@ -254,36 +223,6 @@ export function GroupCount({ round }: GroupCountProps): React.JSX.Element {
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
   const tileSize = landscape ? LANDSCAPE_TILE_SIZE : TILE_SIZE;
-
-  if (round.mode === 'makeN') {
-    const needed = round.target - round.have;
-    return (
-      <View style={[styles.card, landscape && styles.cardLandscape, SHADOWS.md]}>
-        <View style={styles.groupRow}>
-          {/* Left: filled "have" objects — green tint */}
-          <ObjectGroup
-            count={round.have}
-            emoji={round.objectEmoji}
-            delayOffset={0}
-            tintColor={ACCENTS.green.tint}
-            tileSize={tileSize}
-            landscape={landscape}
-          />
-          <PlusDivider />
-          {/* Right: empty "needed" slots */}
-          <ObjectGroup
-            count={needed}
-            emoji={round.objectEmoji}
-            delayOffset={round.have}
-            tintColor={COLORS.canvas2}
-            tileSize={tileSize}
-            landscape={landscape}
-            empty
-          />
-        </View>
-      </View>
-    );
-  }
 
   // addition: two filled groups, left=blue tint, right=orange tint
   return (
@@ -335,7 +274,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: SPACING.xs,
+    gap: SPACING.md,
     flexWrap: 'nowrap',
   },
 });

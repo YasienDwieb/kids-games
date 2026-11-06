@@ -26,6 +26,7 @@ text in the app and the text that was recorded can't drift apart.
 | Trace-it warm-up / digit | `<name>` | `a zigzag` | `مَوْجَةْ` |
 | Round prompt | the instruction | `What comes next?` | `ماذا يَأتي بَعدَ ذلِكَ؟` |
 | Count & Pop goal | `Pop <number>!` | `Pop three!` | `اِضغطْ ثَلاثة!` |
+| Count & Pop target | `How many more to make <number>?` | `How many more to make five?` | `كَمْ يَنْقُصُنا لِنَصِلَ إلى خَمسة؟` |
 
 ## Writing rules
 

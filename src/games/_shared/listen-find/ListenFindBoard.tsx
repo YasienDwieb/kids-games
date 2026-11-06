@@ -268,8 +268,7 @@ export function ListenFindBoard({
           })}
         </View>
       </View>
-      {/* No speech bubble here: at the end corner it would cover an answer tile. */}
-      <MascotHelper pose={mascotPose} side="end" size={96} say={false} />
+      <MascotHelper pose={mascotPose} side="end" size={96} />
     </View>
   );
 }

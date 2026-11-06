@@ -41,6 +41,7 @@ import {
   ResumePrompt,
   SPACING,
   useRoundEnd,
+  useAdaptive,
   useHintLadder,
   useLevels,
   useSound,
@@ -79,7 +80,10 @@ export default function CountAndPopGame(): React.JSX.Element {
   // Recreate the LevelSource whenever the session seed changes (i.e. on new game).
   // useMemo on [sessionSeed] keeps the source identity stable across re-renders
   // within the same session, which is required for useLevels' data memo to work.
-  const source = useMemo(() => makeCountAndPopLevels(sessionSeed), [sessionSeed]);
+  const { tier, record } = useAdaptive('count-and-pop');
+  const tierRef = useRef(tier);
+  tierRef.current = tier;
+  const source = useMemo(() => makeCountAndPopLevels(sessionSeed, () => tierRef.current), [sessionSeed]);
 
   const {
     status,
@@ -191,13 +195,15 @@ export default function CountAndPopGame(): React.JSX.Element {
   // In endless mode isLast is always false; always play 'success'.
   const handleCorrect = useCallback(() => {
     const milestone = level % MILESTONE_EVERY === 0;
+    // Popping can't be missed, so only answered questions show readiness.
+    if (data.round.mode !== 'countThisMany') record(hints.firstTry);
     void play(milestone ? 'win' : 'success');
     setSolved(true);
     setHintIndex(null);
     triggerSolvePop();
     if (timerRef.current !== null) clearTimeout(timerRef.current);
     void roundEnd.next(milestone ? 'big' : 'small', advance);
-  }, [play, level, roundEnd, triggerSolvePop, advance]);
+  }, [play, level, data.round.mode, record, hints.firstTry, roundEnd, triggerSolvePop, advance]);
 
   // handlePick: used by HowMany (choice-row modes).
   // Guards on `selectedIndex !== null || solved` to prevent double-advance.

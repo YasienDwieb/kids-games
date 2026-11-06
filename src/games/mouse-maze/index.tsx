@@ -137,8 +137,6 @@ export default function MouseMazeGame() {
           side="end"
           size={100}
           pointTo={I18nManager.isRTL ? 'right' : 'left'}
-          // Her bubble would cover the hint button in this corner.
-          say={false}
         />
       </View>
     );

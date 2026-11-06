@@ -13,8 +13,12 @@ export const ar: GameTranslations = {
   say: {
     pop: "اِضغطْ {{name}}!",
     howMany: "كَمْ عَدَدُها؟",
-    makeN: "كَمْ يَنْقُصُنا؟",
+    makeN: "كَمْ يَنْقُصُنا لِنَصِلَ إلى {{name}}؟",
     addition: "كَمْ عَدَدُها مَعًا؟",
+  },
+  // A number after "to make", where Arabic grammar changes it (إلى اِثنين).
+  targets: {
+    '2': 'اِثنين',
   },
   numbers: {
     '1': 'وَاحِد',
@@ -27,11 +31,6 @@ export const ar: GameTranslations = {
     '8': 'ثَمانِية',
     '9': 'تِسْعة',
     '10': 'عَشَرة',
-  },
-  addition: {
-    // LTR isolate (U+2066…U+2069) keeps the math expression left-to-right
-    // so Unicode Bidi doesn't reorder it to "؟ = b + a" inside the RTL paragraph.
-    instruction: '⁦{{a}} + {{b}} = ؟⁩',
   },
   // Accessibility labels
   a11y: {

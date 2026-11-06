@@ -126,8 +126,6 @@ export const ar: CoreTranslations = {
   },
   mascot: {
     name: 'لولو',
-    oops: 'أوبس! جرّب مرّة ثانية',
-    look: 'انظر هنا!',
   },
   break: {
     home: 'العودة للرئيسية',

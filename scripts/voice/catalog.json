@@ -1064,11 +1064,101 @@
   },
   {
    "lang": "ar",
-   "text": "كَمْ يَنْقُصُنا؟",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى أَربَعة؟",
    "uses": [
     {
      "game": "count-and-pop",
-     "where": "Question"
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى اِثنين؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى تِسْعة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى ثَلاثة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى ثَمانِية؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى خَمسة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى سَبعة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى سِتّة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى عَشَرة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى وَاحِد؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
     }
    ]
   },
@@ -1676,11 +1766,101 @@
   },
   {
    "lang": "en",
-   "text": "How many more?",
+   "text": "How many more to make eight?",
    "uses": [
     {
      "game": "count-and-pop",
-     "where": "Question"
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make five?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make four?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make nine?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make one?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make seven?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make six?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make ten?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make three?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make two?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
     }
    ]
   },

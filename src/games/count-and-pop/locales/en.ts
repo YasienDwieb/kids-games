@@ -11,8 +11,12 @@ export const en = {
   say: {
     pop: "Pop {{name}}!",
     howMany: "How many?",
-    makeN: "How many more?",
+    makeN: "How many more to make {{name}}?",
     addition: "How many altogether?",
+  },
+  // A number after "to make", where Arabic grammar changes it (إلى اِثنين).
+  targets: {
+    '2': 'two',
   },
   numbers: {
     '1': 'one',
@@ -25,9 +29,6 @@ export const en = {
     '8': 'eight',
     '9': 'nine',
     '10': 'ten',
-  },
-  addition: {
-    instruction: '{{a}} + {{b}} = ?',
   },
   // Accessibility labels
   a11y: {

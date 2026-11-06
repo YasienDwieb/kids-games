@@ -32,6 +32,7 @@ import {
   ACCENTS,
   AreaDemo,
   BORDER_RADIUS,
+  ClayEmoji,
   COLORS,
   currentLanguage,
   FONT_SIZES,
@@ -256,8 +257,7 @@ export function CountThisMany({
       {/* Prompt card */}
       <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
         <View style={styles.promptRow}>
-          <Text style={styles.promptInstruction}>{objectEmoji}</Text>
-          {/* Big bobbing pink numeral chip */}
+          {/* Big bobbing pink numeral chip, then the same picture as the tiles */}
           <Animated.View
             style={[
               styles.numeralChip,
@@ -267,6 +267,7 @@ export function CountThisMany({
           >
             <Text style={styles.numeralText}>{target}</Text>
           </Animated.View>
+          <ClayEmoji emoji={objectEmoji} size={68} />
         </View>
       </View>
 
@@ -332,19 +333,18 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
     paddingHorizontal: SPACING.md,
   },
-  promptCardLandscape: { maxWidth: 560 },
+  promptCardLandscape: { paddingVertical: SPACING.sm },
   gridLandscape: { maxWidth: 760 },
   // Prompt card — pink tint panel with the Pop Quest ink outline
   promptCard: {
-    width: '100%',
-    maxWidth: 420,
+    alignSelf: 'center',
     borderRadius: BORDER_RADIUS.card,
     backgroundColor: ACCENTS.pink.tint,
     borderWidth: OUTLINE.base,
     borderColor: OUTLINE.color,
-    padding: SPACING.lg,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
     alignItems: 'center',
-    gap: SPACING.sm,
   },
   promptRow: {
     flexDirection: 'row',
@@ -352,13 +352,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: SPACING.md,
     flexWrap: 'wrap',
-  },
-  promptInstruction: {
-    fontFamily: FONTS.display,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.ink,
-    textAlign: 'center',
-    flex: 1,
   },
   numeralChip: {
     width: 64,

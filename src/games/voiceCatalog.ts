@@ -9,7 +9,7 @@ import { CHALLENGES } from './color-mixer/constants';
 import { colorNamePhrase, colorTargetPhrase, dragHintPhrase } from './color-mixer/phrase';
 import type { ColorId } from './color-mixer/types';
 import { MAX_OBJECTS } from './count-and-pop/constants';
-import { popPhrase, questionPhrase } from './count-and-pop/phrase';
+import { makePhrase, popPhrase, questionPhrase } from './count-and-pop/phrase';
 import { THEMES } from './match-up/content';
 import { matchPhrase } from './match-up/phrase';
 import { mazePhrase } from './mouse-maze/phrase';
@@ -57,8 +57,11 @@ export function voiceCatalog(): VoiceLine[] {
       add(lang, colorNamePhrase(id, lang), { game: 'color-mixer', where: 'Pot colour name' }),
     );
     add(lang, dragHintPhrase(lang), { game: 'color-mixer', where: 'Empty pot hint' });
-    for (let n = 1; n <= MAX_OBJECTS; n += 1) add(lang, popPhrase(n, lang), { game: 'count-and-pop', where: 'Pop this many' });
-    (['howMany', 'makeN', 'addition'] as const).forEach((m) => add(lang, questionPhrase(m, lang), { game: 'count-and-pop', where: 'Question' }));
+    for (let n = 1; n <= MAX_OBJECTS; n += 1) {
+      add(lang, popPhrase(n, lang), { game: 'count-and-pop', where: 'Pop this many' });
+      add(lang, makePhrase(n, lang), { game: 'count-and-pop', where: 'How many more' });
+    }
+    (['howMany', 'addition'] as const).forEach((m) => add(lang, questionPhrase(m, lang), { game: 'count-and-pop', where: 'Question' }));
     (['pattern', 'oddOneOut', 'sort'] as const).forEach((p) => add(lang, puzzlePhrase(p, lang), { game: 'shape-detective', where: 'Instruction' }));
     THEMES.forEach((th) => add(lang, matchPhrase(th.promptKey, lang), { game: 'match-up', where: 'Round prompt' }));
     add(lang, catchPhrase(lang), { game: 'candy-catch', where: 'Start' });

@@ -125,8 +125,6 @@ export const en = {
   },
   mascot: {
     name: 'Lulu',
-    oops: 'Oops! Try again',
-    look: 'Look here!',
   },
   break: {
     home: 'Back home',

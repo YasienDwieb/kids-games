@@ -34,19 +34,15 @@ import {
   Easing,
   ScrollView,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
 import {
-  ACCENTS,
   AreaDemo,
   BORDER_RADIUS,
   COLORS,
   ClayEmoji,
   currentLanguage,
-  FONT_SIZES,
-  FONTS,
   HintPulse,
   OUTLINE,
   SHADOWS,
@@ -54,7 +50,8 @@ import {
   useGuide,
   useTranslation,
 } from '@/sdk';
-import { questionPhrase } from '../phrase';
+import { makePhrase, questionPhrase } from '../phrase';
+import { MakeNTray } from './MakeNTray';
 import { NumberChoice } from './NumberChoice';
 import { GroupCount } from './GroupCount';
 import { FitColumn } from './FitColumn';
@@ -160,18 +157,10 @@ export function HowMany({
   const answered = selectedIndex !== null;
   const guide = useGuide({
     id: 'count-and-pop',
-    phrase: questionPhrase(mode, currentLanguage()),
+    phrase: mode === 'makeN' ? makePhrase(round.target, currentLanguage()) : questionPhrase(mode, currentLanguage()),
     roundKey: round,
     active: !disabled,
   });
-
-  // The voice asks; the card only shows the goal a child has to reach.
-  const goal =
-    mode === 'howMany'
-      ? null
-      : mode === 'makeN'
-        ? `${round.target} ${objectEmoji}`
-        : t('count-and-pop:addition.instruction', { a: round.a, b: round.b });
 
   // Build per-choice state
   const getChoiceState = (idx: number): NumberChoiceState => {
@@ -215,19 +204,15 @@ export function HowMany({
         </ScrollView>
       )
     ) : (
-      /* Two-group visual for makeN / addition */
-      <GroupCount round={round as MakeNRound | AdditionRound} />
+      mode === 'makeN' ? (
+        <MakeNTray round={round} tried={selectedIndex === null ? null : choices[selectedIndex]} />
+      ) : (
+        <GroupCount round={round as AdditionRound} />
+      )
     );
 
   const body = (
     <>
-      {/* Prompt card */}
-      {goal ? (
-        <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
-          <Text style={styles.promptInstruction}>{goal}</Text>
-        </View>
-      ) : null}
-
       {/* Object display */}
       {objectVisual}
 
@@ -292,27 +277,9 @@ const styles = StyleSheet.create({
   },
   // Landscape: let prompt / objects use the available width; trim prompt height.
   wideLandscape: { width: '100%', maxWidth: 720, alignItems: 'center' },
-  promptCardLandscape: { maxWidth: 720, paddingVertical: SPACING.xs },
   // Landscape: choice row uses the width; natural height in the centered column.
   choiceRowLandscape: { maxWidth: 720, flexGrow: 0, flexShrink: 0 },
   // Prompt card
-  promptCard: {
-    width: '100%',
-    maxWidth: 420,
-    borderRadius: BORDER_RADIUS.card,
-    backgroundColor: ACCENTS.pink.tint,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    padding: SPACING.lg,
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  promptInstruction: {
-    fontFamily: FONTS.display,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
   // Object group card (howMany flat grid only)
   groupCard: {
     width: '100%',

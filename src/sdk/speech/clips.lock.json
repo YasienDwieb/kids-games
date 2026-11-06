@@ -212,8 +212,8 @@
  "ar:اِلتَقِطِ الحَلوَياتِ!": {
   "file": "ar-f2146f571d.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
-  "take": 3,
-  "durationS": 1.9,
+  "take": 1,
+  "durationS": 2.14,
   "generatedAt": "2026-11-06"
  },
  "ar:برتقالي": {
@@ -580,11 +580,74 @@
   "durationS": 1.25,
   "generatedAt": "2026-11-06"
  },
- "ar:كَمْ يَنْقُصُنا؟": {
-  "file": "ar-600bb5218a.m4a",
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى أَربَعة؟": {
+  "file": "ar-a8e63c3c23.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.57,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى اِثنين؟": {
+  "file": "ar-101026d62a.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.78,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى تِسْعة؟": {
+  "file": "ar-d6d5cfad57.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.66,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى ثَلاثة؟": {
+  "file": "ar-04b3b84355.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.57,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى ثَمانِية؟": {
+  "file": "ar-ccd775b29e.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
   "take": 3,
-  "durationS": 1.25,
+  "durationS": 2.5,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى خَمسة؟": {
+  "file": "ar-ecc785d72c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.78,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى سَبعة؟": {
+  "file": "ar-6ffd291757.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.38,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى سِتّة؟": {
+  "file": "ar-3d47f2db37.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.38,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى عَشَرة؟": {
+  "file": "ar-b84ecbf68b.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.38,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى وَاحِد؟": {
+  "file": "ar-e89b1f3bee.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.42,
   "generatedAt": "2026-11-06"
  },
  "ar:لَام. لَيْمُون": {
@@ -895,11 +958,74 @@
   "durationS": 1.46,
   "generatedAt": "2026-11-06"
  },
- "en:How many more?": {
-  "file": "en-3888d46fb5.m4a",
+ "en:How many more to make eight?": {
+  "file": "en-b9c7fc323a.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.61,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make five?": {
+  "file": "en-3b6700b434.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.06,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make four?": {
+  "file": "en-f8d14af875.m4a",
   "voice": "en-US-Chirp3-HD-Leda",
   "take": 1,
-  "durationS": 1.42,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make nine?": {
+  "file": "en-11e70b02dd.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make one?": {
+  "file": "en-373804d6e8.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make seven?": {
+  "file": "en-a99cca571d.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.78,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make six?": {
+  "file": "en-4d2e6072b5.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.58,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make ten?": {
+  "file": "en-0baeee778c.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.21,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make three?": {
+  "file": "en-ac12aebc47.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make two?": {
+  "file": "en-feb415cb11.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.58,
   "generatedAt": "2026-11-06"
  },
  "en:How many?": {

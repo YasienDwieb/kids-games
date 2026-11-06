@@ -58,7 +58,8 @@ registerFlowAdapter({
   gameId: 'count-and-pop',
   count: TOTAL_LEVELS,
   unitAt: (i, seed) => {
-    const level = buildLevel(i + 1, seed);
+    // The journey has no readiness to read, so it stays on counting.
+    const level = buildLevel(i + 1, seed, 0);
     return {
       key: `count-and-pop-${i}`,
       render: (onComplete) => <CountAndPopFlowRound level={level} onComplete={onComplete} />,
