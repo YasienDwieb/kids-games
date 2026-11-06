@@ -59,15 +59,21 @@ Gemfile" rather than running the lane [@fastfile].
    `changelogs/default.txt` / `changelogs/<versionCode>.txt` (500 characters
    per entry) [@play-store-docs]. To replace a screenshot or graphic, replace
    the file under the matching `images/{icon,featureGraphic,phoneScreenshots,
-   tenInchScreenshots,...}` subfolder; filenames are zero-padded so fastlane's
-   alphabetical upload order matches display order [@play-store-docs].
+   sevenInchScreenshots,tenInchScreenshots,...}` subfolder; filenames are
+   zero-padded so fastlane's alphabetical upload order matches display order
+   [@play-store-docs].
 2. Run `fastlane validate version_code:<vc> track:<track>` first. It's a dry
    run against the Play API — listing text, images, and changelogs are
    checked but nothing is actually pushed [@fastfile] [@play-store-docs].
 3. Run `fastlane metadata version_code:<vc> track:<track>` to push listing
    text and images without touching changelogs, or
    `fastlane changelog version_code:<vc> track:<track>` to push only release
-   notes [@fastfile]. Both lanes require `version_code:` and `track:`
+   notes [@fastfile]. The `metadata` lane passes `sync_image_upload: true` to
+   `upload_to_play_store`, so an image whose sha256 already matches what Play
+   has is skipped instead of being re-uploaded (and reported as "changed")
+   on every single run — the icon, feature graphic, and every screenshot used
+   to re-upload on every `metadata` call before this flag was added
+   [@fastfile]. Both lanes require `version_code:` and `track:`
    explicitly — the Fastfile's `require_version_code` helper raises a clear
    error if `version_code` is missing, and `track` otherwise defaults to
    `production` [@fastfile]. Because `eas.json`'s `cli.appVersionSource` is
@@ -107,9 +113,9 @@ glance whether they've drifted apart.
 
 The Arabic listing under `fastlane/metadata/android/ar/` is a complete,
 independently written listing (title, both descriptions, changelog, images),
-not a stub of the English one — it reads right-to-left and only omits the
-optional `sevenInchScreenshots` folder that the English listing also leaves
-empty [@play-store-docs] [@metadata-dir].
+not a stub of the English one — it reads right-to-left and carries its own
+8-image `sevenInchScreenshots` set alongside `en-US`'s, both filled in after
+starting out as an optional, empty folder [@play-store-docs] [@metadata-dir].
 
 ## Verify
 

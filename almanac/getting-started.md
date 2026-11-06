@@ -14,7 +14,7 @@ sources:
 Kids Games is a multi-game Expo/React Native app for children ages 2–12
 [@readme], shipped to app stores under a different product name,
 [Kids Zone](decisions/kids-zone-product-name) — `app.json`'s `expo.name` is
-`"Kids Zone"`, not "Kids Games" [@app-json]. The repository holds twelve
+`"Kids Zone"`, not "Kids Games" [@app-json]. The repository holds thirteen
 independent games under `src/games/`,
 a shared platform core under `src/sdk/` that every game imports from, and a
 second, separate engine, [flow](concepts/flow), that interleaves several
@@ -35,7 +35,7 @@ folder that registers itself with one side-effecting import and otherwise
 imports only from a single barrel module, `@/sdk`. Read
 [Game module](concepts/game-module) for the folder shape every game follows,
 and [SDK boundary](concepts/sdk-boundary) for the rule — and its one
-sanctioned exception — that keeps twelve games from developing hidden
+sanctioned exception — that keeps thirteen games from developing hidden
 coupling to each other. [Game registry](architecture/game-registry) and
 [App entry and navigation](architecture/app-entry-and-navigation) trace how a
 game actually becomes visible to the running app, and
@@ -99,6 +99,11 @@ re-deriving the workflow from source:
   [Update the Play Store listing](guides/update-the-play-store-listing)
   covers the fastlane lanes that push listing text, screenshots, and release
   notes independently of shipping a new binary.
+- **Shipping a JS/asset-only fix without a store build** —
+  [Release an OTA update](guides/release-an-ota-update) covers publishing
+  through EAS Update, the `preview`/`production` channel split, and the
+  runtime-fingerprint gotcha that makes an OTA invisible after a native
+  change.
 - **Testing on a real device** —
   [Test on a real device](guides/test-on-a-real-device) covers verifying a
   UI or behavior change via Expo Go and `adb`, since the repo has no
@@ -113,14 +118,16 @@ wrong if you skip them:
   decision behind the SDK boundary concept above — read it before adding any
   cross-game dependency, sanctioned or otherwise.
 - [Games catalog](reference/games-catalog) is the exact, current lookup
-  table of all twelve registered games, their age ranges, and their flow
+  table of all thirteen registered games, their age ranges, and their flow
   eligibility — check it before assuming a game exists or participates in
   flow.
 - [Licensing and attribution](reference/licensing-and-attribution) matters
-  specifically because of the naming split above: the open-source repository
-  and its trademark notice are named "Kids Games," while the shipped app is
-  branded "Kids Zone" end to end. Read the licensing page before reusing any
-  bundled third-party asset or forking the project under its own name.
+  specifically because of the naming split above, and because the code is
+  licensed under PolyForm Shield 1.0.0, not the permissive Apache-2.0 terms
+  it shipped under early on — PolyForm's noncompete clause, not just the
+  "Kids Games"/"Kids Zone" trademark split, is what actually constrains a
+  fork. Read the licensing page before reusing any bundled third-party asset
+  or forking the project under its own name.
 - [No CI quality gate](decisions/no-ci-quality-gate) is worth knowing before
   you assume a broken type or failing test would be caught automatically —
   it would not; `npm test` and `tsc --noEmit` are a documented developer
@@ -129,6 +136,13 @@ wrong if you skip them:
   `SettingsScreen` behind a solvable-only-by-an-adult challenge; know which
   controls it protects (and the two, sound and language, that were
   deliberately left ungated on Home) before adding a new Settings control.
+  The [store review prompt](architecture/store-review-prompt) and
+  [play time limit](architecture/play-time-limit) reuse that same unlock
+  event for their own purposes — the review prompt to fire a side effect
+  rather than reveal a control, since Apple's Kids category and Play's
+  Families policy forbid asking a child to rate the app, and the play limit
+  to grant 15 extra minutes once a parent is confirmed present on the daily
+  break screen.
 - [WCAG AA contrast floor](decisions/wcag-aa-contrast-floor) is enforced by a
   Jest suite — any new color added to `ACCENTS`, or any component that draws
   text on an arbitrary fill, must clear it via `bestTextOn`, covered on the
@@ -145,3 +159,42 @@ wrong if you skip them:
   far — `turbo-road` and `balloon-archer` still run their own
   `requestAnimationFrame` loops on the JS thread, deliberately. Read it
   before assuming every game's animation goes through reanimated.
+- [3D rendering](architecture/3d-rendering) covers the seven games that draw
+  real react-three-fiber scenes instead of flat sprites: Animal Safari,
+  Mouse Maze, and Candy Catch display Higgsfield-generated GLB models
+  through the SDK's shared loader, Turbo Road loads a separate Kenney GLB
+  kit through its own game-local loader, and Color Mixer, Balloon Archer,
+  and Simple Pairs build their scenes from hand-built three.js geometry with
+  no model files at all. All seven follow the same lazy-module, flat-fallback
+  idiom so three.js is never part of the default bundle evaluation — a rule
+  the buddy mascot's own rigged 3D model breaks on purpose; see
+  [Buddy, mascot, and wardrobe](architecture/buddy-and-wardrobe) below.
+- **Buddy, mascot, and wardrobe.** Every child picks a buddy — Lulu the owl
+  or Zain the lion cub — on first launch; the choice drives a cheap 2D
+  `Mascot` used for quick praise everywhere, a single rigged 3D model
+  (`Lulu3D`) reused for the celebration burst, the level-up card, and the
+  dress-up `WardrobeScreen`, and a set of outfits that unlock as the
+  player's level rises from lifetime stars. Read
+  [Buddy, mascot, and wardrobe](architecture/buddy-and-wardrobe) for the full
+  flow, including why `Lulu3D` is exempt from the lazy-module rule above.
+- The **engagement kit** — three small SDK systems a game opts into
+  independently, built to close gaps a cross-game audit in `docs/gdd/`
+  found in every game at once:
+  [Celebration, combo streaks, and the hint ladder](architecture/celebration-and-hints)
+  (replace a tap-to-continue modal with a confetti-and-praise burst, and give
+  a struggling child escalating help without handing out full stars for a
+  revealed answer), [First-run tutorials](architecture/first-run-tutorials)
+  (a persisted once-per-id demo gate, a looping ghost-hand animation, and an
+  idle timer that re-arms it), and
+  [Rewards, stars, and stickers](architecture/rewards-and-stickers) (the
+  app-wide star total, sticker collection, and gentle daily goal every
+  game's wins feed into). Read these before adding a new win/miss path to
+  any game — they are the shared answer to "how should this round end,"
+  not a per-game decision anymore.
+- [Analytics](architecture/analytics) reports coarse, anonymous usage
+  (sessions, rounds, journey completion) through one `track`/`usePlaySession`
+  facade, with a parent opt-out in Settings and a vendor SDK (PostHog)
+  confined to one sink folder by a test — see
+  [Analytics sinks stay behind a tested vendor boundary](decisions/analytics-vendor-boundary).
+  Read it before adding a new analytics event, swapping the backend, or
+  touching the App Privacy / Data safety store declarations it changed.

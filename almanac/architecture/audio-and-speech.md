@@ -1,6 +1,6 @@
 ---
 title: "Audio and Speech Architecture"
-summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, gated on settings.soundEnabled; useSpeech wraps expo-speech with the same graceful degradation but is deliberately never gated by any sound setting, since spoken prompts are game content in the listen-and-find games. useSound mirrors settingsStore into a ref instead of reading it per call, and exposes prewarm() to load audio players before a level starts, both changes made for games that call play() from a per-frame motion loop."
+summary: "useSound and useLoopSound resolve plain intent tags against the shared asset manifest and play them through expo-audio, gated on settings.soundEnabled; useSpeech wraps expo-speech with the same graceful degradation but is deliberately never gated by any sound setting, since spoken prompts are game content in the listen-and-find games. useSound mirrors settingsStore into a ref instead of reading it per call, and exposes prewarm() to load audio players before a level starts, both changes made for games that call play() from a per-frame motion loop. Every AudioPlayer created by useSound or useLoopSound is freed through releasePlayer/releaseWhenDone rather than expo-audio's own remove(), because on Android remove() alone leaks the native AudioTrack until JS GC runs, and past roughly 40 live tracks a new player hangs silently in buffering instead of erroring."
 topics: [architecture, audio, assets]
 sources:
   - id: use-sound
@@ -42,6 +42,18 @@ sources:
   - id: animal-credits
     type: file
     path: src/sdk/assets/audio/animals/CREDITS.md
+  - id: release-player
+    type: file
+    path: src/sdk/audio/releasePlayer.ts
+  - id: release-player-test
+    type: file
+    path: src/sdk/audio/__tests__/releasePlayer.test.ts
+  - id: use-loop-sound-test
+    type: file
+    path: src/sdk/audio/__tests__/useLoopSound.test.tsx
+  - id: track-stress
+    type: file
+    path: src/sdk/audio/dev/trackStress.ts
 ---
 
 Games never load a sound file or ask for a specific voice directly. They call
@@ -111,9 +123,13 @@ first, since `expo-audio` does not auto-rewind on finish — or creates one via
 `createAudioPlayer(module)` and caches it keyed by module identity
 [@use-sound]. The whole call is wrapped in a `try/catch` that swallows any
 playback failure, and the effect's cleanup unsubscribes from the store and
-removes every cached player on unmount [@use-sound]. `setAudioModeAsync({
-playsInSilentMode: true })` is called once on mount so effects still play even
-when the device's hardware mute switch is on [@use-sound].
+calls `releaseWhenDone` — not `expo-audio`'s own `remove()` — on every cached
+player on unmount, so a round that unmounts right after playing its own win
+sound doesn't cut that clip short while every other, already-finished cached
+player still frees its native track at once [@use-sound] [@release-player].
+`setAudioModeAsync({ playsInSilentMode: true })` is called once on mount so
+effects still play even when the device's hardware mute switch is on
+[@use-sound].
 
 The settings mirror exists because `play()` is called from places where an
 `AsyncStorage` round-trip plus a JSON parse is expensive: repeatedly during a
@@ -138,6 +154,59 @@ load landing mid-gameplay. `candy-catch` calls `prewarm` once, with its full
 list of sound intents, right after mount [@use-sound]. `useSound.test.tsx`
 confirms that after a `prewarm` call, up to 30 further `play()` calls create no
 additional `AudioPlayer` instances [@use-sound-test].
+
+## The Android AudioTrack ceiling: why `remove()` alone is wrong
+
+`expo-audio`'s own `AudioPlayer.remove()` only unregisters the JS-side object;
+on Android the underlying ExoPlayer, its native `AudioTrack`, and its
+`MediaSession` keep running until the JS object is garbage-collected, which on
+a long-lived `useSound` cache can be much later than the call site expects
+[@release-player]. Past the OS's per-process track ceiling — 39 on a Redmi
+Note 8 Pro — a new player that tries to claim a track fails, but not by
+throwing or by reporting an error: it sits in
+`isBuffering: true` with `status.error` unset forever, so `play()` keeps
+"succeeding" from the caller's point of view while nothing is heard
+[@release-player] [@track-stress]. `useSpeech`'s bundled clips and
+`useSound`'s jingles share the same process-wide track budget, so a long
+session that never frees sound-effect players can leave no room for a voice
+clip to play even though `useSpeech` itself has no leak of its own.
+
+`src/sdk/audio/releasePlayer.ts` is the fix, and every player `useSound` or
+`useLoopSound` creates now goes through it instead of a bare `remove()`
+[@release-player] [@use-sound] [@use-loop-sound]. `releasePlayer(player)`
+calls both `remove()` and `release()` — `release()` is the call that actually
+frees the native track — each wrapped in its own `try/catch` since a player
+can legitimately already be gone by the time cleanup runs
+[@release-player] [@release-player-test]. `releaseWhenDone(player)` adds one
+thing on top: if the player is still `playing`, it schedules the same release
+for `(duration - currentTime) * 1000 + 100ms` later instead of releasing (and
+thereby stopping) a clip mid-playback — this is what `useSound`'s unmount
+cleanup calls, so a round that ends right as its win sound starts doesn't cut
+it off [@release-player] [@release-player-test]. `onPlayerFailed(player,
+handler)` is the detector: it listens for `playbackStatusUpdate` events
+reporting a nonzero `status.error`, and separately arms a `STALL_MS` (1500ms)
+timeout that calls `handler` if the player is still `isBuffering` once that
+time passes, covering the silent-buffering failure the ceiling actually
+produces [@release-player] [@release-player-test]. `useSound.playerFor`
+wires this in: when a cached player reports failure, it is dropped from the
+cache and released, so the *next* `play()` call for that module builds a
+fresh `AudioPlayer` rather than retrying a player that can never recover
+[@use-sound] [@use-sound-test]. `useLoopSound.test.tsx` and the player-lifetime
+tests in `useSound.test.tsx` pin both the release-on-unmount and
+rebuild-after-failure behavior as regressions [@use-loop-sound-test]
+[@use-sound-test].
+
+`src/sdk/audio/dev/trackStress.ts` is a device-only harness for reproducing
+and measuring the ceiling itself, compiled in only when a build sets
+`EXPO_PUBLIC_AUDIO_STRESS=1`, wired from a `useEffect` in `App.tsx` so it never
+ships in a normal build [@track-stress]. It creates players from
+`clips.generated.ts`'s speech clips, holding every one in an array so JS GC
+can't hide the leak, first releasing each with `releasePlayer` and then
+repeating the same run calling only `remove()` — the logcat tag
+`[track-stress]` and `dumpsys media.audio_flinger`'s track count are read
+together on-device to confirm `release()` is the call that actually frees a
+track and that a player past the ceiling plays nothing when asked to
+[@track-stress].
 
 ## Per-game sound overrides: `SoundOverridesContext`
 

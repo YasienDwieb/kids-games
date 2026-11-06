@@ -134,7 +134,14 @@ a horizontal `ScrollView`, and because a native horizontal `ScrollView`
 always initializes scrolled to `x: 0` regardless of layout direction,
 `HomeScreen` manually snaps the scroll position to the content's far edge in
 `onContentSizeChange` when `I18nManager.isRTL` is true, so game 0 still lands
-flush at the visual start of the rail [@home-screen].
+flush at the visual start of the rail [@home-screen]. That snap calls
+`railRef.current?.scrollToEnd({ animated: false })`, not
+`scrollTo({ x: contentWidth })` — an earlier version used `scrollTo` with the
+content width `onContentSizeChange` reports, which over-scrolled by a full
+viewport (that width is the content's total size, not a valid offset within
+it) and slid the games rail over the journey pane's mascot column on the
+Arabic layout; `scrollToEnd` asks the `ScrollView` for the correct end offset
+instead of computing one [@home-screen].
 
 Tiles on the rail are ordered by each game's `order` field (see
 [Game registry](../architecture/game-registry)) rather than by import order,

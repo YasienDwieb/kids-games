@@ -12,6 +12,9 @@ sources:
   - id: settings-store
     type: file
     path: src/sdk/settings/store.ts
+  - id: flow-registrar
+    type: file
+    path: src/flow/index.ts
 ---
 
 This decision explains why "guided journey" mode — the app choosing what to
@@ -69,9 +72,11 @@ range [@flow-progress]. A dedicated navigation screen (`FlowPlayerScreen`) hosts
 this loop, rather than a mode flag threaded through `GamePlayerScreen`.
 
 A game opts in by writing a `flow.tsx` file that calls `registerFlowAdapter`.
-That is a deliberate, per-game choice — only 6 of the repository's 12 games
+That is a deliberate, per-game choice — 11 of the repository's 13 games
 (`animal-safari`, `count-and-pop`, `letter-land`, `match-up`, `numbers-land`,
-`shape-detective`) currently ship one.
+`shape-detective`, `simple-pairs`, `mouse-maze`, `color-mixer`,
+`candy-catch`, `trace-it`) currently ship one; `balloon-archer` and
+`turbo-road` do not [@flow-registrar].
 
 ## Status
 
