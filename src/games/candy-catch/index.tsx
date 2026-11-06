@@ -123,7 +123,7 @@ export default function CandyCatchGame() {
         onLose={handleLose}
       />
 
-      <Hud level={level} score={score} target={data.target} lives={lives} />
+      <Hud score={score} target={data.target} lives={lives} />
 
       {overlay === 'start' && <StartOverlay onStart={handleStart} />}
       {overlay === 'lose' && <LoseOverlay />}

@@ -6,7 +6,6 @@ export const ar: GameTranslations = {
     description: 'ارسم خطًّا من كل شيء إلى ما يناسبه!',
   },
   loading: 'نُحضّر اللعبة…',
-  score: 'النقاط: {{n}}',
   prompts: {
     animalFood: 'وَصِّلْ كُلَّ حَيَوانٍ بِطَعامِهِ',
     workerTool: 'وَصِّلْ كُلَّ عامِلٍ بِأَداتِهِ',

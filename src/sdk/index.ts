@@ -157,6 +157,7 @@ export { AreaDemo } from './tutorial/AreaDemo';
 export { HintPulse } from './feedback/HintPulse';
 export { useChoiceHints } from './feedback/useChoiceHints';
 export { useRoundEnd } from './feedback/useRoundEnd';
+export { ProgressBar } from '@/components/pop/ProgressBar';
 
 // Layout
 export { GameShell } from './layout/GameShell';

@@ -20,7 +20,6 @@ const KEYS: string[] = [
   'core:home.greeting',
   'core:home.title',
   'core:home.allGames',
-  'core:common.score',
   'core:home.muteOn',
   'core:home.muteOff',
   'core:home.changeLanguage',
@@ -78,7 +77,6 @@ const KEYS: string[] = [
   'core:wardrobe.items.sunglasses',
   'core:wardrobe.items.top-hat',
   'core:wardrobe.items.bow',
-  'core:combo.label',
   'core:mascot.oops',
   'core:mascot.look',
   'core:break.energy',
@@ -106,8 +104,6 @@ const KEYS: string[] = [
   'simple-pairs:difficulty.easy',
   'simple-pairs:difficulty.meta',
   'simple-pairs:header.pairs',
-  'simple-pairs:header.movesOne',
-  'simple-pairs:header.movesOther',
   // color-mixer (incl. dynamic key families)
   'color-mixer:meta.name',
   'color-mixer:title',
@@ -124,7 +120,6 @@ const KEYS: string[] = [
   'color-mixer:picker.complete',
   // mouse-maze
   'mouse-maze:meta.name',
-  'mouse-maze:hud.level',
   // balloon-archer
   'balloon-archer:meta.name',
   'balloon-archer:hud.level',
@@ -231,7 +226,6 @@ const KEYS: string[] = [
   'count-and-pop:meta.description',
   'count-and-pop:placeholder',
   'count-and-pop:loading',
-  'count-and-pop:countThisMany.progress',
   'count-and-pop:addition.instruction',
   'count-and-pop:a11y.objectTile',
   'count-and-pop:a11y.objectPopped',
@@ -240,7 +234,6 @@ const KEYS: string[] = [
   'match-up:meta.name',
   'match-up:meta.description',
   'match-up:loading',
-  'match-up:score',
   'match-up:prompts.animalFood',
   'match-up:prompts.workerTool',
   'match-up:prompts.animalHome',
@@ -437,7 +430,6 @@ const KEYS: string[] = [
   // candy-catch
   'candy-catch:meta.name',
   'candy-catch:meta.description',
-  'candy-catch:hud.level',
   'candy-catch:start.title',
   'candy-catch:start.tap',
   'candy-catch:a11y.basket',

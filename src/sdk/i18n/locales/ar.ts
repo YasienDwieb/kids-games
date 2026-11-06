@@ -5,7 +5,6 @@ import type { CoreTranslations } from './en';
 export const ar: CoreTranslations = {
   common: {
     back: 'رجوع',
-    score: 'النقاط: {{n}}',
     pause: 'إيقاف مؤقت',
     settings: 'الإعدادات',
     done: 'تمّ',
@@ -58,9 +57,6 @@ export const ar: CoreTranslations = {
       'top-hat': 'قبّعة طويلة',
       bow: 'فيونكة',
     },
-  },
-  combo: {
-    label: 'x{{n}} كومبو!',
   },
   settings: {
     title: 'الإعدادات',

@@ -1,9 +1,8 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HudPill, hudTextStyle, SPACING, TOUCH_TARGET, useTranslation } from '@/sdk';
+import { HudPill, ProgressBar, SPACING, TOUCH_TARGET } from '@/sdk';
 
 interface HudProps {
-  level: number;
   score: number;
   target: number;
   lives: number;
@@ -11,10 +10,9 @@ interface HudProps {
 
 const MAX_LIVES = 3;
 
-/** Top HUD: level pill (center) · hearts + score pill (right). */
-export function Hud({ level, score, target, lives }: HudProps) {
+/** Top HUD: a bar filling toward the target (center) · hearts (right). */
+export function Hud({ score, target, lives }: HudProps) {
   const insets = useSafeAreaInsets();
-  const { t } = useTranslation();
 
   return (
     <View
@@ -25,21 +23,13 @@ export function Hud({ level, score, target, lives }: HudProps) {
       <View style={styles.backSpace} />
 
       <View style={styles.center}>
-        <HudPill>
-          <Text style={hudTextStyle}>{t('candy-catch:hud.level', { level })}</Text>
-        </HudPill>
+        <ProgressBar value={score / target} style={styles.progress} />
       </View>
 
       <View style={styles.right}>
         <HudPill>
           <Text style={styles.hearts}>
             {Array.from({ length: MAX_LIVES }, (_, i) => (i < lives ? '❤️' : '🤍')).join(' ')}
-          </Text>
-        </HudPill>
-        <HudPill>
-          {/* digits pinned LTR so they never bidi-reorder in Arabic */}
-          <Text style={[hudTextStyle, styles.tally]}>
-            {score}/{target}
           </Text>
         </HudPill>
       </View>
@@ -64,5 +54,5 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center' },
   right: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   hearts: { fontSize: 15 },
-  tally: { direction: 'ltr' as const },
+  progress: { width: '70%' },
 });

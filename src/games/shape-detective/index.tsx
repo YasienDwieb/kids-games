@@ -9,7 +9,7 @@
  * Flow:
  *   loading   → blank screen
  *   resumable → ResumePrompt (continue / start over)
- *   playing   → current puzzle + score HUD via GameShell
+ *   playing   → current puzzle
  *
  * Win/celebration:
  *   Last level solved → 'win' sound (sfx.win intent), a big celebration, then back to Home.
@@ -26,7 +26,6 @@ import {
   ResumePrompt,
   SPACING,
   useChoiceHints,
-  useGameShell,
   useRoundEnd,
   useLevels,
   useSound,
@@ -43,11 +42,10 @@ import { shapeDetectiveLevels } from './utils/levels';
 
 export default function ShapeDetectiveGame(): React.JSX.Element {
   const { play } = useSound();
-  const shell = useGameShell();
   const roundEnd = useRoundEnd();
   const { t } = useTranslation();
 
-  const { status, data, level, score, isLast, start, startOver, advance, finish, addScore } = useLevels({
+  const { status, data, level, isLast, start, startOver, advance, finish } = useLevels({
     gameId: 'shape-detective',
     source: shapeDetectiveLevels,
   });
@@ -72,19 +70,12 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   // Keep timer ids in a ref so useEffect can clear them properly.
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keep the shell score display in sync
-  useEffect(() => {
-    // Only while playing: on the resume screen the number is stale context
-    // the child has no use for.
-    shell.setScore(status === 'playing' ? score : null);
-  }, [score, shell, status]);
-
   // Hide any win overlay when we advance to a new level; reset solved flag.
   useEffect(() => {
     setSelectedIndex(null);
     setSolved(false);
     setSortMisses(0);
-  }, [level, shell]);
+  }, [level]);
 
   // Clear pending timers on unmount.
   useEffect(() => {
@@ -118,17 +109,16 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   }, [scaleAnim]);
 
   // Shared "correct answer" handler — used by Pattern and OddOneOut tap handlers.
-  // Awards score, plays the appropriate sound (win on last level, success otherwise),
+  // Plays the appropriate sound (win on last level, success otherwise),
   // marks the level solved, and moves on by itself.
   const handleCorrect = useCallback(() => {
     void play(isLast ? 'win' : 'success');
-    addScore(10);
     setSolved(true);
     triggerCorrectPop();
     if (timerRef.current !== null) clearTimeout(timerRef.current);
     if (isLast) void roundEnd.end(finish);
     else void roundEnd.next('small', advance);
-  }, [play, isLast, addScore, roundEnd, finish, advance, triggerCorrectPop]);
+  }, [play, isLast, roundEnd, finish, advance, triggerCorrectPop]);
 
   // handlePick: used by PatternPuzzle and OddOneOutPuzzle (tap-to-answer).
   const handlePick = useCallback(

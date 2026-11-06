@@ -26,10 +26,6 @@ export const en = {
     '9': 'nine',
     '10': 'ten',
   },
-  // Prompt instructions per mode
-  countThisMany: {
-    progress: '{{popped}} / {{target}}',
-  },
   addition: {
     instruction: '{{a}} + {{b}} = ?',
   },

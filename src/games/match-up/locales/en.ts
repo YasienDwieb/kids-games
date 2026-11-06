@@ -4,7 +4,6 @@ export const en = {
     description: 'Draw a line from each thing to its match!',
   },
   loading: 'Getting ready…',
-  score: 'Score: {{n}}',
   prompts: {
     animalFood: 'Match each animal to its food',
     workerTool: 'Match each helper to their tool',

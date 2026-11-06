@@ -17,8 +17,6 @@ export const en = {
   header: {
     restart: 'Restart',
     pairs: '{{found}}/{{total}} pairs',
-    movesOne: '{{count}} move',
-    movesOther: '{{count}} moves',
   },
 } as const;
 

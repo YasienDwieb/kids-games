@@ -28,10 +28,6 @@ export const ar: GameTranslations = {
     '9': 'تِسْعة',
     '10': 'عَشَرة',
   },
-  // Prompt instructions per mode
-  countThisMany: {
-    progress: '{{popped}} / {{target}}',
-  },
   addition: {
     // LTR isolate (U+2066…U+2069) keeps the math expression left-to-right
     // so Unicode Bidi doesn't reorder it to "؟ = b + a" inside the RTL paragraph.

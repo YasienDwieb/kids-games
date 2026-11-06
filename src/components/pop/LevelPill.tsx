@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { COLORS, FONTS, OUTLINE, POP, SHADOWS } from '../../constants';
+import { COLORS, OUTLINE, POP, SHADOWS } from '../../constants';
+import { Star } from '../common/Star';
 import { levelInfo } from '../../sdk/player/levels';
 import { ProgressBar } from './ProgressBar';
 
@@ -10,7 +11,7 @@ type LevelPillProps = {
   compact?: boolean;
 };
 
-/** Grape level badge + XP bar toward the next level. */
+/** Star badge + bar filling toward the next level. */
 export function LevelPill({ stars, onPress, compact = false }: LevelPillProps) {
   const { t } = useTranslation();
   const info = levelInfo(stars);
@@ -23,7 +24,7 @@ export function LevelPill({ stars, onPress, compact = false }: LevelPillProps) {
       style={({ pressed }) => [styles.pill, pressed ? styles.pressed : SHADOWS.sm]}
     >
       <View style={styles.badge}>
-        <Text style={styles.badgeText}>{info.level}</Text>
+        <Star size={24} />
       </View>
       <ProgressBar value={info.progress} height={14} style={compact ? styles.barCompact : styles.bar} />
     </Pressable>
@@ -54,7 +55,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { fontFamily: FONTS.display, fontSize: 19, color: COLORS.surface },
   bar: { width: 90 },
   barCompact: { width: 56 },
 });

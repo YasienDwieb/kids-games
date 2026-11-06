@@ -10,7 +10,7 @@
  * Flow:
  *   loading   → blank screen
  *   resumable → ResumePrompt (continue / start over)
- *   playing   → current round + score HUD via GameShell
+ *   playing   → current round
  *
  * Win/celebration (endless — there is no last level):
  *   Every solve → 'success' sound + a short SDK celebration, then auto-advance.
@@ -41,7 +41,6 @@ import {
   ResumePrompt,
   SPACING,
   useRoundEnd,
-  useGameShell,
   useHintLadder,
   useLevels,
   useSound,
@@ -53,8 +52,6 @@ import { makeCountAndPopLevels } from './utils/levels';
 
 // A tap-to-continue card only on milestones; every other solve auto-advances.
 const MILESTONE_EVERY = 5;
-const POINTS_FIRST_TRY = 10;
-const POINTS_WITH_HELP = 5;
 
 // ---------------------------------------------------------------------------
 // Main component
@@ -62,7 +59,6 @@ const POINTS_WITH_HELP = 5;
 
 export default function CountAndPopGame(): React.JSX.Element {
   const { play } = useSound();
-  const shell = useGameShell();
   const { t } = useTranslation();
 
   // -------------------------------------------------------------------------
@@ -89,11 +85,9 @@ export default function CountAndPopGame(): React.JSX.Element {
     status,
     data,
     level,
-    score,
     start,
     startOver,
     advance,
-    addScore,
   } = useLevels({
     gameId: 'count-and-pop',
     source,
@@ -129,12 +123,6 @@ export default function CountAndPopGame(): React.JSX.Element {
   // Effects
   // ---------------------------------------------------------------------------
 
-  // Keep the GameShell HUD score display in sync.
-  useEffect(() => {
-    // Only while playing — see shape-detective.
-    shell.setScore(status === 'playing' ? score : null);
-  }, [score, shell, status]);
-
   // When the level advances, dismiss the win overlay and reset selection/solved.
   useEffect(() => {
     setSelectedIndex(null);
@@ -144,7 +132,7 @@ export default function CountAndPopGame(): React.JSX.Element {
     // Reset juice anims for fresh level
     shakeAnim.setValue(0);
     solvePopAnim.setValue(1);
-  }, [level, shell, shakeAnim, solvePopAnim]);
+  }, [level, shakeAnim, solvePopAnim]);
 
   // Clear any pending timer when the component unmounts.
   useEffect(() => {
@@ -204,13 +192,12 @@ export default function CountAndPopGame(): React.JSX.Element {
   const handleCorrect = useCallback(() => {
     const milestone = level % MILESTONE_EVERY === 0;
     void play(milestone ? 'win' : 'success');
-    addScore(hints.firstTry ? POINTS_FIRST_TRY : POINTS_WITH_HELP);
     setSolved(true);
     setHintIndex(null);
     triggerSolvePop();
     if (timerRef.current !== null) clearTimeout(timerRef.current);
     void roundEnd.next(milestone ? 'big' : 'small', advance);
-  }, [play, addScore, hints.firstTry, level, roundEnd, triggerSolvePop, advance]);
+  }, [play, level, roundEnd, triggerSolvePop, advance]);
 
   // handlePick: used by HowMany (choice-row modes).
   // Guards on `selectedIndex !== null || solved` to prevent double-advance.

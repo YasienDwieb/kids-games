@@ -270,15 +270,9 @@ export function CountThisMany({
         </View>
       </View>
 
-      {/* Progress pips + count label */}
+      {/* Progress pips */}
       <View style={styles.progressSection}>
         <ProgressPips target={target} popped={poppedCount} />
-        <Text style={styles.progressLabel}>
-          {t('count-and-pop:countThisMany.progress', {
-            popped: poppedCount,
-            target,
-          })}
-        </Text>
       </View>
 
       {/* Object grid */}
@@ -386,12 +380,6 @@ const styles = StyleSheet.create({
   progressSection: {
     alignItems: 'center',
     gap: SPACING.xs,
-  },
-  progressLabel: {
-    fontFamily: FONTS.body,
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.inkSoft,
-    textAlign: 'center',
   },
   // Object grid — wrapping flex row, 3 columns max
   grid: {

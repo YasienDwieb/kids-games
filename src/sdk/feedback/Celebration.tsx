@@ -13,7 +13,7 @@
  * no-op that resolves immediately — games never have to guard for it.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
@@ -23,10 +23,8 @@ import { Star } from '@/components/common/Star';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { LevelUp } from './LevelUp';
-import { bumpCombo } from './combo';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
 import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
-import { FONTS } from '@/constants/typography';
 
 export type CelebrationSize = 'small' | 'big';
 export type CelebrateOptions = {
@@ -83,7 +81,6 @@ type Burst = {
   size: CelebrationSize;
   praiseKey: string | null;
   /** Wins in a row so far (shown as "x3 COMBO!" from 2 up). */
-  combo: number;
   /** How long the praise voice runs (0 when silent) — the bubble stays up for it. */
   voiceMs: number;
   pieces: Piece[];
@@ -151,7 +148,6 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
         id: nextId.current++,
         size,
         praiseKey,
-        combo: bumpCombo(),
         voiceMs,
         pieces: makePieces(size),
         resolve,
@@ -281,7 +277,7 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
           ]}
         />
       ))}
-      {burst.praiseKey || burst.combo >= 2 ? (
+      {burst.praiseKey ? (
         <Animated.View
           style={[
             styles.pop,
@@ -294,20 +290,13 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
             },
           ]}
         >
-          {burst.combo >= 2 ? (
-            <View style={[styles.combo, SHADOWS.sm]}>
-              <Text style={styles.comboText}>{t('combo.label', { n: burst.combo })}</Text>
-            </View>
-          ) : null}
-          {burst.praiseKey ? (
-            <View
-              style={[styles.bubble, burst.size === 'big' && styles.bubbleBig, SHADOWS.lg]}
-              accessible
-              accessibilityLabel={t(burst.praiseKey)}
-            >
-              <Star size={burst.size === 'big' ? 72 : 48} />
-            </View>
-          ) : null}
+          <View
+            style={[styles.bubble, burst.size === 'big' && styles.bubbleBig, SHADOWS.lg]}
+            accessible
+            accessibilityLabel={t(burst.praiseKey)}
+          >
+            <Star size={burst.size === 'big' ? 72 : 48} />
+          </View>
         </Animated.View>
       ) : null}
     </View>
@@ -329,15 +318,5 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     backgroundColor: POP.zap,
   },
-  combo: {
-    paddingHorizontal: 14,
-    paddingVertical: 2,
-    borderRadius: 14,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    backgroundColor: POP.bubblegum,
-    transform: [{ rotate: '6deg' }],
-  },
-  comboText: { fontFamily: FONTS.display, fontSize: 24, color: COLORS.ink },
   bubbleBig: { paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md },
 });

@@ -3,13 +3,13 @@
  *
  * Wraps useLevels and owns the per-round interaction state machine that was
  * previously hand-written in letter-land/index.tsx: selection, the solved gate,
- * a single timer ref, score→HUD sync, speak-on-level-change, and the
+ * a single timer ref, speak-on-level-change, and the
  * correct/wrong pick handling, then moves on by itself (useRoundEnd).
  *
  * Each game supplies its LevelSource, a `speakTarget` (fired on every level
  * change + on replay).
  *
- * Shell-mode only (uses useGameShell). Guided mode uses useFlowRound instead.
+ * Guided mode uses useFlowRound instead.
  *
  * Determinism: no Math.random / Date.now here; the only timers are short UI
  * cooldowns in one ref, cleared on reassign and unmount.
@@ -19,7 +19,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   useChoiceHints,
   useRoundEnd,
-  useGameShell,
   useLevels,
   useSound,
   voiceHoldRemaining,
@@ -44,9 +43,8 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
 }) {
   const { play } = useSound();
   const roundEnd = useRoundEnd();
-  const shell = useGameShell();
   const levels = useLevels<L>({ gameId: opts.gameId, source: opts.source });
-  const { status, data, level, score, isLast, advance, finish, addScore } = levels;
+  const { status, level, isLast, advance, finish } = levels;
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [solved, setSolved] = useState(false);
@@ -65,14 +63,6 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
   // (react-i18next can hand back a new t, re-speaking mid-level otherwise).
   const speakRef = useRef(opts.speakTarget);
   speakRef.current = opts.speakTarget;
-  const shellRef = useRef(shell);
-  shellRef.current = shell;
-
-  // Keep the shell HUD score in sync.
-  useEffect(() => {
-    // Only while playing — see shape-detective.
-    shell.setScore(status === 'playing' ? score : null);
-  }, [score, shell, status]);
 
   // Speak + reset whenever a round becomes active: on every level change AND on
   // the first entry into 'playing' (first open, or Continue from a resume —
@@ -100,7 +90,6 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
       if (idx === correctIndex) {
         // Last level plays the win cue; every other correct pick plays success.
         void play(isLast ? 'win' : 'success');
-        addScore(10);
         setSolved(true);
         if (isLast) void roundEnd.end(finish);
         else void roundEnd.next('small', advance);
@@ -114,7 +103,7 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
         }, WRONG_RESET_DELAY);
       }
     },
-    [selectedIndex, solved, status, isLast, misses, miss, play, addScore, setTimer, roundEnd, finish, advance],
+    [selectedIndex, solved, status, isLast, misses, miss, play, setTimer, roundEnd, finish, advance],
   );
 
   const mascotPose: MascotPose | null =

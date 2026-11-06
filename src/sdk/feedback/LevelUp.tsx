@@ -5,7 +5,7 @@
  * so every play screen gets it.
  */
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { NavigationContext } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { EmojiImage } from '@/components/common/EmojiImage';
@@ -16,7 +16,6 @@ import { Sunburst } from '@/components/pop/Sunburst';
 import { pulse, useLoop } from '@/components/pop/motion';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
 import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
-import { FONTS } from '@/constants/typography';
 import { useSound } from '@/sdk/audio/useSound';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { unlocksAt } from '@/sdk/player/outfits';
@@ -103,7 +102,7 @@ export function LevelUp() {
       <Animated.View
         style={[styles.header, SHADOWS.md, pulse(beat, 0.06)]}
         accessible
-        accessibilityLabel={t('levelUp.title')}
+        accessibilityLabel={`${t('levelUp.title')} ${t('levelUp.level', { n: level })}`}
       >
         <Star size={36} />
         <Star size={44} />
@@ -111,12 +110,6 @@ export function LevelUp() {
       </Animated.View>
 
       <View style={styles.middle}>
-        <View style={[styles.card, SHADOWS.md]} accessible accessibilityLabel={t('levelUp.level', { n: level })}>
-          <View style={styles.levelBadge}>
-            <Text style={styles.levelNum}>{level}</Text>
-          </View>
-        </View>
-
         <Lulu3D size={200} mood="cheer" />
 
         {item ? (
@@ -129,9 +122,7 @@ export function LevelUp() {
               <EmojiImage emoji={item.emoji} size={48} />
             </View>
           </View>
-        ) : (
-          <View style={styles.spacer} />
-        )}
+        ) : null}
       </View>
 
       <View style={styles.actions}>
@@ -167,7 +158,6 @@ const styles = StyleSheet.create({
     backgroundColor: POP.zap,
   },
   middle: { flexDirection: 'row', alignItems: 'center', gap: SPACING.lg },
-  spacer: { width: 200 },
   card: {
     width: 200,
     alignItems: 'center',
@@ -179,17 +169,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
   unlock: { backgroundColor: POP.zap },
-  levelBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    backgroundColor: POP.grape,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  levelNum: { fontFamily: FONTS.display, fontSize: 32, color: COLORS.surface },
   itemWindow: {
     width: 76,
     height: 76,

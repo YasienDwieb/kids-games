@@ -7,11 +7,9 @@ import {
   POP,
   SHADOWS,
   BORDER_RADIUS,
-  bestTextOn,
   type AccentName,
 } from '../../constants';
 import { EmojiImage } from './EmojiImage';
-import { Star } from './Star';
 
 type GameCardProps = {
   icon: string;
@@ -21,7 +19,6 @@ type GameCardProps = {
   name: string;
   accent?: AccentName;
   tag?: string; // e.g. "NEW"
-  progress?: number; // 0..1, shown as a percent when > 0
   onPress: () => void;
   style?: ViewStyle;
   // Fill mode: stretch to fill a fixed-size cell (landscape rail) — the emoji
@@ -38,14 +35,12 @@ export function GameCard({
   name,
   accent = 'blue',
   tag,
-  progress = 0,
   onPress,
   style,
   fill = false,
   emojiSize,
 }: GameCardProps) {
   const a = ACCENTS[accent];
-  const label = bestTextOn(a.base);
   return (
     <Pressable
       onPress={onPress}
@@ -66,13 +61,6 @@ export function GameCard({
           <EmojiImage emoji={icon} size={emojiSize ?? 52} />
         )}
       </View>
-
-      {progress > 0 ? (
-        <View style={styles.progress}>
-          <Star size={13} />
-          <Text style={[styles.progressText, { color: label }]}>{Math.round(progress * 100)}%</Text>
-        </View>
-      ) : null}
 
       {tag ? (
         <View style={styles.tag}>
@@ -109,8 +97,6 @@ const styles = StyleSheet.create({
   cover: { width: '100%', height: '100%' },
   // Fill mode: drop the fixed aspect so the window flexes to fill leftover height.
   windowFill: { aspectRatio: undefined, flex: 1, minHeight: 44 },
-  progress: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 },
-  progressText: { fontFamily: FONTS.display, fontSize: 12 },
   tag: {
     position: 'absolute',
     top: -10,

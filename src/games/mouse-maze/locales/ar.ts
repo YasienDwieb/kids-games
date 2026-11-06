@@ -11,7 +11,6 @@ export const ar: GameTranslations = {
     find: 'ساعِدِ الفَأرَ لِيَصِلَ إلى الجُبنِ!',
   },
   hud: {
-    level: 'المستوى {{level}}',
     hintLabel: 'أرني الطريق',
   },
 };

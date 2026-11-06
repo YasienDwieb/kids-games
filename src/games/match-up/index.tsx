@@ -1,35 +1,29 @@
 /**
  * Match Up — standalone game screen (bare, landscape).
  *
- * Connect each top item to its matching bottom item by dragging a line. Free
- * play keeps a running score (POINTS_PER_MATCH per correct link, persisted via
- * useLevels). Endless: difficulty ramps then caps (see utils/levels), so every
- * solve advances to a fresh round.
+ * Connect each top item to its matching bottom item by dragging a line. Endless:
+ * difficulty ramps then caps (see utils/levels), so every solve moves on to a
+ * fresh round by itself.
  *
  * Bare layout: GamePlayerScreen floats the back button (top-start); this screen
- * owns its safe-area padding, the score HUD (top-end), and the solved overlay.
+ * owns its safe-area padding.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { I18nManager } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   COLORS,
   FONTS,
   FONT_SIZES,
-  HudPill,
-  hudTextStyle,
   MascotHelper,
   ResumePrompt,
   SPACING,
-  Star,
   useLevels,
   useRoundEnd,
   useTranslation,
 } from '@/sdk';
 import { MatchBoard } from './components/MatchBoard';
 import { makeMatchUpLevels } from './utils/levels';
-import { POINTS_PER_MATCH } from './constants';
 
 const ACCENT = 'purple' as const;
 
@@ -42,7 +36,7 @@ export default function MatchUpGame(): React.JSX.Element {
   const [sessionSeed, setSessionSeed] = useState(initialSeed);
   const source = useMemo(() => makeMatchUpLevels(sessionSeed), [sessionSeed]);
 
-  const { status, data, level, score, start, startOver, advance, addScore } = useLevels({
+  const { status, data, level, start, startOver, advance } = useLevels({
     gameId: 'match-up',
     source,
   });
@@ -93,30 +87,10 @@ export default function MatchUpGame(): React.JSX.Element {
 
   return (
     <View style={[styles.root, pad]}>
-      {/* Absolute children position from the parent's padding EDGE, so the
-          root's safe-area padding does not push this down — the inset has to be
-          applied here or the pill renders half under the status bar. */}
-      <View
-        style={[
-          styles.hud,
-          {
-            top: insets.top + SPACING.xs,
-            end: (I18nManager.isRTL ? insets.left : insets.right) + SPACING.md,
-          },
-        ]}
-        pointerEvents="none"
-      >
-        <HudPill>
-          <Star size={18} filled />
-          <Text style={hudTextStyle}>{t('match-up:score', { n: score })}</Text>
-        </HudPill>
-      </View>
-
       <MatchBoard
         key={level}
         round={data}
         accent={ACCENT}
-        onCorrect={() => addScore(POINTS_PER_MATCH)}
         onWrong={() => setMisses((m) => m + 1)}
         onSolved={handleSolved}
       />
@@ -139,9 +113,5 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.display,
     fontSize: FONT_SIZES.md,
     color: COLORS.inkSoft,
-  },
-  hud: {
-    position: 'absolute',
-    zIndex: 5,
   },
 });

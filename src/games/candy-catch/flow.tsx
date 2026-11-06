@@ -6,8 +6,8 @@
  * point target is caught.
  */
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { HudPill, hudTextStyle, registerFlowAdapter, useFlowRound } from '@/sdk';
+import { StyleSheet, View } from 'react-native';
+import { ProgressBar, registerFlowAdapter, useFlowRound } from '@/sdk';
 import { CatchField } from './components/CatchField';
 import type { LevelSpec } from './constants';
 
@@ -34,12 +34,7 @@ function CatchFlowRound({ data, onComplete }: { data: LevelSpec; onComplete: () 
         onWin={complete}
       />
       <View style={styles.hud} pointerEvents="none">
-        <HudPill>
-          {/* Pinned LTR so "12 / 25" never reorders under RTL. */}
-          <Text style={[hudTextStyle, styles.ltr]}>
-            🍬 {Math.min(score, data.target)} / {data.target}
-          </Text>
-        </HudPill>
+        <ProgressBar value={score / data.target} style={styles.bar} />
       </View>
     </View>
   );
@@ -49,7 +44,7 @@ const styles = StyleSheet.create({
   // Transparent so the flow's shared backdrop shows through (continuous world).
   root: { flex: 1 },
   hud: { position: 'absolute', top: 0, end: 0 },
-  ltr: { writingDirection: 'ltr' },
+  bar: { width: 220 },
 });
 
 registerFlowAdapter({

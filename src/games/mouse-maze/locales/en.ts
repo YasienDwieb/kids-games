@@ -7,7 +7,6 @@ export const en = {
     find: 'Help the mouse find the cheese!',
   },
   hud: {
-    level: 'Level {{level}}',
     hintLabel: 'Show hint',
   },
 } as const;

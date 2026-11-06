@@ -4,7 +4,6 @@
 export const en = {
   common: {
     back: 'Back',
-    score: 'Score: {{n}}',
     pause: 'Pause',
     settings: 'Settings',
     done: 'Done',
@@ -57,9 +56,6 @@ export const en = {
       'top-hat': 'Top hat',
       bow: 'Bow',
     },
-  },
-  combo: {
-    label: 'x{{n}} COMBO!',
   },
   settings: {
     title: 'Settings',

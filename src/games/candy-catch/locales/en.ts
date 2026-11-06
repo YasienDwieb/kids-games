@@ -5,9 +5,6 @@ export const en = {
     name: 'Candy Catch',
     description: 'Move the basket — catch the treats, dodge the yucky ones!',
   },
-  hud: {
-    level: 'Level {{level}}',
-  },
   start: {
     title: 'Catch the treats!',
     tap: 'Tap to start',

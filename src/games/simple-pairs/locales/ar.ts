@@ -26,7 +26,5 @@ export const ar: GameTranslations = {
   header: {
     restart: 'من البداية',
     pairs: '{{found}}/{{total}} مطابقة',
-    movesOne: '{{count}} خطوة',
-    movesOther: '{{count}} خطوات',
   },
 };

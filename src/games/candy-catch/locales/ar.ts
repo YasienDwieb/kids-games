@@ -7,9 +7,6 @@ export const ar: GameTranslations = {
     name: 'التقاط الحلوى',
     description: 'حرّك السلة — التقط الحلويات وتجنّب الأشياء المقززة!',
   },
-  hud: {
-    level: 'المستوى {{level}}',
-  },
   start: {
     title: 'اِلتَقِطِ الحَلوَياتِ!',
     tap: 'المس للبدء',

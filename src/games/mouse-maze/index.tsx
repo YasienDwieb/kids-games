@@ -125,7 +125,6 @@ export default function MouseMazeGame() {
         </View>
         <View style={styles.sidePanel} pointerEvents="box-none">
           <Hud
-            level={state.level}
             collected={state.collected}
             total={state.total}
             onHint={handleHint}
@@ -154,7 +153,6 @@ export default function MouseMazeGame() {
       )}
 
       <Hud
-        level={state.level}
         collected={state.collected}
         total={state.total}
         onHint={handleHint}

@@ -52,7 +52,6 @@ function GameContent({
       <GameHeader
         found={gameState.matchedPairs}
         total={gameState.totalPairs}
-        moves={gameState.moves}
         onReset={resetGame}
       />
 
