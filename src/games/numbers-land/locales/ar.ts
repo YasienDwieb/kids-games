@@ -17,11 +17,6 @@ export const ar: GameTranslations = {
     replay: 'اسمع الرقم مرة أخرى',
     choiceTile: 'رقم {{glyph}}',
   },
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'الرقم التالي',
-    finish: 'أكملت كل الأرقام!',
-  },
   names: {
     '1': 'وَاحِد',
     '2': 'اِثنان',

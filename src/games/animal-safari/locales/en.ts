@@ -44,11 +44,6 @@ export const en = {
     bird: 'Bird',
     bee: 'Bee',
   },
-  levelSolved: {
-    title: 'Great job!',
-    next: 'Next Animal',
-    finish: 'All Done!',
-  },
 } as const;
 
 // Structural type: forces ar.ts to have the SAME keys without locking VALUES.

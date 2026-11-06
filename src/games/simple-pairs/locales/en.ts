@@ -20,11 +20,6 @@ export const en = {
     movesOne: '{{count}} move',
     movesOther: '{{count}} moves',
   },
-  win: {
-    title: 'You did it!',
-    playAgain: 'Play again',
-    pickLevel: 'Pick a level',
-  },
 } as const;
 
 // Structural type: every leaf is a string, so ar must match the same keys

@@ -17,9 +17,4 @@ export const ar: GameTranslations = {
     replay: 'اسمع الحرف مرة أخرى',
     choiceTile: 'حرف {{glyph}}',
   },
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'الحرف التالي',
-    finish: 'أكملت كل الحروف!',
-  },
 };

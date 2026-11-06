@@ -9,5 +9,4 @@ export const ar: GameTranslations = {
   },
   tapMe: 'المسني — واستبدلني بلعبتك.',
   showWin: 'اعرض شاشة الفوز',
-  win: 'لقد فزت! 🎉',
 };

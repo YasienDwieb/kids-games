@@ -53,7 +53,6 @@ import {
   type FindItem,
   type ListenFindLevel,
 } from '@/games/_shared/listen-find';
-import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
 import { renderAnimal } from './components/renderAnimal';
 import { ANIMAL_IMAGES } from './animalImages';
 import { buildRound, seedForLevel } from './utils/generate';
@@ -126,7 +125,6 @@ export default function AnimalSafari(): React.JSX.Element {
     gameId: 'animal-safari',
     source,
     speakTarget: present,
-    renderSolved: (isLast, onNext) => <LevelSolvedOverlay isLast={isLast} onNext={onNext} />,
   });
 
   // Keep the latest round available to present().

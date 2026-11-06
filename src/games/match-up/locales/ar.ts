@@ -7,10 +7,6 @@ export const ar: GameTranslations = {
   },
   loading: 'نُحضّر اللعبة…',
   score: 'النقاط: {{n}}',
-  solved: {
-    title: 'وصّلتها كلها!',
-    next: 'التالي',
-  },
   prompts: {
     animalFood: 'وَصِّلْ كُلَّ حَيَوانٍ بِطَعامِهِ',
     workerTool: 'وَصِّلْ كُلَّ عامِلٍ بِأَداتِهِ',

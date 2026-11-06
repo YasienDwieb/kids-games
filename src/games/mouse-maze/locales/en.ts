@@ -10,10 +10,6 @@ export const en = {
     level: 'Level {{level}}',
     hintLabel: 'Show hint',
   },
-  win: {
-    title: 'You made it!',
-    nextMaze: 'Next maze',
-  },
 } as const;
 
 type T<X> = { [K in keyof X]: X[K] extends string ? string : T<X[K]> };

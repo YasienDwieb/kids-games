@@ -1,10 +1,10 @@
 /* Candy Catch — standalone game host.
  *
  * The playfield (motion, spawning, catching) lives in <CatchField>; this screen
- * owns progression, the HUD, hearts and the start/win/lose overlays. Each level
+ * owns progression, the HUD, hearts and the start and lose overlays. Each level
  * or retry remounts the field with a fresh key, which resets it. */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   levelsFromGenerator,
@@ -12,14 +12,16 @@ import {
   tierFactor,
   useAdaptive,
   useLevels,
+  useRoundEnd,
   useSound,
 } from '@/sdk';
 import { CatchField } from './components/CatchField';
 import { Hud } from './components/Hud';
-import { StartOverlay, WinOverlay, LoseOverlay } from './components/Overlays';
+import { StartOverlay, LoseOverlay } from './components/Overlays';
 import { buildLevel } from './constants';
 
 const MAX_LIVES = 3;
+const RETRY_PAUSE_MS = 1500;
 
 export default function CandyCatchGame() {
   const { play } = useSound();
@@ -29,7 +31,11 @@ export default function CandyCatchGame() {
     source,
   });
 
-  const [overlay, setOverlay] = useState<'start' | 'win' | 'lose' | 'none'>('start');
+  // 'won' holds the field still while the celebration plays.
+  const [overlay, setOverlay] = useState<'start' | 'won' | 'lose' | 'none'>('start');
+  const roundEnd = useRoundEnd();
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(retryTimer.current), []);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(MAX_LIVES);
   // Bumped on retry so the field remounts fresh on the same level.
@@ -53,17 +59,6 @@ export default function CandyCatchGame() {
     setLives(MAX_LIVES);
   }, [level, attempt]);
 
-  const handleWin = useCallback(() => {
-    play('win');
-    record(true);
-    setOverlay('win');
-  }, [play, record]);
-
-  const handleLose = useCallback(() => {
-    record(false);
-    setOverlay('lose');
-  }, [record]);
-
   const handleStart = useCallback(() => {
     play('transition');
     setOverlay('none');
@@ -80,6 +75,19 @@ export default function CandyCatchGame() {
     setOverlay('none');
     setAttempt((a) => a + 1);
   }, [play]);
+
+  const handleWin = useCallback(() => {
+    play('win');
+    record(true);
+    setOverlay('won');
+    void roundEnd.next('big', handleNext);
+  }, [play, record, roundEnd, handleNext]);
+
+  const handleLose = useCallback(() => {
+    record(false);
+    setOverlay('lose');
+    retryTimer.current = setTimeout(handleRetry, RETRY_PAUSE_MS);
+  }, [record, handleRetry]);
 
   if (status === 'loading') return <View style={styles.root} />;
   if (status === 'resumable') {
@@ -118,8 +126,7 @@ export default function CandyCatchGame() {
       <Hud level={level} score={score} target={data.target} lives={lives} />
 
       {overlay === 'start' && <StartOverlay onStart={handleStart} />}
-      {overlay === 'win' && <WinOverlay score={score} onNext={handleNext} />}
-      {overlay === 'lose' && <LoseOverlay onRetry={handleRetry} />}
+      {overlay === 'lose' && <LoseOverlay />}
     </View>
   );
 }

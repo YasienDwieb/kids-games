@@ -9,27 +9,22 @@
  * Bare layout: GamePlayerScreen floats the back button (top-start); this screen
  * owns its safe-area padding, the score HUD (top-end), and the solved overlay.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { I18nManager } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ACCENTS,
-  BORDER_RADIUS,
   COLORS,
   FONTS,
   FONT_SIZES,
   HudPill,
   hudTextStyle,
-  Mascot,
   MascotHelper,
-  OUTLINE,
-  PressableButton,
   ResumePrompt,
-  SHADOWS,
   SPACING,
   Star,
   useLevels,
+  useRoundEnd,
   useTranslation,
 } from '@/sdk';
 import { MatchBoard } from './components/MatchBoard';
@@ -52,6 +47,7 @@ export default function MatchUpGame(): React.JSX.Element {
     source,
   });
 
+  const roundEnd = useRoundEnd();
   const [solved, setSolved] = useState(false);
   // Wrong links this round — Lulu encourages, then points after repeated misses.
   const [misses, setMisses] = useState(0);
@@ -67,11 +63,10 @@ export default function MatchUpGame(): React.JSX.Element {
     startOver();
   }, [startOver]);
 
-  const handleSolved = useCallback(() => setSolved(true), []);
-  const handleNext = useCallback(() => {
-    setSolved(false);
-    advance();
-  }, [advance]);
+  const handleSolved = useCallback(() => {
+    setSolved(true);
+    void roundEnd.next('big', advance);
+  }, [roundEnd, advance]);
 
   if (status === 'loading') {
     return (
@@ -128,24 +123,6 @@ export default function MatchUpGame(): React.JSX.Element {
 
       <MascotHelper pose={solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point'} />
 
-      {solved ? (
-        <View style={styles.overlay}>
-          <View style={[styles.card, SHADOWS.lg]}>
-            <Mascot pose="cheer" size={90} />
-            <View style={styles.starsRow}>
-              <Star size={26} filled />
-              <Star size={34} filled />
-              <Star size={26} filled />
-            </View>
-            <Text style={styles.cardTitle}>{t('match-up:solved.title')}</Text>
-            <PressableButton
-              label={t('match-up:solved.next')}
-              onPress={handleNext}
-              accent={ACCENT}
-            />
-          </View>
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -166,31 +143,5 @@ const styles = StyleSheet.create({
   hud: {
     position: 'absolute',
     zIndex: 5,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.overlay,
-    padding: SPACING.lg,
-  },
-  card: {
-    // Wide and short: landscape phones have ~360dp of height to spare.
-    maxWidth: 480,
-    alignItems: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.xl,
-    borderRadius: BORDER_RADIUS.tile,
-    backgroundColor: COLORS.surface,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-  },
-  starsRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
-  cardTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.ink,
-    textAlign: 'center',
   },
 });

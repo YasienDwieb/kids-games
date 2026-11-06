@@ -14,8 +14,4 @@ export const ar: GameTranslations = {
     level: 'المستوى {{level}}',
     hintLabel: 'أرني الطريق',
   },
-  win: {
-    title: 'وصلت!',
-    nextMaze: 'المتاهة التالية',
-  },
 };

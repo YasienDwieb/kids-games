@@ -17,11 +17,6 @@ export const en = {
     replay: 'Hear the number again',
     choiceTile: 'Number {{glyph}}',
   },
-  levelSolved: {
-    title: 'You got it!',
-    next: 'Next Number',
-    finish: 'All Done!',
-  },
   // Spoken number name per id ('1'..'10').
   names: {
     '1': 'one',

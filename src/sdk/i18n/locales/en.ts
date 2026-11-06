@@ -41,7 +41,6 @@ export const en = {
     level: 'Level {{n}}!',
     unlocked: 'You unlocked',
     tryOn: 'Try it on',
-    keepPlaying: 'Keep playing',
   },
   wardrobe: {
     hats: 'Hats',

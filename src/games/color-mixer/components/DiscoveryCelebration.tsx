@@ -2,13 +2,10 @@ import { useEffect, useRef } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, View } from 'react-native';
 import {
   COLORS as TOKENS,
-  FONTS,
   BORDER_RADIUS,
   OUTLINE,
   SHADOWS,
-  Icon,
   MascotHelper,
-  PressableButton,
   useTranslation,
 } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
@@ -80,7 +77,11 @@ export function DiscoveryCelebration({
 
   return (
     <Modal visible transparent animationType="none" statusBarTranslucent navigationBarTranslucent>
-      <Pressable style={styles.touchArea} onPress={onComplete}>
+      <Pressable
+        style={styles.touchArea}
+        onPress={onComplete}
+        accessibilityLabel={`${t('color-mixer:discovery.title')} ${t(`color-mixer:colors.${colorId}`)}`}
+      >
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
           <Animated.View style={[styles.card, { transform: [{ scale: cardScale }] }]}>
             <View style={styles.blobArea}>
@@ -92,14 +93,6 @@ export function DiscoveryCelebration({
               </Animated.View>
             </View>
 
-            <PressableButton
-              accessibilityLabel={`${t('color-mixer:discovery.title')} ${t(`color-mixer:colors.${colorId}`)}`}
-              accent="blue"
-              onPress={onComplete}
-              style={styles.cta}
-            >
-              <Icon name="checkmark" size={30} />
-            </PressableButton>
           </Animated.View>
           <MascotHelper pose="cheer" size={120} />
         </Animated.View>
@@ -139,8 +132,5 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  cta: {
-    minWidth: 140,
   },
 });

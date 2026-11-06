@@ -37,12 +37,6 @@ export const ar: GameTranslations = {
     // so Unicode Bidi doesn't reorder it to "؟ = b + a" inside the RTL paragraph.
     instruction: '⁦{{a}} + {{b}} = ؟⁩',
   },
-  // Level solved overlay
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'المستوى التالي',
-    finish: 'رائع، أنهيت اللعبة!',
-  },
   // Accessibility labels
   a11y: {
     objectTile: '{{emoji}}، اضغط لتعدّه',

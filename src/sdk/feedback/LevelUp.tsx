@@ -1,7 +1,7 @@
 /**
  * "LEVEL UP!" — the big moment when lifetime stars cross into a new level.
  * Full-screen sunburst, Lulu jumping, the new level, and whatever wardrobe item
- * just unlocked with a try-it-on button. Mounted inside CelebrationProvider,
+ * just unlocked with a try-it-on button. Closes by itself. Mounted inside CelebrationProvider,
  * so every play screen gets it.
  */
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -27,8 +27,8 @@ import { reserveVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 
 /** Let the win's own confetti land first. */
 const SHOW_DELAY_MS = 1300;
-/** Longest win jingle plus a breath. */
-const JINGLE_MS = 1600;
+/** How long the card stays up before it closes by itself. */
+const CARD_MS = 4000;
 
 export function LevelUp() {
   const { t } = useTranslation();
@@ -57,7 +57,7 @@ export function LevelUp() {
       clearTimeout(timer);
       // Wait out the praise voice, and keep the next prompt off the jingle.
       const delay = Math.max(SHOW_DELAY_MS, voiceBusyRemaining());
-      reserveVoice(delay + JINGLE_MS);
+      reserveVoice(delay + CARD_MS);
       timer = setTimeout(() => {
         setLevel(l);
         play('sfx.win', { haptic: true });
@@ -72,15 +72,20 @@ export function LevelUp() {
     };
   }, [enter, play]);
 
+  useEffect(() => {
+    if (level == null) return;
+    const timer = setTimeout(() => {
+      Animated.timing(enter, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+        setLevel(null);
+        releaseGate();
+      });
+    }, CARD_MS);
+    return () => clearTimeout(timer);
+  }, [level, enter]);
+
   if (level == null) return null;
   const item = unlocksAt(level)[0];
 
-  const close = () => {
-    Animated.timing(enter, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
-      setLevel(null);
-      releaseGate();
-    });
-  };
   const tryOn = () => {
     if (item) void wear(item.slot, item.id);
     setLevel(null);
@@ -131,15 +136,10 @@ export function LevelUp() {
 
       <View style={styles.actions}>
         {item && navigation ? (
-          <PressableButton accessibilityLabel={t('levelUp.tryOn')} variant="ghost" onPress={tryOn}>
+          <PressableButton accessibilityLabel={t('levelUp.tryOn')} color={ACCENTS.green.base} onPress={tryOn}>
             <Icon name="shirt" size={30} />
           </PressableButton>
         ) : null}
-        <Animated.View style={pulse(beat, 0.08)}>
-          <PressableButton accessibilityLabel={t('levelUp.keepPlaying')} color={ACCENTS.green.base} onPress={close}>
-            <Icon name="play" size={30} />
-          </PressableButton>
-        </Animated.View>
       </View>
     </Animated.View>
   );

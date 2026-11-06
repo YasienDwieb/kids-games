@@ -254,14 +254,14 @@ Inside the game component, use `useGameShell()` to control the shell:
 const { setScore, showOverlay, hideOverlay } = useGameShell();
 
 setScore(42);                          // show score in header
-showOverlay('win', <WinScreen />);     // show a full-screen overlay
 showOverlay('pause', <PauseMenu />);
 showOverlay('loading', <Spinner />);
 showOverlay('error', <ErrorView />);
-hideOverlay('win');                    // dismiss the overlay
 ```
 
 `OverlaySlot` priority order (highest to lowest): `error` → `pause` → `win` → `loading`.
+
+Don't end a round with a win card or a Next button: `useRoundEnd().next(size, go)` celebrates, waits for the praise voice, then carries on; `.end(finish)` handles a game's last round (big celebration, reward, back to Home).
 
 `GameShellProps` also accepts optional `header` (extra header slot content), `onPause` (shows pause button), and `onBack` (custom back handler).
 

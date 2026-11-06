@@ -12,29 +12,22 @@
  *   playing   → current puzzle + score HUD via GameShell
  *
  * Win/celebration:
- *   Last level solved → 'win' sound (sfx.win intent) + LevelSolvedOverlay.
- *   All other levels  → 'success' sound + same overlay.
+ *   Last level solved → 'win' sound (sfx.win intent), a big celebration, then back to Home.
+ *   All other levels  → 'success' sound, a small celebration, then the next level.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import {
-  ACCENTS,
-  BORDER_RADIUS,
   COLORS,
-  EmojiFrame,
   FONT_SIZES,
   FONTS,
-  OUTLINE,
-  Mascot,
   MascotHelper,
-  PressableButton,
   ResumePrompt,
-  SHADOWS,
   SPACING,
-  Star,
   useChoiceHints,
   useGameShell,
+  useRoundEnd,
   useLevels,
   useSound,
   useTranslation,
@@ -45,90 +38,16 @@ import { SortPuzzle } from './components/SortPuzzle';
 import { shapeDetectiveLevels } from './utils/levels';
 
 // ---------------------------------------------------------------------------
-// Level-solved overlay content — rendered via GameShell 'win' slot.
-// Uses EmojiFrame + Star primitives for kid-friendly reward display.
-// ---------------------------------------------------------------------------
-
-type LevelSolvedOverlayProps = {
-  isLast: boolean;
-  onNext: () => void;
-  t: ReturnType<typeof useTranslation>['t'];
-};
-
-function LevelSolvedOverlay({ isLast, onNext, t }: LevelSolvedOverlayProps): React.JSX.Element {
-  return (
-    <View style={overlayStyles.root}>
-      <View style={[overlayStyles.card, SHADOWS.lg]}>
-        {/* Lulu cheers the solve; the trophy marks the final case. */}
-        {isLast ? (
-          <EmojiFrame emoji="🏆" size={72} tint={ACCENTS.purple.tint} />
-        ) : (
-          <Mascot pose="cheer" size={96} />
-        )}
-        {/* Star row — 3 stars as a kid-friendly reward cue */}
-        <View style={overlayStyles.starsRow}>
-          <Star size={28} filled />
-          <Star size={36} filled />
-          <Star size={28} filled />
-        </View>
-        <Text style={overlayStyles.title}>
-          {t('shape-detective:levelSolved.title')}
-        </Text>
-        <PressableButton
-          label={
-            isLast
-              ? t('shape-detective:levelSolved.finish')
-              : t('shape-detective:levelSolved.next')
-          }
-          onPress={onNext}
-          accent="purple"
-        />
-      </View>
-    </View>
-  );
-}
-
-const overlayStyles = StyleSheet.create({
-  root: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.lg,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    alignItems: 'center',
-    gap: SPACING.md,
-    padding: SPACING.xl,
-    borderRadius: BORDER_RADIUS.tile,
-    backgroundColor: COLORS.surface,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  title: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-});
-
-// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
 export default function ShapeDetectiveGame(): React.JSX.Element {
   const { play } = useSound();
   const shell = useGameShell();
+  const roundEnd = useRoundEnd();
   const { t } = useTranslation();
 
-  const { status, data, level, score, isLast, start, startOver, advance, addScore } = useLevels({
+  const { status, data, level, score, isLast, start, startOver, advance, finish, addScore } = useLevels({
     gameId: 'shape-detective',
     source: shapeDetectiveLevels,
   });
@@ -162,7 +81,6 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
 
   // Hide any win overlay when we advance to a new level; reset solved flag.
   useEffect(() => {
-    shell.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
     setSortMisses(0);
@@ -178,17 +96,6 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   // ---------------------------------------------------------------------------
   // Handlers
   // ---------------------------------------------------------------------------
-
-  // handleNext reads isLast at call time (live closure), not from a
-  // stale closure captured at pick time.
-  const handleNext = useCallback(() => {
-    shell.hideOverlay('win');
-    if (isLast) {
-      startOver({ finished: true });
-    } else {
-      advance();
-    }
-  }, [advance, isLast, shell, startOver]);
 
   const triggerShake = useCallback(() => {
     shakeAnim.setValue(0);
@@ -212,20 +119,16 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
 
   // Shared "correct answer" handler — used by Pattern and OddOneOut tap handlers.
   // Awards score, plays the appropriate sound (win on last level, success otherwise),
-  // marks the level solved, and shows the overlay after a brief delay.
+  // marks the level solved, and moves on by itself.
   const handleCorrect = useCallback(() => {
     void play(isLast ? 'win' : 'success');
     addScore(10);
     setSolved(true);
     triggerCorrectPop();
     if (timerRef.current !== null) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      shell.showOverlay(
-        'win',
-        <LevelSolvedOverlay isLast={isLast} onNext={handleNext} t={t} />,
-      );
-    }, 600);
-  }, [play, isLast, addScore, shell, handleNext, t, triggerCorrectPop]);
+    if (isLast) void roundEnd.end(finish);
+    else void roundEnd.next('small', advance);
+  }, [play, isLast, addScore, roundEnd, finish, advance, triggerCorrectPop]);
 
   // handlePick: used by PatternPuzzle and OddOneOutPuzzle (tap-to-answer).
   const handlePick = useCallback(

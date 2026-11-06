@@ -33,12 +33,6 @@ export const en = {
   addition: {
     instruction: '{{a}} + {{b}} = ?',
   },
-  // Level solved overlay
-  levelSolved: {
-    title: 'Great job!',
-    next: 'Next level',
-    finish: 'You did it!',
-  },
   // Accessibility labels
   a11y: {
     objectTile: '{{emoji}}, tap to pop',

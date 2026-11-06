@@ -5,10 +5,6 @@ export const en = {
   },
   loading: 'Getting ready…',
   score: 'Score: {{n}}',
-  solved: {
-    title: 'You matched them all!',
-    next: 'Next',
-  },
   prompts: {
     animalFood: 'Match each animal to its food',
     workerTool: 'Match each helper to their tool',

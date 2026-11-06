@@ -14,12 +14,6 @@ export const ar: GameTranslations = {
     instruction: 'ماذا يَأتي بَعدَ ذلِكَ؟',
     optionLabel: 'خيار {{index}}: {{size}} {{kind}}',
   },
-  // Level solve overlay
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'المستوى التالي',
-    finish: 'رائع، أنهيت اللعبة!',
-  },
   // Odd-one-out puzzle strings
   oddOneOut: {
     instruction: 'أَيُّ شَكلٍ لا يَنتَمي إلى المَجموعَةِ؟',

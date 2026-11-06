@@ -32,7 +32,6 @@ import {
 import { letterPhrase } from '@/games/_shared/letters/phrase';
 import { ListenFindBoard, useListenFind, makeOrderSeed } from '@/games/_shared/listen-find';
 import { LetterHero } from './components/LetterHero';
-import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
 import { letterSet } from './utils/letterSet';
 import { makeLetterLandLevels } from './utils/levels';
 import type { Letter } from './types';
@@ -92,7 +91,6 @@ function LetterLandRun({
     gameId: 'letter-land',
     source,
     speakTarget,
-    renderSolved: (isLast, onNext) => <LevelSolvedOverlay isLast={isLast} onNext={onNext} />,
   });
 
   // Keep the latest target available to speakTarget.

@@ -42,7 +42,6 @@ export const ar: CoreTranslations = {
     level: 'المستوى {{n}}!',
     unlocked: 'فتحت',
     tryOn: 'جرّبها',
-    keepPlaying: 'تابع اللعب',
   },
   wardrobe: {
     hats: 'قبّعات',

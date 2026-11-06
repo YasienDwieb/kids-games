@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Animated, I18nManager, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import {
   ACCENTS,
   Icon,
@@ -55,34 +55,11 @@ export function StartOverlay({ onStart }: { onStart: () => void }) {
   );
 }
 
-export function WinOverlay({ score, onNext }: { score: number; onNext: () => void }) {
-  const { t } = useTranslation();
-  const nextLabel = I18nManager.isRTL
-    ? `${t('candy-catch:win.next')} ←`
-    : `${t('candy-catch:win.next')} →`;
+/** The short breather after losing the hearts; the round restarts by itself. */
+export function LoseOverlay() {
   return (
     <Card>
-      <Mascot pose="cheer" size={88} />
-      <Text style={styles.title}>{t('candy-catch:win.title')}</Text>
-      <Text style={styles.sub}>{t('candy-catch:hud.score', { score })}</Text>
-      <PressableButton label={nextLabel} accent="pink" onPress={onNext} style={styles.button} />
-    </Card>
-  );
-}
-
-export function LoseOverlay({ onRetry }: { onRetry: () => void }) {
-  const { t } = useTranslation();
-  return (
-    <Card>
-      <Mascot pose="encourage" size={88} />
-      <Text style={styles.title}>{t('candy-catch:lose.title')}</Text>
-      <Text style={styles.sub}>{t('candy-catch:lose.subtitle')}</Text>
-      <PressableButton
-        label={t('candy-catch:lose.retry')}
-        accent="pink"
-        onPress={onRetry}
-        style={styles.button}
-      />
+      <Mascot pose="encourage" size={120} />
     </Card>
   );
 }

@@ -17,11 +17,6 @@ export const en = {
     replay: 'Hear the letter again',
     choiceTile: 'Letter {{glyph}}',
   },
-  levelSolved: {
-    title: 'You got it!',
-    next: 'Next Letter',
-    finish: 'All Done!',
-  },
 } as const;
 
 // Structural type: forces ar.ts to have the SAME keys without locking VALUES.

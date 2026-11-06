@@ -9,21 +9,10 @@ export const ar: GameTranslations = {
   },
   hud: {
     level: 'المستوى {{level}}',
-    score: 'النقاط {{score}}',
   },
   start: {
     title: 'اِلتَقِطِ الحَلوَياتِ!',
     tap: 'المس للبدء',
-  },
-  win: {
-    title: 'لذيذ!',
-    next: 'المستوى التالي',
-    done: 'أحسنت!',
-  },
-  lose: {
-    title: 'أوبس!',
-    subtitle: 'انتهت القلوب',
-    retry: 'حاول مرة أخرى',
   },
   a11y: {
     basket: 'السلة، اسحب للتحريك',

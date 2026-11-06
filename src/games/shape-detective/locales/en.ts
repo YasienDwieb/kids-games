@@ -14,12 +14,6 @@ export const en = {
     instruction: 'What comes next?',
     optionLabel: 'Option {{index}}: {{size}} {{kind}}',
   },
-  // Level solve overlay
-  levelSolved: {
-    title: 'Great job!',
-    next: 'Next level',
-    finish: 'You did it!',
-  },
   // Odd-one-out puzzle strings
   oddOneOut: {
     instruction: 'Which one does not belong?',

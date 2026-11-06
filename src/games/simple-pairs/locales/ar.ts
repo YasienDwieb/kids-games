@@ -29,9 +29,4 @@ export const ar: GameTranslations = {
     movesOne: '{{count}} خطوة',
     movesOther: '{{count}} خطوات',
   },
-  win: {
-    title: 'أحسنت!',
-    playAgain: 'العب مرة ثانية',
-    pickLevel: 'اختر مستوى',
-  },
 };

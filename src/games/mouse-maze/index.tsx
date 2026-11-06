@@ -5,7 +5,7 @@ import {
   ResumePrompt,
   currentLanguage,
   levelsFromGenerator,
-  useCelebrate,
+  useRoundEnd,
   useFirstRun,
   useIdle,
   useLevels,
@@ -14,7 +14,6 @@ import {
 } from '@/sdk';
 import { Hud } from './components/Hud';
 import { MazeStage } from './components/MazeStage';
-import { WinOverlay } from './components/WinOverlay';
 import { FRAME_PAD, HINT_MS, MAZE_COLORS } from './constants';
 import { useMaze, buildLevel, type StepResult } from './hooks/useMaze';
 import { mazePhrase } from './phrase';
@@ -36,9 +35,8 @@ export default function MouseMazeGame() {
   const landscape = winW > winH;
 
   const [area, setArea] = useState({ width: 0, height: 0 });
-  const [showWin, setShowWin] = useState(false);
   const [hintCells, setHintCells] = useState<Set<string>>(new Set());
-  const celebrate = useCelebrate();
+  const roundEnd = useRoundEnd();
 
   // First play: a ghost hand drags the mouse along the route. Afterwards it
   // only comes back when the child has been stuck for a while.
@@ -70,11 +68,10 @@ export default function MouseMazeGame() {
       if (firstRun.status === 'show') firstRun.complete();
       if (res.reachedGoal) {
         play('win');
-        void celebrate('big', { praise: false });
-        setShowWin(true);
+        void roundEnd.next('big', () => nextMaze.current());
       }
     },
-    [poke, firstRun, play, celebrate],
+    [poke, firstRun, play, roundEnd],
   );
 
   const handleHint = useCallback(() => {
@@ -89,9 +86,11 @@ export default function MouseMazeGame() {
   const handleNext = useCallback(() => {
     play('transition');
     setHintCells(new Set());
-    setShowWin(false);
     advance(state.collected);
   }, [advance, play, state.collected]);
+  // The win lands before the last collected coin renders, so it reads the latest.
+  const nextMaze = useRef(handleNext);
+  nextMaze.current = handleNext;
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -142,9 +141,6 @@ export default function MouseMazeGame() {
           // Her bubble would cover the hint button in this corner.
           say={false}
         />
-        {showWin && (
-          <WinOverlay collected={state.collected} total={state.total} onNext={handleNext} />
-        )}
       </View>
     );
   }
@@ -163,10 +159,6 @@ export default function MouseMazeGame() {
         total={state.total}
         onHint={handleHint}
       />
-
-      {showWin && (
-        <WinOverlay collected={state.collected} total={state.total} onNext={handleNext} />
-      )}
     </View>
   );
 }

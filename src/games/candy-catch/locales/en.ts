@@ -7,21 +7,10 @@ export const en = {
   },
   hud: {
     level: 'Level {{level}}',
-    score: 'Score {{score}}',
   },
   start: {
     title: 'Catch the treats!',
     tap: 'Tap to start',
-  },
-  win: {
-    title: 'Yummy!',
-    next: 'Next level',
-    done: 'All caught!',
-  },
-  lose: {
-    title: 'Oops!',
-    subtitle: 'Out of hearts',
-    retry: 'Try again',
   },
   a11y: {
     basket: 'Basket, drag to move',

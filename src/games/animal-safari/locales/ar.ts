@@ -37,9 +37,4 @@ export const ar: GameTranslations = {
     bird: 'عصفور',
     bee: 'نحلة',
   },
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'الحيوان التالي',
-    finish: 'أنهيت كل شيء!',
-  },
 };

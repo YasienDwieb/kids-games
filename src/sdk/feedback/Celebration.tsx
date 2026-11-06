@@ -56,6 +56,8 @@ const PRAISE_MS: Record<string, readonly number[]> = {
 const PRAISE_TAIL_MS = 250;
 
 const DURATION: Record<CelebrationSize, number> = { small: 1150, big: 1900 };
+/** How far past its planned end a burst may run before it counts as done. */
+const BURST_GRACE_MS = 400;
 const PIECES: Record<CelebrationSize, number> = { small: 18, big: 36 };
 const PIECE_COLORS = [
   ACCENTS.pink.base,
@@ -238,6 +240,10 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
         Animated.timing(bubble, { toValue: 0, duration: 220, useNativeDriver: true }),
       ]),
     ]).start(() => onDone(burst.id));
+    // Games wait on this to move on, and springs run in slow motion when frames
+    // drop (a 3D cheer on a weak phone), so the clock has the last word.
+    const deadline = setTimeout(() => onDone(burst.id), visible + BURST_GRACE_MS);
+    return () => clearTimeout(deadline);
   }, [bubble, burst.id, duration, visible, onDone, progress]);
 
   const fade = progress.interpolate({ inputRange: [0, 0.7, 1], outputRange: [1, 1, 0] });

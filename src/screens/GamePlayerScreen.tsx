@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
   CelebrationProvider,
+  GameExitContext,
   getGame,
   GameShell,
   ScreenBackContext,
@@ -61,6 +62,7 @@ export function GamePlayerScreen({ route, navigation }: Props) {
 
   return (
     <ScreenBackContext.Provider value={setInterceptor}>
+      <GameExitContext.Provider value={navigation.goBack}>
       <SoundOverridesContext.Provider value={game.sounds ?? NO_OVERRIDES}>
         {/* Celebrations float over the whole screen, in both layout modes. */}
         <CelebrationProvider>
@@ -83,6 +85,7 @@ export function GamePlayerScreen({ route, navigation }: Props) {
           </PlayLimitGate>
         </CelebrationProvider>
       </SoundOverridesContext.Provider>
+      </GameExitContext.Provider>
     </ScreenBackContext.Provider>
   );
 }
