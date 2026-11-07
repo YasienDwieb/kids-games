@@ -31,7 +31,6 @@ export type Challenge = {
   targetHex?: string;
   /** One way to make it — shown as the hint (🔴 + 🟡), so no reading is needed. */
   recipe: PigmentId[];
-  hint?: string;
   difficulty: 'easy' | 'medium' | 'hard';
   /** A generated "mystery colour" from the endless pool. */
   endless?: boolean;

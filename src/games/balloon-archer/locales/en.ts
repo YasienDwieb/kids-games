@@ -4,17 +4,9 @@ export const en = {
     shortName: 'Archer',
     description: 'Aim your bow and pop the balloons!',
   },
-  hud: {
-    level: 'Level {{n}}',
-  },
-  overlay: {
-    wonAll: 'You won them all!',
-    niceShooting: 'Nice shooting!',
-    outOfArrows: 'Out of arrows!',
-    poppedCount: '{{popped}}/{{quota}} popped',
-    playAgain: 'Play again',
-    nextLevel: 'Next level →',
-    tryAgain: 'Try again',
+  // Spoken prompt (docs/VOICE.md).
+  say: {
+    pop: 'Pop the balloons!',
   },
 } as const;
 

@@ -41,6 +41,16 @@
    }
   },
   {
+   "id": "balloon-archer",
+   "name": "Balloon Archer",
+   "icon": "🏹",
+   "accent": {
+    "base": "#7DDB3C",
+    "deep": "#5CB81E",
+    "tint": "#E8F8DA"
+   }
+  },
+  {
    "id": "simple-pairs",
    "name": "Simple Pairs",
    "icon": "🃏",
@@ -986,6 +996,16 @@
   },
   {
    "lang": "ar",
+   "text": "فَرْقِعِ البالونات!",
+   "uses": [
+    {
+     "game": "balloon-archer",
+     "where": "Level start"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "فيل",
    "uses": [
     {
@@ -1173,6 +1193,16 @@
     {
      "game": "trace-it",
      "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "لَوِّنْها بِهذا اللَّون!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Mystery colour"
     }
    ]
   },
@@ -2176,6 +2206,16 @@
   },
   {
    "lang": "en",
+   "text": "Paint it this color!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Mystery colour"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "Pink",
    "uses": [
     {
@@ -2261,6 +2301,16 @@
     {
      "game": "count-and-pop",
      "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop the balloons!",
+   "uses": [
+    {
+     "game": "balloon-archer",
+     "where": "Level start"
     }
    ]
   },
