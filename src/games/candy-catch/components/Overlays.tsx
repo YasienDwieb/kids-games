@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ACCENTS,
   ClayEmoji,
@@ -97,7 +98,7 @@ function Stage({ beat, delay }: { beat: Beat; delay: number }) {
           styles.falling,
           {
             opacity: drop.interpolate({ inputRange: [0, 0.9, 1], outputRange: [1, 1, 0] }),
-            transform: [{ translateY: drop.interpolate({ inputRange: [0, 1], outputRange: [-12, STAGE_DROP] }) }],
+            transform: [{ translateY: drop.interpolate({ inputRange: [0, 1], outputRange: [0, STAGE_DROP] }) }],
           },
         ]}
       >
@@ -128,17 +129,20 @@ function Stage({ beat, delay }: { beat: Beat; delay: number }) {
 export function StartOverlay({ onStart }: { onStart: () => void }) {
   const { t } = useTranslation();
   const beat = useLoop(900);
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.theatre}>
+    // Starts below the top bar, so the back button and hearts stay in reach.
+    <View style={[styles.theatre, { top: insets.top + TOUCH_TARGET.recommended + SPACING.md }]}>
       <Stage beat={YUM} delay={0} />
       <Animated.View style={pulse(beat, 0.08)}>
         <PressableButton
           accessibilityLabel={t('candy-catch:start.tap')}
           accent="pink"
           onPress={onStart}
-          style={styles.play}
         >
-          <Icon name="play" size={44} />
+          <View style={styles.play}>
+            <Icon name="play" size={44} />
+          </View>
         </PressableButton>
       </Animated.View>
       <Stage beat={YUCK} delay={700} />
@@ -158,8 +162,6 @@ export function LoseOverlay() {
 const styles = StyleSheet.create({
   theatre: {
     position: 'absolute',
-    // Below the top bar, so the back button and hearts stay in reach.
-    top: TOUCH_TARGET.recommended + SPACING.md,
     start: 0,
     end: 0,
     bottom: 0,
@@ -186,7 +188,7 @@ const styles = StyleSheet.create({
   falling: { position: 'absolute', top: 6 },
   reward: { position: 'absolute', top: 78 },
   basket: { position: 'absolute', bottom: -6 },
-  play: { minWidth: 112, minHeight: 96 },
+  play: { paddingVertical: SPACING.md, paddingHorizontal: SPACING.lg },
   backdrop: {
     ...StyleSheet.absoluteFill,
     backgroundColor: COLORS.overlay,
