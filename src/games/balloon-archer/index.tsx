@@ -1,31 +1,38 @@
-import { Suspense, lazy, useCallback, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import {
+  currentLanguage,
+  DemoHand,
   useSound,
   useLevels,
   levelsFromGenerator,
   ResumePrompt,
   tierFactor,
   useAdaptive,
+  useGuide,
+  useRoundEnd,
 } from '@/sdk';
 import { Archer } from './components/Archer';
 import { Balloon } from './components/Balloon';
 import { Arrow } from './components/Arrow';
 import { LaneGuide } from './components/LaneGuide';
 import { Hud } from './components/Hud';
-import { LevelOverlay } from './components/LevelOverlay';
+import { OutOfArrows } from './components/OutOfArrows';
 import { useArcheryGame } from './hooks/useArcheryGame';
 import { buildLevel, TOTAL_LEVELS } from './utils/levels';
+import { popPhrase } from './phrase';
 
 // three + react-three-fiber + expo-gl are only evaluated once a level is on screen.
 const Playfield3D = lazy(() => import('./components/Playfield3D').then((m) => ({ default: m.Playfield3D })));
 
 const MEADOW = require('./assets/meadow.jpg');
+/** The pause after running out of arrows, before the level starts again. */
+const RETRY_PAUSE_MS = 1500;
 
 export default function BalloonArcherGame() {
   const { play } = useSound();
   const source = useMemo(() => levelsFromGenerator(buildLevel, { count: TOTAL_LEVELS }), []);
-  const { status, data, level, isLast, start, startOver, advance } = useLevels({
+  const { status, data, level, isLast, start, startOver, advance, finish } = useLevels({
     gameId: 'balloon-archer',
     source,
   });
@@ -43,23 +50,36 @@ export default function BalloonArcherGame() {
   );
 
   const [area, setArea] = useState({ width: 0, height: 0 });
-  const [overlay, setOverlay] = useState<{ variant: 'cleared' | 'failed'; stars: number } | null>(
-    null,
-  );
+  // 'cleared' holds the field still while the celebration plays.
+  const [overlay, setOverlay] = useState<'cleared' | 'failed' | null>(null);
+  const roundEnd = useRoundEnd();
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(retryTimer.current), []);
 
   const onPop = useCallback(() => play('balloon'), [play]);
+  // Read through refs: the game loop keeps the first callbacks it was given.
+  const levelEnd = useRef({ isLast, advance, finish });
+  levelEnd.current = { isLast, advance, finish };
   const onCleared = useCallback(
     (stars: number) => {
       play('win');
       record(true);
-      setOverlay({ variant: 'cleared', stars });
+      setOverlay('cleared');
+      const { isLast: last, advance: next, finish: end } = levelEnd.current;
+      if (last) void roundEnd.end(end);
+      else
+        void roundEnd.next('big', () => {
+          setOverlay(null);
+          next(stars);
+        });
     },
-    [play, record],
+    [play, record, roundEnd],
   );
+
   const onFailed = useCallback(() => {
     play('wrong');
     record(false);
-    setOverlay({ variant: 'failed', stars: 0 });
+    setOverlay('failed');
   }, [play, record]);
 
   const game = useArcheryGame({
@@ -71,19 +91,36 @@ export default function BalloonArcherGame() {
     onFailed,
   });
 
-  const handleNext = useCallback(() => {
-    play('next');
-    const stars = overlay?.stars ?? 0;
-    setOverlay(null);
-    if (isLast) startOver({ finished: true });
-    else advance(stars);
-  }, [advance, isLast, overlay, play, startOver]);
+  const retryRef = useRef(game.retry);
+  retryRef.current = game.retry;
+  const onFailedNow = useCallback(() => {
+    retryTimer.current = setTimeout(() => {
+      play('next');
+      setOverlay(null);
+      retryRef.current();
+    }, RETRY_PAUSE_MS);
+  }, [play]);
+  useEffect(() => {
+    if (overlay === 'failed') onFailedNow();
+  }, [overlay, onFailedNow]);
 
-  const handleRetry = useCallback(() => {
-    play('next');
-    setOverlay(null);
-    game.retry();
-  }, [game, play]);
+  // Press anywhere to draw the bow, slide to pick the height, let go to shoot.
+  const guide = useGuide({
+    id: 'balloon-archer',
+    phrase: popPhrase(currentLanguage()),
+    roundKey: level,
+    active: status === 'playing' && overlay === null,
+  });
+  const demoPoints = useMemo(
+    () =>
+      area.height > 0
+        ? [
+            { x: game.archerX + 70, y: area.height * 0.62 },
+            { x: game.archerX + 70, y: area.height * 0.34 },
+          ]
+        : [],
+    [area.height, game.archerX],
+  );
 
   const onLayout = useCallback((e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -102,7 +139,7 @@ export default function BalloonArcherGame() {
   const w = game.world;
 
   return (
-    <View style={styles.root} onLayout={onLayout} {...game.panHandlers}>
+    <View style={styles.root} onLayout={onLayout} onTouchStart={guide.poke} {...game.panHandlers}>
       <Image source={MEADOW} style={styles.backdrop} resizeMode="cover" />
 
       {area.width > 0 && (
@@ -125,19 +162,11 @@ export default function BalloonArcherGame() {
         </>
       )}
 
-      <Hud level={level} popped={w.popped} quota={data.quota} arrowsLeft={w.arrowsLeft} />
+      <Hud popped={w.popped} quota={data.quota} arrowsLeft={w.arrowsLeft} />
 
-      {overlay && (
-        <LevelOverlay
-          variant={overlay.variant}
-          stars={overlay.stars}
-          isLast={isLast}
-          popped={w.popped}
-          quota={data.quota}
-          onNext={handleNext}
-          onRetry={handleRetry}
-        />
-      )}
+      {guide.showDemo && demoPoints.length > 1 ? <DemoHand mode="drag" points={demoPoints} /> : null}
+
+      {overlay === 'failed' && <OutOfArrows />}
     </View>
   );
 }

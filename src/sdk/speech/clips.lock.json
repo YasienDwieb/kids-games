@@ -538,6 +538,13 @@
   "durationS": 1.9,
   "generatedAt": "2026-10-24"
  },
+ "ar:فَرْقِعِ البالونات!": {
+  "file": "ar-b5d21d2afe.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-07"
+ },
  "ar:قطة": {
   "file": "ar-6dc3b679bc.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
@@ -657,6 +664,13 @@
   "durationS": 2.09,
   "generatedAt": "2026-10-24"
  },
+ "ar:لَوِّنْها بِهذا اللَّون!": {
+  "file": "ar-9b5d51843c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.06,
+  "generatedAt": "2026-11-07"
+ },
  "ar:ماذا يَأتي بَعدَ ذلِكَ؟": {
   "file": "ar-f97d02a735.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
@@ -698,6 +712,13 @@
   "take": 1,
   "durationS": 2.14,
   "generatedAt": "2026-10-24"
+ },
+ "ar:هَيّا! لِنَتَسابَقْ إلى خَطِّ النِّهاية!": {
+  "file": "ar-6791230469.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 3.29,
+  "generatedAt": "2026-11-07"
  },
  "ar:وردي": {
   "file": "ar-dc8eaa79ac.m4a",
@@ -1196,6 +1217,13 @@
   "durationS": 2.02,
   "generatedAt": "2026-10-24"
  },
+ "en:Paint it this color!": {
+  "file": "en-50b4d0809c.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.18,
+  "generatedAt": "2026-11-07"
+ },
  "en:Pink": {
   "file": "en-7acaab55c7.m4a",
   "voice": "en-US-Chirp3-HD-Leda",
@@ -1258,6 +1286,13 @@
   "take": 2,
   "durationS": 1.66,
   "generatedAt": "2026-11-06"
+ },
+ "en:Pop the balloons!": {
+  "file": "en-975d2b9c94.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.25,
+  "generatedAt": "2026-11-07"
  },
  "en:Pop three!": {
   "file": "en-82de71f8cc.m4a",
@@ -1342,6 +1377,13 @@
   "take": 1,
   "durationS": 1.66,
   "generatedAt": "2026-10-24"
+ },
+ "en:Vroom! Let's race to the finish!": {
+  "file": "en-de4972448e.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.5,
+  "generatedAt": "2026-11-07"
  },
  "en:W! Whale": {
   "file": "en-a19df39d37.m4a",

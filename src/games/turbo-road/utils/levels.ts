@@ -13,12 +13,12 @@ import {
   MAX_RACE_LENGTH,
   RACE_LENGTH_BASE,
   RACE_LENGTH_PER_LEVEL,
-  RIVAL_EMOJI,
   SPEED_PER_LEVEL,
   THEME_ORDER,
   TRAFFIC_MIN_LEVEL,
   TRAFFIC_SPEED_FACTOR,
   VIEW_DIST,
+  RIVAL_EMOJI,
 } from '../constants';
 import type {
   EntityKind,

@@ -1,5 +1,5 @@
 import { ACCENTS } from '@/sdk';
-import type { CarDef, RoadTheme, ThemeId, TrimDef } from './types';
+import type { CarDef, RoadTheme, ThemeId } from './types';
 
 /* ---------------- gameplay tuning ---------------- */
 
@@ -82,9 +82,6 @@ export const RIVAL_MIN_GAP = 90;
 
 /** Tilt steering: gravity (g units) along screen-right for FULL deflection
     (center lane → edge lane). ≈16° of phone tilt. */
-export const TILT_FULL = 0.28;
-/** Ignore tilt below this (g) so a roughly-level phone doesn't drift. */
-export const TILT_DEADZONE = 0.035;
 
 /** Progress is quantized to this step before reaching React state, so the
     progress bar re-renders ~100 times per race instead of every frame. */
@@ -150,26 +147,14 @@ export const CARS: readonly CarDef[] = [
   { id: 'moto', emoji: '🏍️', price: 1500, stats: { speed: 1.1, grip: 0.9 } },
 ];
 
-/** Stat-bar rendering range in the garage (maps stat → 0..1 fill). */
-export const STAT_RANGE = { min: 0.85, max: 1.18 };
-
-export const TRIMS: readonly TrimDef[] = [
-  { id: 'coral', ...ACCENTS.coral },
-  { id: 'green', ...ACCENTS.green },
-  { id: 'blue', ...ACCENTS.blue },
-  { id: 'orange', ...ACCENTS.orange },
-];
-
 export const DEFAULT_GARAGE = {
   coins: 0,
   owned: ['turbo' as const],
   selected: 'turbo' as const,
-  trim: 'coral' as const,
 };
 
-export const DEFAULT_PREFS = {
-  control: 'drag' as const,
-};
+/** A new car opens every this many levels of the road trip. */
+export const CAR_UNLOCK_EVERY = 2;
 
 /* ---------------- track themes (Sunny Adventure) ---------------- */
 
@@ -225,7 +210,6 @@ export const THEME_ORDER: readonly ThemeId[] = [
 
 /* ---------------- rival emoji ---------------- */
 
-export const RIVAL_EMOJI = ['🚙', '🚕'] as const;
 
 /* ---------------- missions (rolling, coin-rewarded) ---------------- */
 
@@ -244,3 +228,10 @@ export const MISSION_LADDERS: Record<
 
 /** The three mission slots cycle through these types. */
 export const MISSION_TYPES = ['coins', 'first', 'races', 'boost', 'clean'] as const;
+
+/* ---------------- rival emoji ---------------- */
+
+export const RIVAL_EMOJI = ['🚙', '🚕'] as const;
+
+/** A place as a picture, so it reads without text. */
+export const PLACE_MEDAL = { 1: '🥇', 2: '🥈', 3: '🥉' } as const;

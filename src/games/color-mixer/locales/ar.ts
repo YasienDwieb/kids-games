@@ -8,6 +8,10 @@ export const ar: GameTranslations = {
   },
 
   title: 'خلّاط الألوان',
+  // Spoken prompt for a mystery colour (docs/VOICE.md).
+  say: {
+    paint: 'لَوِّنْها بِهذا اللَّون!',
+  },
   defaultSavedName: 'لوني',
 
   mode: {
@@ -21,7 +25,6 @@ export const ar: GameTranslations = {
 
   actions: {
     undo: '↩️ تراجع',
-    done: 'تم!',
     clear: '🗑️ مسح',
     save: '💾 حفظ',
   },
@@ -29,7 +32,6 @@ export const ar: GameTranslations = {
   mixingZone: {
     dragHint: 'اِسْحَبْ لَوْنًا إِلى الوِعاء!',
   },
-
 
   colors: {
     red: 'أحمر',
@@ -45,52 +47,13 @@ export const ar: GameTranslations = {
     lightBlue: 'أزرق فاتح',
   },
 
-
-  challengeHints: {
-    c1: 'امزج لوناً ساخناً مع لون مشمس',
-    c2: 'امزج لون السماء مع ضوء الشمس',
-    c3: 'امزج النار مع الماء',
-    c4: 'اجعل الأحمر أفتح',
-    c5: 'اجعل الأزرق أفتح',
-    c6: 'امزج كل الألوان الأساسية',
-  },
-
-  picker: {
-    title: 'التحديات',
-    complete: 'مكتملة',
-    endless: 'ألوان غامضة أكثر',
-    endlessSolved: 'حللت {{n}}',
-    allDone: 'أتممت كل التحديات! 🏆',
-    backButton: 'المزج ›',
-    difficulty: {
-      easy: 'مبتدئ',
-      medium: 'متوسط',
-      hard: 'متقدم',
-    },
-  },
-
-  card: {
-    mysteryColor: 'لون غامض',
-  },
-
   challenge: {
     makeThisColor: 'اِصنعْ هذا اللون:',
-    needHint: 'تريد تلميحاً؟',
-    backLabel: 'رجوع للتحديات',
-    meter: {
-      perfect: 'ممتاز!',
-      soClose: 'قريب جداً!',
-      gettingWarmer: 'تقترب أكثر…',
-      keepMixing: 'استمر في المزج!',
-    },
-    success: 'أحسنت!',
-    next: 'التحدي التالي',
   },
 
   discovery: {
     title: 'لون جديد!',
   },
-
 
   collection: {
     done: 'تمّ',

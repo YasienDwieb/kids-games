@@ -97,16 +97,22 @@ export const TIMING = {
   COLOR_SPAWN_DELAY: 200,
 };
 
+/** What each authored challenge paints: a thing a child already knows in that colour. */
+export const CHALLENGE_THINGS: Record<string, string> = { c1: '🍊', c2: '🐸', c3: '🍇', c4: '🌸', c5: '🐋', c6: '🐴' };
+
+/** Things for the endless mystery colours, taken in turn. */
+export const ENDLESS_THINGS = ['🎈', '⭐', '🚗', '🪁', '⚽', '🌂', '🧶', '🐟', '🦋', '🐌'] as const;
+
 /** The authored challenges — each a famous colour. Endless ones come from utils/challenges. */
 export const CHALLENGES: (Challenge & { targetColor: ColorId })[] = [
   // Easy — basic secondary colors
-  { id: 'c1', targetColor: 'orange', recipe: ['red', 'yellow'], hint: 'Mix a hot color with a sunny color', difficulty: 'easy' },
-  { id: 'c2', targetColor: 'green', recipe: ['blue', 'yellow'], hint: 'Mix the sky with sunshine', difficulty: 'easy' },
-  { id: 'c3', targetColor: 'purple', recipe: ['red', 'blue'], hint: 'Mix fire with water', difficulty: 'easy' },
+  { id: 'c1', targetColor: 'orange', recipe: ['red', 'yellow'], difficulty: 'easy' },
+  { id: 'c2', targetColor: 'green', recipe: ['blue', 'yellow'], difficulty: 'easy' },
+  { id: 'c3', targetColor: 'purple', recipe: ['red', 'blue'], difficulty: 'easy' },
   // Medium — requires white or all primaries
-  { id: 'c4', targetColor: 'pink', recipe: ['red', 'white'], hint: 'Make red lighter', difficulty: 'medium' },
-  { id: 'c5', targetColor: 'lightBlue', recipe: ['blue', 'white'], hint: 'Make blue lighter', difficulty: 'medium' },
-  { id: 'c6', targetColor: 'brown', recipe: ['red', 'yellow', 'blue'], hint: 'Mix ALL the primary colors', difficulty: 'hard' },
+  { id: 'c4', targetColor: 'pink', recipe: ['red', 'white'], difficulty: 'medium' },
+  { id: 'c5', targetColor: 'lightBlue', recipe: ['blue', 'white'], difficulty: 'medium' },
+  { id: 'c6', targetColor: 'brown', recipe: ['red', 'yellow', 'blue'], difficulty: 'hard' },
 ];
 
 /**

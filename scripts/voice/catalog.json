@@ -41,6 +41,26 @@
    }
   },
   {
+   "id": "turbo-road",
+   "name": "Turbo Road",
+   "icon": "🏎️",
+   "accent": {
+    "base": "#FF6B5E",
+    "deep": "#E84B3D",
+    "tint": "#FFE3DF"
+   }
+  },
+  {
+   "id": "balloon-archer",
+   "name": "Balloon Archer",
+   "icon": "🏹",
+   "accent": {
+    "base": "#7DDB3C",
+    "deep": "#5CB81E",
+    "tint": "#E8F8DA"
+   }
+  },
+  {
    "id": "simple-pairs",
    "name": "Simple Pairs",
    "icon": "🃏",
@@ -986,6 +1006,16 @@
   },
   {
    "lang": "ar",
+   "text": "فَرْقِعِ البالونات!",
+   "uses": [
+    {
+     "game": "balloon-archer",
+     "where": "Level start"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "فيل",
    "uses": [
     {
@@ -1178,6 +1208,16 @@
   },
   {
    "lang": "ar",
+   "text": "لَوِّنْها بِهذا اللَّون!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Mystery colour"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "ماذا يَأتي بَعدَ ذلِكَ؟",
    "uses": [
     {
@@ -1245,6 +1285,16 @@
     {
      "game": "trace-it",
      "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "هَيّا! لِنَتَسابَقْ إلى خَطِّ النِّهاية!",
+   "uses": [
+    {
+     "game": "turbo-road",
+     "where": "Drive start"
     }
    ]
   },
@@ -2176,6 +2226,16 @@
   },
   {
    "lang": "en",
+   "text": "Paint it this color!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Mystery colour"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "Pink",
    "uses": [
     {
@@ -2261,6 +2321,16 @@
     {
      "game": "count-and-pop",
      "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop the balloons!",
+   "uses": [
+    {
+     "game": "balloon-archer",
+     "where": "Level start"
     }
    ]
   },
@@ -2471,6 +2541,16 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Vroom! Let's race to the finish!",
+   "uses": [
+    {
+     "game": "turbo-road",
+     "where": "Drive start"
     }
    ]
   },

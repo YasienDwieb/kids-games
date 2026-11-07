@@ -1,25 +1,21 @@
-/* Garage state (wallet coins, owned cars, selected car + trim), persisted via
-   the SDK store under `kg:turbo-road:garage`. All hook instances stay live
-   through the store's subscribe, so the start screen wallet updates the
-   moment a race banks coins. */
+/* The car the child drives, persisted under `kg:turbo-road:garage`. Cars open
+   up as the road trip goes on (CAR_UNLOCK_EVERY levels each); any car bought in
+   the old coin shop stays open too. */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createStore } from '@/sdk';
-import { CARS, DEFAULT_GARAGE } from '../constants';
-import type { CarId, GarageState, TrimId } from '../types';
+import { CAR_UNLOCK_EVERY, CARS, DEFAULT_GARAGE } from '../constants';
+import type { CarId, GarageState } from '../types';
 
 const garageStore = createStore<GarageState>('turbo-road:garage', DEFAULT_GARAGE);
 
-export function useGarage(): {
-  garage: GarageState;
-  selectCar: (id: CarId) => void;
-  selectTrim: (id: TrimId) => void;
-  unlockCar: (id: CarId) => boolean;
-  addCoins: (n: number) => void;
-} {
+/** Cars open at this point in the trip (level = the next one to drive). */
+export function carsUnlockedAt(level: number, owned: readonly CarId[] = []): CarId[] {
+  return CARS.filter((c, i) => level > i * CAR_UNLOCK_EVERY || owned.includes(c.id)).map((c) => c.id);
+}
+
+export function useGarage(): { garage: GarageState; selectCar: (id: CarId) => void } {
   const [garage, setGarage] = useState<GarageState>(DEFAULT_GARAGE);
-  // Synchronous mirror so mutators (and unlockCar's boolean) never read stale
-  // state when called before a re-render or right after another mutation.
   const latest = useRef<GarageState>(garage);
 
   useEffect(() => {
@@ -39,57 +35,14 @@ export function useGarage(): {
     };
   }, []);
 
-  const commit = useCallback((next: GarageState) => {
+  const selectCar = useCallback((id: CarId) => {
+    const g = latest.current;
+    if (g.selected === id) return;
+    const next = { ...g, selected: id };
     latest.current = next;
     setGarage(next);
-    garageStore.set(next).catch(() => {}); // persist + notify other instances
+    garageStore.set(next).catch(() => {});
   }, []);
 
-  const selectCar = useCallback(
-    (id: CarId) => {
-      const g = latest.current;
-      if (!g.owned.includes(id) || g.selected === id) return;
-      commit({ ...g, selected: id });
-    },
-    [commit],
-  );
-
-  const selectTrim = useCallback(
-    (id: TrimId) => {
-      const g = latest.current;
-      if (g.trim === id) return;
-      commit({ ...g, trim: id });
-    },
-    [commit],
-  );
-
-  /** Buy a car: checks the CARS price, deducts coins, adds to owned and
-      selects it. Returns false when already owned / unknown / unaffordable. */
-  const unlockCar = useCallback(
-    (id: CarId): boolean => {
-      const g = latest.current;
-      if (g.owned.includes(id)) return false;
-      const car = CARS.find((c) => c.id === id);
-      if (!car || g.coins < car.price) return false;
-      commit({
-        ...g,
-        coins: g.coins - car.price,
-        owned: [...g.owned, id],
-        selected: id,
-      });
-      return true;
-    },
-    [commit],
-  );
-
-  const addCoins = useCallback(
-    (n: number) => {
-      if (n <= 0) return;
-      const g = latest.current;
-      commit({ ...g, coins: g.coins + n });
-    },
-    [commit],
-  );
-
-  return { garage, selectCar, selectTrim, unlockCar, addCoins };
+  return { garage, selectCar };
 }
