@@ -56,6 +56,7 @@ it('exports the speaking games in home order', () => {
     'trace-it',
     'mouse-maze',
     'color-mixer',
+    'turbo-road',
     'balloon-archer',
     'simple-pairs',
     'match-up',

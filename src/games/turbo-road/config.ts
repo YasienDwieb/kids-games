@@ -5,7 +5,7 @@ import TurboRoad from './index';
 registerGame({
   id: 'turbo-road',
   name: 'Turbo Road',
-  description: 'A sunny road-trip race — steer, dodge and collect!',
+  description: 'A sunny road trip — steer, dodge and collect!',
   icon: '🏎️',
   cover: require('./cover.jpg'),
   ageRange: { min: 4, max: 12 },

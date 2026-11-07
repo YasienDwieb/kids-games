@@ -713,6 +713,13 @@
   "durationS": 2.14,
   "generatedAt": "2026-10-24"
  },
+ "ar:هَيّا! لِنَتَسابَقْ إلى خَطِّ النِّهاية!": {
+  "file": "ar-6791230469.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 3.29,
+  "generatedAt": "2026-11-07"
+ },
  "ar:وردي": {
   "file": "ar-dc8eaa79ac.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
@@ -1370,6 +1377,13 @@
   "take": 1,
   "durationS": 1.66,
   "generatedAt": "2026-10-24"
+ },
+ "en:Vroom! Let's race to the finish!": {
+  "file": "en-de4972448e.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.5,
+  "generatedAt": "2026-11-07"
  },
  "en:W! Whale": {
   "file": "en-a19df39d37.m4a",

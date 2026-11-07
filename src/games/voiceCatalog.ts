@@ -19,6 +19,7 @@ import { numberPhrase } from './numbers-land/phrase';
 import { puzzlePhrase } from './shape-detective/phrase';
 import { pairsPhrase } from './simple-pairs/phrase';
 import { charsFor } from './trace-it/catalog';
+import { drivePhrase } from './turbo-road/phrase';
 import { charPhrase } from './trace-it/phrase';
 
 /** Where a phrase is heard: a game id and a short label for the Voice Studio. */
@@ -70,6 +71,7 @@ export function voiceCatalog(): VoiceLine[] {
     add(lang, pairsPhrase(lang), { game: 'simple-pairs', where: 'Board' });
     add(lang, mazePhrase(lang), { game: 'mouse-maze', where: 'Maze' });
     add(lang, archerPhrase(lang), { game: 'balloon-archer', where: 'Level start' });
+    add(lang, drivePhrase(lang), { game: 'turbo-road', where: 'Drive start' });
     for (const [track, where] of [['warmup', 'Warm-up'], ['numbers', 'Numbers tab']] as const) {
       charsFor(track, 'latin').forEach((c) => {
         const p = charPhrase(c, lang);

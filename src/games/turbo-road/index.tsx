@@ -1,74 +1,59 @@
-/* Turbo Road — game root (bare mode: the GamePlayer screen renders only the
-   floating BackButton; this component owns the rest of the layout).
+/* Turbo Road — a sunny road trip (bare mode: the GamePlayer screen renders only
+   the floating BackButton; this component owns the rest of the layout).
 
-   Views: start (road-trip map) → race (Playfield + Hud + ProgressBar, with the
-   WinOverlay on top once the race finishes) → garage (cars + trims). Level
-   progression is the SDK `useLevels` checkpoint; the coin wallet lives in the
-   garage store and is banked exactly once per race in `handleFinish`. */
+   Views: trip (the map, in pictures) → drive (a race against two rivals:
+   Playfield + Hud + progress rail) → back to the map, with the car one stop
+   further on. A car picker opens from the map. Places show as medals; every
+   finish moves the trip on, and the place sets the stars. Progression is the
+   SDK `useLevels` checkpoint. */
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
 import {
+  AreaDemo,
   COLORS,
+  currentLanguage,
+  EmojiImage,
   levelsFromGenerator,
   ResumePrompt,
   SafeContainer,
   tierFactor,
   useAdaptive,
+  useGuide,
   useLevels,
   useLoopSound,
+  useRoundEnd,
   useScreenBack,
   useSound,
-  useTilt,
+  useTranslation,
 } from '@/sdk';
-import { GarageScreen } from './components/GarageScreen';
+import { CarPicker } from './components/CarPicker';
 import { Hud } from './components/Hud';
 import { PauseOverlay } from './components/PauseOverlay';
 import { ProgressBar } from './components/ProgressBar';
-import { StartScreen } from './components/StartScreen';
-import { WinOverlay } from './components/WinOverlay';
-import { useGarage } from './hooks/useGarage';
-import { useMissions } from './hooks/useMissions';
-import { usePrefs } from './hooks/usePrefs';
+import { TripScreen } from './components/TripScreen';
+import { carsUnlockedAt, useGarage } from './hooks/useGarage';
 import { useRaceGame, type RaceResult } from './hooks/useRaceGame';
 import { generateLevel } from './utils/levels';
-import {
-  CARS,
-  FINISH_CELEBRATION_MS,
-  THEME_ORDER,
-  THEMES,
-  TILT_DEADZONE,
-  TILT_FULL,
-  TRIMS,
-} from './constants';
-import type {
-  CarDef,
-  CarId,
-  ControlMode,
-  LevelData,
-  RoadTheme,
-  ThemeId,
-  TrimDef,
-  TrimId,
-} from './types';
+import { CARS, FINISH_CELEBRATION_MS, PLACE_MEDAL, THEMES } from './constants';
+import { drivePhrase } from './phrase';
+import type { CarDef, CarId, LevelData, RoadTheme } from './types';
 
-type ViewName = 'start' | 'race' | 'garage';
+type ViewName = 'trip' | 'drive' | 'cars';
 
-// three + react-three-fiber + expo-gl are only evaluated once a race actually uses the 3D road.
+// three + react-three-fiber + expo-gl are only evaluated once a drive actually uses the 3D road.
 const Playfield3D = lazy(() =>
   import('./components/Playfield3D').then((m) => ({ default: m.Playfield3D })),
 );
 
-/* Inner race screen — keyed by level+attempt from the root so every entry
-   into the race view gets a fresh world + rAF loop (useRaceGame restarts on
-   level prop identity change; a remount covers the same-level replay case). */
-function Race({
+/* One drive — keyed by level+attempt from the root so each one gets a fresh
+   world + loop. */
+function Drive({
   level,
   levelNumber,
   theme,
   playerEmoji,
   car,
-  control,
   onFinish,
   onExit,
 }: {
@@ -77,7 +62,6 @@ function Race({
   theme: RoadTheme;
   playerEmoji: string;
   car: CarDef;
-  control: ControlMode;
   onFinish: (result: RaceResult) => void;
   onExit: () => void;
 }) {
@@ -99,21 +83,17 @@ function Race({
     return () => sub.remove();
   }, [pause]);
 
-  // Tilt steering: deadzone (a roughly-level phone holds the center lane,
-  // no drift) + a gentle response curve, mapped to a lane target where
-  // TILT_FULL g reaches the edge lanes.
-  useTilt(control === 'tilt', (tilt) => {
-    const mag = Math.abs(tilt);
-    if (mag < TILT_DEADZONE) {
-      steerTo(1);
-      return;
-    }
-    const n = Math.min(1, (mag - TILT_DEADZONE) / (TILT_FULL - TILT_DEADZONE));
-    steerTo(1 + Math.sign(tilt) * Math.pow(n, 1.2));
+  // Says what to do as the drive starts; the first time, a hand sweeps side to
+  // side to show the steering, and both come back if the child stops steering.
+  const guide = useGuide({
+    id: 'turbo-road',
+    phrase: drivePhrase(currentLanguage()),
+    roundKey: levelNumber,
+    active: ui.phase === 'racing',
   });
 
   return (
-    <View style={styles.flex}>
+    <View style={styles.flex} onTouchStart={guide.poke} onTouchMove={guide.poke}>
       <Suspense fallback={<View style={[styles.flex, { backgroundColor: theme.sky }]} />}>
         <Playfield3D
           carId={car.id}
@@ -125,17 +105,11 @@ function Race({
           onSteerTo={steerTo}
         />
       </Suspense>
+      {guide.showDemo ? <AreaDemo mode="sweep" /> : null}
       {/* Hud is not inset-aware; float it inside the safe area over the
           full-bleed playfield. pointerEvents box-none keeps steering live. */}
       <SafeContainer backgroundColor="transparent" style={styles.hudLayer}>
-        <Hud
-          level={levelNumber}
-          place={ui.place}
-          coins={ui.coins}
-          shieldActive={ui.shieldActive}
-          magnetActive={ui.magnetActive}
-          onPause={pause}
-        />
+        <Hud place={ui.place} shieldActive={ui.shieldActive} magnetActive={ui.magnetActive} onPause={pause} />
       </SafeContainer>
       <ProgressBar progress={ui.progress} />
       {ui.phase === 'paused' && <PauseOverlay onResume={resume} onExit={onExit} />}
@@ -145,102 +119,71 @@ function Race({
 
 export default function TurboRoadGame() {
   const { play } = useSound();
+  const { t } = useTranslation();
   const source = useMemo(() => levelsFromGenerator(generateLevel), []);
-  const { status, data, level, score, start, startOver, advance } = useLevels({
+  const { status, data, level, start, startOver, advance } = useLevels({
     gameId: 'turbo-road',
     source,
   });
-  const { garage, selectCar, selectTrim, unlockCar, addCoins } = useGarage();
-  const { prefs, setControl } = usePrefs();
-  // Adaptive pace: winning keeps nudging the whole race (rivals too) a little
-  // faster; finishing last eases it. Layered on the age-band speed factor.
+  const { garage, selectCar } = useGarage();
+  // Adaptive pace: an easy drive nudges the road a little faster, a bumpy one
+  // eases it. Layered on the age-band speed factor.
   const { tier, record } = useAdaptive('turbo-road');
-  const { missions, recordRace, claim } = useMissions();
+  const roundEnd = useRoundEnd();
 
-  const [view, setView] = useState<ViewName>('start');
-  const [result, setResult] = useState<RaceResult | null>(null);
-  // Bumped on every race entry so replaying the same level remounts <Race>.
+  const [view, setView] = useState<ViewName>('trip');
+  // Bumped on every drive so replaying the same level remounts <Drive>.
   const [attempt, setAttempt] = useState(0);
-  // The win overlay is delayed past the finish-line celebration burst.
-  const overlayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // The celebration waits for the finish-line burst.
+  const finishTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
     () => () => {
-      if (overlayTimer.current) clearTimeout(overlayTimer.current);
+      if (finishTimer.current) clearTimeout(finishTimer.current);
     },
     [],
   );
 
-  // Back (on-screen button + Android hardware) pops internal views first;
-  // only the start view lets the press bubble up and exit to Home.
+  // Back (on-screen button + Android hardware) returns to the map first; only
+  // the map lets the press bubble up and exit to Home.
   useScreenBack(() => {
-    if (view === 'race' || view === 'garage') {
-      if (overlayTimer.current) clearTimeout(overlayTimer.current);
-      setResult(null);
-      setView('start');
-      return true;
-    }
-    return false;
+    if (view === 'trip') return false;
+    if (finishTimer.current) clearTimeout(finishTimer.current);
+    setView('trip');
+    return true;
   });
 
-  const car: CarDef = CARS.find((c) => c.id === garage.selected) ?? CARS[0];
+  const unlocked = carsUnlockedAt(level, garage.owned);
+  const car: CarDef =
+    CARS.find((c) => c.id === garage.selected && unlocked.includes(c.id)) ?? CARS[0];
   const pacedCar = useMemo<CarDef>(
     () => ({ ...car, stats: { ...car.stats, speed: car.stats.speed * tierFactor(tier, 0.05) } }),
     [car, tier],
   );
-  const trim: TrimDef = TRIMS.find((tr) => tr.id === garage.trim) ?? TRIMS[0];
   const theme: RoadTheme = THEMES[data.theme];
-  // One cup per completed 4-level tour; this race awards one when it closes
-  // a tour (level 4, 8, 12, …). `level` is the level being played.
-  const trophies = Math.floor((level - 1) / 4);
-  const cupTheme: ThemeId | undefined =
-    level % 4 === 0 ? THEME_ORDER[(level / 4 - 1) % THEME_ORDER.length] : undefined;
 
-  const handleRace = useCallback(() => {
-    if (overlayTimer.current) clearTimeout(overlayTimer.current);
-    setResult(null);
+  const handleDrive = useCallback(() => {
+    play('transition');
     setAttempt((a) => a + 1);
-    setView('race');
-  }, []);
-
-  // Fires exactly once per race (the hook guarantees it) — bank the coins,
-  // feed the missions, then show the win overlay AFTER the finish-line
-  // celebration has had its moment.
-  const handleFinish = useCallback(
-    (r: RaceResult) => {
-      addCoins(r.coins);
-      recordRace(r);
-      if (r.place === 1) record(true);
-      else if (r.place === 3) record(false);
-      overlayTimer.current = setTimeout(() => setResult(r), FINISH_CELEBRATION_MS);
-    },
-    [addCoins, recordRace, record],
-  );
-
-  const handleNext = useCallback(() => {
-    if (result) advance(result.stars);
-    setResult(null);
-    setView('start');
-  }, [advance, result]);
-
-  // Bank the finished race's stars before detouring to the garage, exactly as
-  // "Next race" does — otherwise the level never advances and the stars are lost.
-  const handleGarage = useCallback(() => {
-    if (result) advance(result.stars);
-    setResult(null);
-    setView('garage');
-  }, [advance, result]);
-
-  const handleGarageDone = useCallback(() => {
-    play('pop');
-    setView('start');
+    setView('drive');
   }, [play]);
 
-  const handleControlChange = useCallback(
-    (mode: ControlMode) => {
-      play('pop');
-      setControl(mode);
+  // Fires exactly once per drive: show the place, celebrate after the
+  // finish-line burst, then back to the map with the car one stop further on.
+  const [finishPlace, setFinishPlace] = useState<1 | 2 | 3 | null>(null);
+  const handleFinish = useCallback(
+    (r: RaceResult) => {
+      if (r.place === 1) record(true);
+      else if (r.place === 3) record(false);
+      finishTimer.current = setTimeout(() => {
+        setFinishPlace(r.place);
+        void roundEnd.next(r.place === 1 ? 'big' : 'small', () => {
+          setFinishPlace(null);
+          advance(r.stars);
+          setView('trip');
+        });
+      }, FINISH_CELEBRATION_MS);
     },
-    [play, setControl],
+    [advance, record, roundEnd],
   );
 
   const handleSelectCar = useCallback(
@@ -251,36 +194,7 @@ export default function TurboRoadGame() {
     [play, selectCar],
   );
 
-  const handleSelectTrim = useCallback(
-    (id: TrimId) => {
-      play('pop');
-      selectTrim(id);
-    },
-    [play, selectTrim],
-  );
-
-  const handleUnlockCar = useCallback(
-    (id: CarId) => {
-      if (unlockCar(id)) play('success');
-    },
-    [play, unlockCar],
-  );
-
-  const handleClaimMission = useCallback(
-    (id: number) => {
-      const reward = claim(id);
-      if (reward > 0) {
-        addCoins(reward);
-        play('win');
-      }
-    },
-    [addCoins, claim, play],
-  );
-
-  const handleExitRace = useCallback(() => {
-    setResult(null);
-    setView('start');
-  }, []);
+  const handleExitDrive = useCallback(() => setView('trip'), []);
 
   if (status === 'loading') {
     return <View style={styles.canvas} />;
@@ -294,64 +208,39 @@ export default function TurboRoadGame() {
     );
   }
 
-  if (view === 'garage') {
-    // GarageScreen brings its own SafeContainer — render it directly.
+  if (view === 'cars') {
     return (
-      <GarageScreen
-        garage={garage}
-        trophies={trophies}
-        onSelectCar={handleSelectCar}
-        onUnlockCar={handleUnlockCar}
-        onSelectTrim={handleSelectTrim}
-        onDone={handleGarageDone}
-      />
+      <SafeContainer backgroundColor={COLORS.canvas} style={styles.flush}>
+        <CarPicker unlocked={unlocked} selected={car.id} onSelect={handleSelectCar} />
+      </SafeContainer>
     );
   }
 
-  if (view === 'race') {
+  if (view === 'drive') {
     return (
       <View style={styles.canvas}>
-        <Race
+        <Drive
           key={`${level}-${attempt}`}
           level={data}
           levelNumber={level}
           theme={theme}
           playerEmoji={car.emoji}
           car={pacedCar}
-          control={prefs.control}
           onFinish={handleFinish}
-          onExit={handleExitRace}
+          onExit={handleExitDrive}
         />
-        {result && (
-          <WinOverlay
-            place={result.place}
-            stars={result.stars}
-            coinsEarned={result.coins}
-            cupTheme={cupTheme}
-            onNext={handleNext}
-            onGarage={handleGarage}
-          />
-        )}
+        {finishPlace ? (
+          <View style={styles.podium} pointerEvents="none" accessible accessibilityLabel={t(`turbo-road:place.p${finishPlace}`)}>
+            <EmojiImage emoji={PLACE_MEDAL[finishPlace]} size={120} />
+          </View>
+        ) : null}
       </View>
     );
   }
 
   return (
     <SafeContainer backgroundColor={COLORS.canvas} style={styles.flush}>
-      <StartScreen
-        level={level}
-        totalStars={score}
-        theme={theme}
-        playerEmoji={car.emoji}
-        trim={trim}
-        walletCoins={garage.coins}
-        control={prefs.control}
-        missions={missions}
-        onClaimMission={handleClaimMission}
-        onControlChange={handleControlChange}
-        onRace={handleRace}
-        onGarage={handleGarage}
-      />
+      <TripScreen level={level} car={car} onDrive={handleDrive} onCars={() => setView('cars')} />
     </SafeContainer>
   );
 }
@@ -359,6 +248,7 @@ export default function TurboRoadGame() {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   canvas: { flex: 1, backgroundColor: COLORS.canvas },
+  podium: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   // SafeContainer ships padding: SPACING.md — flush screens manage their own.
   flush: { padding: 0 },
   hudLayer: {

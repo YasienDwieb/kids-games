@@ -41,6 +41,16 @@
    }
   },
   {
+   "id": "turbo-road",
+   "name": "Turbo Road",
+   "icon": "🏎️",
+   "accent": {
+    "base": "#FF6B5E",
+    "deep": "#E84B3D",
+    "tint": "#FFE3DF"
+   }
+  },
+  {
    "id": "balloon-archer",
    "name": "Balloon Archer",
    "icon": "🏹",
@@ -1275,6 +1285,16 @@
     {
      "game": "trace-it",
      "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "هَيّا! لِنَتَسابَقْ إلى خَطِّ النِّهاية!",
+   "uses": [
+    {
+     "game": "turbo-road",
+     "where": "Drive start"
     }
    ]
   },
@@ -2521,6 +2541,16 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Vroom! Let's race to the finish!",
+   "uses": [
+    {
+     "game": "turbo-road",
+     "where": "Drive start"
     }
    ]
   },
