@@ -45,7 +45,7 @@ function AnimalSafariFlowRound({
   round: Round;
   onComplete: () => void;
 }) {
-  const { solved, selectedIndex, pick } = useFlowRound(onComplete);
+  const { solved, selectedIndex, pick, hintIndex, revealCorrect } = useFlowRound(onComplete);
   const { speak } = useSpeech();
   const { play } = useSound();
   const { t } = useTranslation();
@@ -67,10 +67,6 @@ function AnimalSafariFlowRound({
     return () => clearTimeout(id);
   }, []);
 
-  const instruction =
-    round.mode === 'hearName'
-      ? t('animal-safari:hearName.which')
-      : t('animal-safari:whichSound.which');
 
   return (
     <View style={styles.root}>
@@ -78,11 +74,13 @@ function AnimalSafariFlowRound({
         hero={
           <Text style={styles.heroGlyph}>{round.mode === 'hearName' ? '🗣️' : '🎵'}</Text>
         }
-        instruction={instruction}
         choices={round.choices.map(toFindItem)}
         correctIndex={round.correctIndex}
         selectedIndex={selectedIndex}
         onPick={(i) => pick(i, round.correctIndex)}
+        guideId="animal-safari"
+        hintIndex={hintIndex}
+        revealCorrect={revealCorrect}
         onReplay={() => presentRef.current()}
         disabled={solved}
         accent="orange"

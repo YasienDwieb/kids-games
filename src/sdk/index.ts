@@ -152,12 +152,18 @@ export type { DemoPoint } from './tutorial/DemoHand';
 export { useFirstRun, tutorialStore } from './tutorial/useFirstRun';
 export type { FirstRunStatus, TutorialProgress } from './tutorial/useFirstRun';
 export { useIdle } from './tutorial/useIdle';
+export { useGuide } from './tutorial/useGuide';
+export { AreaDemo } from './tutorial/AreaDemo';
+export { HintPulse } from './feedback/HintPulse';
+export { useChoiceHints } from './feedback/useChoiceHints';
+export { useRoundEnd } from './feedback/useRoundEnd';
+export { ProgressBar } from '@/components/pop/ProgressBar';
 
 // Layout
 export { GameShell } from './layout/GameShell';
 export { GameOverlay } from './layout/GameOverlay';
 export { useGameShell } from './layout/GameShellContext';
-export { ScreenBackContext, useScreenBack } from './layout/ScreenBackContext';
+export { GameExitContext, ScreenBackContext, useScreenBack } from './layout/ScreenBackContext';
 export type { BackInterceptor } from './layout/ScreenBackContext';
 export type { GameShellApi } from './layout/GameShellContext';
 export type { GameShellProps, OverlaySlot } from './layout/types';

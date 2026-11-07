@@ -97,15 +97,6 @@ export const TIMING = {
   COLOR_SPAWN_DELAY: 200,
 };
 
-export const DISCOVERY_HINTS: Partial<Record<ColorId, string>> = {
-  orange: 'Mix two warm colors',
-  green: 'Mix a warm and a cool color',
-  purple: 'Mix two bold colors',
-  brown: 'Mix all three primary colors',
-  pink: 'Add white to a warm color',
-  lightBlue: 'Add white to a cool color',
-};
-
 /** The authored challenges — each a famous colour. Endless ones come from utils/challenges. */
 export const CHALLENGES: (Challenge & { targetColor: ColorId })[] = [
   // Easy — basic secondary colors

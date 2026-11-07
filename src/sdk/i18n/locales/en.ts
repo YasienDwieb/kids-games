@@ -4,7 +4,6 @@
 export const en = {
   common: {
     back: 'Back',
-    score: 'Score: {{n}}',
     pause: 'Pause',
     settings: 'Settings',
     done: 'Done',
@@ -25,7 +24,6 @@ export const en = {
     changeLanguage: 'Change language',
     switchTitle: 'Change language?',
     switchBody: 'The app will restart.',
-    playNow: 'PLAY NOW',
     play: 'PLAY',
     levelA11y: 'Level {{n}}. {{left}} more stars to the next level',
     grownUps: 'Grown-ups',
@@ -42,13 +40,11 @@ export const en = {
     level: 'Level {{n}}!',
     unlocked: 'You unlocked',
     tryOn: 'Try it on',
-    keepPlaying: 'Keep playing',
   },
   wardrobe: {
     hats: 'Hats',
     glasses: 'Glasses',
     stickers: 'Stickers',
-    wearing: 'Wearing',
     unlockAt: 'Level {{n}}',
     items: {
       'party-hat': 'Party hat',
@@ -60,9 +56,6 @@ export const en = {
       'top-hat': 'Top hat',
       bow: 'Bow',
     },
-  },
-  combo: {
-    label: 'x{{n}} COMBO!',
   },
   settings: {
     title: 'Settings',
@@ -106,7 +99,6 @@ export const en = {
     notFound: 'Game not found',
   },
   resume: {
-    welcomeBack: 'Welcome back! 👋',
     continueLevel: 'Continue · Level {{level}}',
     startOver: 'Start over',
   },
@@ -124,23 +116,17 @@ export const en = {
   stickers: {
     title: 'My Stickers',
     open: 'Open my sticker book',
-    count: '{{have}} / {{total}}',
     stars: '{{n}} stars',
     nextIn: '{{n}} more ⭐ for a new sticker!',
     new: 'New sticker!',
-    addedToBook: 'Added to your sticker book',
-    newBadge: 'NEW',
     locked: 'Not found yet',
     general: 'Surprises',
     complete: 'You found them all! 🏆',
   },
   mascot: {
     name: 'Lulu',
-    oops: 'Oops! Try again',
-    look: 'Look here!',
   },
   break: {
-    title: 'Recharge time!',
     home: 'Back home',
     grownUp: 'Grown-ups: {{n}} more minutes',
     energy: 'Energy low',
@@ -161,27 +147,19 @@ export const en = {
     },
   },
   buddy: {
-    pickTitle: 'Pick your buddy!',
-    anyTime: 'You can change your buddy any time',
     go: "Let's go!",
     choose: 'Play with {{name}}',
     lulu: {
       name: 'Lulu',
       species: 'the owl',
-      hello: "Hi! I'm Lulu!",
-      dressUp: 'Dress up Lulu',
       wardrobeA11y: '{{n}} stars. Open Lulu’s wardrobe',
       rest: 'Lulu needs a rest. Let’s stretch and play again soon.',
-      stretchWith: 'Do it with Lulu',
     },
     zain: {
       name: 'Zain',
       species: 'the lion cub',
-      hello: "Hi! I'm Zain!",
-      dressUp: 'Dress up Zain',
       wardrobeA11y: '{{n}} stars. Open Zain’s wardrobe',
       rest: 'Zain needs a rest. Let’s stretch and play again soon.',
-      stretchWith: 'Do it with Zain',
     },
   },
   flow: {

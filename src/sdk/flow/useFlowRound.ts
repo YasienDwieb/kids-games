@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSound } from '../audio/useSound';
-import { useCelebrate } from '../feedback/Celebration';
+import { useChoiceHints } from '../feedback/useChoiceHints';
+import { useRoundEnd } from '../feedback/useRoundEnd';
 
 /**
  * Shared interaction host for a guided-flow round. Both games' flow adapters
@@ -10,29 +11,26 @@ import { useCelebrate } from '../feedback/Celebration';
  */
 export function useFlowRound(onComplete: () => void) {
   const { play } = useSound();
-  const celebrate = useCelebrate();
+  const { next } = useRoundEnd();
+  const { miss, hintIndex, revealCorrect } = useChoiceHints(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [solved, setSolved] = useState(false);
-  const solveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wrongTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(
     () => () => {
-      clearTimeout(solveTimer.current);
       clearTimeout(wrongTimer.current);
     },
     [],
   );
 
-  /** Mark solved: success cue + confetti, then advance after a short beat. Idempotent. */
+  /** Mark solved: success cue + confetti, then advance once the praise is over. Idempotent. */
   const complete = useCallback(() => {
     if (solved) return;
     setSolved(true);
     void play('success');
-    // The burst lives above the unit, so it keeps playing through the cross-fade.
-    void celebrate('small');
-    solveTimer.current = setTimeout(onComplete, 700);
-  }, [solved, play, celebrate, onComplete]);
+    void next('small', onComplete);
+  }, [solved, play, next, onComplete]);
 
   /** Tap-choice handler: correct → complete; wrong → cue + clear selection. */
   const pick = useCallback(
@@ -43,11 +41,15 @@ export function useFlowRound(onComplete: () => void) {
         complete();
       } else {
         void play('wrong');
-        wrongTimer.current = setTimeout(() => setSelectedIndex(null), 900);
+        const afterClear = miss(correctIndex);
+        wrongTimer.current = setTimeout(() => {
+          setSelectedIndex(null);
+          afterClear();
+        }, 900);
       }
     },
-    [selectedIndex, solved, complete, play],
+    [selectedIndex, solved, complete, play, miss],
   );
 
-  return { play, solved, selectedIndex, complete, pick };
+  return { play, solved, selectedIndex, complete, pick, hintIndex, revealCorrect };
 }

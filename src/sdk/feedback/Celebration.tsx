@@ -1,5 +1,5 @@
 /**
- * Celebration kit — a confetti burst + a short praise bubble, spoken aloud by a
+ * Celebration kit — a confetti burst + a star bubble, with praise spoken aloud by a
  * real (recorded) voice in the app's language, that plays OVER the game and then
  * gets out of the way. Replaces the "tap to continue" modal after
  * every small win; games keep a modal only for real milestones.
@@ -13,19 +13,18 @@
  * no-op that resolves immediately — games never have to guard for it.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { holdVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 import { stopSpeech } from '@/sdk/speech/useSpeech';
+import { Star } from '@/components/common/Star';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { LevelUp } from './LevelUp';
-import { bumpCombo } from './combo';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
-import { FONT_SIZES, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
-import { FONTS } from '@/constants/typography';
+import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 
 export type CelebrationSize = 'small' | 'big';
 export type CelebrateOptions = {
@@ -55,6 +54,8 @@ const PRAISE_MS: Record<string, readonly number[]> = {
 const PRAISE_TAIL_MS = 250;
 
 const DURATION: Record<CelebrationSize, number> = { small: 1150, big: 1900 };
+/** How far past its planned end a burst may run before it counts as done. */
+const BURST_GRACE_MS = 400;
 const PIECES: Record<CelebrationSize, number> = { small: 18, big: 36 };
 const PIECE_COLORS = [
   ACCENTS.pink.base,
@@ -80,7 +81,6 @@ type Burst = {
   size: CelebrationSize;
   praiseKey: string | null;
   /** Wins in a row so far (shown as "x3 COMBO!" from 2 up). */
-  combo: number;
   /** How long the praise voice runs (0 when silent) — the bubble stays up for it. */
   voiceMs: number;
   pieces: Piece[];
@@ -148,7 +148,6 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
         id: nextId.current++,
         size,
         praiseKey,
-        combo: bumpCombo(),
         voiceMs,
         pieces: makePieces(size),
         resolve,
@@ -237,6 +236,10 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
         Animated.timing(bubble, { toValue: 0, duration: 220, useNativeDriver: true }),
       ]),
     ]).start(() => onDone(burst.id));
+    // Games wait on this to move on, and springs run in slow motion when frames
+    // drop (a 3D cheer on a weak phone), so the clock has the last word.
+    const deadline = setTimeout(() => onDone(burst.id), visible + BURST_GRACE_MS);
+    return () => clearTimeout(deadline);
   }, [bubble, burst.id, duration, visible, onDone, progress]);
 
   const fade = progress.interpolate({ inputRange: [0, 0.7, 1], outputRange: [1, 1, 0] });
@@ -274,7 +277,7 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
           ]}
         />
       ))}
-      {burst.praiseKey || burst.combo >= 2 ? (
+      {burst.praiseKey ? (
         <Animated.View
           style={[
             styles.pop,
@@ -287,18 +290,13 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
             },
           ]}
         >
-          {burst.combo >= 2 ? (
-            <View style={[styles.combo, SHADOWS.sm]}>
-              <Text style={styles.comboText}>{t('combo.label', { n: burst.combo })}</Text>
-            </View>
-          ) : null}
-          {burst.praiseKey ? (
-            <View style={[styles.bubble, burst.size === 'big' && styles.bubbleBig, SHADOWS.lg]}>
-              <Text style={[styles.praise, burst.size === 'big' && styles.praiseBig]}>
-                {t(burst.praiseKey)}
-              </Text>
-            </View>
-          ) : null}
+          <View
+            style={[styles.bubble, burst.size === 'big' && styles.bubbleBig, SHADOWS.lg]}
+            accessible
+            accessibilityLabel={t(burst.praiseKey)}
+          >
+            <Star size={burst.size === 'big' ? 72 : 48} />
+          </View>
         </Animated.View>
       ) : null}
     </View>
@@ -320,22 +318,5 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     backgroundColor: POP.zap,
   },
-  combo: {
-    paddingHorizontal: 14,
-    paddingVertical: 2,
-    borderRadius: 14,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    backgroundColor: POP.bubblegum,
-    transform: [{ rotate: '6deg' }],
-  },
-  comboText: { fontFamily: FONTS.display, fontSize: 24, color: COLORS.ink },
   bubbleBig: { paddingHorizontal: SPACING.xl, paddingVertical: SPACING.md },
-  praise: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-  praiseBig: { fontSize: FONT_SIZES.xl },
 });

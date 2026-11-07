@@ -9,31 +9,28 @@ export const ar: GameTranslations = {
   },
   placeholder: 'عُدّ والعب قريبًا! 🔢',
   loading: 'نجهّز لك الأرقام…',
-  // Prompt instructions per mode
-  countThisMany: {
-    title: 'اضغط هذا العدد',
-    instruction: 'اضغط {{count}} {{emoji}}!',
-    progress: '{{popped}} / {{target}}',
+  // Spoken prompts (docs/VOICE.md).
+  say: {
+    pop: "اِضغطْ {{name}}!",
+    howMany: "كَمْ عَدَدُها؟",
+    makeN: "كَمْ يَنْقُصُنا لِنَصِلَ إلى {{name}}؟",
+    addition: "كَمْ عَدَدُها مَعًا؟",
   },
-  howMany: {
-    title: 'كم عددها؟',
-    instruction: 'كم {{emoji}} هنا؟',
+  // A number after "to make", where Arabic grammar changes it (إلى اِثنين).
+  targets: {
+    '2': 'اِثنين',
   },
-  makeN: {
-    title: 'اجعلها',
-    instruction: 'أضف {{needed}} كي تصل إلى {{target}} {{emoji}}!',
-  },
-  addition: {
-    title: 'اجمعها',
-    // LTR isolate (U+2066…U+2069) keeps the math expression left-to-right
-    // so Unicode Bidi doesn't reorder it to "؟ = b + a" inside the RTL paragraph.
-    instruction: '⁦{{a}} + {{b}} = ؟⁩',
-  },
-  // Level solved overlay
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'المستوى التالي',
-    finish: 'رائع، أنهيت اللعبة!',
+  numbers: {
+    '1': 'وَاحِد',
+    '2': 'اِثنان',
+    '3': 'ثَلاثة',
+    '4': 'أَربَعة',
+    '5': 'خَمسة',
+    '6': 'سِتّة',
+    '7': 'سَبعة',
+    '8': 'ثَمانِية',
+    '9': 'تِسْعة',
+    '10': 'عَشَرة',
   },
   // Accessibility labels
   a11y: {

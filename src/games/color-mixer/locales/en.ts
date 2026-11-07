@@ -7,6 +7,7 @@ export const en = {
 
   // Game title shown in the header
   title: 'Color Mixer',
+  defaultSavedName: 'My Color',
 
   // Mode tab labels
   mode: {
@@ -29,15 +30,10 @@ export const en = {
 
   // Mixing zone (dragHint is spoken, not shown)
   mixingZone: {
-    potFull: "Pot's full! Undo a drop, or start over.",
     dragHint: 'Drag a color into the bowl!',
   },
 
   // Palette section titles
-  palette: {
-    colorsTitle: 'Colors',
-    savedTitle: 'Saved · tap or drag up',
-  },
 
   // Color names (primary + discoverable)
   colors: {
@@ -55,14 +51,6 @@ export const en = {
   },
 
   // Discovery hints (shown on locked slots in the collection)
-  discoveryHints: {
-    orange: 'Mix two warm colors',
-    green: 'Mix a warm and a cool color',
-    purple: 'Mix two bold colors',
-    brown: 'Mix all three primary colors',
-    pink: 'Add white to a warm color',
-    lightBlue: 'Add white to a cool color',
-  },
 
   // Challenge definitions (hint text by challenge id)
   challengeHints: {
@@ -112,28 +100,13 @@ export const en = {
   // Discovery celebration modal
   discovery: {
     title: 'New color!',
-    yay: 'Yay!',
   },
 
   // Save color dialog
-  namingDialog: {
-    title: 'Save your color! 🎨',
-    label: 'Name your color:',
-    placeholder: 'e.g. Sunset',
-    defaultName: 'My Color',
-    cancel: 'Cancel',
-    save: 'Save',
-  },
 
   // Color collection modal
   collection: {
-    title: 'My Colors',
     done: 'Done',
-    famousShelf: 'Famous colors',
-    found: 'found',
-    creationsShelf: 'My creations',
-    emptyCreations: 'Mix a color and tap Save!',
-    lockedName: '???',
     deleteLabel: 'Delete',
   },
 } as const;

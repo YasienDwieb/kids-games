@@ -4,10 +4,10 @@ export const en = {
     shortName: 'Pairs',
     description: 'Find matching pairs of cards',
   },
+  say: {
+    find: 'Find the matching pairs!',
+  },
   difficulty: {
-    select: {
-      subtitle: 'How many pairs can you match?',
-    },
     easy: 'Easy',
     medium: 'Medium',
     hard: 'Hard',
@@ -17,13 +17,6 @@ export const en = {
   header: {
     restart: 'Restart',
     pairs: '{{found}}/{{total}} pairs',
-    movesOne: '{{count}} move',
-    movesOther: '{{count}} moves',
-  },
-  win: {
-    title: 'You did it!',
-    playAgain: 'Play again',
-    pickLevel: 'Pick a level',
   },
 } as const;
 

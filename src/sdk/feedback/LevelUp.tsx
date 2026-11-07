@@ -1,20 +1,21 @@
 /**
  * "LEVEL UP!" — the big moment when lifetime stars cross into a new level.
  * Full-screen sunburst, Lulu jumping, the new level, and whatever wardrobe item
- * just unlocked with a "Try it on" button. Mounted inside CelebrationProvider,
+ * just unlocked with a try-it-on button. Closes by itself. Mounted inside CelebrationProvider,
  * so every play screen gets it.
  */
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { NavigationContext } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { EmojiImage } from '@/components/common/EmojiImage';
+import { Icon } from '@/components/common/Icon';
 import { PressableButton } from '@/components/common/PressableButton';
+import { Star } from '@/components/common/Star';
 import { Sunburst } from '@/components/pop/Sunburst';
 import { pulse, useLoop } from '@/components/pop/motion';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
 import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
-import { FONTS } from '@/constants/typography';
 import { useSound } from '@/sdk/audio/useSound';
 import { Lulu3D } from '@/sdk/mascot/Lulu3D';
 import { unlocksAt } from '@/sdk/player/outfits';
@@ -25,8 +26,8 @@ import { reserveVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 
 /** Let the win's own confetti land first. */
 const SHOW_DELAY_MS = 1300;
-/** Longest win jingle plus a breath. */
-const JINGLE_MS = 1600;
+/** How long the card stays up before it closes by itself. */
+const CARD_MS = 4000;
 
 export function LevelUp() {
   const { t } = useTranslation();
@@ -55,7 +56,7 @@ export function LevelUp() {
       clearTimeout(timer);
       // Wait out the praise voice, and keep the next prompt off the jingle.
       const delay = Math.max(SHOW_DELAY_MS, voiceBusyRemaining());
-      reserveVoice(delay + JINGLE_MS);
+      reserveVoice(delay + CARD_MS);
       timer = setTimeout(() => {
         setLevel(l);
         play('sfx.win', { haptic: true });
@@ -70,15 +71,20 @@ export function LevelUp() {
     };
   }, [enter, play]);
 
+  useEffect(() => {
+    if (level == null) return;
+    const timer = setTimeout(() => {
+      Animated.timing(enter, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+        setLevel(null);
+        releaseGate();
+      });
+    }, CARD_MS);
+    return () => clearTimeout(timer);
+  }, [level, enter]);
+
   if (level == null) return null;
   const item = unlocksAt(level)[0];
 
-  const close = () => {
-    Animated.timing(enter, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
-      setLevel(null);
-      releaseGate();
-    });
-  };
   const tryOn = () => {
     if (item) void wear(item.slot, item.id);
     setLevel(null);
@@ -93,38 +99,38 @@ export function LevelUp() {
         <Sunburst color={ACCENTS.purple.base} size={1400} />
       </View>
 
-      <Animated.View style={[styles.header, SHADOWS.md, pulse(beat, 0.06)]}>
-        <Text style={styles.headerText}>{t('levelUp.title')}</Text>
+      <Animated.View
+        style={[styles.header, SHADOWS.md, pulse(beat, 0.06)]}
+        accessible
+        accessibilityLabel={`${t('levelUp.title')} ${t('levelUp.level', { n: level })}`}
+      >
+        <Star size={36} />
+        <Star size={44} />
+        <Star size={36} />
       </Animated.View>
 
       <View style={styles.middle}>
-        <View style={[styles.card, SHADOWS.md]}>
-          <View style={styles.levelBadge}>
-            <Text style={styles.levelNum}>{level}</Text>
-          </View>
-          <Text style={styles.cardTitle}>{t('levelUp.level', { n: level })}</Text>
-        </View>
-
         <Lulu3D size={200} mood="cheer" />
 
         {item ? (
-          <View style={[styles.card, styles.unlock, SHADOWS.md]}>
-            <Text style={styles.cardTitle}>{t('levelUp.unlocked')}</Text>
+          <View
+            style={[styles.card, styles.unlock, SHADOWS.md]}
+            accessible
+            accessibilityLabel={`${t('levelUp.unlocked')} ${t(`wardrobe.items.${item.id}`)}`}
+          >
             <View style={styles.itemWindow}>
               <EmojiImage emoji={item.emoji} size={48} />
             </View>
-            <Text style={styles.cardTitle}>{t(`wardrobe.items.${item.id}`)}</Text>
           </View>
-        ) : (
-          <View style={styles.spacer} />
-        )}
+        ) : null}
       </View>
 
       <View style={styles.actions}>
-        {item && navigation ? <PressableButton label={t('levelUp.tryOn')} variant="ghost" onPress={tryOn} /> : null}
-        <Animated.View style={pulse(beat, 0.08)}>
-          <PressableButton label={t('levelUp.keepPlaying')} color={ACCENTS.green.base} onPress={close} />
-        </Animated.View>
+        {item && navigation ? (
+          <PressableButton accessibilityLabel={t('levelUp.tryOn')} color={ACCENTS.green.base} onPress={tryOn}>
+            <Icon name="shirt" size={30} />
+          </PressableButton>
+        ) : null}
       </View>
     </Animated.View>
   );
@@ -141,6 +147,9 @@ const styles = StyleSheet.create({
   },
   burst: { position: 'absolute', top: '50%', left: '50%', marginTop: -700, marginLeft: -700 },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
     paddingVertical: 4,
     paddingHorizontal: 26,
     borderRadius: 18,
@@ -148,9 +157,7 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     backgroundColor: POP.zap,
   },
-  headerText: { fontFamily: FONTS.display, fontSize: 40, color: COLORS.ink },
   middle: { flexDirection: 'row', alignItems: 'center', gap: SPACING.lg },
-  spacer: { width: 200 },
   card: {
     width: 200,
     alignItems: 'center',
@@ -162,18 +169,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
   unlock: { backgroundColor: POP.zap },
-  levelBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    backgroundColor: POP.grape,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  levelNum: { fontFamily: FONTS.display, fontSize: 32, color: COLORS.surface },
-  cardTitle: { fontFamily: FONTS.display, fontSize: 20, color: COLORS.ink, textAlign: 'center' },
   itemWindow: {
     width: 76,
     height: 76,

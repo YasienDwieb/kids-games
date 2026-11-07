@@ -10,20 +10,12 @@ export const ar: GameTranslations = {
     description: 'اسمع الرقم واعثر عليه!',
   },
   loading: 'نحضّر أرقامك…',
-  hearFind: {
-    which: 'أي رقم هذا؟',
-  },
   speak: {
     carrier: '{{name}}',
   },
   a11y: {
     replay: 'اسمع الرقم مرة أخرى',
     choiceTile: 'رقم {{glyph}}',
-  },
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'الرقم التالي',
-    finish: 'أكملت كل الأرقام!',
   },
   names: {
     '1': 'وَاحِد',

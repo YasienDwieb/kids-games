@@ -20,7 +20,7 @@ function ShapeDetectiveFlowRound({
   level: LevelData;
   onComplete: () => void;
 }) {
-  const { play, solved, selectedIndex, complete, pick } = useFlowRound(onComplete);
+  const { play, solved, selectedIndex, complete, pick, hintIndex, revealCorrect } = useFlowRound(onComplete);
   const { puzzle } = level;
 
   if (puzzle.type === 'sort') {
@@ -44,6 +44,8 @@ function ShapeDetectiveFlowRound({
         <OddOneOutPuzzle
           puzzle={puzzle}
           selectedIndex={selectedIndex}
+          hintIndex={hintIndex}
+          revealCorrect={revealCorrect}
           onPick={(i) => pick(i, puzzle.correctIndex)}
           disabled={selectedIndex !== null || solved}
         />
@@ -56,6 +58,8 @@ function ShapeDetectiveFlowRound({
       <PatternPuzzle
         puzzle={puzzle}
         selectedIndex={selectedIndex}
+        hintIndex={hintIndex}
+        revealCorrect={revealCorrect}
         onPick={(i) => pick(i, puzzle.correctIndex)}
         disabled={selectedIndex !== null || solved}
       />

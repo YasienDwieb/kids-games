@@ -19,7 +19,7 @@ function CountAndPopFlowRound({
   level: LevelData;
   onComplete: () => void;
 }) {
-  const { play, solved, selectedIndex, complete, pick } = useFlowRound(onComplete);
+  const { play, solved, selectedIndex, complete, pick, hintIndex, revealCorrect } = useFlowRound(onComplete);
   const { round } = level;
 
   if (round.mode === 'countThisMany') {
@@ -40,6 +40,8 @@ function CountAndPopFlowRound({
       <HowMany
         round={round}
         selectedIndex={selectedIndex}
+        hintIndex={hintIndex}
+        revealCorrect={revealCorrect}
         onPick={(i) => pick(i, round.correctIndex)}
         disabled={solved || selectedIndex !== null}
       />
@@ -56,7 +58,8 @@ registerFlowAdapter({
   gameId: 'count-and-pop',
   count: TOTAL_LEVELS,
   unitAt: (i, seed) => {
-    const level = buildLevel(i + 1, seed);
+    // The journey has no readiness to read, so it stays on counting.
+    const level = buildLevel(i + 1, seed, 0);
     return {
       key: `count-and-pop-${i}`,
       render: (onComplete) => <CountAndPopFlowRound level={level} onComplete={onComplete} />,

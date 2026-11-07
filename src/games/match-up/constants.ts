@@ -9,7 +9,6 @@ export function pairCountForLevel(level: number): number {
 }
 
 /** Score awarded per correct connection (standalone free play). */
-export const POINTS_PER_MATCH = 10;
 
 /** Count-matching: numbers are drawn from 1..MAX_COUNT (cap so a group tile fits). */
 export const MAX_COUNT = 5;

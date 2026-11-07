@@ -7,29 +7,28 @@ export const en = {
   },
   placeholder: 'Count & Pop is coming soon! 🔢',
   loading: 'Getting your numbers ready…',
-  // Prompt instructions per mode
-  countThisMany: {
-    title: 'TAP THIS MANY',
-    instruction: 'Pop {{count}} {{emoji}}!',
-    progress: '{{popped}} / {{target}}',
+  // Spoken prompts (docs/VOICE.md).
+  say: {
+    pop: "Pop {{name}}!",
+    howMany: "How many?",
+    makeN: "How many more to make {{name}}?",
+    addition: "How many altogether?",
   },
-  howMany: {
-    title: 'HOW MANY?',
-    instruction: 'How many {{emoji}}?',
+  // A number after "to make", where Arabic grammar changes it (إلى اِثنين).
+  targets: {
+    '2': 'two',
   },
-  makeN: {
-    title: 'MAKE IT',
-    instruction: 'Add {{needed}} more to make {{target}} {{emoji}}!',
-  },
-  addition: {
-    title: 'ADD THEM UP',
-    instruction: '{{a}} + {{b}} = ?',
-  },
-  // Level solved overlay
-  levelSolved: {
-    title: 'Great job!',
-    next: 'Next level',
-    finish: 'You did it!',
+  numbers: {
+    '1': 'one',
+    '2': 'two',
+    '3': 'three',
+    '4': 'four',
+    '5': 'five',
+    '6': 'six',
+    '7': 'seven',
+    '8': 'eight',
+    '9': 'nine',
+    '10': 'ten',
   },
   // Accessibility labels
   a11y: {

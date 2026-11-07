@@ -9,20 +9,7 @@ export const ar: GameTranslations = {
     warmup: 'إحماء',
     latin: 'ABC',
     arabic: 'أ ب ت',
-    numbers: 'أرقام',
-  },
-  picker: {
-    next: 'التالي',
-  },
-  round: {
-    guided: 'اتبع السهم!',
-    solo: 'والآن وحدك!',
-    dots: 'ضع النقاط!',
-    warmup: 'ساعده ليصل!',
-  },
-  sticker: {
-    iCanWrite: 'أستطيع كتابة {{glyph}}!',
-    iCanDraw: 'أستطيع رسم {{glyph}}!',
+    numbers: '123',
   },
   // Same voweled spellings as numbers-land, so both share one clip (docs/VOICE.md).
   digits: {

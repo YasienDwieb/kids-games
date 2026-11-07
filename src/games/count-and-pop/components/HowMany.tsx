@@ -34,22 +34,24 @@ import {
   Easing,
   ScrollView,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
 } from 'react-native';
 import {
-  ACCENTS,
+  AreaDemo,
   BORDER_RADIUS,
   COLORS,
   ClayEmoji,
-  FONT_SIZES,
-  FONTS,
+  currentLanguage,
+  HintPulse,
   OUTLINE,
   SHADOWS,
   SPACING,
+  useGuide,
   useTranslation,
 } from '@/sdk';
+import { makePhrase, questionPhrase } from '../phrase';
+import { MakeNTray } from './MakeNTray';
 import { NumberChoice } from './NumberChoice';
 import { GroupCount } from './GroupCount';
 import { FitColumn } from './FitColumn';
@@ -84,25 +86,6 @@ type HowManyProps = {
 };
 
 // Gentle "look here" pulse for a hinted choice.
-function HintPulse({ active, children }: { active: boolean; children: React.ReactNode }) {
-  const scale = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    if (!active) {
-      scale.setValue(1);
-      return;
-    }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scale, { toValue: 1.12, duration: 380, useNativeDriver: true }),
-        Animated.timing(scale, { toValue: 1, duration: 380, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [active, scale]);
-  return <Animated.View style={[styles.hintCell, { transform: [{ scale }] }]}>{children}</Animated.View>;
-}
-
 // ---------------------------------------------------------------------------
 // Swim animation for the flat howMany object group
 // ---------------------------------------------------------------------------
@@ -171,30 +154,13 @@ export function HowMany({
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
-  // Derive prompt text based on mode
-  let promptTitle: string;
-  let promptInstruction: string;
-
-  if (mode === 'howMany') {
-    promptTitle = t('count-and-pop:howMany.title');
-    promptInstruction = t('count-and-pop:howMany.instruction', {
-      emoji: objectEmoji,
-    });
-  } else if (mode === 'makeN') {
-    promptTitle = t('count-and-pop:makeN.title');
-    promptInstruction = t('count-and-pop:makeN.instruction', {
-      needed: round.target - round.have,
-      target: round.target,
-      emoji: objectEmoji,
-    });
-  } else {
-    // addition
-    promptTitle = t('count-and-pop:addition.title');
-    promptInstruction = t('count-and-pop:addition.instruction', {
-      a: round.a,
-      b: round.b,
-    });
-  }
+  const answered = selectedIndex !== null;
+  const guide = useGuide({
+    id: 'count-and-pop',
+    phrase: mode === 'makeN' ? makePhrase(round.target, currentLanguage()) : questionPhrase(mode, currentLanguage()),
+    roundKey: round,
+    active: !disabled,
+  });
 
   // Build per-choice state
   const getChoiceState = (idx: number): NumberChoiceState => {
@@ -238,18 +204,15 @@ export function HowMany({
         </ScrollView>
       )
     ) : (
-      /* Two-group visual for makeN / addition */
-      <GroupCount round={round as MakeNRound | AdditionRound} />
+      mode === 'makeN' ? (
+        <MakeNTray round={round} tried={selectedIndex === null ? null : choices[selectedIndex]} />
+      ) : (
+        <GroupCount round={round as AdditionRound} />
+      )
     );
 
   const body = (
     <>
-      {/* Prompt card */}
-      <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
-        <Text style={styles.promptTitle}>{promptTitle}</Text>
-        <Text style={styles.promptInstruction}>{promptInstruction}</Text>
-      </View>
-
       {/* Object display */}
       {objectVisual}
 
@@ -257,22 +220,25 @@ export function HowMany({
       <View style={[styles.choiceRow, landscape && styles.choiceRowLandscape]}>
         {choices.map((value, idx) => {
           const state = getChoiceState(idx);
-          const isAnswered = selectedIndex !== null;
           return (
-            <HintPulse key={idx} active={hintIndex === idx && selectedIndex === null}>
+            <HintPulse key={idx} active={hintIndex === idx && !answered} style={styles.hintCell}>
               <NumberChoice
                 value={value}
                 state={state}
-                onPress={() => onPick(idx)}
-                disabled={disabled || isAnswered}
+                onPress={() => {
+                  guide.poke();
+                  onPick(idx);
+                }}
+                disabled={disabled || answered}
                 accessibilityLabel={t('count-and-pop:a11y.choiceButton', {
                   value,
                 })}
                 accessibilityState={{
-                  disabled: disabled || isAnswered,
+                  disabled: disabled || answered,
                   selected: state === 'correct',
                 }}
               />
+              {guide.showDemo && idx === correctIndex && !answered ? <AreaDemo /> : null}
             </HintPulse>
           );
         })}
@@ -311,34 +277,9 @@ const styles = StyleSheet.create({
   },
   // Landscape: let prompt / objects use the available width; trim prompt height.
   wideLandscape: { width: '100%', maxWidth: 720, alignItems: 'center' },
-  promptCardLandscape: { maxWidth: 720, paddingVertical: SPACING.xs },
   // Landscape: choice row uses the width; natural height in the centered column.
   choiceRowLandscape: { maxWidth: 720, flexGrow: 0, flexShrink: 0 },
   // Prompt card
-  promptCard: {
-    width: '100%',
-    maxWidth: 420,
-    borderRadius: BORDER_RADIUS.card,
-    backgroundColor: ACCENTS.pink.tint,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    padding: SPACING.lg,
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  promptTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.sm,
-    color: ACCENTS.pink.deep,
-    textAlign: 'center',
-    letterSpacing: 1,
-  },
-  promptInstruction: {
-    fontFamily: FONTS.display,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
   // Object group card (howMany flat grid only)
   groupCard: {
     width: '100%',

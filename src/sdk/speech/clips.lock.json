@@ -69,6 +69,20 @@
   "durationS": 2.02,
   "generatedAt": "2026-10-24"
  },
+ "ar:أَيُّ شَكلٍ لا يَنتَمي إلى المَجموعَةِ؟": {
+  "file": "ar-c381eb0e26.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.66,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِبحَثْ عَنِ البِطاقاتِ المُتَشابِهَةِ!": {
+  "file": "ar-a63e3abd0c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.66,
+  "generatedAt": "2026-11-06"
+ },
  "ar:اِثنان": {
   "file": "ar-b1b318964d.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
@@ -124,6 +138,83 @@
   "take": 2,
   "durationS": 2.66,
   "generatedAt": "2026-10-24"
+ },
+ "ar:اِضغطْ أَربَعة!": {
+  "file": "ar-31dcb99005.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.22,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ اِثنان!": {
+  "file": "ar-673874d59a.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ تِسْعة!": {
+  "file": "ar-3c8817b0a0.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.1,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ ثَلاثة!": {
+  "file": "ar-6abfb7b935.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.37,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ ثَمانِية!": {
+  "file": "ar-4620b78d0a.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.61,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ خَمسة!": {
+  "file": "ar-8bcc95f7dd.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.25,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ سَبعة!": {
+  "file": "ar-6675220356.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.18,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ سِتّة!": {
+  "file": "ar-d78a55a95c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.3,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ عَشَرة!": {
+  "file": "ar-b0d27c11bb.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.25,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِضغطْ وَاحِد!": {
+  "file": "ar-7609b255ca.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.25,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:اِلتَقِطِ الحَلوِيات!": {
+  "file": "ar-6df518380c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.73,
+  "generatedAt": "2026-11-06"
  },
  "ar:برتقالي": {
   "file": "ar-f68c759c51.m4a",
@@ -314,12 +405,26 @@
   "durationS": 1.9,
   "generatedAt": "2026-10-24"
  },
+ "ar:رَتِّبْ كُلَّ شَكلٍ في مَجموعَتِهِ الصَّحيحَةِ!": {
+  "file": "ar-8924beaa16.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 3.22,
+  "generatedAt": "2026-11-06"
+ },
  "ar:زَاي. زَرَافَة": {
   "file": "ar-cdf6fd6bea.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
   "take": 2,
   "durationS": 2.09,
   "generatedAt": "2026-10-24"
+ },
+ "ar:ساعِدِ الفَأرَ لِيَصِلَ إلى الجُبنِ!": {
+  "file": "ar-ab02c9e7dd.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.57,
+  "generatedAt": "2026-11-06"
  },
  "ar:سَبعة": {
   "file": "ar-dcdc1a9ffb.m4a",
@@ -461,12 +566,103 @@
   "durationS": 1.18,
   "generatedAt": "2026-10-24"
  },
+ "ar:كَمْ عَدَدُها مَعًا؟": {
+  "file": "ar-f9fda88961.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ عَدَدُها؟": {
+  "file": "ar-68433712cd.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.25,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى أَربَعة؟": {
+  "file": "ar-a8e63c3c23.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.57,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى اِثنين؟": {
+  "file": "ar-101026d62a.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.78,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى تِسْعة؟": {
+  "file": "ar-d6d5cfad57.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.66,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى ثَلاثة؟": {
+  "file": "ar-04b3b84355.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.57,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى ثَمانِية؟": {
+  "file": "ar-ccd775b29e.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.5,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى خَمسة؟": {
+  "file": "ar-ecc785d72c.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.78,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى سَبعة؟": {
+  "file": "ar-6ffd291757.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.38,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى سِتّة؟": {
+  "file": "ar-3d47f2db37.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.38,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى عَشَرة؟": {
+  "file": "ar-b84ecbf68b.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.38,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:كَمْ يَنْقُصُنا لِنَصِلَ إلى وَاحِد؟": {
+  "file": "ar-e89b1f3bee.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.42,
+  "generatedAt": "2026-11-06"
+ },
  "ar:لَام. لَيْمُون": {
   "file": "ar-925a4fd350.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
   "take": 2,
   "durationS": 2.09,
   "generatedAt": "2026-10-24"
+ },
+ "ar:ماذا يَأتي بَعدَ ذلِكَ؟": {
+  "file": "ar-f97d02a735.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.18,
+  "generatedAt": "2026-11-06"
  },
  "ar:مَوْجَةْ": {
   "file": "ar-a4d12ecf56.m4a",
@@ -523,6 +719,48 @@
   "take": 2,
   "durationS": 1.97,
   "generatedAt": "2026-10-24"
+ },
+ "ar:وَصِّلْ كُلَّ حَيَوانٍ بِبَيتِهِ": {
+  "file": "ar-361a4618d0.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.78,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:وَصِّلْ كُلَّ حَيَوانٍ بِطَعامِهِ": {
+  "file": "ar-ea872c03d2.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.57,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:وَصِّلْ كُلَّ رَقمٍ بِالعَدَدِ المُناسِبِ": {
+  "file": "ar-2888db4ff8.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 3.17,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:وَصِّلْ كُلَّ صَغيرٍ بِأَبيهِ": {
+  "file": "ar-2e857dba22.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.18,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:وَصِّلْ كُلَّ عامِلٍ بِأَداتِهِ": {
+  "file": "ar-4fe6393a3d.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.98,
+  "generatedAt": "2026-11-06"
+ },
+ "ar:وَصِّلْ كُلَّ لَونٍ بِفاكِهَتِهِ": {
+  "file": "ar-a3a5bd18bc.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.74,
+  "generatedAt": "2026-11-06"
  },
  "ar:يَاء. يَد": {
   "file": "ar-8e0f2cbfbf.m4a",
@@ -594,6 +832,13 @@
   "durationS": 0.62,
   "generatedAt": "2026-10-24"
  },
+ "en:Catch the treats!": {
+  "file": "en-1a364069db.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.1,
+  "generatedAt": "2026-11-06"
+ },
  "en:Cow": {
   "file": "en-6bb8f6dac6.m4a",
   "voice": "en-US-Chirp3-HD-Leda",
@@ -621,6 +866,13 @@
   "take": 1,
   "durationS": 1.73,
   "generatedAt": "2026-10-29"
+ },
+ "en:Drag each shape into the right group!": {
+  "file": "en-a1c4dd9d66.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.57,
+  "generatedAt": "2026-11-06"
  },
  "en:Duck": {
   "file": "en-202bb3525e.m4a",
@@ -650,6 +902,13 @@
   "durationS": 1.37,
   "generatedAt": "2026-10-24"
  },
+ "en:Find the matching pairs!": {
+  "file": "en-b3f30db050.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.7,
+  "generatedAt": "2026-11-06"
+ },
  "en:Frog": {
   "file": "en-10e6b0c75b.m4a",
   "voice": "en-US-Chirp3-HD-Leda",
@@ -678,12 +937,103 @@
   "durationS": 1.73,
   "generatedAt": "2026-10-24"
  },
+ "en:Help the mouse find the cheese!": {
+  "file": "en-0b3ea27c5f.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.7,
+  "generatedAt": "2026-11-06"
+ },
  "en:Horse": {
   "file": "en-588360ce75.m4a",
   "voice": "en-US-Chirp3-HD-Leda",
   "take": 3,
   "durationS": 1.25,
   "generatedAt": "2026-10-24"
+ },
+ "en:How many altogether?": {
+  "file": "en-a42c361243.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.46,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make eight?": {
+  "file": "en-b9c7fc323a.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.61,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make five?": {
+  "file": "en-3b6700b434.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.06,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make four?": {
+  "file": "en-f8d14af875.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make nine?": {
+  "file": "en-11e70b02dd.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make one?": {
+  "file": "en-373804d6e8.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make seven?": {
+  "file": "en-a99cca571d.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.78,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make six?": {
+  "file": "en-4d2e6072b5.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 1.58,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make ten?": {
+  "file": "en-0baeee778c.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.21,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make three?": {
+  "file": "en-ac12aebc47.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many more to make two?": {
+  "file": "en-feb415cb11.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.58,
+  "generatedAt": "2026-11-06"
+ },
+ "en:How many?": {
+  "file": "en-3802d70bf2.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.65,
+  "generatedAt": "2026-11-06"
  },
  "en:I! Ice cream": {
   "file": "en-48eece9ca8.m4a",
@@ -776,6 +1126,48 @@
   "durationS": 1.94,
   "generatedAt": "2026-10-24"
  },
+ "en:Match each animal to its food": {
+  "file": "en-47fa9a4ca9.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.45,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Match each animal to its home": {
+  "file": "en-af7bf6cc03.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.57,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Match each baby to its grown-up": {
+  "file": "en-a986ed57ae.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.06,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Match each color to its fruit": {
+  "file": "en-312d73a7f1.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.09,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Match each helper to their tool": {
+  "file": "en-1edb848368.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 2.18,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Match each number to how many": {
+  "file": "en-ab587c0234.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 2.33,
+  "generatedAt": "2026-11-06"
+ },
  "en:N! Nose": {
   "file": "en-bdbdc59e27.m4a",
   "voice": "en-US-Chirp3-HD-Leda",
@@ -810,6 +1202,76 @@
   "take": 2,
   "durationS": 0.53,
   "generatedAt": "2026-10-29"
+ },
+ "en:Pop eight!": {
+  "file": "en-401de832b1.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.86,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop five!": {
+  "file": "en-34a3e3b3fa.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.82,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop four!": {
+  "file": "en-ceee7598e6.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.1,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop nine!": {
+  "file": "en-b2b619ab24.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.18,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop one!": {
+  "file": "en-3f4004b403.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 0.82,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop seven!": {
+  "file": "en-487d62fb78.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.01,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop six!": {
+  "file": "en-137c6b1b3b.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.94,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop ten!": {
+  "file": "en-7af0fd3b5f.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.66,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop three!": {
+  "file": "en-82de71f8cc.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 0.86,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Pop two!": {
+  "file": "en-cfd53d09c0.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 0.86,
+  "generatedAt": "2026-11-06"
  },
  "en:Purple": {
   "file": "en-e572354521.m4a",
@@ -887,6 +1349,20 @@
   "take": 1,
   "durationS": 1.42,
   "generatedAt": "2026-10-24"
+ },
+ "en:What comes next?": {
+  "file": "en-c3a463adbe.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.09,
+  "generatedAt": "2026-11-06"
+ },
+ "en:Which one does not belong?": {
+  "file": "en-ab8508e9c0.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.7,
+  "generatedAt": "2026-11-06"
  },
  "en:White": {
   "file": "en-b6f6cd8c25.m4a",

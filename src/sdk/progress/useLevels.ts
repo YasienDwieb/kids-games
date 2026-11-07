@@ -13,6 +13,7 @@ export type UseLevelsResult<T> = {
   start: () => void; // resume from saved level → 'playing'
   startOver: (opts?: { finished?: boolean }) => void; // reset to level 1, score 0 → 'playing'; finished = last level won (earns its star)
   advance: (deltaScore?: number) => void; // next level (+ score), persist
+  finish: () => Promise<unknown>; // last level won: reset the checkpoint and earn its star, leaving this round on screen
   addScore: (delta: number) => void; // bump score, persist
   goTo: (level: number) => void; // jump, persist
 };
@@ -75,6 +76,13 @@ export function useLevels<T>(options: {
     [persist, source, gameId],
   );
 
+  const finish = useCallback(async () => {
+    const fresh = { level: 1, score: 0, updatedAt: Date.now() };
+    live.current = fresh;
+    store.set(fresh);
+    await awardStars(gameId);
+  }, [store, gameId]);
+
   const addScore = useCallback(
     (delta: number) => {
       const cur = live.current;
@@ -103,6 +111,7 @@ export function useLevels<T>(options: {
     start,
     startOver,
     advance,
+    finish,
     addScore,
     goTo,
   };

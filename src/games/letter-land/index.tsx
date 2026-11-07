@@ -32,7 +32,6 @@ import {
 import { letterPhrase } from '@/games/_shared/letters/phrase';
 import { ListenFindBoard, useListenFind, makeOrderSeed } from '@/games/_shared/listen-find';
 import { LetterHero } from './components/LetterHero';
-import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
 import { letterSet } from './utils/letterSet';
 import { makeLetterLandLevels } from './utils/levels';
 import type { Letter } from './types';
@@ -92,7 +91,6 @@ function LetterLandRun({
     gameId: 'letter-land',
     source,
     speakTarget,
-    renderSolved: (isLast, onNext) => <LevelSolvedOverlay isLast={isLast} onNext={onNext} />,
   });
 
   // Keep the latest target available to speakTarget.
@@ -121,12 +119,14 @@ function LetterLandRun({
     <View style={styles.root}>
       <ListenFindBoard
         hero={<LetterHero letter={round.target} />}
-        instruction={t('letter-land:hearFind.which')}
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={lf.selectedIndex}
         mascotPose={lf.mascotPose}
         onPick={(i) => lf.handlePick(i, round.correctIndex)}
+        guideId="letter-land"
+        hintIndex={lf.hintIndex}
+        revealCorrect={lf.revealCorrect}
         onReplay={speakTarget}
         disabled={lf.solved}
         accent="blue"

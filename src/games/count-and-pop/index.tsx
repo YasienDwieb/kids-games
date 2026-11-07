@@ -10,11 +10,11 @@
  * Flow:
  *   loading   → blank screen
  *   resumable → ResumePrompt (continue / start over)
- *   playing   → current round + score HUD via GameShell
+ *   playing   → current round
  *
  * Win/celebration (endless — there is no last level):
  *   Every solve → 'success' sound + a short SDK celebration, then auto-advance.
- *   Every MILESTONE_EVERY-th level → big confetti + LevelSolvedOverlay (⭐️ + "Next").
+ *   Every MILESTONE_EVERY-th level → a bigger celebration; every level moves on by itself.
  *
  * Mistakes follow the SDK hint policy (useHintLadder): 1st miss = try again,
  * 2nd = the right numeral pulses, 3rd = it's revealed. First-try solves score more.
@@ -24,7 +24,6 @@
  *   - Correct answer (choice modes): solve-pop spring on the round view
  *     (scale 1→1.04→1) before the overlay appears after 600ms.
  *   - Correct answer (countThisMany): same solve-pop spring on onSolved.
- *   - LevelSolvedOverlay: trophy + stars already present (Sprint 2).
  *
  * Traps avoided:
  *   - Stale-isLast: handleNext is a live closure reading isLast at call time.
@@ -35,21 +34,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import {
-  ACCENTS,
-  BORDER_RADIUS,
   COLORS,
-  EmojiFrame,
   FONT_SIZES,
   FONTS,
-  OUTLINE,
   MascotHelper,
-  PressableButton,
   ResumePrompt,
-  SHADOWS,
   SPACING,
-  Star,
-  useCelebrate,
-  useGameShell,
+  useRoundEnd,
+  useAdaptive,
   useHintLadder,
   useLevels,
   useSound,
@@ -61,78 +53,6 @@ import { makeCountAndPopLevels } from './utils/levels';
 
 // A tap-to-continue card only on milestones; every other solve auto-advances.
 const MILESTONE_EVERY = 5;
-const POINTS_FIRST_TRY = 10;
-const POINTS_WITH_HELP = 5;
-
-// ---------------------------------------------------------------------------
-// Level-solved overlay — rendered via GameShell 'win' slot.
-// ---------------------------------------------------------------------------
-
-type LevelSolvedOverlayProps = {
-  onNext: () => void;
-  t: ReturnType<typeof useTranslation>['t'];
-};
-
-// Endless game — there is no "last level", so the overlay is always the
-// celebratory "keep going" form (star + "Next"). The `levelSolved.finish`
-// string is retained in the locales for a possible future finite mode.
-function LevelSolvedOverlay({
-  onNext,
-  t,
-}: LevelSolvedOverlayProps): React.JSX.Element {
-  return (
-    <View style={overlayStyles.root}>
-      <View style={[overlayStyles.card, SHADOWS.lg]}>
-        <EmojiFrame emoji="⭐️" size={72} tint={ACCENTS.pink.tint} />
-        {/* 3-star reward row */}
-        <View style={overlayStyles.starsRow}>
-          <Star size={28} filled />
-          <Star size={36} filled />
-          <Star size={28} filled />
-        </View>
-        <Text style={overlayStyles.title}>
-          {t('count-and-pop:levelSolved.title')}
-        </Text>
-        <PressableButton
-          label={t('count-and-pop:levelSolved.next')}
-          onPress={onNext}
-          accent="pink"
-        />
-      </View>
-    </View>
-  );
-}
-
-const overlayStyles = StyleSheet.create({
-  root: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.lg,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    alignItems: 'center',
-    gap: SPACING.md,
-    padding: SPACING.xl,
-    borderRadius: BORDER_RADIUS.tile,
-    backgroundColor: COLORS.surface,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-  },
-  title: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.ink,
-    textAlign: 'center',
-  },
-});
 
 // ---------------------------------------------------------------------------
 // Main component
@@ -140,7 +60,6 @@ const overlayStyles = StyleSheet.create({
 
 export default function CountAndPopGame(): React.JSX.Element {
   const { play } = useSound();
-  const shell = useGameShell();
   const { t } = useTranslation();
 
   // -------------------------------------------------------------------------
@@ -161,17 +80,18 @@ export default function CountAndPopGame(): React.JSX.Element {
   // Recreate the LevelSource whenever the session seed changes (i.e. on new game).
   // useMemo on [sessionSeed] keeps the source identity stable across re-renders
   // within the same session, which is required for useLevels' data memo to work.
-  const source = useMemo(() => makeCountAndPopLevels(sessionSeed), [sessionSeed]);
+  const { tier, record } = useAdaptive('count-and-pop');
+  const tierRef = useRef(tier);
+  tierRef.current = tier;
+  const source = useMemo(() => makeCountAndPopLevels(sessionSeed, () => tierRef.current), [sessionSeed]);
 
   const {
     status,
     data,
     level,
-    score,
     start,
     startOver,
     advance,
-    addScore,
   } = useLevels({
     gameId: 'count-and-pop',
     source,
@@ -188,7 +108,7 @@ export default function CountAndPopGame(): React.JSX.Element {
   const hints = useHintLadder(level);
   const [revealCorrect, setRevealCorrect] = useState(false);
   const [hintIndex, setHintIndex] = useState<number | null>(null);
-  const celebrate = useCelebrate();
+  const roundEnd = useRoundEnd();
   const mounted = useRef(true);
   useEffect(() => () => {
     mounted.current = false;
@@ -207,15 +127,8 @@ export default function CountAndPopGame(): React.JSX.Element {
   // Effects
   // ---------------------------------------------------------------------------
 
-  // Keep the GameShell HUD score display in sync.
-  useEffect(() => {
-    // Only while playing — see shape-detective.
-    shell.setScore(status === 'playing' ? score : null);
-  }, [score, shell, status]);
-
   // When the level advances, dismiss the win overlay and reset selection/solved.
   useEffect(() => {
-    shell.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
     setRevealCorrect(false);
@@ -223,7 +136,7 @@ export default function CountAndPopGame(): React.JSX.Element {
     // Reset juice anims for fresh level
     shakeAnim.setValue(0);
     solvePopAnim.setValue(1);
-  }, [level, shell, shakeAnim, solvePopAnim]);
+  }, [level, shakeAnim, solvePopAnim]);
 
   // Clear any pending timer when the component unmounts.
   useEffect(() => {
@@ -235,15 +148,6 @@ export default function CountAndPopGame(): React.JSX.Element {
   // ---------------------------------------------------------------------------
   // Handlers
   // ---------------------------------------------------------------------------
-
-  // Endless: always advance to the next level.
-  // isLast is permanently false (source.count is undefined), so the "finish"
-  // branch is dead — we keep it typed but never reached, which lets the
-  // LevelSolvedOverlay always show the "Next" label correctly.
-  const handleNext = useCallback(() => {
-    shell.hideOverlay('win');
-    advance();
-  }, [advance, shell]);
 
   // startNewGame: re-roll the session seed then reset to level 1.
   // Each call to startOver() reuses the SAME session seed (resume-friendly).
@@ -290,30 +194,16 @@ export default function CountAndPopGame(): React.JSX.Element {
   // Shared correct-answer handler — used by both mode types.
   // In endless mode isLast is always false; always play 'success'.
   const handleCorrect = useCallback(() => {
-    void play('success');
-    addScore(hints.firstTry ? POINTS_FIRST_TRY : POINTS_WITH_HELP);
+    const milestone = level % MILESTONE_EVERY === 0;
+    // Popping can't be missed, so only answered questions show readiness.
+    if (data.round.mode !== 'countThisMany') record(hints.firstTry);
+    void play(milestone ? 'win' : 'success');
     setSolved(true);
     setHintIndex(null);
     triggerSolvePop();
     if (timerRef.current !== null) clearTimeout(timerRef.current);
-
-    if (level % MILESTONE_EVERY === 0) {
-      // Milestone: big confetti, then the tap-to-continue card.
-      void celebrate('big', { praise: false });
-      timerRef.current = setTimeout(() => {
-        shell.showOverlay(
-          'win',
-          <LevelSolvedOverlay onNext={handleNext} t={t} />,
-        );
-      }, 600);
-      return;
-    }
-
-    // Ordinary solve: a quick burst + praise, then straight on — no modal.
-    void celebrate('small').then(() => {
-      if (mounted.current) advance();
-    });
-  }, [play, addScore, hints.firstTry, level, celebrate, shell, handleNext, t, triggerSolvePop, advance]);
+    void roundEnd.next(milestone ? 'big' : 'small', advance);
+  }, [play, level, data.round.mode, record, hints.firstTry, roundEnd, triggerSolvePop, advance]);
 
   // handlePick: used by HowMany (choice-row modes).
   // Guards on `selectedIndex !== null || solved` to prevent double-advance.
