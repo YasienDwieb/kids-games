@@ -131,7 +131,7 @@ export default function MouseMazeGame() {
             landscape
           />
         </View>
-        {/* Lulu points at the maze while the demo hand shows the way. */}
+        {/* The buddy points at the maze while the demo hand shows the way. */}
         <MascotHelper
           pose={showDemo ? 'point' : null}
           side="end"

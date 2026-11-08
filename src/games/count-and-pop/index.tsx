@@ -276,7 +276,7 @@ export default function CountAndPopGame(): React.JSX.Element {
 
   const { round } = data;
 
-  // Lulu reacts to mistakes: encourages after the first miss, then points at the
+  // The buddy reacts to mistakes: encourages after the first miss, then points at the
   // answer once the hint ladder starts helping. She stays out of the way otherwise.
   const helper = (
     <MascotHelper pose={hints.step && !solved ? (hints.step === 'retry' ? 'encourage' : 'point') : null} size={110} />

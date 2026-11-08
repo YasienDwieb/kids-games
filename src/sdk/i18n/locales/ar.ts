@@ -46,6 +46,11 @@ export const ar: CoreTranslations = {
     hats: 'قبّعات',
     glasses: 'نظّارات',
     stickers: 'ملصقات',
+    looks: 'إطلالاتي',
+    lookNames: {
+      mariam: 'شعر مربوط',
+      mariamHijab: 'حجاب',
+    },
     unlockAt: 'المستوى {{n}}',
     items: {
       'party-hat': 'قبّعة الحفلة',
@@ -124,9 +129,6 @@ export const ar: CoreTranslations = {
     general: 'مفاجآت',
     complete: 'وجدتها كلها! 🏆',
   },
-  mascot: {
-    name: 'لولو',
-  },
   break: {
     home: 'العودة للرئيسية',
     grownUp: 'للكبار: {{n}} دقيقة إضافية',
@@ -150,17 +152,15 @@ export const ar: CoreTranslations = {
   buddy: {
     go: 'هيا بنا!',
     choose: 'العب مع {{name}}',
-    lulu: {
-      name: 'لولو',
-      species: 'البومة',
-      wardrobeA11y: '{{n}} نجمة. افتح خزانة لولو',
-      rest: 'لولو تحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
+    mariam: {
+      name: 'مريم',
+      wardrobeA11y: '{{n}} نجمة. افتح خزانة مريم',
+      rest: 'مريم تحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
     },
-    zain: {
-      name: 'زين',
-      species: 'الأسد الصغير',
-      wardrobeA11y: '{{n}} نجمة. افتح خزانة زين',
-      rest: 'زين يحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
+    anas: {
+      name: 'أنس',
+      wardrobeA11y: '{{n}} نجمة. افتح خزانة أنس',
+      rest: 'أنس يحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
     },
   },
   flow: {

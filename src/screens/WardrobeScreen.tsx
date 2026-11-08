@@ -1,20 +1,22 @@
-// The buddy's wardrobe — switch between Lulu and Zain, dress them in what
+// The buddy's wardrobe — switch between Mariam and Anas, change Mariam's look, dress them in what
 // levels unlock (hats, glasses; shared by both buddies) and browse the sticker
 // collection. Opening it clears the "new sticker" marks.
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import { AppBar, Chip, EmojiImage, Icon, Star } from '../components/common';
 import { LevelPill, PopBackdrop, ProgressBar } from '../components/pop';
 import {
   BUDDIES,
+  BUDDY_LOOKS,
+  chooseLook,
+  useBuddyArt,
   Mascot,
   chooseBuddy,
   useBuddy,
-  Lulu3D,
+  BuddyFigure,
   OUTFITS,
   STARS_PER_STICKER,
   STICKER_SETS,
@@ -27,13 +29,14 @@ import {
   useTranslation,
   useWearing,
   wear,
+  type BuddyArt,
   type Outfit,
   type OutfitSlot,
 } from '@/sdk';
 import { ACCENTS, COLORS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Wardrobe'>;
-type Tab = OutfitSlot | 'stickers';
+type Tab = OutfitSlot | 'stickers' | 'looks';
 
 const STICKER_SIZE = 58;
 // Fixed, varied tilts so the page looks hand-stuck but never reshuffles.
@@ -44,9 +47,12 @@ export function WardrobeScreen({ navigation }: Props) {
   const rewards = useRewards();
   const wearing = useWearing();
   const buddy = useBuddy();
-  const focused = useIsFocused();
-  const [tab, setTab] = useState<Tab>('hat');
+  const art = useBuddyArt();
+  const [picked, setTab] = useState<Tab>('hat');
   const { level } = levelInfo(rewards.stars);
+  const looks = BUDDY_LOOKS[buddy];
+  // Anas has one look, so switching to him leaves the looks tab.
+  const tab: Tab = picked === 'looks' && looks.length < 2 ? 'hat' : picked;
 
   // Leaving the wardrobe means the child has seen their new stickers.
   useEffect(() => () => void markStickersSeen(), []);
@@ -56,7 +62,7 @@ export function WardrobeScreen({ navigation }: Props) {
     void wear(o.slot, wearing[o.slot] === o.id ? null : o.id);
   };
 
-  const items = tab === 'stickers' ? [] : OUTFITS.filter((o) => o.slot === tab);
+  const items = tab === 'stickers' || tab === 'looks' ? [] : OUTFITS.filter((o) => o.slot === tab);
   const owned = new Set(rewards.stickers);
   const unseen = new Set(rewards.unseen);
 
@@ -91,19 +97,45 @@ export function WardrobeScreen({ navigation }: Props) {
         />
         <View style={styles.body}>
           <View style={styles.stage}>
-            <Lulu3D key={buddy} size={210} mood="wave" interactive active={focused} />
+            <BuddyFigure key={buddy} size={210} mood="wave" interactive />
             <View style={styles.shadow} />
           </View>
 
           <View style={[styles.panel, SHADOWS.lg]}>
             <View style={styles.tabs}>
+              {looks.length > 1 ? (
+                <Chip label={t('wardrobe.looks')} emoji="👧" active={tab === 'looks'} onPress={() => setTab('looks')} />
+              ) : null}
               <Chip label={t('wardrobe.hats')} emoji="👑" active={tab === 'hat'} onPress={() => setTab('hat')} />
               <Chip label={t('wardrobe.glasses')} emoji="👓" active={tab === 'glasses'} onPress={() => setTab('glasses')} />
               <Chip label={t('wardrobe.stickers')} icon="star" active={tab === 'stickers'} onPress={() => setTab('stickers')} />
               {unseen.size > 0 ? <View style={styles.newDot} /> : null}
             </View>
 
-            {tab === 'stickers' ? (
+            {tab === 'looks' ? (
+              <View style={styles.grid}>
+                {looks.map((l: BuddyArt) => {
+                  const on = l === art;
+                  return (
+                    <Pressable
+                      key={l}
+                      onPress={() => void chooseLook(buddy, l)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: on }}
+                      accessibilityLabel={t(`wardrobe.lookNames.${l}`)}
+                      style={({ pressed }) => [styles.tile, on ? styles.tileOn : SHADOWS.sm, pressed && styles.pressed]}
+                    >
+                      <Mascot look={l} pose="wave" size={84} bob={false} />
+                      {on ? (
+                        <View style={styles.tick}>
+                          <Icon name="checkmark" size={14} />
+                        </View>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : tab === 'stickers' ? (
               <ScrollView contentContainerStyle={styles.stickerList}>
                 <View style={styles.nextRow}>
                   <ProgressBar

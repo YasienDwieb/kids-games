@@ -20,20 +20,31 @@ license. Add an entry **before** importing any new third-party asset.
 - **License:** CC0 1.0 (public domain dedication). https://creativecommons.org/publicdomain/zero/1.0/
 - **Processing:** recolored (CC0 permits modification).
 
-### Higgsfield (Nano Banana Pro + Image to 3D) — Lulu and Zain, the buddies
+### Figma Weave (Nano Banana 2.1) — Mariam and Anas, the buddies
 
 - **Used for:** each buddy's four 2D poses
-  (`src/sdk/assets/images/mascot/{owl,lion}-{wave,cheer,point,encourage}.png`, drawn by
-  `Mascot`) and their rigged 3D models (`src/sdk/assets/models/{lulu,zain}.*`, drawn by
-  `Lulu3D`).
-- **Source:** redrawn in a semi-realistic style with Higgsfield AI (Nano Banana Pro) from the
-  original 2D art, 2026-10-29, on the project's Higgsfield account; backgrounds removed with
-  Higgsfield's background remover. The 3D models are Higgsfield Image to 3D (Meshy) meshes
-  with its auto-rig, made from a front-view A-pose of each buddy.
-- **License:** generated content used under the Higgsfield account's terms, which the
-  project owner confirmed permit commercial use in this app.
-- **Processing:** poses trimmed to 480×480 and quantised with pngquant; models decimated and
-  split into a GLB plus raw RGBA texture with `scripts/3d/prep_glb.py`.
+  (`src/sdk/assets/images/mascot/{mariam-hijab,mariam,anas}-{wave,cheer,point,encourage}.png`,
+  drawn by `Mascot`).
+- **Source:** original characters designed and generated in Figma Weave with Google's Nano
+  Banana 2.1 (character turnaround sheets, then one four-pose sheet per buddy using the sheet as
+  reference), 2026-11-08, on the project owner's account.
+- **License:** generated output used under the Weave / Gemini terms, which assign no
+  ownership claim over generated content.
+- **Processing:** white background removed by flood fill, each pose cut out and padded to a
+  480×480 transparent PNG; Anas's point pose mirrored so every buddy points right.
+
+### Google AI Studio (Gemini 3.8 Flash TTS) — the buddies' welcome lines
+
+- **Used for:** "Hi! I'm Mariam / Anas. Let's play and learn together!" in English and Arabic
+  (`src/sdk/assets/audio/voice/{mariam,anas}-welcome-{en,ar}.m4a`), played when a child picks
+  or taps their buddy.
+- **Source:** generated in Google AI Studio (model `gemini-3.8-flash-tts`; voice "Leda" for
+  Mariam, "Zephyr" with a little-boy style prompt for Anas; vowelled Arabic text; Anas's
+  English name written "Ah-nahs" so it is said the Arabic way), 2026-11-08.
+- **License:** generated output used under the Gemini API / Google AI Studio terms,
+  which assign no ownership claim to Google over generated content.
+- **Processing:** silence trimmed, loudness-normalized to the house level (≈ −25 dBFS active
+  RMS, peak ≤ −6 dBFS), mono AAC 64 kbps at 24 kHz.
 
 ### Kenney — Car Kit & Racing Kit (3D models)
 
@@ -98,8 +109,7 @@ license. Add an entry **before** importing any new third-party asset.
 
 - **Used for:** the English voice that says the celebration praise lines
   (`src/sdk/assets/audio/voice/praise-en-{1..8}.m4a`), played by `useCelebrate()`,
-  the "new sticker" announcement (`sticker-new-en.m4a`), and Lulu's tap lines
-  (`lulu-tap-en-{1..3}.m4a`).
+  and the "new sticker" announcement (`sticker-new-en.m4a`).
 - **Source:** generated with Higgsfield AI (model: Seed Audio 1.0, preset voice "Pixie"),
   2026-10-08, on the project's Higgsfield account.
 - **License:** generated content used under the Higgsfield account's terms, which the
@@ -109,8 +119,8 @@ license. Add an entry **before** importing any new third-party asset.
 
 ### Google AI Studio (Gemini 3.8 Flash TTS) — spoken praise (Arabic)
 
-- **Used for:** the Arabic praise lines (`praise-ar-{1..8}.m4a`), the "new sticker"
-  announcement (`sticker-new-ar.m4a`), and Lulu's tap lines (`lulu-tap-ar-{1..3}.m4a`).
+- **Used for:** the Arabic praise lines (`praise-ar-{1..8}.m4a`) and the "new sticker"
+  announcement (`sticker-new-ar.m4a`).
 - **Source:** generated in Google AI Studio (model `gemini-3.8-flash-tts`, voice "Sola",
   cheerful kids'-owl style prompt, fully vowelled Arabic text), 2026-10-09.
 - **License:** generated output used under the Gemini API / Google AI Studio terms,
@@ -130,16 +140,6 @@ license. Add an entry **before** importing any new third-party asset.
   ownership claim to Google over generated content.
 - **Processing:** median-length take of three, loudness-normalized to the house level
   (≈ −25 dBFS active RMS, peak ≤ −6 dBFS), mono AAC 64 kbps.
-
-### Higgsfield (Seed Audio 1.0) — Zain's tap lines (English and Arabic)
-
-- **Used for:** what Zain says when a child taps him (`src/sdk/assets/audio/voice/zain-tap-{en,ar}-{1..3}.m4a`).
-- **Source:** generated with Higgsfield AI (model: Seed Audio 1.0, preset voice "Benji"),
-  2026-10-18, on the project's Higgsfield account; Arabic lines from fully vowelled text.
-- **License:** generated content used under the Higgsfield account's terms, which the
-  project owner confirmed permit commercial use in this app.
-- **Processing:** trimmed of silence, mono AAC 64 kbps at 44.1 kHz, loudness-matched to the
-  Arabic clips (−23.7 LUFS integrated, peak ≤ −6 dBFS).
 
 ### Kenney — feedback SFX
 

@@ -3,17 +3,17 @@ import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ACCENTS, COLORS, OUTLINE, POP, SHADOWS, SPACING } from '../../constants';
-import { BUDDIES, Mascot, chooseBuddy, currentLanguage, useSound, type BuddyId } from '@/sdk';
+import { BUDDIES, BUDDY_LOOKS, Mascot, chooseBuddy, currentLanguage, useSound, welcomeIntent, type BuddyId } from '@/sdk';
 import { Icon } from '../common/Icon';
 import { PressableButton } from '../common/PressableButton';
 import { PopBackdrop } from './PopBackdrop';
 import { bob, useLoop } from './motion';
 
-/** Card colour per buddy: Lulu keeps her lavender, Zain gets tangerine. */
-const CARD = {
-  lulu: { fill: ACCENTS.purple.tint, edge: ACCENTS.purple.deep },
-  zain: { fill: ACCENTS.orange.tint, edge: ACCENTS.orange.deep },
-} as const;
+/** Card colour per buddy, picked from their outfits. */
+const CARD: Record<BuddyId, { fill: string; edge: string }> = {
+  mariam: { fill: ACCENTS.pink.tint, edge: ACCENTS.pink.deep },
+  anas: { fill: ACCENTS.blue.tint, edge: ACCENTS.blue.deep },
+};
 
 type BuddyPickerProps = {
   /** Called once the child confirms (after the choice is saved). */
@@ -21,9 +21,10 @@ type BuddyPickerProps = {
 };
 
 /**
- * The first-launch choice between Lulu (girl) and Zain (boy). Shown as
- * characters, never as "boys / girls"; any child picks either. Tapping a card
- * says hi in that buddy's voice; the play button saves it.
+ * The first-launch choice of buddy: Mariam or Anas. Shown as characters, never
+ * as "boys / girls"; any child picks either. Mariam's other look (her hijab)
+ * is in the wardrobe.
+ * Tapping a card plays that buddy's welcome line; the play button saves it.
  */
 export function BuddyPicker({ onDone }: BuddyPickerProps) {
   const { t } = useTranslation();
@@ -35,7 +36,7 @@ export function BuddyPicker({ onDone }: BuddyPickerProps) {
   const select = (b: BuddyId) => {
     setPicked(b);
     stop();
-    play(`${b}.tap.${currentLanguage()}.1`, { haptic: true });
+    play(welcomeIntent(b, currentLanguage()), { haptic: true });
   };
 
   const confirm = async () => {
@@ -58,7 +59,7 @@ export function BuddyPicker({ onDone }: BuddyPickerProps) {
                 onPress={() => select(b)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: on }}
-                accessibilityLabel={`${t(`buddy.${b}.name`)}, ${t(`buddy.${b}.species`)}`}
+                accessibilityLabel={t(`buddy.${b}.name`)}
                 style={({ pressed }) => [
                   styles.card,
                   { backgroundColor: on ? CARD[b].fill : COLORS.surface },
@@ -67,7 +68,7 @@ export function BuddyPicker({ onDone }: BuddyPickerProps) {
                 ]}
               >
                 <Animated.View style={on ? bob(float, 8) : undefined}>
-                  <Mascot buddy={b} pose={on ? 'cheer' : 'wave'} size={on ? 172 : 156} bob={false} />
+                  <Mascot buddy={b} look={BUDDY_LOOKS[b][0]} pose={on ? 'cheer' : 'wave'} size={on ? 172 : 156} bob={false} />
                 </Animated.View>
                 {on ? (
                   <View style={styles.tick}>

@@ -43,7 +43,7 @@ export default function MatchUpGame(): React.JSX.Element {
 
   const roundEnd = useRoundEnd();
   const [solved, setSolved] = useState(false);
-  // Wrong links this round — Lulu encourages, then points after repeated misses.
+  // Wrong links this round — the buddy encourages, then points after repeated misses.
   const [misses, setMisses] = useState(0);
 
   // Reset the per-round gates whenever the level changes.

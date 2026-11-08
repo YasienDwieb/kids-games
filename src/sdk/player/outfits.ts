@@ -1,7 +1,7 @@
 /**
- * Lulu's wardrobe — things she can wear, each unlocked by reaching a level.
- * The 3D owl draws every item (see Lulu3D); `emoji` is the tile art in the
- * wardrobe grid and the unlock card.
+ * The buddy's wardrobe — things to wear, each unlocked by reaching a level.
+ * `emoji` is the tile art in the wardrobe grid and the unlock card, and the
+ * sticker `Mascot` draws on the buddy (the party hat is drawn by hand).
  */
 export type OutfitSlot = 'hat' | 'glasses';
 

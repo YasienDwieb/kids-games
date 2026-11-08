@@ -2,7 +2,7 @@ import { act, create } from 'react-test-renderer';
 import { Animated, Text } from 'react-native';
 import { i18n } from '@/sdk/i18n';
 import { pickAsset } from '@/sdk/assets/query';
-import { LULU_TAP_LINES } from '@/sdk/mascot/Lulu3D';
+import { BUDDIES, welcomeIntent } from '@/sdk/buddy';
 import { voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 import { stopSpeech } from '@/sdk/speech/useSpeech';
 import { CelebrationProvider, PRAISE_COUNT, useCelebrate, type Celebrate } from '../Celebration';
@@ -168,12 +168,10 @@ it('has a recorded voice clip for every praise line in both languages', () => {
   }
 });
 
-it('has a recorded line for every buddy tap reaction in both languages', () => {
-  for (const buddy of ['lulu', 'zain']) {
+it('has a recorded welcome line for every buddy in both languages', () => {
+  for (const buddy of BUDDIES) {
     for (const lang of ['en', 'ar']) {
-      for (let n = 1; n <= LULU_TAP_LINES; n++) {
-        expect(pickAsset(`${buddy}.tap.${lang}.${n}`)).toBe(`voice.${buddy}.${lang}.${n}`);
-      }
+      expect(pickAsset(welcomeIntent(buddy, lang))).toBeDefined();
     }
   }
 });

@@ -1,5 +1,5 @@
 /**
- * Lulu popping in from a corner to react to the child — the one-line way for a
+ * The buddy popping in from a corner to react to the child — the one-line way for a
  * game to use the mascot:
  *
  *   <MascotHelper pose={missed ? 'encourage' : null} />

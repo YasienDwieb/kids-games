@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { createStore } from '@/sdk/storage/createStore';
 import type { OutfitSlot } from './outfits';
 
-/** What Lulu is wearing right now, one item per slot (kg:outfit). */
+/** What the buddy is wearing right now, one item per slot (kg:outfit). */
 export type Wearing = Record<OutfitSlot, string | null>;
 
 export const DEFAULT_WEARING: Wearing = { hat: null, glasses: null };
