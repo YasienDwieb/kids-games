@@ -48,7 +48,7 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [solved, setSolved] = useState(false);
-  // Wrong picks this round: Lulu encourages after the first, and from the
+  // Wrong picks this round: the buddy encourages after the first, and from the
   // second on she points, the answer pulses and the prompt is said again.
   const { misses, miss, hintIndex, revealCorrect } = useChoiceHints(level);
 

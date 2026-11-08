@@ -137,7 +137,7 @@ it('waits for the celebration burst before the sticker, so they never overlap', 
   act(() => tree!.unmount());
 });
 
-it('Lulu encourages from the side pane after two misses, and never cheers over the finish', async () => {
+it('the buddy encourages from the side pane after two misses, and never cheers over the finish', async () => {
   const one = charsFor('numbers', 'latin').find((c) => c.id === 'd1')!;
   const tree = await mount(<Round char={one} mode="full" onFinished={jest.fn()} />);
   const pose = () => tree.root.findByType(MascotHelper).props.pose;

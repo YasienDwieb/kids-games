@@ -45,6 +45,11 @@ export const en = {
     hats: 'Hats',
     glasses: 'Glasses',
     stickers: 'Stickers',
+    looks: 'Looks',
+    lookNames: {
+      mariam: 'Pigtails',
+      mariamHijab: 'Hijab',
+    },
     unlockAt: 'Level {{n}}',
     items: {
       'party-hat': 'Party hat',
@@ -123,9 +128,6 @@ export const en = {
     general: 'Surprises',
     complete: 'You found them all! 🏆',
   },
-  mascot: {
-    name: 'Lulu',
-  },
   break: {
     home: 'Back home',
     grownUp: 'Grown-ups: {{n}} more minutes',
@@ -149,17 +151,15 @@ export const en = {
   buddy: {
     go: "Let's go!",
     choose: 'Play with {{name}}',
-    lulu: {
-      name: 'Lulu',
-      species: 'the owl',
-      wardrobeA11y: '{{n}} stars. Open Lulu’s wardrobe',
-      rest: 'Lulu needs a rest. Let’s stretch and play again soon.',
+    mariam: {
+      name: 'Mariam',
+      wardrobeA11y: '{{n}} stars. Open Mariam’s wardrobe',
+      rest: 'Mariam needs a rest. Let’s stretch and play again soon.',
     },
-    zain: {
-      name: 'Zain',
-      species: 'the lion cub',
-      wardrobeA11y: '{{n}} stars. Open Zain’s wardrobe',
-      rest: 'Zain needs a rest. Let’s stretch and play again soon.',
+    anas: {
+      name: 'Anas',
+      wardrobeA11y: '{{n}} stars. Open Anas’s wardrobe',
+      rest: 'Anas needs a rest. Let’s stretch and play again soon.',
     },
   },
   flow: {

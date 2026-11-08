@@ -7,7 +7,7 @@ import { Icon, ParentGate, PressableButton, type IconName } from '../components/
 import { useLoop } from '../components/pop';
 import {
   EXTRA_MINUTES,
-  Lulu3D,
+  BuddyFigure,
   grantExtraTime,
   overLimit,
   playtimeStore,
@@ -102,7 +102,7 @@ function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => 
         <Animated.View
           style={{ transform: [{ scale: breathe.interpolate({ inputRange: [0, 1], outputRange: [0.94, 1.04] }) }] }}
         >
-          <Lulu3D size={190} mood="encourage" />
+          <BuddyFigure size={190} mood="encourage" />
         </Animated.View>
 
         <View

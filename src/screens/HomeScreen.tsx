@@ -39,7 +39,7 @@ import {
   DEFAULT_FLOW_PROGRESS,
   type FlowProgress,
   type GameCategory,
-  Lulu3D,
+  BuddyFigure,
   useRewards,
   useBuddy,
   useBuddyPicked,
@@ -69,8 +69,8 @@ const TILE_GAP = 18;
 const TOP_BAR_H = 52;
 const CHIPS_H = 54;
 const CARD_MIN_H = 92;
-const LULU_MIN = 64;
-const LULU_MAX = 200;
+const BUDDY_MIN = 64;
+const BUDDY_MAX = 200;
 
 export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
@@ -89,7 +89,7 @@ export function HomeScreen({ navigation }: Props) {
   const [pendingLang, setPendingLang] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
   const [category, setCategory] = useState<GameCategory | null>(null);
-  const [luluBox, setLuluBox] = useState(0);
+  const [buddyBox, setBuddyBox] = useState(0);
   // Measured, not derived from insets: system bars differ per device and the
   // rail must fill exactly what's left above the chips.
   const [railBox, setRailBox] = useState(0);
@@ -107,12 +107,6 @@ export function HomeScreen({ navigation }: Props) {
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   // Re-read the checkpoint each time Home regains focus so the card reflects
   // progress made (or completion) inside the journey before returning here.
-  // Lulu's GL surface comes back blank after another screen covered Home, so
-  // she is remounted each time Home becomes focused again.
-  const [visit, setVisit] = useState(0);
-  useEffect(() => {
-    if (focused) setVisit((v) => v + 1);
-  }, [focused]);
   useFocusEffect(
     useCallback(() => {
       let active = true;
@@ -207,12 +201,10 @@ export function HomeScreen({ navigation }: Props) {
       </ScrollView>
     ) : null;
 
-  // Tap Lulu to say hi (she hops and giggles), drag sideways to spin her.
-  const luluSize = Math.max(0, Math.min(LULU_MAX, luluBox));
-  const lulu =
-    luluSize >= LULU_MIN ? (
-      <Lulu3D key={visit} size={luluSize} interactive active={focused} style={styles.lulu} />
-    ) : null;
+  // Tap the buddy to say hi: a hop, a cheer and their welcome line.
+  const buddySize = Math.max(0, Math.min(BUDDY_MAX, buddyBox));
+  const buddyFigure =
+    buddySize >= BUDDY_MIN ? <BuddyFigure size={buddySize} interactive style={styles.buddy} /> : null;
 
   const featured = (w: number, h: number) => (
     <FeaturedCard
@@ -277,11 +269,11 @@ export function HomeScreen({ navigation }: Props) {
 
   const empty = <Text style={styles.empty}>{t('home.empty')}</Text>;
 
-  // First launch (and existing players once): pick Lulu or Zain before playing.
+  // First launch (and existing players once): pick a buddy before playing.
   const buddyPicker = buddyPicked === false && focused ? <BuddyPicker /> : null;
 
   if (landscape) {
-    // Body under the top bar: a Lulu column, then one horizontal rail
+    // Body under the top bar: a buddy column, then one horizontal rail
     // that opens with the featured card and continues into the game tiles.
     const leftW = Math.round(Math.max(160, Math.min(220, width * 0.2)));
     // Until the rail is measured, estimate it from the window so the first
@@ -304,12 +296,12 @@ export function HomeScreen({ navigation }: Props) {
             <View style={styles.body}>
               <View style={[styles.left, { width: leftW }]}>
                 <View
-                  style={styles.luluBox}
+                  style={styles.buddyBox}
                   onLayout={(e: LayoutChangeEvent) =>
-                    setLuluBox(Math.floor(Math.min(e.nativeEvent.layout.height, e.nativeEvent.layout.width)))
+                    setBuddyBox(Math.floor(Math.min(e.nativeEvent.layout.height, e.nativeEvent.layout.width)))
                   }
                 >
-                  {lulu}
+                  {buddyFigure}
                 </View>
               </View>
 
@@ -328,7 +320,7 @@ export function HomeScreen({ navigation }: Props) {
                     // ScrollView still starts at x:0 (the far end). Snap to the
                     // reading start once the content is measured.
                     // scrollToEnd, not scrollTo({ x: contentWidth }): the latter
-                    // over-scrolled by a viewport, sliding the cards over Lulu's
+                    // over-scrolled by a viewport, sliding the cards over the buddy's
                     // column (the rail doesn't clip, for the hard shadows).
                     onContentSizeChange={() => {
                       if (I18nManager.isRTL) railRef.current?.scrollToEnd({ animated: false });
@@ -378,7 +370,7 @@ export function HomeScreen({ navigation }: Props) {
           {topBar}
           {featured(contentW, 300)}
           <View style={styles.portraitRow}>
-            <Lulu3D key={visit} size={130} interactive active={focused} />
+            <BuddyFigure size={130} interactive />
           </View>
           {chips}
           {games.length === 0 ? (
@@ -450,8 +442,8 @@ const styles = StyleSheet.create({
 
   body: { flex: 1, flexDirection: 'row', gap: GAP + 4 },
   left: { gap: GAP },
-  luluBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  lulu: { alignSelf: 'center' },
+  buddyBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  buddy: { alignSelf: 'center' },
 
   // The rail clips nothing: hard shadows and the press offset need the room.
   rail: { flexGrow: 0, overflow: 'visible' },

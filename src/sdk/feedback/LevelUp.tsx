@@ -1,6 +1,6 @@
 /**
  * "LEVEL UP!" — the big moment when lifetime stars cross into a new level.
- * Full-screen sunburst, Lulu jumping, the new level, and whatever wardrobe item
+ * Full-screen sunburst, the buddy jumping, the new level, and whatever wardrobe item
  * just unlocked with a try-it-on button. Closes by itself. Mounted inside CelebrationProvider,
  * so every play screen gets it.
  */
@@ -17,7 +17,7 @@ import { pulse, useLoop } from '@/components/pop/motion';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
 import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { useSound } from '@/sdk/audio/useSound';
-import { Lulu3D } from '@/sdk/mascot/Lulu3D';
+import { BuddyFigure } from '@/sdk/mascot/BuddyFigure';
 import { unlocksAt } from '@/sdk/player/outfits';
 import { wear } from '@/sdk/player/outfitStore';
 import { onLevelUp } from '@/sdk/rewards/store';
@@ -110,7 +110,7 @@ export function LevelUp() {
       </Animated.View>
 
       <View style={styles.middle}>
-        <Lulu3D size={200} mood="cheer" />
+        <BuddyFigure size={200} mood="cheer" />
 
         {item ? (
           <View

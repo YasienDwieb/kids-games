@@ -1,5 +1,5 @@
 /**
- * "New sticker!" moment — when an award unlocks a sticker, Lulu pops up holding
+ * "New sticker!" moment — when an award unlocks a sticker, the buddy pops up holding
  * it and says so (the same card announces reaching the daily goal). Rendered inside the CelebrationProvider overlay (above the
  * game, touch-transparent), so every game gets it for free.
  */

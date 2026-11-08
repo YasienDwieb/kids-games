@@ -60,7 +60,7 @@ export default function ShapeDetectiveGame(): React.JSX.Element {
   // Shake animation for wrong answer
   const shakeAnim = useRef(new Animated.Value(0)).current;
 
-  // Wrong attempts this level — Lulu encourages first, then points as the answer pulses.
+  // Wrong attempts this level — the buddy encourages first, then points as the answer pulses.
   const { misses, miss, hintIndex, revealCorrect } = useChoiceHints(level);
   const [sortMisses, setSortMisses] = useState(0);
 

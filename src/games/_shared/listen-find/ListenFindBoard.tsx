@@ -77,7 +77,7 @@ export type ListenFindBoardProps = {
    * `item.id` or keep it generic.
    */
   choiceLabel: (item: FindItem) => string;
-  /** Lulu's reaction in the end corner (null/omitted = hidden). */
+  /** The buddy's reaction in the end corner (null/omitted = hidden). */
   mascotPose?: MascotPose | null;
   /**
    * Draw an image choice yourself (e.g. a 3D model) instead of its picture,

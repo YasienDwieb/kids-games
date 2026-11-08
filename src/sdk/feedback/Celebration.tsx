@@ -20,7 +20,7 @@ import { currentLanguage } from '@/sdk/i18n';
 import { holdVoice, voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 import { stopSpeech } from '@/sdk/speech/useSpeech';
 import { Star } from '@/components/common/Star';
-import { Lulu3D } from '@/sdk/mascot/Lulu3D';
+import { BuddyFigure } from '@/sdk/mascot/BuddyFigure';
 import { StickerToast } from '@/sdk/rewards/StickerToast';
 import { LevelUp } from './LevelUp';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
@@ -179,7 +179,7 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
           {bursts.map((b) => (
             <BurstView key={b.id} burst={b} onDone={finish} />
           ))}
-          <CheeringLulu show={bursts.length > 0} big={bursts.some((b) => b.size === 'big')} />
+          <CheeringBuddy show={bursts.length > 0} big={bursts.some((b) => b.size === 'big')} />
           <StickerToast />
         </View>
         <LevelUp />
@@ -188,12 +188,8 @@ export function CelebrationProvider({ children }: { children: React.ReactNode })
   );
 }
 
-/**
- * 3D Lulu hops up from the corner to cheer every celebration. She is mounted up
- * front (one GL context per screen, created before the first burst so it can't
- * hitch the confetti) and only renders frames while shown.
- */
-function CheeringLulu({ show, big }: { show: boolean; big: boolean }) {
+/** The buddy hops up from the corner to cheer every celebration. */
+function CheeringBuddy({ show, big }: { show: boolean; big: boolean }) {
   const enter = useMemo(() => new Animated.Value(0), []);
   useEffect(() => {
     Animated.spring(enter, { toValue: show ? 1 : 0, friction: 7, tension: 70, useNativeDriver: true }).start();
@@ -209,7 +205,7 @@ function CheeringLulu({ show, big }: { show: boolean; big: boolean }) {
         },
       ]}
     >
-      <Lulu3D size={size} mood="cheer" active={show} />
+      <BuddyFigure size={size} mood="cheer" />
     </Animated.View>
   );
 }
@@ -219,7 +215,7 @@ function BurstView({ burst, onDone }: { burst: Burst; onDone: (id: number) => vo
   const progress = useMemo(() => new Animated.Value(0), []);
   const bubble = useMemo(() => new Animated.Value(0), []);
   const duration = DURATION[burst.size];
-  // The confetti keeps its pace; the bubble (and cheering Lulu) wait for the voice.
+  // The confetti keeps its pace; the bubble (and the cheering buddy) wait for the voice.
   const visible = Math.max(duration, burst.voiceMs);
 
   useEffect(() => {
