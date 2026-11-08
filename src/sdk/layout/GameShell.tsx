@@ -1,11 +1,10 @@
 import { useState, useCallback, useMemo, type ReactNode } from 'react';
-import { I18nManager, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { I18nManager, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { SafeContainer } from '@/components/common/SafeContainer';
 import { BackButton } from '@/components/common/BackButton';
-import { HudPill, hudTextStyle } from '@/components/common/HudPill';
-import { Star } from '@/components/common/Star';
+import { HudPill } from '@/components/common/HudPill';
 import { Icon } from '@/components/common/Icon';
 import { COLORS, SPACING } from '@/constants';
 import { GameShellContext, type GameShellApi } from './GameShellContext';
@@ -32,7 +31,6 @@ export function GameShell({
 }: GameShellProps) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [score, setScore] = useState<number | string | null>(null);
   const [overlays, setOverlays] = useState<Partial<Record<OverlaySlot, ReactNode>>>({});
 
   const showOverlay = useCallback((slot: OverlaySlot, content: ReactNode) => {
@@ -48,7 +46,7 @@ export function GameShell({
   }, []);
 
   const api = useMemo<GameShellApi>(
-    () => ({ setScore, showOverlay, hideOverlay }),
+    () => ({ showOverlay, hideOverlay }),
     [showOverlay, hideOverlay]
   );
 
@@ -56,7 +54,7 @@ export function GameShell({
     (slot) => overlays[slot] != null
   );
 
-  const hasHud = header != null || score != null || onPause != null;
+  const hasHud = header != null || onPause != null;
   // `safeReset` zeroes SafeContainer's padding so the playfield runs edge to
   // edge, which also removes the safe-area inset the absolute HUD would have
   // inherited. Offset it manually, the same way BackButton does, or the pill
@@ -81,12 +79,6 @@ export function GameShell({
             pointerEvents="box-none"
           >
             {header}
-            {score != null ? (
-              <HudPill>
-                <Star size={18} filled />
-                <Text style={hudTextStyle}>{t('common.score', { n: score })}</Text>
-              </HudPill>
-            ) : null}
             {onPause ? (
               <TouchableOpacity
                 onPress={onPause}

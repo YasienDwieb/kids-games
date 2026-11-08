@@ -8,6 +8,11 @@ export const ar: GameTranslations = {
   },
 
   title: 'خلّاط الألوان',
+  // Spoken prompt for a mystery colour (docs/VOICE.md).
+  say: {
+    paint: 'لَوِّنْها بِهذا اللَّون!',
+  },
+  defaultSavedName: 'لوني',
 
   mode: {
     freeplay: 'اللعب الحر',
@@ -20,19 +25,12 @@ export const ar: GameTranslations = {
 
   actions: {
     undo: '↩️ تراجع',
-    done: 'تم!',
     clear: '🗑️ مسح',
     save: '💾 حفظ',
   },
 
   mixingZone: {
-    potFull: 'الوعاء ممتلئ! تراجع عن قطرة أو ابدأ من جديد.',
     dragHint: 'اِسْحَبْ لَوْنًا إِلى الوِعاء!',
-  },
-
-  palette: {
-    colorsTitle: 'الألوان',
-    savedTitle: 'محفوظة · اضغط أو اسحب للأعلى',
   },
 
   colors: {
@@ -49,78 +47,16 @@ export const ar: GameTranslations = {
     lightBlue: 'أزرق فاتح',
   },
 
-  discoveryHints: {
-    orange: 'امزج لونَين دافئَين',
-    green: 'امزج لوناً دافئاً مع لون بارد',
-    purple: 'امزج لونَين قويَّين',
-    brown: 'امزج الألوان الثلاثة الأساسية',
-    pink: 'أضف الأبيض إلى لون دافئ',
-    lightBlue: 'أضف الأبيض إلى الأزرق',
-  },
-
-  challengeHints: {
-    c1: 'امزج لوناً ساخناً مع لون مشمس',
-    c2: 'امزج لون السماء مع ضوء الشمس',
-    c3: 'امزج النار مع الماء',
-    c4: 'اجعل الأحمر أفتح',
-    c5: 'اجعل الأزرق أفتح',
-    c6: 'امزج كل الألوان الأساسية',
-  },
-
-  picker: {
-    title: 'التحديات',
-    complete: 'مكتملة',
-    endless: 'ألوان غامضة أكثر',
-    endlessSolved: 'حللت {{n}}',
-    allDone: 'أتممت كل التحديات! 🏆',
-    backButton: 'المزج ›',
-    difficulty: {
-      easy: 'مبتدئ',
-      medium: 'متوسط',
-      hard: 'متقدم',
-    },
-  },
-
-  card: {
-    mysteryColor: 'لون غامض',
-  },
-
   challenge: {
     makeThisColor: 'اِصنعْ هذا اللون:',
-    needHint: 'تريد تلميحاً؟',
-    backLabel: 'رجوع للتحديات',
-    meter: {
-      perfect: 'ممتاز!',
-      soClose: 'قريب جداً!',
-      gettingWarmer: 'تقترب أكثر…',
-      keepMixing: 'استمر في المزج!',
-    },
-    success: 'أحسنت!',
-    next: 'التحدي التالي',
   },
 
   discovery: {
     title: 'لون جديد!',
-    yay: 'رائع!',
-  },
-
-  namingDialog: {
-    title: 'احفظ لونك! 🎨',
-    label: 'سمِّ لونك:',
-    placeholder: 'مثلاً: غروب الشمس',
-    defaultName: 'لوني',
-    cancel: 'إلغاء',
-    save: 'حفظ',
   },
 
   collection: {
-    title: 'ألواني',
     done: 'تمّ',
-    famousShelf: 'الألوان المشهورة',
-    found: 'مكتشَفة',
-    creationsShelf: 'إبداعاتي',
-    emptyCreations: 'امزج لوناً واضغط حفظ!',
-    lockedName: '???',
     deleteLabel: 'حذف',
   },
 };

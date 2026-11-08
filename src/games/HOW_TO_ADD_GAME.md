@@ -163,12 +163,10 @@ Omit `layout` or set `layout: { mode: 'shell' }`. The game is wrapped in `GameSh
 const { setScore, showOverlay, hideOverlay } = useGameShell();
 
 setScore(10);                           // show score in header
-showOverlay('win', <WinScreen />);      // full-screen win overlay
 showOverlay('pause', <PauseMenu />);
-hideOverlay('win');
 ```
 
-Overlay slots: `'win'`, `'pause'`, `'loading'`, `'error'`.
+Overlay slots: `'win'`, `'pause'`, `'loading'`, `'error'`. Don't use a win card for a child-facing game: `useRoundEnd()` celebrates and moves on by itself.
 
 ### Bare mode
 

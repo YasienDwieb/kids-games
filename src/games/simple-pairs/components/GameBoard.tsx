@@ -1,7 +1,9 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Card as CardType } from '../types';
+import { AreaDemo, currentLanguage, useGuide } from '@/sdk';
 import { LAYOUT } from '../constants';
+import { pairsPhrase } from '../phrase';
 import { SPACING } from '../../../constants';
 import { Card } from './Card';
 
@@ -14,15 +16,37 @@ type GameBoardProps = {
 
 const BOARD_PADDING = SPACING.lg;
 
+/** Where the middle card sits, as fractions of the board: a board's centre can be a gap. */
+function middleCard(count: number, columns: number) {
+  const rows = Math.ceil(count / columns);
+  return { x: (Math.floor(columns / 2) + 0.5) / columns, y: (Math.floor(rows / 2) + 0.5) / rows };
+}
+
 // three + react-three-fiber + expo-gl are only evaluated once a board is on screen.
 const GameBoard3D = lazy(() => import('./GameBoard3D').then((m) => ({ default: m.GameBoard3D })));
 
 /** The board the game and the guided flow render: 3D cards, with the flat board while it loads. */
 export function GameBoard(props: GameBoardProps) {
+  const guide = useGuide({
+    id: 'simple-pairs',
+    phrase: pairsPhrase(currentLanguage()),
+    roundKey: props.cards.length,
+    active: props.cards.some((c) => !c.isMatched),
+  });
+  const board = {
+    ...props,
+    onCardPress: (id: string) => {
+      guide.poke();
+      props.onCardPress(id);
+    },
+  };
   return (
-    <Suspense fallback={<GameBoard2D {...props} />}>
-      <GameBoard3D {...props} />
-    </Suspense>
+    <View style={styles.host}>
+      <Suspense fallback={<GameBoard2D {...board} />}>
+        <GameBoard3D {...board} />
+      </Suspense>
+      {guide.showDemo ? <AreaDemo at={middleCard(props.cards.length, props.columns)} /> : null}
+    </View>
   );
 }
 
@@ -83,6 +107,7 @@ export function GameBoard2D({ cards, onCardPress, disabled, columns }: GameBoard
 }
 
 const styles = StyleSheet.create({
+  host: { flex: 1 },
   container: {
     flex: 1,
     alignItems: 'center',

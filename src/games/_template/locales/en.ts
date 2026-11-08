@@ -7,7 +7,6 @@ export const en = {
   },
   tapMe: 'Tap me — replace this with your game.',
   showWin: 'Show win overlay',
-  win: 'You win! 🎉',
 } as const;
 
 // Structural type: forces ar.ts to have the SAME keys without locking VALUES.

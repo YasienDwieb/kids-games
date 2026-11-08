@@ -20,17 +20,20 @@
  * Prop contract mirrors PatternPuzzle: puzzle / selectedIndex / onPick / disabled.
  */
 
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import {
   ACCENTS,
+  AreaDemo,
   BORDER_RADIUS,
   COLORS,
-  FONTS,
-  FONT_SIZES,
+  currentLanguage,
+  HintPulse,
   PressableButton,
   SPACING,
+  useGuide,
   useTranslation,
 } from '@/sdk';
+import { puzzlePhrase } from '../phrase';
 import { ShapeView } from './ShapeView';
 import { SHAPE_SIZE_PX } from '../constants';
 import type { OddOneOutPuzzle as OddOneOutPuzzleData } from '../types';
@@ -43,6 +46,10 @@ type OddOneOutPuzzleProps = {
   puzzle: OddOneOutPuzzleData;
   /** Index the player has tapped (null = not yet answered). */
   selectedIndex: number | null;
+  /** Option the hint ladder is pointing at. */
+  hintIndex: number | null;
+  /** Show the answer in green as a wrong pick flashes (the ladder's last step). */
+  revealCorrect: boolean;
   /** Called when the player taps an item. */
   onPick: (index: number) => void;
   /** Ignore taps (post-answer cooldown). */
@@ -56,6 +63,8 @@ type OddOneOutPuzzleProps = {
 export function OddOneOutPuzzle({
   puzzle,
   selectedIndex,
+  hintIndex,
+  revealCorrect,
   onPick,
   disabled = false,
 }: OddOneOutPuzzleProps): React.JSX.Element {
@@ -63,18 +72,22 @@ export function OddOneOutPuzzle({
   // Landscape (guided flow): tighten vertical rhythm so the grid isn't clipped.
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
+  const answered = selectedIndex !== null;
+  const guide = useGuide({
+    id: 'shape-detective',
+    phrase: puzzlePhrase('oddOneOut', currentLanguage()),
+    roundKey: puzzle,
+    active: !disabled || answered,
+  });
 
   return (
     <View style={[styles.root, landscape && styles.rootLandscape]}>
-      {/* Instruction */}
-      <Text style={styles.instruction}>{t('shape-detective:oddOneOut.instruction')}</Text>
-
       {/* Shape grid */}
       <View style={styles.grid}>
         {puzzle.items.map((shape, idx) => {
           const isSelected = selectedIndex === idx;
           const isCorrect = idx === puzzle.correctIndex;
-          const revealed = selectedIndex !== null;
+          const revealed = answered && (revealCorrect || isSelected);
 
           // Border feedback: correct = green, selected-wrong = coral, neutral =
           // transparent (PressableButton's face already wears the ink outline).
@@ -96,8 +109,8 @@ export function OddOneOutPuzzle({
               : COLORS.surface;
 
           return (
+            <HintPulse key={idx} active={hintIndex === idx && !answered}>
             <View
-              key={idx}
               accessible
               accessibilityRole="button"
               accessibilityLabel={t('shape-detective:oddOneOut.itemLabel', {
@@ -107,7 +120,10 @@ export function OddOneOutPuzzle({
               })}
             >
               <PressableButton
-                onPress={() => onPick(idx)}
+                onPress={() => {
+                  guide.poke();
+                  onPick(idx);
+                }}
                 disabled={disabled || selectedIndex !== null}
                 // Passed as `color`, not a style background: PressableButton
                 // paints its own face, so a background in `style` only tints the
@@ -124,7 +140,9 @@ export function OddOneOutPuzzle({
                   <ShapeView shape={shape} />
                 </View>
               </PressableButton>
+              {guide.showDemo && idx === puzzle.correctIndex && !answered ? <AreaDemo /> : null}
             </View>
+            </HintPulse>
           );
         })}
       </View>
@@ -150,12 +168,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     gap: 0,
     paddingVertical: SPACING.xs,
-  },
-  instruction: {
-    fontFamily: FONTS.display,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text.primary,
-    textAlign: 'center',
   },
   grid: {
     flexDirection: 'row',

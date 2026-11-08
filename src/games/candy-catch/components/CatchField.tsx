@@ -25,7 +25,8 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import { approach, clamp, FONTS, useGameLoop, useSound } from '@/sdk';
+import { approach, AreaDemo, clamp, currentLanguage, FONTS, useGameLoop, useGuide, useSound } from '@/sdk';
+import { catchPhrase } from '../phrase';
 import { Basket } from './Basket';
 import { FallingItem } from './FallingItem';
 import {
@@ -107,6 +108,7 @@ export function CatchField({
   onLose,
 }: CatchFieldProps) {
   const { play, prewarm } = useSound();
+  const guide = useGuide({ id: 'candy-catch', phrase: catchPhrase(currentLanguage()), active });
   const [pops, setPops] = useState<Pop[]>([]);
   const [size, setSize] = useState({ w: 0, h: 0 });
   // When the last good catch landed, for the 3D basket's bounce.
@@ -394,7 +396,13 @@ export function CatchField({
   // host only renders the field once playing), so web gets its size too.
   return (
     <GestureDetector gesture={pan}>
-      <View style={[styles.field, styles.ltr]} onLayout={onLayout}>
+      <View
+        style={[styles.field, styles.ltr]}
+        onLayout={onLayout}
+        onTouchStart={guide.poke}
+        onTouchMove={guide.poke}
+      >
+        {guide.showDemo ? <AreaDemo mode="sweep" /> : null}
         {/* The 3D scene draws the items and basket; the flat views stand in while it loads. */}
         <Suspense
           fallback={

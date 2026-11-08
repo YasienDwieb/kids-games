@@ -2,17 +2,17 @@
  * Candy Catch — guided-flow adapter.
  *
  * A short, gentle "brain break" between quiz steps: the same CatchField as the
- * standalone game, slow and with no hearts to lose, completing once a small
- * point target is caught.
+ * standalone game, slow and with no hearts to lose, completing once a point
+ * target is caught: roughly 30–45 s of play, about 20 catches.
  */
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { HudPill, hudTextStyle, registerFlowAdapter, useFlowRound } from '@/sdk';
+import { StyleSheet, View } from 'react-native';
+import { ProgressBar, registerFlowAdapter, useFlowRound } from '@/sdk';
 import { CatchField } from './components/CatchField';
 import type { LevelSpec } from './constants';
 
-// Gentler than standalone level 1: fewer yucky items, a bit more gold, small targets.
-const ROUNDS: LevelSpec[] = [25, 30, 35, 40].map((target) => ({
+// Gentler than standalone level 1: fewer yucky items, a bit more gold.
+const ROUNDS: LevelSpec[] = [150, 170, 190, 210].map((target) => ({
   target,
   spawnInterval: 950,
   fallSpeed: 140,
@@ -34,12 +34,7 @@ function CatchFlowRound({ data, onComplete }: { data: LevelSpec; onComplete: () 
         onWin={complete}
       />
       <View style={styles.hud} pointerEvents="none">
-        <HudPill>
-          {/* Pinned LTR so "12 / 25" never reorders under RTL. */}
-          <Text style={[hudTextStyle, styles.ltr]}>
-            🍬 {Math.min(score, data.target)} / {data.target}
-          </Text>
-        </HudPill>
+        <ProgressBar value={score / data.target} style={styles.bar} />
       </View>
     </View>
   );
@@ -49,7 +44,7 @@ const styles = StyleSheet.create({
   // Transparent so the flow's shared backdrop shows through (continuous world).
   root: { flex: 1 },
   hud: { position: 'absolute', top: 0, end: 0 },
-  ltr: { writingDirection: 'ltr' },
+  bar: { width: 220 },
 });
 
 registerFlowAdapter({

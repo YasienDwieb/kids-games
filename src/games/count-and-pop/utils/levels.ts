@@ -27,6 +27,10 @@
  *                          the mode mix + per-session randomization of values, NOT
  *                          ever-growing numbers.
  *
+ * Those are the rotation's slots at full readiness. A child only meets makeN
+ * and addition once ready: modeForTier turns a slot they haven't earned into
+ * the next easier mode, so younger players stay on counting.
+ *
  * The modulo on MODE_ROTATION_ENDLESS ensures levels 17, 33, 49 … map to the
  * same mode slot as 1, 17, 33 … within the 16-entry cycle.
  */
@@ -43,6 +47,8 @@ import {
   MID_MAX_COUNT,
   MAKE_N_MIN_HAVE,
   MAX_ADDEND,
+  MAKE_N_TIER,
+  ADDITION_TIER,
 } from '../constants';
 import {
   buildCountThisMany,
@@ -111,6 +117,12 @@ function additionParamsFor(level: number): { a: number; b: number } {
   return { a, b };
 }
 
+/** The mode a child at `tier` plays in a rotation slot. */
+export function modeForTier(slot: RoundMode, tier: number): RoundMode {
+  const mode = slot === 'addition' && tier < ADDITION_TIER ? 'makeN' : slot;
+  return mode === 'makeN' && tier < MAKE_N_TIER ? 'howMany' : mode;
+}
+
 // ---------------------------------------------------------------------------
 // buildLevel
 // ---------------------------------------------------------------------------
@@ -126,10 +138,10 @@ function additionParamsFor(level: number): { a: number; b: number } {
  * NOTE: Math.random is NEVER called here. Only the call site in index.tsx that
  * creates the sessionSeed may use Math.random — document this at that call site.
  */
-export function buildLevel(level: number, sessionSeed = 0): LevelData {
+export function buildLevel(level: number, sessionSeed = 0, tier = ADDITION_TIER): LevelData {
   // XOR-combine level hash with sessionSeed for per-session variety.
   const seed = (level * 7919) ^ (sessionSeed >>> 0);
-  const mode: RoundMode = MODE_ROTATION_ENDLESS[(level - 1) % MODE_ROTATION_ENDLESS.length];
+  const mode = modeForTier(MODE_ROTATION_ENDLESS[(level - 1) % MODE_ROTATION_ENDLESS.length], tier);
   const choiceCount = choiceCountFor(level);
   const target = targetFor(level);
 
@@ -173,8 +185,12 @@ export function buildLevel(level: number, sessionSeed = 0): LevelData {
  *
  * Pass sessionSeed = 0 in tests for fully deterministic behavior.
  */
-export function makeCountAndPopLevels(sessionSeed: number): LevelSource<LevelData> {
-  return levelsFromGenerator((level) => buildLevel(level, sessionSeed));
+export function makeCountAndPopLevels(
+  sessionSeed: number,
+  // Read as each level is built, so a change never swaps the round on screen.
+  readiness: () => number = () => ADDITION_TIER,
+): LevelSource<LevelData> {
+  return levelsFromGenerator((level) => buildLevel(level, sessionSeed, readiness()));
 }
 
 /**

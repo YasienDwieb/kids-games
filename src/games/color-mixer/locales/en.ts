@@ -7,6 +7,7 @@ export const en = {
 
   // Game title shown in the header
   title: 'Color Mixer',
+  defaultSavedName: 'My Color',
 
   // Mode tab labels
   mode: {
@@ -14,6 +15,10 @@ export const en = {
     challenges: 'Challenges',
   },
 
+  // Spoken prompt for a mystery colour (docs/VOICE.md).
+  say: {
+    paint: 'Paint it this color!',
+  },
   // Header / toolbar
   header: {
     myColors: 'My Colors',
@@ -22,21 +27,13 @@ export const en = {
   // Action buttons
   actions: {
     undo: '↩️ Undo',
-    done: 'Done!',
     clear: '🗑️ Clear',
     save: '💾 Save',
   },
 
   // Mixing zone (dragHint is spoken, not shown)
   mixingZone: {
-    potFull: "Pot's full! Undo a drop, or start over.",
     dragHint: 'Drag a color into the bowl!',
-  },
-
-  // Palette section titles
-  palette: {
-    colorsTitle: 'Colors',
-    savedTitle: 'Saved · tap or drag up',
   },
 
   // Color names (primary + discoverable)
@@ -54,86 +51,19 @@ export const en = {
     lightBlue: 'Light Blue',
   },
 
-  // Discovery hints (shown on locked slots in the collection)
-  discoveryHints: {
-    orange: 'Mix two warm colors',
-    green: 'Mix a warm and a cool color',
-    purple: 'Mix two bold colors',
-    brown: 'Mix all three primary colors',
-    pink: 'Add white to a warm color',
-    lightBlue: 'Add white to a cool color',
-  },
-
-  // Challenge definitions (hint text by challenge id)
-  challengeHints: {
-    c1: 'Mix a hot color with a sunny color',
-    c2: 'Mix the sky with sunshine',
-    c3: 'Mix fire with water',
-    c4: 'Make red lighter',
-    c5: 'Make blue lighter',
-    c6: 'Mix ALL the primary colors',
-  },
-
-  // Challenge picker screen
-  picker: {
-    title: 'Challenges',
-    complete: 'complete',
-    endless: 'More mystery colors',
-    endlessSolved: '{{n}} solved',
-    allDone: 'All challenges complete!',
-    backButton: '‹ Mix',
-    difficulty: {
-      easy: 'Beginner',
-      medium: 'Intermediate',
-      hard: 'Advanced',
-    },
-  },
-
-  // Challenge card
-  card: {
-    mysteryColor: 'Mystery Color',
-  },
-
   // Challenge mode (in-game target panel)
   challenge: {
     makeThisColor: 'Make this color:',
-    needHint: 'Need a hint?',
-    backLabel: 'Back to challenges',
-    meter: {
-      perfect: 'Perfect!',
-      soClose: 'So close!',
-      gettingWarmer: 'Getting warmer…',
-      keepMixing: 'Keep mixing!',
-    },
-    success: 'You did it!',
-    next: 'Next challenge',
   },
 
   // Discovery celebration modal
   discovery: {
     title: 'New color!',
-    yay: 'Yay!',
-  },
-
-  // Save color dialog
-  namingDialog: {
-    title: 'Save your color! 🎨',
-    label: 'Name your color:',
-    placeholder: 'e.g. Sunset',
-    defaultName: 'My Color',
-    cancel: 'Cancel',
-    save: 'Save',
   },
 
   // Color collection modal
   collection: {
-    title: 'My Colors',
     done: 'Done',
-    famousShelf: 'Famous colors',
-    found: 'found',
-    creationsShelf: 'My creations',
-    emptyCreations: 'Mix a color and tap Save!',
-    lockedName: '???',
     deleteLabel: 'Delete',
   },
 } as const;

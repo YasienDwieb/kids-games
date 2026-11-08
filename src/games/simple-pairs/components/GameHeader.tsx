@@ -1,24 +1,21 @@
 import React from 'react';
-import { I18nManager, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { I18nManager, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HudPill, hudTextStyle, IconButton } from '../../../components/common';
+import { HudPill, IconButton, Star } from '../../../components/common';
 import { SPACING, TOUCH_TARGET } from '../../../constants';
 import { useTranslation } from '@/sdk';
 
 type GameHeaderProps = {
   found: number;
   total: number;
-  moves: number;
   onReset: () => void;
 };
 
-export function GameHeader({ found, total, moves, onReset }: GameHeaderProps) {
+export function GameHeader({ found, total, onReset }: GameHeaderProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
-
-  const movesKey = moves === 1 ? 'header.movesOne' : 'header.movesOther';
 
   if (landscape) {
     // Compact single row pinned to the end edge (like the other games' HUDs),
@@ -31,17 +28,10 @@ export function GameHeader({ found, total, moves, onReset }: GameHeaderProps) {
           { paddingTop: insets.top + SPACING.xs, paddingEnd: endInset + SPACING.md },
         ]}
       >
-        <HudPill>
-          <Text style={styles.icon}>🃏</Text>
-          <Text style={hudTextStyle}>
-            {t('simple-pairs:header.pairs', { found, total })}
-          </Text>
-        </HudPill>
-        <HudPill>
-          <Text style={styles.icon}>👆</Text>
-          <Text style={hudTextStyle}>
-            {t(`simple-pairs:${movesKey}`, { count: moves })}
-          </Text>
+        <HudPill accessibilityLabel={t('simple-pairs:header.pairs', { found, total })}>
+          {Array.from({ length: total }, (_, i) => (
+            <Star key={i} size={16} filled={i < found} />
+          ))}
         </HudPill>
         <IconButton
           glyph="↻"
@@ -63,17 +53,10 @@ export function GameHeader({ found, total, moves, onReset }: GameHeaderProps) {
       </View>
 
       <View style={styles.hudRow}>
-        <HudPill>
-          <Text style={styles.icon}>🃏</Text>
-          <Text style={hudTextStyle}>
-            {t('simple-pairs:header.pairs', { found, total })}
-          </Text>
-        </HudPill>
-        <HudPill>
-          <Text style={styles.icon}>👆</Text>
-          <Text style={hudTextStyle}>
-            {t(`simple-pairs:${movesKey}`, { count: moves })}
-          </Text>
+        <HudPill accessibilityLabel={t('simple-pairs:header.pairs', { found, total })}>
+          {Array.from({ length: total }, (_, i) => (
+            <Star key={i} size={16} filled={i < found} />
+          ))}
         </HudPill>
       </View>
     </View>
@@ -104,5 +87,4 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: SPACING.sm,
   },
-  icon: { fontSize: 17 },
 });

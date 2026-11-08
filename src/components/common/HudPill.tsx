@@ -5,11 +5,21 @@ import { COLORS, FONTS, OUTLINE, SHADOWS, BORDER_RADIUS } from '../../constants'
 type HudPillProps = {
   children: ReactNode;
   style?: ViewStyle;
+  /** Set when the pill shows pictures, so screen readers get the value. */
+  accessibilityLabel?: string;
 };
 
 // Ink-outlined pill for in-game counters (stars / moves / mission).
-export function HudPill({ children, style }: HudPillProps) {
-  return <View style={[styles.pill, SHADOWS.sm, style]}>{children}</View>;
+export function HudPill({ children, style, accessibilityLabel }: HudPillProps) {
+  return (
+    <View
+      style={[styles.pill, SHADOWS.sm, style]}
+      accessible={accessibilityLabel != null}
+      accessibilityLabel={accessibilityLabel}
+    >
+      {children}
+    </View>
+  );
 }
 
 export const hudTextStyle = {

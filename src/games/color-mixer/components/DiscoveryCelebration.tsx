@@ -1,13 +1,11 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Modal, Pressable, StyleSheet, View } from 'react-native';
 import {
   COLORS as TOKENS,
-  FONTS,
   BORDER_RADIUS,
   OUTLINE,
   SHADOWS,
   MascotHelper,
-  PressableButton,
   useTranslation,
 } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
@@ -79,11 +77,13 @@ export function DiscoveryCelebration({
 
   return (
     <Modal visible transparent animationType="none" statusBarTranslucent navigationBarTranslucent>
-      <Pressable style={styles.touchArea} onPress={onComplete}>
+      <Pressable
+        style={styles.touchArea}
+        onPress={onComplete}
+        accessibilityLabel={`${t('color-mixer:discovery.title')} ${t(`color-mixer:colors.${colorId}`)}`}
+      >
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
           <Animated.View style={[styles.card, { transform: [{ scale: cardScale }] }]}>
-            <Text style={styles.title}>{t('color-mixer:discovery.title')}</Text>
-
             <View style={styles.blobArea}>
               <Animated.View style={[styles.sparkleLayer, { opacity: sparklesOpacity }]}>
                 <Sparkles color={colorData.hex} radius={110} />
@@ -93,9 +93,6 @@ export function DiscoveryCelebration({
               </Animated.View>
             </View>
 
-            <Text style={styles.colorName}>{t(`color-mixer:colors.${colorId}`)}</Text>
-
-            <PressableButton label={t('color-mixer:discovery.yay')} accent="blue" onPress={onComplete} style={styles.cta} />
           </Animated.View>
           <MascotHelper pose="cheer" size={120} />
         </Animated.View>
@@ -124,13 +121,6 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     ...SHADOWS.lg,
   },
-  title: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 26,
-    color: TOKENS.ink,
-    marginBottom: 16,
-    textAlign: 'center',
-  },
   blobArea: {
     width: 200,
     height: 200,
@@ -142,15 +132,5 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  colorName: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 32,
-    color: TOKENS.ink,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  cta: {
-    minWidth: 140,
   },
 });

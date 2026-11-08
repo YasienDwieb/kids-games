@@ -22,7 +22,7 @@ i18n.use(initReactI18next).init({
     ar: { core: ar },
   },
   lng: initialLng,
-  fallbackLng: DEFAULT_LANGUAGE,
+  fallbackLng: 'en',
   defaultNS: 'core',
   ns: ['core'],
   interpolation: { escapeValue: false },

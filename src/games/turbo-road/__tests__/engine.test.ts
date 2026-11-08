@@ -2,6 +2,8 @@
 
 import {
   BOOST_FACTOR,
+  CAR_GAP,
+  CAR_SPAN,
   COLLISION_WINDOW,
   COUNTDOWN_STEP_MS,
   HIT_FACTOR,
@@ -422,6 +424,56 @@ describe('rival separation', () => {
     const lanesAfterFix = world.rivals.map((r) => r.lane);
     stepWorld(world, level, 50);
     expect(world.rivals.map((r) => r.lane)).toEqual(lanesAfterFix);
+  });
+});
+
+/* ---------- solid cars ---------- */
+
+const overlaps = (world: WorldState) =>
+  world.rivals.some(
+    (r) =>
+      Math.abs(r.dist - world.dist) < CAR_GAP - 1e-6 &&
+      Math.abs(r.laneX - world.playerLaneX) < CAR_SPAN - 1e-6,
+  );
+
+describe('solid cars', () => {
+  it('a rival never drives through the player, whatever the steering', () => {
+    for (let n = 1; n <= 8; n++) {
+      const level = generateLevel(n);
+      const world = raceWorld(level);
+      let seed = n;
+      for (let f = 0; f < 4000 && world.phase !== 'finished'; f++) {
+        if (f % 40 === 0) {
+          seed = (seed * 9301 + 49297) % 233280;
+          steerTo(world, Math.floor((seed / 233280) * 3));
+        }
+        stepWorld(world, level, 16);
+        if (overlaps(world)) throw new Error(JSON.stringify({ n, f, p: world.playerLaneX, t: world.targetLaneX, d: world.dist, r: world.rivals }));
+      }
+    }
+  });
+
+  it('steering into a car alongside bumps the player back', () => {
+    const level = makeLevel({ rivals: [rival({ startLane: 0 })] });
+    const world = raceWorld(level);
+    world.launch = 1;
+    world.rivals[0].dist = world.dist;
+    world.rivals[0].laneX = 0;
+    steerTo(world, 0);
+    const events = [];
+    for (let f = 0; f < 10; f++) events.push(...stepWorld(world, level, 16));
+    expect(world.playerLaneX).toBeGreaterThanOrEqual(world.rivals[0].laneX + CAR_SPAN - 1e-6);
+    expect(events.filter((e) => e === 'bump')).toHaveLength(1);
+  });
+
+  it('a rival catching up in the player lane pulls out to overtake', () => {
+    const level = makeLevel({ rivals: [rival({ startLane: 1, baseFactor: 1.3 })] });
+    const world = raceWorld(level);
+    world.launch = 1;
+    world.rivals[0].dist = world.dist - 300;
+    for (let f = 0; f < 200; f++) stepWorld(world, level, 16);
+    expect(world.rivals[0].lane).not.toBe(1);
+    expect(overlaps(world)).toBe(false);
   });
 });
 

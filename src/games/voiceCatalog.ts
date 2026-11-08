@@ -3,13 +3,23 @@ import { ARABIC_LETTERS, LATIN_LETTERS } from './_shared/letters';
 import { letterPhrase } from './_shared/letters/phrase';
 import { ANIMALS } from './animal-safari/constants';
 import { animalPhrase } from './animal-safari/phrase';
+import { popPhrase as archerPhrase } from './balloon-archer/phrase';
+import { catchPhrase } from './candy-catch/phrase';
 import { COLORS as MIX_COLORS } from './color-mixer/constants';
 import { CHALLENGES } from './color-mixer/constants';
-import { colorNamePhrase, colorTargetPhrase, dragHintPhrase } from './color-mixer/phrase';
+import { colorNamePhrase, colorTargetPhrase, dragHintPhrase, paintPhrase } from './color-mixer/phrase';
 import type { ColorId } from './color-mixer/types';
+import { MAX_OBJECTS } from './count-and-pop/constants';
+import { makePhrase, popPhrase, questionPhrase } from './count-and-pop/phrase';
+import { THEMES } from './match-up/content';
+import { matchPhrase } from './match-up/phrase';
+import { mazePhrase } from './mouse-maze/phrase';
 import { NUMBERS } from './numbers-land/constants';
 import { numberPhrase } from './numbers-land/phrase';
+import { puzzlePhrase } from './shape-detective/phrase';
+import { pairsPhrase } from './simple-pairs/phrase';
 import { charsFor } from './trace-it/catalog';
+import { drivePhrase } from './turbo-road/phrase';
 import { charPhrase } from './trace-it/phrase';
 
 /** Where a phrase is heard: a game id and a short label for the Voice Studio. */
@@ -49,6 +59,19 @@ export function voiceCatalog(): VoiceLine[] {
       add(lang, colorNamePhrase(id, lang), { game: 'color-mixer', where: 'Pot colour name' }),
     );
     add(lang, dragHintPhrase(lang), { game: 'color-mixer', where: 'Empty pot hint' });
+    add(lang, paintPhrase(lang), { game: 'color-mixer', where: 'Mystery colour' });
+    for (let n = 1; n <= MAX_OBJECTS; n += 1) {
+      add(lang, popPhrase(n, lang), { game: 'count-and-pop', where: 'Pop this many' });
+      add(lang, makePhrase(n, lang), { game: 'count-and-pop', where: 'How many more' });
+    }
+    (['howMany', 'addition'] as const).forEach((m) => add(lang, questionPhrase(m, lang), { game: 'count-and-pop', where: 'Question' }));
+    (['pattern', 'oddOneOut', 'sort'] as const).forEach((p) => add(lang, puzzlePhrase(p, lang), { game: 'shape-detective', where: 'Instruction' }));
+    THEMES.forEach((th) => add(lang, matchPhrase(th.promptKey, lang), { game: 'match-up', where: 'Round prompt' }));
+    add(lang, catchPhrase(lang), { game: 'candy-catch', where: 'Start' });
+    add(lang, pairsPhrase(lang), { game: 'simple-pairs', where: 'Board' });
+    add(lang, mazePhrase(lang), { game: 'mouse-maze', where: 'Maze' });
+    add(lang, archerPhrase(lang), { game: 'balloon-archer', where: 'Level start' });
+    add(lang, drivePhrase(lang), { game: 'turbo-road', where: 'Drive start' });
     for (const [track, where] of [['warmup', 'Warm-up'], ['numbers', 'Numbers tab']] as const) {
       charsFor(track, 'latin').forEach((c) => {
         const p = charPhrase(c, lang);

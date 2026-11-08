@@ -15,7 +15,8 @@ export const LANGUAGES: readonly LanguageMeta[] = [
   { code: 'ar', label: 'العربية', rtl: true },
 ];
 
-export const DEFAULT_LANGUAGE: LanguageCode = 'en';
+/** First-launch language until a grown-up picks one in Settings. */
+export const DEFAULT_LANGUAGE: LanguageCode = 'ar';
 
 export function languageMeta(code: string | null | undefined): LanguageMeta {
   return LANGUAGES.find((l) => l.code === code) ?? LANGUAGES[0];

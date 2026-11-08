@@ -8,6 +8,9 @@
 import {
   BOOST_FACTOR,
   BOOST_MS,
+  BUMP_COOLDOWN_MS,
+  CAR_GAP,
+  CAR_SPAN,
   COLLISION_WINDOW,
   COUNTDOWN_STEP_MS,
   GRACE_MS,
@@ -22,6 +25,7 @@ import {
   RESUME_COUNTDOWN_MS,
   RIVAL_LANE_MS,
   RIVAL_MIN_GAP,
+  RIVAL_YIELD_ZONE,
   RUBBER_BAND,
   SHAKE_TAU,
   SHIELD_GRACE_MS,
@@ -92,6 +96,7 @@ export function createWorld(
     countdownUntil,
     goFlashUntil: countdownUntil + COUNTDOWN_STEP_MS,
     graceUntil: 0,
+    bumpUntil: 0,
     launch: 0,
     shield: 0,
     magnetUntil: 0,
@@ -264,11 +269,79 @@ export function stepWorld(
     }
   }
 
+  // Rivals near the player steer out of its lane, the way real racers
+  // overtake, avoiding any rival they'd crowd as well.
+  const spanLo = Math.min(world.playerLaneX, world.targetLaneX) - 0.5;
+  const spanHi = Math.max(world.playerLaneX, world.targetLaneX) + 0.5;
+  for (let i = 0; i < world.rivals.length; i++) {
+    const rival = world.rivals[i];
+    const profile = level.rivals[i];
+    if (!profile || Math.abs(rival.dist - world.dist) > RIVAL_YIELD_ZONE) continue;
+    // Alongside the player, a rival never swerves across it.
+    const alongside = Math.abs(rival.dist - world.dist) < CAR_GAP * 1.5;
+    const blocked = (lane: number) =>
+      (lane > spanLo && lane < spanHi) ||
+      (alongside && (lane - world.playerLaneX) * (rival.laneX - world.playerLaneX) < 0) ||
+      world.rivals.some(
+        (o) => o !== rival && o.lane === lane && Math.abs(o.dist - rival.dist) <= RIVAL_MIN_GAP,
+      );
+    if (!blocked(rival.lane)) continue;
+    const base = profile.startLane + Math.floor(rival.dist / profile.laneChangeEvery);
+    const step = [1, 2, 3].find((k) => !blocked(bounceLane(base + rival.laneShift + k)));
+    if (step !== undefined) {
+      rival.laneShift += step;
+      rival.lane = bounceLane(base + rival.laneShift);
+    } else {
+      rival.lane = Math.round(rival.laneX) as LaneIndex;
+    }
+  }
+
   // Eased rendering position — a lane change is a glide, not a teleport.
   for (const rival of world.rivals) {
     const dRival = rival.lane - rival.laneX;
     const maxMove = dtMs / RIVAL_LANE_MS;
     rival.laneX += Math.abs(dRival) <= maxMove ? dRival : Math.sign(dRival) * maxMove;
+  }
+
+  // Cars are solid. Resolve any overlap along the shallower axis. Side by
+  // side, whoever moved into the other gets nudged back to its own side;
+  // closing in from behind or ahead keeps a car length between them.
+  const fits = (x: number) => x >= 0 && x <= 2;
+  for (const rival of world.rivals) {
+    const dz = rival.dist - world.dist;
+    const dx = rival.laneX - world.playerLaneX;
+    const penZ = 1 - Math.abs(dz) / CAR_GAP;
+    const penX = 1 - Math.abs(dx) / CAR_SPAN;
+    if (penZ <= 0 || penX <= 0) continue;
+    if (penX < penZ) {
+      const away = dx !== 0 ? Math.sign(dx) : world.playerLaneX < 1 ? 1 : -1;
+      const rivalCutIn = rival.lane !== rival.laneX && Math.sign(rival.lane - rival.laneX) === -away;
+      const playerX = rival.laneX - away * CAR_SPAN;
+      const rivalX = world.playerLaneX + away * CAR_SPAN;
+      const playerFree =
+        fits(playerX) &&
+        !world.rivals.some(
+          (o) =>
+            o !== rival &&
+            Math.abs(o.dist - world.dist) < CAR_GAP &&
+            Math.abs(o.laneX - playerX) < CAR_SPAN,
+        );
+      if (!rivalCutIn && playerFree) {
+        world.playerLaneX = playerX;
+        world.laneVel = 0;
+      } else if (fits(rivalX)) {
+        rival.laneX = rivalX;
+      } else {
+        rival.dist = world.dist + (dz >= 0 ? CAR_GAP : -CAR_GAP);
+      }
+    } else {
+      rival.dist = world.dist + (dz >= 0 ? CAR_GAP : -CAR_GAP);
+    }
+    if (world.elapsed >= world.bumpUntil) {
+      world.bumpUntil = world.elapsed + BUMP_COOLDOWN_MS;
+      world.shake = Math.max(world.shake, 0.3);
+      events.push('bump');
+    }
   }
 
   // Oncoming traffic: trucks drive TOWARD the player and recycle ahead once

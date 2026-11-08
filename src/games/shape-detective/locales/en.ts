@@ -12,14 +12,7 @@ export const en = {
   // Pattern puzzle strings
   pattern: {
     instruction: 'What comes next?',
-    choose: '— choose —',
     optionLabel: 'Option {{index}}: {{size}} {{kind}}',
-  },
-  // Level solve overlay
-  levelSolved: {
-    title: 'Great job!',
-    next: 'Next level',
-    finish: 'You did it!',
   },
   // Odd-one-out puzzle strings
   oddOneOut: {
@@ -29,7 +22,6 @@ export const en = {
   // Sort puzzle strings
   sort: {
     instruction: 'Drag each shape into the right group!',
-    dropHere: 'Drop here',
     binLabel: '{{name}} ({{count}} shapes)',
     itemLabel: 'Shape {{index}}: {{size}} {{kind}}',
   },

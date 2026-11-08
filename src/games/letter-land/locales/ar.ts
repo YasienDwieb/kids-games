@@ -12,15 +12,9 @@ export const ar: GameTranslations = {
   hearFind: {
     listen: 'استمع…',
     tapAgain: 'اضغط لتسمعه مرة أخرى',
-    which: 'أي حرف هذا؟',
   },
   a11y: {
     replay: 'اسمع الحرف مرة أخرى',
     choiceTile: 'حرف {{glyph}}',
-  },
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'الحرف التالي',
-    finish: 'أكملت كل الحروف!',
   },
 };

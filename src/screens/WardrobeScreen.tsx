@@ -2,15 +2,14 @@
 // levels unlock (hats, glasses; shared by both buddies) and browse the sticker
 // collection. Opening it clears the "new sticker" marks.
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
-import { AppBar, Chip, EmojiImage, Icon } from '../components/common';
+import { AppBar, Chip, EmojiImage, Icon, Star } from '../components/common';
 import { LevelPill, PopBackdrop, ProgressBar } from '../components/pop';
 import {
-  ALL_STICKERS,
   BUDDIES,
   Mascot,
   chooseBuddy,
@@ -31,7 +30,7 @@ import {
   type Outfit,
   type OutfitSlot,
 } from '@/sdk';
-import { ACCENTS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
+import { ACCENTS, COLORS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Wardrobe'>;
 type Tab = OutfitSlot | 'stickers';
@@ -66,8 +65,6 @@ export function WardrobeScreen({ navigation }: Props) {
       <PopBackdrop color={POP.bubblegum} stripe="#FF66B0" />
       <SafeAreaView style={styles.flex} edges={['top', 'left', 'right', 'bottom']}>
         <AppBar
-          title={t(`buddy.${buddy}.dressUp`)}
-          titleColor={COLORS.surface}
           onBack={() => navigation.goBack()}
           right={
             <View style={styles.barRight}>
@@ -84,7 +81,6 @@ export function WardrobeScreen({ navigation }: Props) {
                       style={[styles.switchItem, on && styles.switchOn]}
                     >
                       <Mascot buddy={b} pose="wave" size={34} bob={false} />
-                      <Text style={[styles.switchText, on && styles.switchTextOn]}>{t(`buddy.${b}.name`)}</Text>
                     </Pressable>
                   );
                 })}
@@ -101,18 +97,15 @@ export function WardrobeScreen({ navigation }: Props) {
 
           <View style={[styles.panel, SHADOWS.lg]}>
             <View style={styles.tabs}>
-              <Chip label={t('wardrobe.hats')} active={tab === 'hat'} onPress={() => setTab('hat')} />
-              <Chip label={t('wardrobe.glasses')} active={tab === 'glasses'} onPress={() => setTab('glasses')} />
-              <Chip label={t('wardrobe.stickers')} active={tab === 'stickers'} onPress={() => setTab('stickers')} />
+              <Chip label={t('wardrobe.hats')} emoji="👑" active={tab === 'hat'} onPress={() => setTab('hat')} />
+              <Chip label={t('wardrobe.glasses')} emoji="👓" active={tab === 'glasses'} onPress={() => setTab('glasses')} />
+              <Chip label={t('wardrobe.stickers')} icon="star" active={tab === 'stickers'} onPress={() => setTab('stickers')} />
               {unseen.size > 0 ? <View style={styles.newDot} /> : null}
             </View>
 
             {tab === 'stickers' ? (
               <ScrollView contentContainerStyle={styles.stickerList}>
                 <View style={styles.nextRow}>
-                  <Text style={styles.count}>
-                    {t('stickers.count', { have: rewards.stickers.length, total: ALL_STICKERS.length })}
-                  </Text>
                   <ProgressBar
                     value={(rewards.stars % STARS_PER_STICKER) / STARS_PER_STICKER}
                     color={COLORS.gold}
@@ -134,7 +127,7 @@ export function WardrobeScreen({ navigation }: Props) {
                           <Sticker id={id} size={STICKER_SIZE} locked={!has} tilt={TILTS[i % TILTS.length]} />
                           {unseen.has(id) ? (
                             <View style={styles.newBadge}>
-                              <Text style={styles.newText}>{t('stickers.newBadge')}</Text>
+                              <Star size={14} />
                             </View>
                           ) : null}
                         </View>
@@ -166,9 +159,6 @@ export function WardrobeScreen({ navigation }: Props) {
                       {open ? (
                         <>
                           <EmojiImage emoji={o.emoji} size={46} />
-                          <Text style={styles.tileName} numberOfLines={1}>
-                            {on ? t('wardrobe.wearing') : name}
-                          </Text>
                           {on ? (
                             <View style={styles.tick}>
                               <Icon name="checkmark" size={14} />
@@ -178,7 +168,6 @@ export function WardrobeScreen({ navigation }: Props) {
                       ) : (
                         <>
                           <Icon name="lock-closed" size={24} color={COLORS.inkFaint} />
-                          <Text style={styles.lockText}>{t('wardrobe.unlockAt', { n: o.level })}</Text>
                         </>
                       )}
                     </Pressable>
@@ -207,8 +196,6 @@ const styles = StyleSheet.create({
   },
   switchItem: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingEnd: 12, paddingStart: 4, height: 40, borderRadius: 999 },
   switchOn: { backgroundColor: COLORS.ink },
-  switchText: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.ink },
-  switchTextOn: { color: COLORS.surface },
   body: { flex: 1, flexDirection: 'row', gap: SPACING.md, paddingHorizontal: SPACING.md, paddingBottom: SPACING.md },
   stage: { width: 240, alignItems: 'center', justifyContent: 'center' },
   shadow: { width: 170, height: 16, borderRadius: 8, backgroundColor: 'rgba(27,27,47,0.18)', marginTop: -10 },
@@ -248,7 +235,6 @@ const styles = StyleSheet.create({
   tileOn: { backgroundColor: '#FFF6C2', borderWidth: OUTLINE.thick, borderColor: POP.grape },
   tileLocked: { backgroundColor: '#ECE9F5', borderStyle: 'dashed', borderColor: COLORS.inkFaint },
   pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
-  tileName: { fontFamily: FONTS.bodyExtra, fontSize: 12, color: COLORS.ink },
   tick: {
     position: 'absolute',
     top: -8,
@@ -262,10 +248,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  lockText: { fontFamily: FONTS.bodyExtra, fontSize: 12, color: COLORS.inkSoft },
   stickerList: { gap: 10, paddingBottom: 8 },
   nextRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  count: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink, direction: 'ltr' },
   stickerGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   slot: { width: STICKER_SIZE + 8, height: STICKER_SIZE + 8, alignItems: 'center', justifyContent: 'center' },
   newBadge: {
@@ -279,5 +263,4 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     backgroundColor: POP.zap,
   },
-  newText: { fontFamily: FONTS.display, fontSize: 11, color: COLORS.ink },
 });

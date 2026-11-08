@@ -53,7 +53,6 @@ import {
   type FindItem,
   type ListenFindLevel,
 } from '@/games/_shared/listen-find';
-import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
 import { renderAnimal } from './components/renderAnimal';
 import { ANIMAL_IMAGES } from './animalImages';
 import { buildRound, seedForLevel } from './utils/generate';
@@ -126,7 +125,6 @@ export default function AnimalSafari(): React.JSX.Element {
     gameId: 'animal-safari',
     source,
     speakTarget: present,
-    renderSolved: (isLast, onNext) => <LevelSolvedOverlay isLast={isLast} onNext={onNext} />,
   });
 
   // Keep the latest round available to present().
@@ -145,21 +143,19 @@ export default function AnimalSafari(): React.JSX.Element {
   }
 
   const round = lf.data.round;
-  const instruction =
-    round.mode === 'hearName'
-      ? t('animal-safari:hearName.which')
-      : t('animal-safari:whichSound.which');
 
   return (
     <View style={styles.root}>
       <ListenFindBoard
         hero={<AnimalHero mode={round.mode} />}
-        instruction={instruction}
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={lf.selectedIndex}
         mascotPose={lf.mascotPose}
         onPick={(i) => lf.handlePick(i, round.correctIndex)}
+        guideId="animal-safari"
+        hintIndex={lf.hintIndex}
+        revealCorrect={lf.revealCorrect}
         onReplay={present}
         disabled={lf.solved}
         accent="orange"

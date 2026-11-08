@@ -30,15 +30,20 @@ import {
 } from 'react-native';
 import {
   ACCENTS,
+  AreaDemo,
   BORDER_RADIUS,
+  ClayEmoji,
   COLORS,
+  currentLanguage,
   FONT_SIZES,
   FONTS,
   OUTLINE,
   SHADOWS,
   SPACING,
+  useGuide,
   useTranslation,
 } from '@/sdk';
+import { popPhrase } from '../phrase';
 import { CountObject } from './CountObject';
 import { FitColumn } from './FitColumn';
 import type { CountThisManyRound } from '../types';
@@ -216,6 +221,13 @@ export function CountThisMany({
 
   const poppedCount = poppedSet.size;
   const allDone = poppedCount >= target;
+  const guide = useGuide({
+    id: 'count-and-pop',
+    phrase: popPhrase(target, currentLanguage()),
+    roundKey: round,
+    active: !disabled && !allDone,
+  });
+  const firstLoose = Array.from({ length: tileCount }, (_, i) => i).find((i) => !poppedSet.has(i));
 
   // Bob animation on the target numeral chip
   const bobAnim = useRef(new Animated.Value(0)).current;
@@ -244,17 +256,8 @@ export function CountThisMany({
     <>
       {/* Prompt card */}
       <View style={[styles.promptCard, landscape && styles.promptCardLandscape, SHADOWS.md]}>
-        <Text style={styles.promptTitle}>
-          {t('count-and-pop:countThisMany.title')}
-        </Text>
         <View style={styles.promptRow}>
-          <Text style={styles.promptInstruction}>
-            {t('count-and-pop:countThisMany.instruction', {
-              count: target,
-              emoji: objectEmoji,
-            })}
-          </Text>
-          {/* Big bobbing pink numeral chip */}
+          {/* Big bobbing pink numeral chip, then the same picture as the tiles */}
           <Animated.View
             style={[
               styles.numeralChip,
@@ -264,18 +267,13 @@ export function CountThisMany({
           >
             <Text style={styles.numeralText}>{target}</Text>
           </Animated.View>
+          <ClayEmoji emoji={objectEmoji} size={68} />
         </View>
       </View>
 
-      {/* Progress pips + count label */}
+      {/* Progress pips */}
       <View style={styles.progressSection}>
         <ProgressPips target={target} popped={poppedCount} />
-        <Text style={styles.progressLabel}>
-          {t('count-and-pop:countThisMany.progress', {
-            popped: poppedCount,
-            target,
-          })}
-        </Text>
       </View>
 
       {/* Object grid */}
@@ -288,14 +286,19 @@ export function CountThisMany({
             ? t('count-and-pop:a11y.objectPopped', { emoji: objectEmoji })
             : t('count-and-pop:a11y.objectTile', { emoji: objectEmoji });
           return (
-            <CountObject
-              key={i}
-              emoji={objectEmoji}
-              popped={isPopped}
-              onPop={() => handlePop(i)}
-              disabled={isDisabled}
-              accessibilityLabel={a11yLabel}
-            />
+            <View key={i}>
+              <CountObject
+                emoji={objectEmoji}
+                popped={isPopped}
+                onPop={() => {
+                  guide.poke();
+                  handlePop(i);
+                }}
+                disabled={isDisabled}
+                accessibilityLabel={a11yLabel}
+              />
+              {guide.showDemo && i === firstLoose ? <AreaDemo /> : null}
+            </View>
           );
         })}
       </View>
@@ -330,26 +333,18 @@ const styles = StyleSheet.create({
     gap: SPACING.lg,
     paddingHorizontal: SPACING.md,
   },
-  promptCardLandscape: { maxWidth: 560 },
+  promptCardLandscape: { paddingVertical: SPACING.sm },
   gridLandscape: { maxWidth: 760 },
   // Prompt card — pink tint panel with the Pop Quest ink outline
   promptCard: {
-    width: '100%',
-    maxWidth: 420,
+    alignSelf: 'center',
     borderRadius: BORDER_RADIUS.card,
     backgroundColor: ACCENTS.pink.tint,
     borderWidth: OUTLINE.base,
     borderColor: OUTLINE.color,
-    padding: SPACING.lg,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xl,
     alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  promptTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.sm,
-    color: ACCENTS.pink.deep,
-    textAlign: 'center',
-    letterSpacing: 1,
   },
   promptRow: {
     flexDirection: 'row',
@@ -357,13 +352,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: SPACING.md,
     flexWrap: 'wrap',
-  },
-  promptInstruction: {
-    fontFamily: FONTS.display,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.ink,
-    textAlign: 'center',
-    flex: 1,
   },
   numeralChip: {
     width: 64,
@@ -385,12 +373,6 @@ const styles = StyleSheet.create({
   progressSection: {
     alignItems: 'center',
     gap: SPACING.xs,
-  },
-  progressLabel: {
-    fontFamily: FONTS.body,
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.inkSoft,
-    textAlign: 'center',
   },
   // Object grid — wrapping flex row, 3 columns max
   grid: {

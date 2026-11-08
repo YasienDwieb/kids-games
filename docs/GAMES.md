@@ -3,11 +3,11 @@
 | Game | Ages | Theme | Description |
 |------|------|-------|-------------|
 | **Simple Pairs** | 2–5 | Memory | Match pairs of cards across Easy→Expert levels |
-| **Color Mixer** | 4–8 | Color theory | Mix red, yellow and blue like real paint — tint and shade with white and black, take on color-matching challenges, and save your own |
+| **Color Mixer** | 4–8 | Color theory | Mix red, yellow and blue like real paint — tint and shade with white and black, paint things in the right colour as they take on the bowl's colour, and save your own |
 | **Mouse Maze** | 3–8 | Logic | Swipe to guide the mouse to the cheese, collecting stars; levels resume on return |
 | **Balloon Archer** | 5–8 | Aim & arcade | Aim your bow and pop the balloons across levels, with limited arrows |
 | **Shape Detective** | 3–10 | Patterns & logic | Spot the next shape, find the odd one out, and sort shapes into groups |
-| **Turbo Road** | 4–12 | Racing | Steer, dodge, and collect along sunny roads (2D, or the optional 3D road); win cups and unlock cars in the garage |
+| **Turbo Road** | 4–12 | Driving | A sunny road trip on a picture map: steer, dodge and collect, and new cars open up as the trip goes on |
 | **Count & Pop** | 3–7 | Counting | Count the objects and pop the right number |
 | **Match Up** | 3–7 | Matching | Draw a line from each thing to its match (animals→food, helpers→tools, and more) |
 | **Letter Land** | 3–7 | Literacy & phonics | Listen and find the letter — with spoken prompts and word-picture heroes |

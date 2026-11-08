@@ -32,35 +32,34 @@ export function useChallengeMode() {
       .catch((e) => console.error('Failed to load challenge progress:', e));
   }, []);
 
-  const selectChallenge = useCallback((challenge: Challenge) => {
-    setCurrentChallenge(challenge);
-  }, []);
+  /** The next thing to paint: the first authored challenge not yet done, then endless. */
+  const nextChallenge = useCallback(
+    (done: readonly string[], solved: number): Challenge =>
+      CHALLENGES.find((c) => !done.includes(c.id)) ?? endlessChallenge(solved + 1),
+    [],
+  );
+
+  const startNext = useCallback(() => {
+    setCurrentChallenge(nextChallenge(saved.current.completedChallenges, saved.current.endlessSolved));
+  }, [nextChallenge]);
 
   const clearChallenge = useCallback(() => setCurrentChallenge(null), []);
 
-  /**
-   * Record the current challenge as done. Returns the next endless challenge when the
-   * finished one was endless (so play rolls straight on), else null.
-   */
-  const markChallengeComplete = useCallback((): Challenge | null => {
-    if (!currentChallenge) return null;
+  /** Record the current challenge as done and move straight on to the next one. */
+  const markChallengeComplete = useCallback(() => {
+    if (!currentChallenge) return;
     if (currentChallenge.endless) {
       const solved = saved.current.endlessSolved + 1;
       setEndlessSolved(solved);
       persist({ endlessSolved: solved });
-      const next = endlessChallenge(solved + 1);
-      setCurrentChallenge(next);
-      return next;
-    }
-    if (!saved.current.completedChallenges.includes(currentChallenge.id)) {
+    } else if (!saved.current.completedChallenges.includes(currentChallenge.id)) {
       const updated = [...saved.current.completedChallenges, currentChallenge.id];
       setCompletedChallenges(updated);
       persist({ completedChallenges: updated });
     }
-    setCurrentChallenge(null);
-    return null;
+    setCurrentChallenge(nextChallenge(saved.current.completedChallenges, saved.current.endlessSolved));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChallenge]);
+  }, [currentChallenge, nextChallenge]);
 
   return {
     challenges: CHALLENGES,
@@ -68,8 +67,7 @@ export function useChallengeMode() {
     completedChallenges,
     endlessSolved,
     /** The next mystery colour in the endless pool. */
-    nextEndless: endlessChallenge(endlessSolved + 1),
-    selectChallenge,
+    startNext,
     clearChallenge,
     markChallengeComplete,
   };

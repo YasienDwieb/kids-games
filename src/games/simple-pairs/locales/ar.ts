@@ -13,10 +13,10 @@ export const ar: GameTranslations = {
     shortName: 'الذاكرة',
     description: 'اقلب البطاقات وابحث عن المتطابقة',
   },
+  say: {
+    find: 'اِبحَثْ عَنِ البِطاقاتِ المُتَشابِهَةِ!',
+  },
   difficulty: {
-    select: {
-      subtitle: 'كم بطاقة متطابقة تستطيع أن تجد؟',
-    },
     easy: 'سهل',
     medium: 'متوسط',
     hard: 'صعب',
@@ -26,12 +26,5 @@ export const ar: GameTranslations = {
   header: {
     restart: 'من البداية',
     pairs: '{{found}}/{{total}} مطابقة',
-    movesOne: '{{count}} خطوة',
-    movesOther: '{{count}} خطوات',
-  },
-  win: {
-    title: 'أحسنت!',
-    playAgain: 'العب مرة ثانية',
-    pickLevel: 'اختر مستوى',
   },
 };

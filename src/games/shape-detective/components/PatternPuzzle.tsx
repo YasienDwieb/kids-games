@@ -25,16 +25,21 @@
 import { I18nManager, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import {
   ACCENTS,
+  AreaDemo,
   BORDER_RADIUS,
   COLORS,
+  currentLanguage,
   FONTS,
   FONT_SIZES,
+  HintPulse,
   OUTLINE,
   PressableButton,
   SHADOWS,
   SPACING,
+  useGuide,
   useTranslation,
 } from '@/sdk';
+import { puzzlePhrase } from '../phrase';
 import { ShapeView } from './ShapeView';
 import { SHAPE_SIZE_PX } from '../constants';
 import type { PatternPuzzle as PatternPuzzleData } from '../types';
@@ -47,6 +52,10 @@ type PatternPuzzleProps = {
   puzzle: PatternPuzzleData;
   /** Index into puzzle.options the player tapped (null = not yet answered). */
   selectedIndex: number | null;
+  /** Option the hint ladder is pointing at. */
+  hintIndex: number | null;
+  /** Show the answer in green as a wrong pick flashes (the ladder's last step). */
+  revealCorrect: boolean;
   /** Called when the player taps an option. */
   onPick: (index: number) => void;
   /** Whether any tap should be ignored (post-answer cooldown). */
@@ -86,6 +95,8 @@ function QuestionSlot(): React.JSX.Element {
 export function PatternPuzzle({
   puzzle,
   selectedIndex,
+  hintIndex,
+  revealCorrect,
   onPick,
   disabled = false,
 }: PatternPuzzleProps): React.JSX.Element {
@@ -94,6 +105,13 @@ export function PatternPuzzle({
   // row so the sequence + choices fit the shorter height without clipping.
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
+  const answered = selectedIndex !== null;
+  const guide = useGuide({
+    id: 'shape-detective',
+    phrase: puzzlePhrase('pattern', currentLanguage()),
+    roundKey: puzzle,
+    active: !disabled || answered,
+  });
 
   // The separator arrow points toward the question slot.
   // In LTR the sequence renders left→right so the arrow (→) points right toward ?.
@@ -103,9 +121,6 @@ export function PatternPuzzle({
 
   return (
     <View style={[styles.root, landscape && styles.rootLandscape]}>
-      {/* Instruction */}
-      <Text style={styles.instruction}>{t('shape-detective:pattern.instruction')}</Text>
-
       {/* Sequence row — no direction pin; natural RTL flex reversal is correct
           because pattern cycles are attribute-based, not spatial.  An RTL reader
           traverses right-to-left through the reversed row and correctly identifies
@@ -133,16 +148,13 @@ export function PatternPuzzle({
         </View>
       </ScrollView>
 
-      {/* Divider + choose label */}
-      <Text style={styles.chooseLabel}>{t('shape-detective:pattern.choose')}</Text>
-
       {/* Options */}
       <View style={[styles.optionsRow, landscape && styles.optionsRowLandscape]}>
         {puzzle.options.map((shape, idx) => {
           const isSelected = selectedIndex === idx;
           const isCorrect = idx === puzzle.correctIndex;
           // After a pick: reveal correct=green, wrong=coral
-          const revealed = selectedIndex !== null;
+          const revealed = answered && (revealCorrect || isSelected);
           // Build border color as a plain string to avoid const-literal mismatches
           const borderColor: string = revealed && isCorrect
             ? ACCENTS.green.base
@@ -158,8 +170,8 @@ export function PatternPuzzle({
           const sizeLabel = t(`shape-detective:shapes.size.${shape.size}`);
 
           return (
+            <HintPulse key={idx} active={hintIndex === idx && !answered}>
             <View
-              key={idx}
               accessible
               accessibilityRole="button"
               accessibilityLabel={t('shape-detective:pattern.optionLabel', {
@@ -171,7 +183,10 @@ export function PatternPuzzle({
               })}
             >
               <PressableButton
-                onPress={() => onPick(idx)}
+                onPress={() => {
+                  guide.poke();
+                  onPick(idx);
+                }}
                 disabled={disabled || selectedIndex !== null}
                 // Same tile colour as the sequence row above. Children in this
                 // band match on total appearance, not abstracted form, so a
@@ -189,7 +204,9 @@ export function PatternPuzzle({
                   <ShapeView shape={shape} />
                 </View>
               </PressableButton>
+              {guide.showDemo && idx === puzzle.correctIndex && !answered ? <AreaDemo /> : null}
             </View>
+            </HintPulse>
           );
         })}
       </View>
@@ -220,12 +237,6 @@ const styles = StyleSheet.create({
   // Landscape: keep all answer tiles on a single row (plenty of width).
   optionsRowLandscape: {
     flexWrap: 'nowrap',
-  },
-  instruction: {
-    fontFamily: FONTS.display,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text.primary,
-    textAlign: 'center',
   },
   // Sequence row
   sequenceScroll: {
@@ -267,12 +278,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.xs,
   },
   // Options
-  chooseLabel: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.text.secondary,
-    textAlign: 'center',
-  },
   optionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
