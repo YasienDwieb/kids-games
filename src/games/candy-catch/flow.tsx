@@ -2,8 +2,8 @@
  * Candy Catch — guided-flow adapter.
  *
  * A short, gentle "brain break" between quiz steps: the same CatchField as the
- * standalone game, slow and with no hearts to lose, completing once a small
- * point target is caught.
+ * standalone game, slow and with no hearts to lose, completing once a point
+ * target is caught: roughly 30–45 s of play, about 20 catches.
  */
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -11,8 +11,8 @@ import { ProgressBar, registerFlowAdapter, useFlowRound } from '@/sdk';
 import { CatchField } from './components/CatchField';
 import type { LevelSpec } from './constants';
 
-// Gentler than standalone level 1: fewer yucky items, a bit more gold, small targets.
-const ROUNDS: LevelSpec[] = [25, 30, 35, 40].map((target) => ({
+// Gentler than standalone level 1: fewer yucky items, a bit more gold.
+const ROUNDS: LevelSpec[] = [150, 170, 190, 210].map((target) => ({
   target,
   spawnInterval: 950,
   fallSpeed: 140,

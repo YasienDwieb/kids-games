@@ -79,6 +79,7 @@ export type GameEvent =
   | 'shield'
   | 'magnet'
   | 'shieldBlock'
+  | 'bump'
   | 'finish';
 
 export interface WorldState {
@@ -108,6 +109,8 @@ export interface WorldState {
   goFlashUntil: number;
   /** Obstacles can't hit while elapsed < graceUntil (post-hit forgiveness). */
   graceUntil: number;
+  /** No new car-to-car bump sound until elapsed reaches this. */
+  bumpUntil: number;
   /** Shared 0→1 off-the-line ramp (player and rivals launch together). */
   launch: number;
   /** Held shield charges (0/1) and the magnet expiry. */

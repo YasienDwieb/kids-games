@@ -38,6 +38,7 @@ import {
   useLoop,
   type AccentName,
   type MascotPose,
+  fontsFor,
 } from '@/sdk';
 import type { FindItem } from './types';
 
@@ -86,6 +87,10 @@ export type ListenFindBoardProps = {
 };
 
 export type TileState = 'default' | 'correct' | 'wrong';
+
+// Glyphs use their own script's font: a digit in an Arabic UI stays Latin.
+const ARABIC_SCRIPT = /[\u0600-\u06FF]/;
+const glyphFont = (glyph = '') => fontsFor(ARABIC_SCRIPT.test(glyph) ? 'ar' : 'en').displayBold;
 
 const EDGE = 6; // depth of the hard ink edge under each tile (the face sinks into it)
 
@@ -178,7 +183,7 @@ function ChoiceTile({
               accessible={false}
             />
           ) : (
-            <Text style={[styles.glyph, { color: glyphColor }]}>{item.glyph}</Text>
+            <Text style={[styles.glyph, { color: glyphColor, fontFamily: glyphFont(item.glyph) }]}>{item.glyph}</Text>
           )}
           {isCorrect && (
             <Animated.View style={[styles.badge, { transform: [{ scale: badgeScale }] }]}>
@@ -348,8 +353,9 @@ const styles = StyleSheet.create({
   },
   glyph: {
     fontFamily: FONTS.displayBold,
+    // No lineHeight: below the font's natural height iOS trims the ascent and
+    // the glyph rides up (Arabic fonts have deep descents).
     fontSize: 60,
-    lineHeight: 70,
     textAlign: 'center',
   },
   // Image face (animal art) — same footprint as a glyph so the row stays uniform.

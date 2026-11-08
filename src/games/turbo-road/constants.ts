@@ -80,6 +80,15 @@ export const RIVAL_LANE_MS = 260;
     stack into one visual blob. */
 export const RIVAL_MIN_GAP = 90;
 
+/** Cars are solid: two cars overlap when they are closer than one car
+    length (world units) AND one car width (lanes). */
+export const CAR_GAP = 72;
+export const CAR_SPAN = 0.62;
+/** Rivals within this distance of the player steer out of its lane. */
+export const RIVAL_YIELD_ZONE = 150;
+/** One bump sound per contact, not one per frame. */
+export const BUMP_COOLDOWN_MS = 900;
+
 /** Tilt steering: gravity (g units) along screen-right for FULL deflection
     (center lane → edge lane). ≈16° of phone tilt. */
 

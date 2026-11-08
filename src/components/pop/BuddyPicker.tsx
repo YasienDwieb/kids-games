@@ -27,13 +27,14 @@ type BuddyPickerProps = {
  */
 export function BuddyPicker({ onDone }: BuddyPickerProps) {
   const { t } = useTranslation();
-  const { play } = useSound();
+  const { play, stop } = useSound();
   const [picked, setPicked] = useState<BuddyId | null>(null);
   const float = useLoop(1600);
   const [saving, setSaving] = useState(false);
 
   const select = (b: BuddyId) => {
     setPicked(b);
+    stop();
     play(`${b}.tap.${currentLanguage()}.1`, { haptic: true });
   };
 

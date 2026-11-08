@@ -8,7 +8,7 @@
  *   wrong    — coral tint bg + coral border
  *   disabled — same visual, pointer events off
  *
- * Typography: FONTS.display for the numeral (Lilita One/Baloo Bhaijaan 2), Western digits.
+ * Typography: the Latin display face for the numeral in both languages, Western digits.
  * Touch target: 72px height minimum, flex-stretch width.
  */
 
@@ -25,6 +25,7 @@ import {
   BORDER_RADIUS,
   COLORS,
   FONTS,
+  fontsFor,
   OUTLINE,
   SPACING,
 } from '@/sdk';
@@ -217,8 +218,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: OUTLINE.base,
   },
+  // Western digits use the Latin face in both languages; Arabic fonts' deep
+  // descents push numerals up under a tight lineHeight.
   numeral: {
-    fontFamily: FONTS.displayBold,
+    fontFamily: fontsFor('en').displayBold,
     fontSize: 38,
     lineHeight: 44,
     textAlign: 'center',

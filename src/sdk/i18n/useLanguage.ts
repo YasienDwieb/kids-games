@@ -1,15 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { I18nManager } from 'react-native';
-import { getLocales } from 'expo-localization';
 import { i18n } from './index';
-import { isRTL, languageMeta, LANGUAGES, DEFAULT_LANGUAGE, type LanguageCode } from './types';
+import { isRTL, languageMeta, DEFAULT_LANGUAGE, type LanguageCode } from './types';
 import { settingsStore } from '@/sdk/settings/store';
-
-/** Best-effort device language, constrained to a supported code. */
-function deviceLanguage(): LanguageCode {
-  const code = getLocales()[0]?.languageCode?.toLowerCase();
-  return LANGUAGES.some((l) => l.code === code) ? (code as LanguageCode) : DEFAULT_LANGUAGE;
-}
 
 /**
  * Applies a language to the running i18n instance + RTL layout direction.
@@ -43,8 +36,7 @@ export async function applyLanguage(code: LanguageCode): Promise<{ needsReload: 
  */
 export async function bootstrapLanguage(): Promise<{ needsReload: boolean }> {
   const settings = await settingsStore.get();
-  // Persisted choice wins; otherwise follow the device, falling back to default.
-  const code = (settings.language as LanguageCode) ?? deviceLanguage();
+  const code = (settings.language as LanguageCode) ?? DEFAULT_LANGUAGE;
   return applyLanguage(code);
 }
 
