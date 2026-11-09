@@ -1,7 +1,7 @@
 module.exports = {
   preset: 'jest-expo',
   setupFiles: ['react-native-gesture-handler/jestSetup.js', '<rootDir>/jest.setup.js'],
-  // scripts/ and workers/ tests run under `node --test` (npm run test:voice, workers/*: npm test).
+  // scripts/ tests run under `node --test` (npm run test:voice); workers/ is plain Cloudflare code.
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/scripts/', '<rootDir>/workers/'],
   moduleNameMapper: {
     '\\.(glb|rgba)$': '<rootDir>/jest/fileStub.js',
