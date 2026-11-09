@@ -176,7 +176,6 @@ export function BuddyNameSheet({ buddy, gated = false, onClose }: BuddyNameSheet
                 </View>
               ))}
               {error ? <Text style={styles.error}>{t(`buddyName.errors.${error}`)}</Text> : null}
-              <Text style={styles.note}>{t('buddyName.privacy')}</Text>
             </View>
 
             <View style={styles.actions}>
@@ -230,6 +229,5 @@ const styles = StyleSheet.create({
   inputAr: { writingDirection: 'rtl', textAlign: 'right' },
   row: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
   error: { fontFamily: FONTS.bodySemi, fontSize: 15, color: COLORS.error },
-  note: { fontFamily: FONTS.body, fontSize: 13, color: COLORS.inkSoft },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, justifyContent: 'center' },
 });

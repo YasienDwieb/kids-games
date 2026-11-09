@@ -186,8 +186,6 @@ export const en = {
     retry: 'Try again',
     save: 'Save',
     reset: 'Go back to {{name}}',
-    privacy:
-      'The name is sent to our voice service to record the greeting. The recording is kept so anyone who picks the same name gets it instantly. Please don’t use your child’s full name.',
     settingsRow: 'Buddy name: {{name}}',
     change: 'Change',
     errors: {

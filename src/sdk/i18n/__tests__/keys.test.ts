@@ -79,7 +79,6 @@ const KEYS: string[] = [
   'core:buddyName.retry',
   'core:buddyName.save',
   'core:buddyName.reset',
-  'core:buddyName.privacy',
   'core:buddyName.settingsRow',
   'core:buddyName.change',
   'core:buddyName.errors.invalid',
