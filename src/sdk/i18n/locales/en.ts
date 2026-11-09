@@ -176,6 +176,10 @@ export const en = {
       en: 'English',
       ar: 'Arabic',
     },
+    placeholder: {
+      en: 'e.g. Noor',
+      ar: 'مثل: نور',
+    },
     record: 'Record',
     recording: 'Recording…',
     listen: 'Listen ({{lang}})',

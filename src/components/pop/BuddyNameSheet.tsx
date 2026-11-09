@@ -149,7 +149,8 @@ export function BuddyNameSheet({ buddy, gated = false, onClose }: BuddyNameSheet
                   <TextInput
                     value={lang === 'en' ? en : ar}
                     onChangeText={(v) => edit(lang, v)}
-                    placeholder={lang === 'en' ? builtIn : ''}
+                    placeholder={t(`buddyName.placeholder.${lang}`)}
+                    placeholderTextColor={COLORS.inkFaint}
                     maxLength={MAX_NAME_LENGTH + 10}
                     autoCorrect={false}
                     autoCapitalize="words"

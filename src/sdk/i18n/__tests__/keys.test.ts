@@ -71,6 +71,8 @@ const KEYS: string[] = [
   'core:buddyName.label.ar',
   'core:buddyName.lang.en',
   'core:buddyName.lang.ar',
+  'core:buddyName.placeholder.en',
+  'core:buddyName.placeholder.ar',
   'core:buddyName.record',
   'core:buddyName.recording',
   'core:buddyName.listen',

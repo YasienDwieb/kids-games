@@ -177,6 +177,10 @@ export const ar: CoreTranslations = {
       en: 'الإنجليزية',
       ar: 'العربية',
     },
+    placeholder: {
+      en: 'e.g. Noor',
+      ar: 'مثل: نور',
+    },
     record: 'سجّل',
     recording: 'جارٍ التسجيل…',
     listen: 'استمع ({{lang}})',
