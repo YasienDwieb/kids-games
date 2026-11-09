@@ -1,8 +1,8 @@
 module.exports = {
   preset: 'jest-expo',
   setupFiles: ['react-native-gesture-handler/jestSetup.js', '<rootDir>/jest.setup.js'],
-  // scripts/ tests run under `node --test` (npm run test:voice).
-  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/scripts/'],
+  // scripts/ and workers/ tests run under `node --test` (npm run test:voice, workers/*: npm test).
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/scripts/', '<rootDir>/workers/'],
   moduleNameMapper: {
     '\\.(glb|rgba)$': '<rootDir>/jest/fileStub.js',
     '^@/sdk$': '<rootDir>/src/sdk/index.ts',

@@ -117,6 +117,18 @@ export {
   currentBuddy,
 } from './buddy';
 export type { BuddyArt, BuddyId } from './buddy';
+export {
+  useBuddyLabel,
+  useBuddyName,
+  buddyNameFor,
+  customName,
+  saveBuddyName,
+  clearBuddyName,
+} from './buddy/names';
+export type { BuddyName, NameLang } from './buddy/names';
+export { voiceNamingAvailable, recordWelcome, pruneClips, MAX_TAKE, MAX_NAME_LENGTH } from './buddy/voiceApi';
+export type { RecordError, RecordResult } from './buddy/voiceApi';
+export { useWelcome } from './buddy/useWelcome';
 // Mascot — draws the chosen buddy
 export { Mascot, MASCOT_POSES } from './mascot/Mascot';
 export type { MascotPose } from './mascot/Mascot';

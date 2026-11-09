@@ -1,0 +1,13 @@
+{
+  "name": "buddy-voice",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node --test test/*.test.ts"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

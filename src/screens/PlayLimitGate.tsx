@@ -15,6 +15,7 @@ import {
   usePlaytimeTracker,
   useTranslation,
   useBuddy,
+  useBuddyLabel,
   type Playtime,
 } from '@/sdk';
 import { ACCENTS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
@@ -80,6 +81,7 @@ const STRETCHES: { key: string; color: string; icon: IconName }[] = [
 function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => void }) {
   const { t } = useTranslation();
   const buddy = useBuddy();
+  const buddyName = useBuddyLabel();
   const drain = useLoop(6000);
   const breathe = useLoop(4000);
   return (
@@ -108,7 +110,7 @@ function Recharge({ onHome, onGrownUp }: { onHome: () => void; onGrownUp: () => 
         <View
           style={[styles.stretchCard, SHADOWS.md]}
           accessible
-          accessibilityLabel={`${t(`buddy.${buddy}.rest`)} ${STRETCHES.map((s) => t(s.key)).join(', ')}`}
+          accessibilityLabel={`${t(`buddy.${buddy}.rest`, { name: buddyName })} ${STRETCHES.map((s) => t(s.key)).join(', ')}`}
         >
           {STRETCHES.map((s) => (
             <View key={s.key} style={[styles.stretchIcon, { backgroundColor: s.color }]}>

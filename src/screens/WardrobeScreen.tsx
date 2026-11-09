@@ -16,6 +16,7 @@ import {
   Mascot,
   chooseBuddy,
   useBuddy,
+  customName,
   BuddyFigure,
   OUTFITS,
   STARS_PER_STICKER,
@@ -43,7 +44,7 @@ const STICKER_SIZE = 58;
 const TILTS = [-6, 4, -2, 7, -4, 3];
 
 export function WardrobeScreen({ navigation }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const rewards = useRewards();
   const wearing = useWearing();
   const buddy = useBuddy();
@@ -83,7 +84,7 @@ export function WardrobeScreen({ navigation }: Props) {
                       onPress={() => void chooseBuddy(b)}
                       accessibilityRole="radio"
                       accessibilityState={{ selected: on }}
-                      accessibilityLabel={t('buddy.choose', { name: t(`buddy.${b}.name`) })}
+                      accessibilityLabel={t('buddy.choose', { name: customName(b, i18n.language?.startsWith('ar') ? 'ar' : 'en') ?? t(`buddy.${b}.name`) })}
                       style={[styles.switchItem, on && styles.switchOn]}
                     >
                       <Mascot buddy={b} pose="wave" size={34} bob={false} />

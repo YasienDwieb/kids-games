@@ -3,7 +3,17 @@ import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ACCENTS, COLORS, OUTLINE, POP, SHADOWS, SPACING } from '../../constants';
-import { BUDDIES, BUDDY_LOOKS, Mascot, chooseBuddy, currentLanguage, useSound, welcomeIntent, type BuddyId } from '@/sdk';
+import {
+  BUDDIES,
+  BUDDY_LOOKS,
+  Mascot,
+  chooseBuddy,
+  customName,
+  useWelcome,
+  voiceNamingAvailable,
+  type BuddyId,
+} from '@/sdk';
+import { BuddyNameSheet } from './BuddyNameSheet';
 import { Icon } from '../common/Icon';
 import { PressableButton } from '../common/PressableButton';
 import { PopBackdrop } from './PopBackdrop';
@@ -24,27 +34,73 @@ type BuddyPickerProps = {
  * The first-launch choice of buddy: Mariam or Anas. Shown as characters, never
  * as "boys / girls"; any child picks either. Mariam's other look (her hijab)
  * is in the wardrobe.
- * Tapping a card plays that buddy's welcome line; the play button saves it.
+ * Tapping a card plays that buddy's welcome line; the play button moves on to
+ * an optional rename step for grown-ups (when the voice service is set up),
+ * then saves the choice.
  */
 export function BuddyPicker({ onDone }: BuddyPickerProps) {
-  const { t } = useTranslation();
-  const { play, stop } = useSound();
+  const { t, i18n } = useTranslation();
+  const { say } = useWelcome();
   const [picked, setPicked] = useState<BuddyId | null>(null);
   const float = useLoop(1600);
   const [saving, setSaving] = useState(false);
+  // Saving the buddy closes the picker, so the rename step comes first.
+  const [step, setStep] = useState<'pick' | 'ask' | 'rename'>('pick');
+  const lang = i18n.language?.startsWith('ar') ? 'ar' : 'en';
+  const nameOf = (b: BuddyId) => customName(b, lang) ?? t(`buddy.${b}.name`);
 
   const select = (b: BuddyId) => {
     setPicked(b);
-    stop();
-    play(welcomeIntent(b, currentLanguage()), { haptic: true });
+    say(b);
   };
 
-  const confirm = async () => {
+  const finish = async () => {
     if (!picked || saving) return;
     setSaving(true);
     await chooseBuddy(picked);
     onDone?.();
   };
+
+  const confirm = () => {
+    if (!picked) return;
+    if (voiceNamingAvailable && step === 'pick') setStep('ask');
+    else void finish();
+  };
+
+  if (picked && step === 'rename') {
+    return <BuddyNameSheet buddy={picked} gated onClose={() => void finish()} />;
+  }
+
+  if (picked && step === 'ask') {
+    return (
+      <View style={StyleSheet.absoluteFill}>
+        <PopBackdrop color={POP.zap} stripe={POP.zapDeep} />
+        <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+          <View style={styles.cards}>
+            <Animated.View style={bob(float, 8)}>
+              <Mascot buddy={picked} look={BUDDY_LOOKS[picked][0]} pose="cheer" size={200} bob={false} />
+            </Animated.View>
+          </View>
+          <View style={styles.footer}>
+            <PressableButton
+              accessibilityLabel={t('buddyName.keep', { name: nameOf(picked) })}
+              accent="green"
+              onPress={() => void finish()}
+              style={styles.go}
+            >
+              <Icon name="play" size={34} />
+            </PressableButton>
+            <PressableButton
+              label={t('buddyName.rename')}
+              variant="ghost"
+              accessibilityLabel={t('buddyName.ask', { name: nameOf(picked) })}
+              onPress={() => setStep('rename')}
+            />
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   return (
     <View style={StyleSheet.absoluteFill}>
@@ -59,7 +115,7 @@ export function BuddyPicker({ onDone }: BuddyPickerProps) {
                 onPress={() => select(b)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: on }}
-                accessibilityLabel={t(`buddy.${b}.name`)}
+                accessibilityLabel={nameOf(b)}
                 style={({ pressed }) => [
                   styles.card,
                   { backgroundColor: on ? CARD[b].fill : COLORS.surface },

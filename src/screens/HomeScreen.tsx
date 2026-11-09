@@ -42,6 +42,7 @@ import {
   BuddyFigure,
   useRewards,
   useBuddy,
+  useBuddyLabel,
   useBuddyPicked,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
@@ -80,6 +81,7 @@ export function HomeScreen({ navigation }: Props) {
   const { settings, update } = useSettings();
   const rewards = useRewards();
   const buddy = useBuddy();
+  const buddyName = useBuddyLabel();
   const buddyPicked = useBuddyPicked();
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
@@ -152,7 +154,7 @@ export function HomeScreen({ navigation }: Props) {
     <Pressable
       onPress={() => navigation.navigate('Wardrobe')}
       accessibilityRole="button"
-      accessibilityLabel={t(`buddy.${buddy}.wardrobeA11y`, { n: rewards.stars })}
+      accessibilityLabel={t(`buddy.${buddy}.wardrobeA11y`, { n: rewards.stars, name: buddyName })}
       hitSlop={6}
       style={({ pressed }) => [styles.starsPill, pressed ? styles.pressed : SHADOWS.sm]}
     >

@@ -8,11 +8,10 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Pressable, type StyleProp, type ViewStyle } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { useBuddy, welcomeIntent, type BuddyId } from '@/sdk/buddy';
+import { useBuddy, type BuddyId } from '@/sdk/buddy';
+import { useBuddyLabel } from '@/sdk/buddy/names';
+import { useWelcome } from '@/sdk/buddy/useWelcome';
 import { useWearing, type Wearing } from '@/sdk/player/outfitStore';
-import { useSound } from '@/sdk/audio/useSound';
-import { currentLanguage } from '@/sdk/i18n';
 import { Mascot, type MascotPose } from './Mascot';
 
 export type BuddyMood = 'idle' | MascotPose;
@@ -31,26 +30,25 @@ type BuddyFigureProps = {
 };
 
 export function BuddyFigure({ size = 140, mood = 'idle', interactive = false, wearing, buddy, style }: BuddyFigureProps) {
-  const { t } = useTranslation();
   const chosen = useBuddy();
   const who = buddy ?? chosen;
   const saved = useWearing();
-  const { play, prewarm, stop } = useSound();
+  const label = useBuddyLabel(who);
+  const { say, warm } = useWelcome();
   const hop = useMemo(() => new Animated.Value(0), []);
   const [cheering, setCheering] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (interactive) prewarm([welcomeIntent(who, currentLanguage())]);
-  }, [interactive, prewarm, who]);
+    if (interactive) warm(who);
+  }, [interactive, warm, who]);
 
   useEffect(() => () => {
     if (timer.current) clearTimeout(timer.current);
   }, []);
 
   const onTap = () => {
-    stop();
-    play(welcomeIntent(who, currentLanguage()), { haptic: true });
+    say(who);
     hop.setValue(0);
     Animated.sequence([
       Animated.timing(hop, { toValue: 1, duration: 160, useNativeDriver: true }),
@@ -81,7 +79,7 @@ export function BuddyFigure({ size = 140, mood = 'idle', interactive = false, we
     <Pressable
       onPress={onTap}
       accessibilityRole="button"
-      accessibilityLabel={t(`buddy.${who}.name`)}
+      accessibilityLabel={label}
       style={[{ width: size, height: size }, style]}
     >
       {figure}
