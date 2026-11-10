@@ -36,7 +36,7 @@ function playtime() {
 const state = {
   settings: {
     soundEnabled: true, hapticsEnabled: true, ageBand: null, language: lang,
-    mode: 'free', flowGameIds: null, dailyLimitMin: 30,
+    mode: 'free', flowGameIds: null, dailyLimitMin: 30, buddy: 'mariam', analyticsEnabled: false,
   },
   rewards: {
     // One sticker per 3 stars, from the sets of the games played.
@@ -47,7 +47,7 @@ const state = {
   },
   playtime: playtime(),
   outfit: { hat: 'crown', glasses: 'sunglasses' },
-  tutorial: { seen: ['mouse-maze'] },
+  tutorial: { seen: ['mouse-maze', 'color-mixer'] },
   // The 3D road reads better in a still than the 2D one (no overlapping car sprites).
   'turbo-road:prefs': { control: 'drag', view: '3d' },
   'rtl-reload': { pending: false, ignored: false },
