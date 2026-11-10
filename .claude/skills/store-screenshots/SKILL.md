@@ -82,7 +82,8 @@ Then run `bash .claude/skills/fastlane-release/scripts/check-listing.sh`.
   "no ads" → celebration → learning → action → creativity → rewards → puzzle →
   grown-ups last. `extra: true` frames (numbers, maze) fill App Store / tablet
   slots only; galleries are capped per store (`FORMS.max`: Play 8, iOS 10).
-- **Look** — Pop Quest tokens/fonts; motif = Lulu's star trail across seams.
+- **Look** — Pop Quest tokens/fonts; motif = a star trail across seams; buddy art
+  from `src/sdk/assets/images/mascot/<buddy>-<pose>.png` (`pose`/`buddy` per frame).
   Each frame's stripe colour is its game's `ACCENTS` family (`bg`), brand yellow
   on the first and last frame. Avoid two adjacent frames with the same accent.
 
@@ -92,23 +93,33 @@ Then run `bash .claude/skills/fastlane-release/scripts/check-listing.sh`.
   system_server (installs fail with "Can't find service: package" / broken
   pipe). Keep audio on, cold-boot with `-no-snapshot` (a snapshot saved from that
   state stays broken).
-- 3D Lulu and the game loops never repeat a frame: `capture` accepts the last
-  non-blank frame, and uiautomator dumps fail on those screens.
-- Turbo Road's Race! moves between layouts → `tap_color` taps the largest coral
-  blob. The seed switches it to the 3D road (`kg:turbo-road:prefs`): the 2D
+- 3D screens (Color Mixer bowl, Simple Pairs cards, Turbo Road, maze) redraw every
+  frame: `capture` accepts the last non-blank frame and uiautomator dumps fail
+  there, so those scenes find things by colour (`blob_boxes`). The emulator runs
+  on the host GPU (`SHOTS_GPU`, default `host`); under `swiftshader_indirect` a
+  3D frame takes ~5 s and those games are unplayable.
+- Any loop that ignores Reduce Motion keeps Home from ever going idle (dumps
+  fail): looping motion must go through `useLoop`. The seed must set
+  `settings.buddy` or the app opens on the buddy picker.
+- Turbo Road's Race is the green ▶ → `tap_color` taps the largest green blob;
+  the shot is 8 s in (later, tablets catch the car under the tunnel arch). The seed switches it to the 3D road (`kg:turbo-road:prefs`): the 2D
   sprites overlap at the start line. Home's rail mirrors under RTL → `open_game` swipes the other way (`RTL=1`).
 - Grown-ups gate is a random sum: `solve_gate` reads it from the dump.
 - The emulator's JS lags taps by 1–2s and each `adb` call costs ~1s, so
   short-lived states (a Simple Pairs mismatch shows for 1s) need taps and a
   `screencap` burst in one on-device `adb shell`, read back afterwards.
 - `pairs` = the LEVEL UP card: rewards are set to 55 stars (level 8 is 56),
-  then Simple Pairs Easy is won in ≤ 3 moves by comparing flipped faces. It's
+  then Simple Pairs Easy is won in ≤ 3 moves by comparing flipped faces. The card
+  closes by itself, so the scene bursts screencaps and keeps the frame with the
+  most card purple (`pairs|@`; a fading frame has less). It's
   captured last and rolls rewards back from a `shot_bak` table on every try.
-- `matchup` identifies each tile against the bundled emoji PNGs and only makes
-  correct drags: a wrong drop brings up Lulu's "Oops!". Round 1 is always the
+- `matchup` identifies each tile against the clay PNGs (`src/sdk/assets/clay/png`,
+  emoji PNG fallback) and only makes correct drags: a wrong drop brings up the
+  buddy's "Oops!". Round 1 is always the
   animal → food theme (`MATCHUP_PAIRS`). A retry hits the resume prompt.
-- `mixer` holds blue mid-drag over a yellow pot (`input motionevent`) and snaps
-  its own frame (`name|@`); a dropped mix merges too fast to catch.
+- `mixer` finds the 3D bowl by its purple rim, drops yellow, then holds blue
+  mid-drag over the rim (`input motionevent`) and snaps its own frame (`name|@`).
+  The seed marks its tutorial seen (the looping demo hand blocks dumps).
 - Count & Pop ignores a seeded `kg:progress:count-and-pop` level (stays on 1),
   so it isn't a scene.
 - Demo mode shows only 9:41 + battery so the same captures pass on iPhone frames.

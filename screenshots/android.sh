@@ -39,7 +39,7 @@ avd_boot() {
   if ! adb devices | grep "^$ANDROID_SERIAL" >/dev/null; then
     local win=-no-window; [ -n "${WINDOW:-}" ] && win=
     "$SDK/emulator/emulator" -avd "$name" $win -no-audio -no-boot-anim \
-      -gpu swiftshader_indirect -port "$port" > "$(dirname "$OUT")/emulator.log" 2>&1 &
+      -gpu "${SHOTS_GPU:-host}" -port "$port" > "$(dirname "$OUT")/emulator.log" 2>&1 &
     STARTED=1
   fi
   timeout 180 adb wait-for-device
@@ -328,11 +328,12 @@ solve_pairs() {
   settled() { for i in $(seq 16); do [ "$(backs)" -eq 4 ] && return 1; sleep 0.5; done; return 0; }
   up 0 3 || return 1
   tapc 1
-  if settled; then tapc 2; tapc 3; return 0; fi
+  # A match plays a short celebration that swallows taps: let it pass first.
+  if settled; then sleep 3; tapc 2; sleep 1; tapc 3; return 0; fi
   up 2 3 || return 1
   local same
   same=$(magick compare -metric RMSE "$OUT/.face2.png" "$OUT/.face0.png" null: 2>&1 | sed -E 's/.*\(([0-9.e-]+)\).*/\1/' | awk '{print ($1 < 0.15)}')
-  if [ "$same" = 1 ]; then tapc 0; sleep 3; tapc 1; tapc 3; else tapc 1; sleep 3; tapc 0; tapc 3; fi
+  if [ "$same" = 1 ]; then tapc 0; sleep 4; tapc 1; sleep 1; tapc 3; else tapc 1; sleep 4; tapc 0; sleep 1; tapc 3; fi
 }
 
 # Match Up mid-solve: connect $1 pairs and leave the rest loose. $2 is the
@@ -345,7 +346,12 @@ solve_matchup() {
   # Emoji only: trimmed to its ink, squashed square, compared at 48px.
   # norm IN OUT [crop ops...]
   norm() { local in=$1 out=$2; shift 2; magick "$in" "$@" -background white -flatten -fuzz 12% -trim +repage -resize '48x48!' -colorspace sRGB "$out"; }
-  for p in $pairs; do for code in ${p%%:*} ${p##*:}; do norm "$png/$code.png" "$OUT/.ref$code.png"; done; done
+  # Tiles draw the clay picture when there is one (ClayEmoji), else the emoji.
+  local clay=src/sdk/assets/clay/png src
+  for p in $pairs; do for code in ${p%%:*} ${p##*:}; do
+    src=$png/$code.png; [ -f "$clay/$code.png" ] && src=$clay/$code.png
+    norm "$src" "$OUT/.ref$code.png"
+  done; done
   mapfile -t tiles < <(blob_boxes 'srgb(255,255,255)' 5000 1 | awk '$1 - $2 < 4 && $2 - $1 < 4' |
     sort -k1nr | awk 'NR == 1 { max = $1 } $1 > max * 0.85' | sort -k6n -k5n)
   [ ${#tiles[@]} -ge 4 ] || { echo "solve_matchup: ${#tiles[@]} tiles" >&2; return 1; }

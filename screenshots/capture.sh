@@ -35,7 +35,7 @@ export ANDROID_SERIAL=emulator-5580
 if ! adb devices | grep -q "^$ANDROID_SERIAL"; then
   mkdir -p screenshots/out
   "$ANDROID_HOME/emulator/emulator" -avd KidsZone_Shots -no-window -no-snapshot -no-boot-anim \
-    -gpu swiftshader_indirect -port 5580 > screenshots/out/emulator.log 2>&1 &
+    -gpu ${SHOTS_GPU:-host} -port 5580 > screenshots/out/emulator.log 2>&1 &
   STARTED=1
 fi
 timeout 300 adb wait-for-device
@@ -76,10 +76,9 @@ label() {
     en:turbo) echo 'Turbo Road' ;;          ar:turbo) echo 'سباق السيارات' ;;
     en:maze) echo 'Mouse Maze' ;;           ar:maze) echo 'متاهة الفأر' ;;
     en:pairs) echo 'Simple Pairs' ;;        ar:pairs) echo 'الذاكرة الممتعة' ;;
-    en:easy) echo 'Easy' ;;                 ar:easy) echo 'سهل' ;;
+    en:easy) echo 'Easy[^"]*' ;;           ar:easy) echo 'سهل[^"]*' ;;
     en:mixer) echo 'Color Mixer' ;;         ar:mixer) echo 'خلّاط الألوان' ;;
     en:matchup) echo 'Match Up' ;;          ar:matchup) echo 'وصّل الزوج' ;;
-    en:drop) echo 'Drop colors here!' ;;    ar:drop) echo 'ضع الألوان هنا!' ;;
     en:startover) echo 'Start over' ;;      ar:startover) echo 'ابدأ من جديد' ;;
     en:grownups) echo 'Grown-ups' ;;        ar:grownups) echo 'للكبار' ;;
     en:parents) echo 'Parents' ;;           ar:parents) echo 'للأهل' ;;
@@ -90,8 +89,8 @@ label() {
 scene_home()     { launch; sleep 3; }
 scene_letters()  { launch; open_game "$(label letters)" || return 1; sleep 6; }
 scene_numbers()  { launch; open_game "$(label numbers)" || return 1; sleep 6; }
-# Race! is the biggest coral (ACCENTS.coral) blob on Turbo Road's start card.
-scene_turbo()    { launch; open_game "$(label turbo)" || return 1; sleep 5; tap_color 'srgb(255,107,94)'; sleep 12; }
+# Race is the green ▶ button, the biggest green blob on Turbo Road's route card.
+scene_turbo()    { launch; open_game "$(label turbo)" || return 1; sleep 5; tap_color 'srgb(125,219,60)' || return 1; sleep 8; }
 scene_wardrobe() { launch; tap_text "$(label wardrobe)"; sleep 6; }
 scene_maze()     { launch; open_game "$(label maze)" || return 1; sleep 6; }
 # Run SQL against the app's AsyncStorage (app must be force-stopped).
@@ -104,23 +103,37 @@ scene_pairs() {
   sql "CREATE TABLE IF NOT EXISTS shot_bak AS SELECT * FROM catalystLocalStorage WHERE key IN ('kg:rewards','kg:playtime');
 INSERT OR REPLACE INTO catalystLocalStorage SELECT * FROM shot_bak;
 UPDATE catalystLocalStorage SET value = json_set(value, '\$.stars', 55) WHERE key = 'kg:rewards';"
-  launch; open_game "$(label pairs)" || return 1; sleep 3; tap_text "$(label easy)" || return 1; sleep 2
-  solve_pairs || return 1; sleep 10
+  launch; open_game "$(label pairs)" || return 1; sleep 3; tap_text "$(label easy)" || return 1; sleep 5
+  solve_pairs || return 1
+  # The card opens and closes by itself: burst frames on the device, then keep
+  # the one showing the most of the card's light purple (a fading frame has less).
+  adb shell 'rm -f /sdcard/lv*.png; for i in $(seq -w 1 24); do screencap -p /sdcard/lv$i.png; sleep 0.5; done'
+  local t=$OUT/.lv best; rm -rf "$t"; mkdir -p "$t"
+  for f in $(adb shell ls /sdcard/ | tr -d '\r' | grep '^lv'); do adb pull "/sdcard/$f" "$t/" >/dev/null; done
+  best=$(for f in "$t"/lv*.png; do
+    echo "$(magick "$f" -alpha off -fuzz 3% -fill white -opaque 'srgb(155,123,255)' -fill black +opaque white -format '%[fx:mean]' info:) $f"
+  done | sort -gr | head -1 | cut -d' ' -f2)
+  [ -n "$best" ] || return 1
+  demo_mode; cp "$best" "$dir/$name.png"
 }
 # Color Mixer free play: yellow already in the pot, blue held mid-drag over its
 # rim (finger down while the frame is taken, so it's not timing-dependent).
 scene_mixer() {
   local y b w
   launch; open_game "$(label mixer)" || return 1; sleep 5
-  set -- $(bounds_of "$(label drop)"); [ $# -eq 4 ] || return 1
-  local px=$(( ($1 + $3) / 2 )) py=$(( ($2 + $4) / 2 - 40 )); w=$(( $3 - $1 ))
+  # The 3D bowl redraws every frame, so uiautomator never settles here: find the
+  # bowl by its purple rim instead.
+  local rim=($(blob_boxes 'srgb(139,112,225)' 3000 8 | sort -k1n | tail -1))
+  [ ${#rim[@]} -eq 6 ] || { echo "mixer: bowl not found" >&2; return 1; }
+  local px=$(( rim[2] + rim[0] / 2 )) py=$(( rim[3] + rim[1] / 2 )); w=${rim[0]}
   y=($(blob_boxes '#FDD835' 3000 3)); b=($(blob_boxes '#1E88E5' 3000 3))
   [ ${#y[@]} -eq 6 ] && [ ${#b[@]} -eq 6 ] || { echo "mixer: paints not found" >&2; return 1; }
-  adb shell input swipe "${y[4]}" "${y[5]}" "$px" "$py" 1200; sleep 3
-  # Hold blue up and toward the palette side of the pot (mirrors under RTL).
-  local hx=$(( px + (b[4] > px ? 1 : -1) * w * 55 / 100 )) hy=$(( py - w * 36 / 100 ))
+  # The emulator's software GL takes seconds to fill the 3D bowl.
+  adb shell input swipe "${y[4]}" "${y[5]}" "$px" "$py" 1200; sleep 8
+  # Hold blue over the bowl's rim on the palette side (mirrors under RTL).
+  local hx=$(( px + (b[4] > px ? 1 : -1) * w * 22 / 100 )) hy=$(( py - w * 14 / 100 ))
   adb shell "input motionevent DOWN ${b[4]} ${b[5]}; for s in 1 2 3 4 5 6 7 8; do input motionevent MOVE \$(( ${b[4]} + ($hx - ${b[4]}) * s / 8 )) \$(( ${b[5]} + ($hy - ${b[5]}) * s / 8 )); done"
-  sleep 1.5; demo_mode; snap
+  sleep 4; demo_mode; snap
   adb shell input motionevent UP "$hx" "$hy"
 }
 # Match Up round 1 is always animal → food (src/games/match-up/content.ts).
@@ -134,7 +147,7 @@ scene_matchup() {
 scene_parents()  { launch; tap_text "$(label grownups)"; sleep 3; solve_gate; sleep 3; tap_text "$(label parents)"; sleep 3; }
 
 SCENES=(
-  "home|PLAY|العب"
+  "home|48 stars|48 نجمة"
   "letters|-"
   "turbo|-"
   "numbers|-"
@@ -143,7 +156,7 @@ SCENES=(
   "matchup|-"
   "maze|-"
   "parents|Daily play limit|حدّ|حد"
-  "pairs|-"
+  "pairs|@"
 )
 
 # --scenes re-shoots a subset without wiping the other captures of that form.
