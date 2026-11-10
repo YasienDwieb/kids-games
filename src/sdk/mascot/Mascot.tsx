@@ -52,27 +52,31 @@ export const MASCOT_POSES: Record<BuddyArt, Record<MascotPose, ImageSourcePropTy
   },
 };
 
-/** Where the head sits in each pose, as fractions of the square image. */
-type Head = { x: number; top: number; w: number; eyes: number };
+/**
+ * Where the head sits in each pose, as fractions of the square image, and the
+ * pupils (left x, right x, y) the glasses are fitted to. Measured per pose:
+ * heads turn and tilt, so the eyes aren't a fixed spot on the head.
+ */
+type Head = { x: number; top: number; w: number; eyes: readonly [number, number, number] };
 
 const HEADS: Record<BuddyArt, Record<MascotPose, Head>> = {
   mariamHijab: {
-    wave: { x: 0.49, top: 0.04, w: 0.38, eyes: 0.23 },
-    cheer: { x: 0.48, top: 0.04, w: 0.34, eyes: 0.25 },
-    point: { x: 0.47, top: 0.04, w: 0.35, eyes: 0.23 },
-    encourage: { x: 0.49, top: 0.04, w: 0.35, eyes: 0.23 },
+    wave: { x: 0.49, top: 0.04, w: 0.38, eyes: [0.404, 0.521, 0.233] },
+    cheer: { x: 0.48, top: 0.04, w: 0.34, eyes: [0.462, 0.606, 0.245] },
+    point: { x: 0.47, top: 0.04, w: 0.35, eyes: [0.439, 0.55, 0.237] },
+    encourage: { x: 0.49, top: 0.04, w: 0.35, eyes: [0.423, 0.55, 0.234] },
   },
   mariam: {
-    wave: { x: 0.49, top: 0.06, w: 0.32, eyes: 0.23 },
-    cheer: { x: 0.49, top: 0.06, w: 0.32, eyes: 0.25 },
-    point: { x: 0.47, top: 0.06, w: 0.32, eyes: 0.24 },
-    encourage: { x: 0.5, top: 0.06, w: 0.32, eyes: 0.24 },
+    wave: { x: 0.49, top: 0.06, w: 0.32, eyes: [0.429, 0.544, 0.252] },
+    cheer: { x: 0.49, top: 0.06, w: 0.32, eyes: [0.478, 0.61, 0.276] },
+    point: { x: 0.47, top: 0.06, w: 0.32, eyes: [0.48, 0.576, 0.252] },
+    encourage: { x: 0.5, top: 0.06, w: 0.32, eyes: [0.434, 0.556, 0.254] },
   },
   anas: {
-    wave: { x: 0.47, top: 0.04, w: 0.37, eyes: 0.28 },
-    cheer: { x: 0.46, top: 0.05, w: 0.35, eyes: 0.28 },
-    point: { x: 0.45, top: 0.04, w: 0.37, eyes: 0.28 },
-    encourage: { x: 0.49, top: 0.04, w: 0.37, eyes: 0.28 },
+    wave: { x: 0.47, top: 0.04, w: 0.37, eyes: [0.401, 0.521, 0.283] },
+    cheer: { x: 0.46, top: 0.05, w: 0.35, eyes: [0.455, 0.569, 0.287] },
+    point: { x: 0.45, top: 0.04, w: 0.37, eyes: [0.433, 0.55, 0.283] },
+    encourage: { x: 0.49, top: 0.04, w: 0.37, eyes: [0.448, 0.55, 0.283] },
   },
 };
 
@@ -118,9 +122,13 @@ function Worn({ wearing, head, size }: { wearing: Wearing; head: Head; size: num
 
   const glasses = outfitById(wearing.glasses);
   if (glasses) {
-    const s = headW * 0.55;
+    // The Noto glasses' lenses sit ~0.47 of the image apart; a touch smaller
+    // than an exact fit reads better on these round faces.
+    const [l, r, eyeY] = head.eyes;
+    const s = (r - l) * 2 * size;
+    const gx = ((l + r) / 2) * size;
     items.push(
-      <View key="glasses" style={[styles.item, { left: cx - s / 2, top: head.eyes * size - s / 2, width: s, height: s }]}>
+      <View key="glasses" style={[styles.item, { left: gx - s / 2, top: eyeY * size - s / 2, width: s, height: s }]}>
         <EmojiImage emoji={glasses.emoji} size={s} />
       </View>,
     );

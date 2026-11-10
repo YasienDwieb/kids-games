@@ -137,6 +137,13 @@ export const EMOJI_IMAGES: Record<string, ImageSourcePropType> = {
   "🍰": require("./png/1F370.png"),
   "🌶": require("./png/1F336.png"),
   "💣": require("./png/1F4A3.png"),
+  // Wardrobe (tiles + stickers drawn on the buddy)
+  "🥳": require("./png/1F973.png"),
+  "🧢": require("./png/1F9E2.png"),
+  "👓": require("./png/1F453.png"),
+  "🕶": require("./png/1F576.png"),
+  "🌸": require("./png/1F338.png"),
+  "🎀": require("./png/1F380.png"),
 };
 
 /** Resolve an emoji glyph to its bundled image, or undefined if not available. */

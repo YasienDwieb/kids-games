@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getEmojiImage } from '@/sdk/assets/emoji/images';
 import { levelInfo, starsForLevel } from '../levels';
 import { OUTFITS, unlocksAt } from '../outfits';
 import { awardStars, onLevelUp, rewardsStore } from '@/sdk/rewards/store';
@@ -30,5 +31,9 @@ describe('outfits', () => {
   it('has unique ids and something to unlock from level 2', () => {
     expect(new Set(OUTFITS.map((o) => o.id)).size).toBe(OUTFITS.length);
     expect(unlocksAt(2).length).toBeGreaterThan(0);
+  });
+
+  it('bundles every item\'s art, so stickers sit where Mascot places them', () => {
+    for (const o of OUTFITS) expect(getEmojiImage(o.emoji)).toBeDefined();
   });
 });
