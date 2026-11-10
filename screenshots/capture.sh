@@ -9,7 +9,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-export ANDROID_HOME=${ANDROID_HOME:-/media/yasien/mediaHome/Android/Sdk}
+export ANDROID_HOME=${ANDROID_HOME:-$([ -d ~/Library/Android/sdk ] && echo ~/Library/Android/sdk || echo /media/yasien/mediaHome/Android/Sdk)}
 export PATH=$PATH:$ANDROID_HOME/platform-tools
 export PKG=dev.waybeyond.kidszone
 APK=android/app/build/outputs/apk/release/app-release.apk
@@ -80,6 +80,8 @@ label() {
     en:mixer) echo 'Color Mixer' ;;         ar:mixer) echo 'خلّاط الألوان' ;;
     en:matchup) echo 'Match Up' ;;          ar:matchup) echo 'وصّل الزوج' ;;
     en:startover) echo 'Start over' ;;      ar:startover) echo 'ابدأ من جديد' ;;
+    en:buddy) echo 'Mariam' ;;              ar:buddy) echo 'مريم' ;;
+    en:language) echo 'Change language' ;;  ar:language) echo 'تغيير اللغة' ;;
     en:grownups) echo 'Grown-ups' ;;        ar:grownups) echo 'للكبار' ;;
     en:parents) echo 'Parents' ;;           ar:parents) echo 'للأهل' ;;
     en:wardrobe) echo '48 stars[^"]*' ;;    ar:wardrobe) echo '48 نجمة[^"]*' ;;
@@ -95,6 +97,12 @@ scene_wardrobe() { launch; tap_text "$(label wardrobe)"; sleep 6; }
 scene_maze()     { launch; open_game "$(label maze)" || return 1; sleep 6; }
 # Run SQL against the app's AsyncStorage (app must be force-stopped).
 sql() { printf '%s\n' "$1" > screenshots/out/.q.sql; adb push screenshots/out/.q.sql /data/local/tmp/q.sql >/dev/null; adb shell "sqlite3 $DB < /data/local/tmp/q.sql"; }
+# Set one top-level field of a kg:* JSON row, edited on the host (the device's sqlite3 may lack json1).
+jset() {
+  local v; v=$(sql "SELECT value FROM catalystLocalStorage WHERE key = '$1';" | tr -d '\r')
+  v=$(node -e 'const o=JSON.parse(process.argv[1]); o[process.argv[2]]=JSON.parse(process.argv[3]); process.stdout.write(JSON.stringify(o).replace(/\x27/g, "\x27\x27"))' "$v" "$2" "$3")
+  sql "UPDATE catalystLocalStorage SET value = '$v' WHERE key = '$1';"
+}
 # Win Simple Pairs one star short of level 8, so the full-screen LEVEL UP card
 # plays. Rewards roll back to the seed on every try; it's shot last because the
 # win keeps its star (Home and the wardrobe read 48).
@@ -116,7 +124,7 @@ UPDATE catalystLocalStorage SET value = json_set(value, '\$.stars', 55) WHERE ke
   [ -n "$best" ] || return 1
   demo_mode; cp "$best" "$dir/$name.png"
 }
-# Color Mixer free play: yellow already in the pot, blue held mid-drag over its
+# Color Mixer free play: yellow already in the bowl, blue held mid-drag over its
 # rim (finger down while the frame is taken, so it's not timing-dependent).
 scene_mixer() {
   local y b w
@@ -144,10 +152,33 @@ scene_matchup() {
   [ -z "$(bounds_of "$(label startover)")" ] || { tap_text "$(label startover)"; sleep 3; }
   solve_matchup 2 "$MATCHUP_PAIRS" || return 1; sleep 3
 }
-scene_parents()  { launch; tap_text "$(label grownups)"; sleep 3; solve_gate; sleep 3; tap_text "$(label parents)"; sleep 3; }
+# The buddy picker that greets a first launch: unpick the buddy, shoot, restore.
+scene_picker() {
+  adb shell am force-stop "$PKG"
+  jset kg:settings buddy null
+  launch; sleep 4
+  # Home's own buddy (behind the picker) shares the label: the picker card is the last match.
+  adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
+  local b; b=($(adb shell cat /sdcard/ui.xml | grep -oE "content-desc=\"$(label buddy)\"[^>]*bounds=\"[^\"]*\"" | tail -1 | grep -oE '[0-9]+'))
+  [ ${#b[@]} -eq 4 ] || return 1
+  adb shell input tap $(( (b[0] + b[2]) / 2 )) $(( (b[1] + b[3]) / 2 )); sleep 5; demo_mode; snap
+  adb shell am force-stop "$PKG"
+  jset kg:settings buddy '"mariam"'
+}
+# On the iPad form the dump gives the edge-most Grown-ups button empty bounds: it's
+# the next button past Change language (mirrored under RTL).
+open_grownups() {
+  [ -n "$(bounds_of "$(label grownups)")" ] && { tap_text "$(label grownups)"; return; }
+  set -- $(bounds_of "$(label language)"); [ $# -eq 4 ] || return 1
+  local step=$(( ($3 - $1) * 116 / 100 ))
+  [ -n "${RTL:-}" ] && step=$(( -step ))
+  adb shell input tap $(( ($1 + $3) / 2 + step )) $(( ($2 + $4) / 2 ))
+}
+scene_parents()  { launch; open_grownups || return 1; sleep 3; solve_gate; sleep 3; tap_text "$(label parents)"; sleep 3; }
 
 SCENES=(
   "home|48 stars|48 نجمة"
+  "picker|@"
   "letters|-"
   "turbo|-"
   "numbers|-"

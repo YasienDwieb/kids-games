@@ -340,11 +340,12 @@ export default function ColorMixerGame() {
     palettePositions.current.clear();
   }, []);
 
-  // Only on a change: on mount the zone has already measured itself (onLayout can land
-  // before this effect), and clearing that left every first-visit drop missing the pot.
+  // Not on mount: the zone's first onLayout measure can land before this effect,
+  // and wiping it then makes every Free Play drop miss until the mode changes.
   const measuredFor = useRef({ landscape, mode });
   useEffect(() => {
-    if (measuredFor.current.landscape === landscape && measuredFor.current.mode === mode) return;
+    const prev = measuredFor.current;
+    if (prev.landscape === landscape && prev.mode === mode) return;
     measuredFor.current = { landscape, mode };
     invalidateMeasurements();
   }, [invalidateMeasurements, landscape, mode]);

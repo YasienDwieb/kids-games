@@ -36,7 +36,7 @@ function playtime() {
 const state = {
   settings: {
     soundEnabled: true, hapticsEnabled: true, ageBand: null, language: lang,
-    mode: 'free', flowGameIds: null, dailyLimitMin: 30, buddy: 'mariam',
+    mode: 'free', flowGameIds: null, dailyLimitMin: 30, buddy: 'mariam', analyticsEnabled: false,
   },
   rewards: {
     // One sticker per 3 stars, from the sets of the games played.

@@ -6,7 +6,7 @@
 // Writes screenshots/out/store/<lang>/<form>/NN.png, <form>-panorama.png and
 //        screenshots/out/store/<lang>/featureGraphic.png
 //
-// Each gallery is one wide canvas sliced into frames, so Lulu's star trail
+// Each gallery is one wide canvas sliced into frames, so the star trail
 // runs across every seam. Colours and fonts are the app's Pop Quest tokens.
 const fs = require('fs');
 const path = require('path');
@@ -58,8 +58,7 @@ const firstMatch = (lines, re) => lines.map((l) => l.match(re)).find(Boolean);
 /** Figures lifted from the captured screens so captions match the shots. */
 function facts(lang, form) {
   const home = texts(lang, form, 'home');
-  // The level pill's label: "Level 7. 8 more stars…" / "المستوى 7. …".
-  const level = firstMatch(home, /^(?:Level|المستوى) (\d+)\./)?.[1] ?? '';
+  const level = firstMatch(home, /(?:Level|المستوى) (\d+)\./)?.[1] ?? '';
   const stars = firstMatch(home, /^(\d{2,})$/)?.[1] ?? '';
   return { level, stars };
 }
@@ -78,14 +77,15 @@ const COPY = {
     dir: 'ltr',
     scenes: (f) => [
       { shot: 'home', title: 'Big, bright games for little hands', line: 'No ads · No reading needed', pose: 'wave', bg: 'zap' },
+      { shot: 'picker', title: 'Pick a buddy to play with', line: 'Mariam or Anas cheer every step', bg: 'purple', trim: true },
       { shot: 'pairs', title: 'Every win gets a party!', line: 'Stars, cheers and confetti', bg: 'green' },
       { shot: 'letters', title: 'Hear it, then find the letter', line: 'In English & Arabic', bg: 'blue' },
       { shot: 'turbo', title: 'Steer, race and grab the coins', line: 'Simple finger steering', bg: 'coral' },
       { shot: 'mixer', title: 'Mix colors, make new ones', line: 'All the fun of paint, none of the mess', bg: 'blue', phoneOnly: true },
       { shot: 'wardrobe', title: 'Earn stars, dress up your buddy', line: `★ ${f.stars} stars · Level ${f.level}`, pose: 'cheer', phoneOnly: true, bg: 'orange' },
       { shot: 'matchup', title: 'Connect what belongs together', line: 'Little puzzles, big thinking', bg: 'purple' },
-      { shot: 'numbers', title: 'Count it, then tap the number', line: 'Early maths, one tap at a time', bg: 'orange', extra: true },
       { shot: 'maze', title: 'Guide the mouse to the cheese', line: 'Puzzles that grow with them', bg: 'green', extra: true },
+      { shot: 'numbers', title: 'Count it, then tap the number', line: 'Early maths, one tap at a time', bg: 'orange', extra: true },
       { shot: 'parents', title: 'Grown-ups set the daily limit', line: 'Play time and stars, game by game', pose: 'point', buddy: 'anas', bg: 'zap' },
     ],
     word: 'Kids Zone',
@@ -96,14 +96,15 @@ const COPY = {
     // Letters leads the Arabic set: Arabic-first kids' content is the hook.
     scenes: (f) => [
       { shot: 'home', title: 'ألعاب كبيرة ومبهجة لأيادٍ صغيرة', line: 'بلا إعلانات · لا تحتاج إلى قراءة', pose: 'wave', bg: 'zap' },
+      { shot: 'picker', title: 'اختر رفيقًا يلعب معك', line: 'مريم أو أنس يشجّعانك في كل خطوة', bg: 'purple', trim: true },
       { shot: 'letters', title: 'اسمع، ثم اعثر على الحرف', line: 'بالعربية والإنجليزية', bg: 'blue' },
       { shot: 'pairs', title: 'كل فوز له احتفال!', line: 'نجوم وتصفيق وقصاصات ملوّنة', bg: 'green' },
       { shot: 'turbo', title: 'قُد وتسابق واجمع العملات', line: 'قيادة سهلة بإصبع واحد', bg: 'coral' },
       { shot: 'mixer', title: 'امزج الألوان واصنع ألوانًا جديدة', line: 'متعة الرسم بلا فوضى', bg: 'blue', phoneOnly: true },
       { shot: 'wardrobe', title: 'اجمع النجوم وألبِس رفيقك', line: `★ ${f.stars} نجمة · المستوى ${f.level}`, pose: 'cheer', phoneOnly: true, bg: 'orange' },
       { shot: 'matchup', title: 'صِل كل شيء بما يناسبه', line: 'ألغاز صغيرة وتفكير كبير', bg: 'purple' },
-      { shot: 'numbers', title: 'عُدّ، ثم اختر الرقم', line: 'حساب مبكر بلمسة واحدة', bg: 'orange', extra: true },
       { shot: 'maze', title: 'ساعد الفأر للوصول إلى الجبن', line: 'ألغاز تكبر مع طفلك', bg: 'green', extra: true },
+      { shot: 'numbers', title: 'عُدّ، ثم اختر الرقم', line: 'حساب مبكر بلمسة واحدة', bg: 'orange', extra: true },
       { shot: 'parents', title: 'الكبار يحدّدون وقت اللعب', line: 'وقت اللعب والنجوم لكل لعبة', pose: 'point', buddy: 'anas', bg: 'zap' },
     ],
     word: 'Kids Zone', // the brand stays Latin in the Arabic listing title
@@ -142,7 +143,7 @@ const starPath = (r) => {
 };
 
 /**
- * The motif: Lulu's star trail — a dashed ink path weaving behind every
+ * The motif: a star trail — a dashed ink path weaving behind every
  * device and across every seam, studded with the stars kids collect.
  */
 function trail(total, H, n, W) {
@@ -229,7 +230,7 @@ function galleryPage(lang, formName, list) {
   ${frames}</body></html>`;
 }
 
-/** Feature graphic (Play, 1024x500): wordmark + tagline, Lulu, a tilted Home shot. */
+/** Feature graphic (Play, 1024x500): wordmark + tagline, the buddy, a tilted Home shot. */
 function bannerPage(lang) {
   const copy = COPY[lang], rtl = copy.dir === 'rtl';
   const w = 1024, h = 500, k = h / 1080;
@@ -258,6 +259,8 @@ function bannerPage(lang) {
 
 function chrome() {
   if (process.env.CHROME) return process.env.CHROME;
+  const mac = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+  if (fs.existsSync(mac)) return mac;
   const base = path.join(os.homedir(), '.cache/ms-playwright');
   const cands = fs.existsSync(base)
     ? fs.readdirSync(base).filter((d) => /^chromium(_headless_shell)?-/.test(d)).sort().reverse()
@@ -273,7 +276,7 @@ function render(name, html, width, height, out) {
   fs.writeFileSync(file, html);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   execFileSync(chrome(), ['--headless', '--no-sandbox', '--hide-scrollbars', '--allow-file-access-from-files',
-    '--force-device-scale-factor=1', '--virtual-time-budget=4000',
+    '--force-device-scale-factor=1', '--virtual-time-budget=4000', `--user-data-dir=${path.join(BUILD, 'chrome')}`,
     `--window-size=${width},${height}`, `--screenshot=${out}`, `file://${file}`], { stdio: 'ignore' });
 }
 
@@ -290,15 +293,16 @@ function main() {
       const list = COPY[lang].scenes(facts(lang, 'phone'))
         .filter((sc) => has(lang, raw, sc.shot) && !(sc.phoneOnly && raw !== 'phone') && (extras || !sc.extra));
       // Over the cap: drop extras from the back, keeping the closing frame.
-      for (let i = list.length - 1; list.length > max && i >= 0; i--) if (list[i].extra) list.splice(i, 1);
+      for (const key of ['extra', 'trim']) for (let i = list.length - 1; list.length > max && i >= 0; i--) if (list[i][key]) list.splice(i, 1);
       if (!list.length) continue;
       const dir = path.join(OUT, 'store', lang);
-      const strip = path.join(dir, `${formName}-panorama.png`);
-      render(`${lang}-${formName}`, galleryPage(lang, formName, list), W * list.length, H, strip);
+      // One shot per frame, the panorama shifted under a frame-sized window: Chrome
+      // can't screenshot a 10-frame canvas (~28k px) in one go.
+      const html = galleryPage(lang, formName, list);
       list.forEach((_, i) => {
         const out = path.join(dir, formName, `${String(i + 1).padStart(2, '0')}.png`);
-        fs.mkdirSync(path.dirname(out), { recursive: true });
-        magick(strip, '-crop', `${W}x${H}+${i * W}+0`, '+repage', '-alpha', 'off', out); // stores reject alpha
+        render(`${lang}-${formName}-${i}`, html.replace('</style>', `html { direction: ltr; } body { margin-left: -${i * W}px; }</style>`), W, H, out);
+        magick(out, '-alpha', 'off', out); // stores reject alpha
       });
       console.log(`${lang}/${formName}: ${list.length} frames`);
     }

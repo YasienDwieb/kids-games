@@ -85,7 +85,7 @@ bounds_of() {
   adb shell rm -f /sdcard/ui.xml
   adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
   adb shell cat /sdcard/ui.xml 2>/dev/null |
-    grep -oE "(text|content-desc)=\"$1\"[^>]*bounds=\"[^\"]*\"" | head -1 |
+    grep -oE "(text|content-desc)=\"$1\"[^>]*bounds=\"[^\"]*\"" | grep -v 'bounds="\[0,0\]\[0,0\]"' | head -1 |
     grep -oE 'bounds="[^"]*"' | grep -oE '[0-9]+' | tr '\n' ' ' || true
 }
 
@@ -346,11 +346,11 @@ solve_matchup() {
   # Emoji only: trimmed to its ink, squashed square, compared at 48px.
   # norm IN OUT [crop ops...]
   norm() { local in=$1 out=$2; shift 2; magick "$in" "$@" -background white -flatten -fuzz 12% -trim +repage -resize '48x48!' -colorspace sRGB "$out"; }
-  # Tiles draw the clay picture when there is one (ClayEmoji), else the emoji.
-  local clay=src/sdk/assets/clay/png src
+  # Tiles draw the clay-toy picture when one exists (ClayEmoji), else the flat emoji.
+  local ref
   for p in $pairs; do for code in ${p%%:*} ${p##*:}; do
-    src=$png/$code.png; [ -f "$clay/$code.png" ] && src=$clay/$code.png
-    norm "$src" "$OUT/.ref$code.png"
+    ref=src/sdk/assets/clay/png/$code.png; [ -f "$ref" ] || ref=$png/$code.png
+    norm "$ref" "$OUT/.ref$code.png"
   done; done
   mapfile -t tiles < <(blob_boxes 'srgb(255,255,255)' 5000 1 | awk '$1 - $2 < 4 && $2 - $1 < 4' |
     sort -k1nr | awk 'NR == 1 { max = $1 } $1 > max * 0.85' | sort -k6n -k5n)
