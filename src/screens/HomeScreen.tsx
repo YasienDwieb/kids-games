@@ -322,8 +322,7 @@ export function HomeScreen({ navigation }: Props) {
                     // ScrollView still starts at x:0 (the far end). Snap to the
                     // reading start once the content is measured.
                     // scrollToEnd, not scrollTo({ x: contentWidth }): the latter
-                    // over-scrolled by a viewport, sliding the cards over the buddy's
-                    // column (the rail doesn't clip, for the hard shadows).
+                    // over-scrolled by a viewport.
                     onContentSizeChange={() => {
                       if (I18nManager.isRTL) railRef.current?.scrollToEnd({ animated: false });
                     }}
@@ -447,11 +446,15 @@ const styles = StyleSheet.create({
   buddyBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   buddy: { alignSelf: 'center' },
 
-  // The rail clips nothing: hard shadows and the press offset need the room.
-  rail: { flexGrow: 0, overflow: 'visible' },
+  // The rail clips at its edges so scrolled cards never slide over the buddy's
+  // column; the padding leaves room for the hard shadows (drawn physically down
+  // and right) and the press offset.
+  rail: { flexGrow: 0, overflow: 'hidden' },
   railContent: {
     gap: TILE_GAP + 6,
-    paddingEnd: 8,
+    // Both sides: under RTL the reading start is the physical right, where the
+    // shadow falls, and RN doesn't mirror a horizontal ScrollView's padding.
+    paddingHorizontal: 8,
     paddingBottom: 6,
     alignItems: 'flex-start',
   },
