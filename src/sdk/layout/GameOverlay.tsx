@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
 import { overlayClosed, overlayOpened } from './overlayGate';
 import { COLORS } from '@/constants/colors';
+import { MODAL_ORIENTATIONS } from './modalOrientations';
 
 export function GameOverlay({ visible, children }: { visible: boolean; children: ReactNode }) {
   useEffect(() => {
@@ -12,7 +13,7 @@ export function GameOverlay({ visible, children }: { visible: boolean; children:
   return (
     // Translucent bars: the scrim must cover the status and navigation bars too,
     // or a light strip of the game shows around it on Android.
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent>
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent navigationBarTranslucent supportedOrientations={MODAL_ORIENTATIONS}>
       <View style={styles.backdrop}>{children}</View>
     </Modal>
   );
