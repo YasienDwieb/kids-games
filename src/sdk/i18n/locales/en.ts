@@ -60,6 +60,8 @@ export const en = {
       sunglasses: 'Sunglasses',
       'top-hat': 'Top hat',
       bow: 'Bow',
+      parrot: 'Parrot',
+      medal: 'Medal',
     },
   },
   settings: {

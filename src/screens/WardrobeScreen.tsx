@@ -1,5 +1,5 @@
 // The buddy's wardrobe — switch between Mariam and Anas, change Mariam's look, dress them in what
-// levels unlock (hats, glasses; shared by both buddies) and browse the sticker
+// levels unlock (hats, glasses; shared, except a few that are each buddy's own) and browse the sticker
 // collection. Opening it clears the "new sticker" marks.
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -18,7 +18,8 @@ import {
   useBuddy,
   customName,
   BuddyFigure,
-  OUTFITS,
+  outfitFor,
+  outfitsFor,
   STARS_PER_STICKER,
   STICKER_SETS,
   Sticker,
@@ -58,12 +59,15 @@ export function WardrobeScreen({ navigation }: Props) {
   // Leaving the wardrobe means the child has seen their new stickers.
   useEffect(() => () => void markStickersSeen(), []);
 
+  // A side item saved for the other buddy shows as this buddy's twin.
+  const worn = (slot: OutfitSlot) => outfitFor(wearing[slot], buddy)?.id ?? null;
+
   const toggle = (o: Outfit) => {
     if (!isUnlocked(o, level)) return;
-    void wear(o.slot, wearing[o.slot] === o.id ? null : o.id);
+    void wear(o.slot, worn(o.slot) === o.id ? null : o.id);
   };
 
-  const items = tab === 'stickers' || tab === 'looks' ? [] : OUTFITS.filter((o) => o.slot === tab);
+  const items = tab === 'stickers' || tab === 'looks' ? [] : outfitsFor(buddy).filter((o) => o.slot === tab);
   const owned = new Set(rewards.stickers);
   const unseen = new Set(rewards.unseen);
 
@@ -173,7 +177,7 @@ export function WardrobeScreen({ navigation }: Props) {
               <View style={styles.grid}>
                 {items.map((o) => {
                   const open = isUnlocked(o, level);
-                  const on = wearing[o.slot] === o.id;
+                  const on = worn(o.slot) === o.id;
                   const name = t(`wardrobe.items.${o.id}`);
                   return (
                     <Pressable

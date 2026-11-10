@@ -61,6 +61,8 @@ export const ar: CoreTranslations = {
       sunglasses: 'نظّارة شمس',
       'top-hat': 'قبّعة طويلة',
       bow: 'فيونكة',
+      parrot: 'ببغاء',
+      medal: 'ميدالية',
     },
   },
   settings: {

@@ -17,6 +17,7 @@ import { pulse, useLoop } from '@/components/pop/motion';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
 import { OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { useSound } from '@/sdk/audio/useSound';
+import { useBuddy } from '@/sdk/buddy';
 import { BuddyFigure } from '@/sdk/mascot/BuddyFigure';
 import { unlocksAt } from '@/sdk/player/outfits';
 import { wear } from '@/sdk/player/outfitStore';
@@ -34,6 +35,7 @@ export function LevelUp() {
   // Read softly: the provider also renders outside a navigator (tests, previews).
   const navigation = useContext(NavigationContext);
   const { play } = useSound();
+  const buddy = useBuddy();
   const [level, setLevel] = useState<number | null>(null);
   const enter = useMemo(() => new Animated.Value(0), []);
   const beat = useLoop(1100, { enabled: level != null });
@@ -83,7 +85,7 @@ export function LevelUp() {
   }, [level, enter]);
 
   if (level == null) return null;
-  const item = unlocksAt(level)[0];
+  const item = unlocksAt(level, buddy)[0];
 
   const tryOn = () => {
     if (item) void wear(item.slot, item.id);
