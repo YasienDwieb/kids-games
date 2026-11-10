@@ -185,6 +185,7 @@ export { ProgressBar } from '@/components/pop/ProgressBar';
 // Layout
 export { GameShell } from './layout/GameShell';
 export { GameOverlay } from './layout/GameOverlay';
+export { MODAL_ORIENTATIONS } from './layout/modalOrientations';
 export { useGameShell } from './layout/GameShellContext';
 export { GameExitContext, ScreenBackContext, useScreenBack } from './layout/ScreenBackContext';
 export type { BackInterceptor } from './layout/ScreenBackContext';

@@ -6,6 +6,7 @@ import {
   OUTLINE,
   SHADOWS,
   MascotHelper,
+  MODAL_ORIENTATIONS,
   useTranslation,
 } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
@@ -76,7 +77,14 @@ export function DiscoveryCelebration({
   const colorData = COLORS[colorId];
 
   return (
-    <Modal visible transparent animationType="none" statusBarTranslucent navigationBarTranslucent>
+    <Modal
+      visible
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      navigationBarTranslucent
+      supportedOrientations={MODAL_ORIENTATIONS}
+    >
       <Pressable
         style={styles.touchArea}
         onPress={onComplete}

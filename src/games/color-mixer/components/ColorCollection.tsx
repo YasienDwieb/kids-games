@@ -1,5 +1,5 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, BORDER_RADIUS, OUTLINE, SHADOWS, Icon, PressableButton, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, OUTLINE, SHADOWS, Icon, MODAL_ORIENTATIONS, PressableButton, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { COLORS } from '../constants';
 import { FAMOUS_IDS } from '../utils';
@@ -23,7 +23,7 @@ export function ColorCollection({
   const { t } = useTranslation();
 
   return (
-    <Modal visible={visible} animationType="slide" statusBarTranslucent>
+    <Modal visible={visible} animationType="slide" statusBarTranslucent supportedOrientations={MODAL_ORIENTATIONS}>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
