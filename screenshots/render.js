@@ -34,7 +34,7 @@ const fontFaces = `
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { overflow: hidden; }
 `;
-const MASCOT = (pose) => `file://${ROOT}/src/sdk/assets/images/mascot/mariam-${pose}.png`;
+const MASCOT = (pose, buddy = 'mariam') => `file://${ROOT}/src/sdk/assets/images/mascot/${buddy}-${pose}.png`;
 
 // Store canvases. raw = which capture form feeds it.
 // raw = which capture form feeds it, max = the store's frame cap.
@@ -86,7 +86,7 @@ const COPY = {
       { shot: 'matchup', title: 'Connect what belongs together', line: 'Little puzzles, big thinking', bg: 'purple' },
       { shot: 'maze', title: 'Guide the mouse to the cheese', line: 'Puzzles that grow with them', bg: 'green', extra: true },
       { shot: 'numbers', title: 'Count it, then tap the number', line: 'Early maths, one tap at a time', bg: 'orange', extra: true },
-      { shot: 'parents', title: 'Grown-ups set the daily limit', line: 'Play time and stars, game by game', pose: 'point', bg: 'zap' },
+      { shot: 'parents', title: 'Grown-ups set the daily limit', line: 'Play time and stars, game by game', pose: 'point', buddy: 'anas', bg: 'zap' },
     ],
     word: 'Kids Zone',
     tagline: 'Fun, safe games for little kids',
@@ -101,11 +101,11 @@ const COPY = {
       { shot: 'pairs', title: 'كل فوز له احتفال!', line: 'نجوم وتصفيق وقصاصات ملوّنة', bg: 'green' },
       { shot: 'turbo', title: 'قُد وتسابق واجمع العملات', line: 'قيادة سهلة بإصبع واحد', bg: 'coral' },
       { shot: 'mixer', title: 'امزج الألوان واصنع ألوانًا جديدة', line: 'متعة الرسم بلا فوضى', bg: 'blue', phoneOnly: true },
-      { shot: 'wardrobe', title: 'اجمع النجوم وألبِس مريم', line: `★ ${f.stars} نجمة · المستوى ${f.level}`, pose: 'cheer', phoneOnly: true, bg: 'orange' },
+      { shot: 'wardrobe', title: 'اجمع النجوم وألبِس رفيقك', line: `★ ${f.stars} نجمة · المستوى ${f.level}`, pose: 'cheer', phoneOnly: true, bg: 'orange' },
       { shot: 'matchup', title: 'صِل كل شيء بما يناسبه', line: 'ألغاز صغيرة وتفكير كبير', bg: 'purple' },
       { shot: 'maze', title: 'ساعد الفأر للوصول إلى الجبن', line: 'ألغاز تكبر مع طفلك', bg: 'green', extra: true },
       { shot: 'numbers', title: 'عُدّ، ثم اختر الرقم', line: 'حساب مبكر بلمسة واحدة', bg: 'orange', extra: true },
-      { shot: 'parents', title: 'الكبار يحدّدون وقت اللعب', line: 'وقت اللعب والنجوم لكل لعبة', pose: 'point', bg: 'zap' },
+      { shot: 'parents', title: 'الكبار يحدّدون وقت اللعب', line: 'وقت اللعب والنجوم لكل لعبة', pose: 'point', buddy: 'anas', bg: 'zap' },
     ],
     word: 'Kids Zone', // the brand stays Latin in the Arabic listing title
     tagline: 'ألعاب ممتعة وآمنة للأطفال الصغار',
@@ -207,7 +207,7 @@ function galleryPage(lang, formName, list) {
       <h1>${escape(sc.title)}</h1>
       <p class="line"><span>${escape(sc.line)}</span></p>
       <div class="dev">${device(img(lang, raw, sc.shot), sw, sh, dk)}</div>
-      ${sc.pose ? `<img class="owl" src="${MASCOT(sc.pose)}">` : ''}
+      ${sc.pose ? `<img class="owl" src="${MASCOT(sc.pose, sc.buddy)}">` : ''}
     </section>`).join('');
   return `<!doctype html><html dir="${copy.dir}"><head><meta charset="utf-8"><style>${fontFaces}${deviceCss}
   body { width:${total}px; height:${H}px; position:relative; }

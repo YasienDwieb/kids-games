@@ -46,7 +46,7 @@ const state = {
     today: { date: day, stars: 4 }, byGame,
   },
   playtime: playtime(),
-  outfit: { hat: 'crown', glasses: 'sunglasses' },
+  outfit: { hat: 'crown' },
   tutorial: { seen: ['mouse-maze', 'color-mixer'] },
   // The 3D road reads better in a still than the 2D one (no overlapping car sprites).
   'turbo-road:prefs': { control: 'drag', view: '3d' },

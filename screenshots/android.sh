@@ -39,7 +39,7 @@ avd_boot() {
   if ! adb devices | grep "^$ANDROID_SERIAL" >/dev/null; then
     local win=-no-window; [ -n "${WINDOW:-}" ] && win=
     "$SDK/emulator/emulator" -avd "$name" $win -no-audio -no-boot-anim \
-      -gpu swiftshader_indirect -port "$port" > "$(dirname "$OUT")/emulator.log" 2>&1 &
+      -gpu "${SHOTS_GPU:-host}" -port "$port" > "$(dirname "$OUT")/emulator.log" 2>&1 &
     STARTED=1
   fi
   timeout 180 adb wait-for-device
@@ -328,11 +328,12 @@ solve_pairs() {
   settled() { for i in $(seq 16); do [ "$(backs)" -eq 4 ] && return 1; sleep 0.5; done; return 0; }
   up 0 3 || return 1
   tapc 1
-  if settled; then tapc 2; tapc 3; return 0; fi
+  # A match plays a short celebration that swallows taps: let it pass first.
+  if settled; then sleep 3; tapc 2; sleep 1; tapc 3; return 0; fi
   up 2 3 || return 1
   local same
   same=$(magick compare -metric RMSE "$OUT/.face2.png" "$OUT/.face0.png" null: 2>&1 | sed -E 's/.*\(([0-9.e-]+)\).*/\1/' | awk '{print ($1 < 0.15)}')
-  if [ "$same" = 1 ]; then tapc 0; sleep 3; tapc 1; tapc 3; else tapc 1; sleep 3; tapc 0; tapc 3; fi
+  if [ "$same" = 1 ]; then tapc 0; sleep 4; tapc 1; sleep 1; tapc 3; else tapc 1; sleep 4; tapc 0; sleep 1; tapc 3; fi
 }
 
 # Match Up mid-solve: connect $1 pairs and leave the rest loose. $2 is the
