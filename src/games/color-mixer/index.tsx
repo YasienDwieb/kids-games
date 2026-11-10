@@ -340,7 +340,15 @@ export default function ColorMixerGame() {
     palettePositions.current.clear();
   }, []);
 
-  useEffect(invalidateMeasurements, [invalidateMeasurements, landscape, mode]);
+  // Not on mount: the zone's first onLayout measure can land before this effect,
+  // and wiping it then makes every Free Play drop miss until the mode changes.
+  const measuredFor = useRef({ landscape, mode });
+  useEffect(() => {
+    const prev = measuredFor.current;
+    if (prev.landscape === landscape && prev.mode === mode) return;
+    measuredFor.current = { landscape, mode };
+    invalidateMeasurements();
+  }, [invalidateMeasurements, landscape, mode]);
 
   const handleSwitchMode = useCallback(
     (newMode: GameMode) => {
