@@ -27,7 +27,6 @@ import {
 import { numberPhrase } from './phrase';
 import { ListenFindBoard, useListenFind, makeOrderSeed } from '@/games/_shared/listen-find';
 import { NumberHero } from './components/NumberHero';
-import { LevelSolvedOverlay } from './components/LevelSolvedOverlay';
 import { makeNumbersLandLevels } from './utils/levels';
 import type { NumberItem } from './types';
 
@@ -78,7 +77,6 @@ function NumbersLandRun({
     gameId: 'numbers-land',
     source,
     speakTarget,
-    renderSolved: (isLast, onNext) => <LevelSolvedOverlay isLast={isLast} onNext={onNext} />,
   });
 
   if (lf.status === 'playing') targetRef.current = lf.data.round.target;
@@ -106,12 +104,14 @@ function NumbersLandRun({
     <View style={styles.root}>
       <ListenFindBoard
         hero={<NumberHero item={round.target} />}
-        instruction={t('numbers-land:hearFind.which')}
         choices={round.choices}
         correctIndex={round.correctIndex}
         selectedIndex={lf.selectedIndex}
         mascotPose={lf.mascotPose}
         onPick={(i) => lf.handlePick(i, round.correctIndex)}
+        guideId="numbers-land"
+        hintIndex={lf.hintIndex}
+        revealCorrect={lf.revealCorrect}
         onReplay={speakTarget}
         disabled={lf.solved}
         accent="orange"

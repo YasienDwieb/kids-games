@@ -8,6 +8,9 @@ export const ScreenBackContext = createContext<(fn: BackInterceptor | null) => v
   () => {},
 );
 
+/** Leaves the game for Home. A no-op outside GamePlayer (e.g. the journey). */
+export const GameExitContext = createContext<() => void>(() => {});
+
 /**
  * Register a back interceptor for the current game screen.
  *

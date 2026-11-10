@@ -59,15 +59,16 @@
 
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
 import {
   Animated,
   StyleSheet,
-  Text,
   useWindowDimensions,
   View,
+  type ViewInstance,
 } from 'react-native';
 import {
   Gesture,
@@ -75,18 +76,20 @@ import {
 } from 'react-native-gesture-handler';
 import {
   ACCENTS,
+  currentLanguage,
+  DemoHand,
   BORDER_RADIUS,
   COLORS,
-  FONTS,
-  FONT_SIZES,
   OUTLINE,
   SHADOWS,
   SPACING,
+  useGuide,
   useTranslation,
 } from '@/sdk';
 import { ShapeView } from './ShapeView';
-import { SHAPE_SIZE_PX } from '../constants';
-import type { SortPuzzle as SortPuzzleData } from '../types';
+import { SHAPE_COLORS, SHAPE_SIZE_PX } from '../constants';
+import type { Shape, ShapeKind, ShapeSize, SortBin, SortPuzzle as SortPuzzleData } from '../types';
+import { puzzlePhrase } from '../phrase';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -128,6 +131,16 @@ const HEX_TO_COLOR_KEY: Record<string, string> = {
   [ACCENTS.pink.base]: 'pink',
 };
 
+/** A sample shape that shows what belongs in a bin, in place of a written label. */
+function binSign(bin: SortBin): Shape {
+  const sample: Shape = { kind: 'circle', color: SHAPE_COLORS[0], size: 'small' };
+  if (bin.attribute === 'kind') return { ...sample, kind: bin.value as ShapeKind };
+  if (bin.attribute === 'color') return { ...sample, color: bin.value };
+  return { ...sample, size: bin.value as ShapeSize };
+}
+
+const centerOf = (r: Rect) => ({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
+
 // ---------------------------------------------------------------------------
 // Bin label helper — plain function, not a hook
 // ---------------------------------------------------------------------------
@@ -161,6 +174,16 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
     puzzle.items.map(() => null),
   );
 
+  // Wrong drops in a row: from the 2nd on the hand shows where the next shape goes.
+  const [misses, setMisses] = useState(0);
+  const allPlaced = placements.every((p) => p !== null);
+  const guide = useGuide({
+    id: 'shape-detective:sort',
+    phrase: puzzlePhrase('sort', currentLanguage()),
+    roundKey: puzzle,
+    active: !allPlaced,
+  });
+
   // Visual flash per item
   const [flashes, setFlashes] = useState<Flashes>(() => puzzle.items.map(() => null));
 
@@ -170,7 +193,7 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   // so they share the same coordinate space as event.nativeEvent.x/y from
   // the GestureDetector that wraps this same View.
   // -------------------------------------------------------------------------
-  const surfaceRef = useRef<View>(null);
+  const surfaceRef = useRef<ViewInstance>(null);
 
   // Surface-local rects for each bin and each tray slot.
   // Populated by measureLayout(surfaceRef) inside child onLayout callbacks.
@@ -178,8 +201,8 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   const trayRects = useRef<(Rect | null)[]>(puzzle.items.map(() => null));
 
   // Per-child View refs so we can call measureLayout on them.
-  const binViewRefs = useRef<(View | null)[]>(puzzle.bins.map(() => null));
-  const trayViewRefs = useRef<(View | null)[]>(puzzle.items.map(() => null));
+  const binViewRefs = useRef<(ViewInstance | null)[]>(puzzle.bins.map(() => null));
+  const trayViewRefs = useRef<(ViewInstance | null)[]>(puzzle.items.map(() => null));
 
   // Currently dragged item index (-1 = none)
   const draggingIdxRef = useRef<number>(-1);
@@ -275,6 +298,7 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   handleRef.current = {
     // BEGIN: pick up a loose tray item. NEVER place into a bin here.
     begin: (x: number, y: number) => {
+      guide.poke();
       const looseTrayRects = trayRects.current.map((r, i) =>
         placementsRef.current[i] !== null ? null : r,
       );
@@ -315,6 +339,7 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
       // Hit-test bins synchronously at release time — no setState race.
       const binIdx = hitTestRect(binRects.current, x, y);
 
+      if (binIdx !== -1) setMisses((m) => (binIdx === puzzle.assignments[idx] ? 0 : m + 1));
       onDrop(idx, binIdx);
 
       if (binIdx === -1) {
@@ -450,15 +475,23 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
   //     (same as mouse-maze ltrBoard) so x and measureLayout results are always
   //     in the same physical-left-origin space.
   // -------------------------------------------------------------------------
+  const helping = !allPlaced && (guide.showDemo || misses >= 2);
+  const demoItem = helping ? placements.findIndex((p) => p === null) : -1;
+  const demoFrom = demoItem === -1 ? null : trayRects.current[demoItem];
+  const demoTo = demoItem === -1 ? null : binRects.current[puzzle.assignments[demoItem]];
+  const demoKey = demoFrom && demoTo ? `${demoItem}:${demoFrom.x}:${demoTo.x}` : null;
+  const demoPoints = useMemo(
+    () => (demoFrom && demoTo ? [centerOf(demoFrom), centerOf(demoTo)] : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [demoKey],
+  );
+
   return (
     <GestureDetector gesture={panGesture}>
       <View
         ref={surfaceRef}
         style={[styles.root, landscape && styles.rootLandscape, styles.ltrSurface]}
       >
-        {/* Instruction */}
-        <Text style={styles.instruction}>{t('shape-detective:sort.instruction')}</Text>
-
         {/* Bins row — children measured relative to surfaceRef via measureLayout */}
         <View style={[styles.binsRow, landscape && styles.binsRowLandscape]}>
           {puzzle.bins.map((bin, binIdx) => {
@@ -483,16 +516,15 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
                   count: placed.length,
                 })}
               >
-                <Text style={styles.binLabel}>{label}</Text>
+                <View style={styles.binSign}>
+                  <ShapeView shape={binSign(bin)} />
+                </View>
                 <View style={styles.binContents}>
                   {placed.map((shape, i) => (
                     <View key={i} style={styles.placedShape}>
                       <ShapeView shape={shape} />
                     </View>
                   ))}
-                  {placed.length === 0 && (
-                    <Text style={styles.binPlaceholder}>{t('shape-detective:sort.dropHere')}</Text>
-                  )}
                 </View>
               </View>
             );
@@ -560,6 +592,8 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
             );
           })}
         </View>
+
+        {demoPoints.length > 1 ? <DemoHand mode="drag" points={demoPoints} /> : null}
 
         {/* Floating drag ghost — positioned above everything in surface-local coords.
             top:0 / start:0 anchor at the surface origin (which is direction:ltr so
@@ -631,12 +665,6 @@ const styles = StyleSheet.create({
   ltrSurface: {
     direction: 'ltr' as const,
   },
-  instruction: {
-    fontFamily: FONTS.display,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text.primary,
-    textAlign: 'center',
-  },
   // Bins
   binsRow: {
     flexDirection: 'row',
@@ -657,12 +685,7 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
     ...SHADOWS.sm,
   },
-  binLabel: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.sm,
-    color: ACCENTS.purple.deep,
-    textAlign: 'center',
-  },
+  binSign: { alignItems: 'center' },
   binContents: {
     flex: 1,
     flexDirection: 'row',
@@ -678,13 +701,6 @@ const styles = StyleSheet.create({
     borderWidth: OUTLINE.thin,
     borderColor: OUTLINE.color,
     ...SHADOWS.sm,
-  },
-  binPlaceholder: {
-    fontFamily: FONTS.body,
-    fontSize: FONT_SIZES.sm,
-    color: ACCENTS.purple.base,
-    textAlign: 'center',
-    paddingVertical: SPACING.sm,
   },
   // Tray
   tray: {

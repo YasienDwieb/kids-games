@@ -1,4 +1,5 @@
 import { Text } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { act, create } from 'react-test-renderer';
 import '@/games/_shared/letters/i18n';
 import '../i18n';
@@ -12,6 +13,9 @@ import { DONE_HOLD_MS, Round } from '../components/Round';
 import { TraceBoard } from '../components/TraceBoard';
 import { WinSticker } from '../components/WinSticker';
 import { progressStore } from '../progress';
+
+// RNGH 3's GestureDetector requires a root ancestor; App.tsx provides it in the app.
+const render = (el: React.ReactElement) => create(<GestureHandlerRootView>{el}</GestureHandlerRootView>);
 
 // Celebrations resolve at once unless a test holds one open.
 const mockCelebrate = jest.fn((..._args: unknown[]) => Promise.resolve());
@@ -44,7 +48,7 @@ const held = () => act(async () => {
 async function mount(el: React.ReactElement) {
   let tree: ReturnType<typeof create>;
   await act(async () => {
-    tree = create(el);
+    tree = render(el);
   });
   await act(async () => {
     tree!.root.findAll((n: { props: Record<string, unknown> }) => typeof n.props.onLayout === 'function')[0].props.onLayout({
@@ -58,7 +62,7 @@ it('walks guided then solo, takes the min stars and records them', async () => {
   const one = charsFor('numbers', 'latin').find((c) => c.id === 'd1')!;
   let tree: ReturnType<typeof create>;
   await act(async () => {
-    tree = create(<Round char={one} mode="full" onFinished={jest.fn()} />);
+    tree = render(<Round char={one} mode="full" onFinished={jest.fn()} />);
   });
   // Lay out a landscape area so the board mounts.
   await act(async () => {
@@ -66,8 +70,6 @@ it('walks guided then solo, takes the min stars and records them', async () => {
       nativeEvent: { layout: { width: 800, height: 400 } },
     });
   });
-  const texts = () => tree!.root.findAllByType(Text).map((n: { props: { children?: unknown } }) => n.props.children);
-  expect(texts()).toContain('Follow the arrow!');
   const board = () => tree!.root.findByType(TraceBoard);
   expect(board().props.step.pass).toBe('guided');
   await act(async () => board().props.onDone(2));
@@ -75,7 +77,6 @@ it('walks guided then solo, takes the min stars and records them', async () => {
   expect(board().props.step.pass).toBe('guided');
   await held();
   expect(board().props.step.pass).toBe('solo');
-  expect(texts()).toContain('Now on your own!');
   await act(async () => board().props.onDone(3));
   await held();
   await flush();
@@ -89,7 +90,7 @@ it('in a flow, records stars and finishes at once without its own sticker', asyn
   const onFinished = jest.fn();
   let tree: ReturnType<typeof create>;
   await act(async () => {
-    tree = create(<Round char={a} mode="guidedOnly" inFlow onFinished={onFinished} />);
+    tree = render(<Round char={a} mode="guidedOnly" inFlow onFinished={onFinished} />);
   });
   await act(async () => {
     tree!.root.findAll((n: { props: Record<string, unknown> }) => typeof n.props.onLayout === 'function')[0].props.onLayout({
@@ -116,7 +117,7 @@ it('waits for the celebration burst before the sticker, so they never overlap', 
   const one = charsFor('numbers', 'latin').find((c) => c.id === 'd1')!;
   let tree: ReturnType<typeof create>;
   await act(async () => {
-    tree = create(<Round char={one} mode="full" onFinished={jest.fn()} />);
+    tree = render(<Round char={one} mode="full" onFinished={jest.fn()} />);
   });
   await act(async () => {
     tree!.root.findAll((n: { props: Record<string, unknown> }) => typeof n.props.onLayout === 'function')[0].props.onLayout({
@@ -136,7 +137,7 @@ it('waits for the celebration burst before the sticker, so they never overlap', 
   act(() => tree!.unmount());
 });
 
-it('Lulu encourages from the side pane after two misses, and never cheers over the finish', async () => {
+it('the buddy encourages from the side pane after two misses, and never cheers over the finish', async () => {
   const one = charsFor('numbers', 'latin').find((c) => c.id === 'd1')!;
   const tree = await mount(<Round char={one} mode="full" onFinished={jest.fn()} />);
   const pose = () => tree.root.findByType(MascotHelper).props.pose;
@@ -154,7 +155,7 @@ it('Lulu encourages from the side pane after two misses, and never cheers over t
   act(() => tree.unmount());
 });
 
-it('a warm-up sticker says "I can draw", a letter sticker "I can write"', () => {
+it('the finish sticker has no sentence: a warm-up is a picture, a letter just its glyph', () => {
   const zig = charsFor('warmup', 'latin').find((c) => c.id === 'w:zigzag')!;
   const a = charsFor('letters', 'latin')[0];
   const caption = (c: typeof a) => {
@@ -166,8 +167,8 @@ it('a warm-up sticker says "I can draw", a letter sticker "I can write"', () => 
     act(() => tree!.unmount());
     return texts;
   };
-  expect(caption(zig)).toContain('I can draw a zigzag!');
-  expect(caption(a)).toContain(`I can write ${a.label}!`);
+  expect(caption(zig)).toEqual([]);
+  expect(caption(a)).toEqual([a.label]);
 });
 
 it('speaks an Arabic letter in Arabic in an English UI', async () => {

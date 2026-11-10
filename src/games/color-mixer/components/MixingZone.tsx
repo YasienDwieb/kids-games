@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, OUTLINE, SHADOWS, useReduceMotion, useTranslation } from '@/sdk';
+import { Animated, Easing, StyleSheet, View, type ViewInstance } from 'react-native';
+import { COLORS as TOKENS, OUTLINE, SHADOWS, useReduceMotion, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { DraggableResult } from './DraggableResult';
 import { RecipeRow } from './RecipeRow';
@@ -50,7 +50,7 @@ export function MixingZone({
   const calm = useReduceMotion();
   const resultScaleAnim = useRef(new Animated.Value(0)).current;
   const resultOpacity = useRef(new Animated.Value(0)).current;
-  const viewRef = useRef<View>(null);
+  const viewRef = useRef<ViewInstance>(null);
   const nudge = useRef(new Animated.Value(0)).current;
 
   // A full pot silently ignoring drops reads as a broken game. Shake so the refusal is
@@ -122,10 +122,6 @@ export function MixingZone({
       }
     });
   };
-
-  // Only surfaces as the pot approaches its cap — a permanent counter is clutter for a
-  // four-year-old, but hitting the wall with no warning is worse.
-  const showCount = dropCount >= dropCap - 4;
 
 
   return (
@@ -260,21 +256,6 @@ export function MixingZone({
         </View>
       ) : null}
 
-      {/* The colour's name, on a pill straddling the bottom of the pot. */}
-      {colorId ? (
-        <View style={styles.namePill} pointerEvents="none">
-          <Text style={styles.nameText} numberOfLines={1}>
-            {t(`color-mixer:colors.${colorId}`)}
-          </Text>
-        </View>
-      ) : null}
-
-      {showCount && (
-        <View style={styles.counter} pointerEvents="none">
-          {/* Pinned LTR: a number pair must not reverse under RTL. */}
-          <Text style={styles.counterText}>{`${dropCount}/${dropCap}`}</Text>
-        </View>
-      )}
     </Animated.View>
   );
 }
@@ -332,39 +313,6 @@ const styles = StyleSheet.create({
     borderWidth: OUTLINE.thin,
     borderColor: OUTLINE.color,
     ...SHADOWS.sm,
-  },
-  namePill: {
-    position: 'absolute',
-    bottom: -18,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: TOKENS.surface,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    ...SHADOWS.sm,
-  },
-  nameText: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 20,
-    color: TOKENS.ink,
-  },
-  counter: {
-    position: 'absolute',
-    top: 2,
-    end: 2,
-    direction: 'ltr',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: TOKENS.surface2,
-    borderWidth: OUTLINE.thin,
-    borderColor: OUTLINE.color,
-  },
-  counterText: {
-    fontFamily: FONTS.bodySemi,
-    fontSize: 11,
-    color: TOKENS.inkSoft,
   },
   resultContainer: {
     alignItems: 'center',

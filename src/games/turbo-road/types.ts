@@ -79,6 +79,7 @@ export type GameEvent =
   | 'shield'
   | 'magnet'
   | 'shieldBlock'
+  | 'bump'
   | 'finish';
 
 export interface WorldState {
@@ -108,6 +109,8 @@ export interface WorldState {
   goFlashUntil: number;
   /** Obstacles can't hit while elapsed < graceUntil (post-hit forgiveness). */
   graceUntil: number;
+  /** No new car-to-car bump sound until elapsed reaches this. */
+  bumpUntil: number;
   /** Shared 0→1 off-the-line ramp (player and rivals launch together). */
   launch: number;
   /** Held shield charges (0/1) and the magnet expiry. */
@@ -173,8 +176,6 @@ export type CarId =
   | 'tractor'
   | 'moto';
 
-export type TrimId = 'coral' | 'green' | 'blue' | 'orange';
-
 export interface CarDef {
   id: CarId;
   emoji: string;
@@ -184,37 +185,10 @@ export interface CarDef {
   stats: { speed: number; grip: number };
 }
 
-export interface TrimDef {
-  id: TrimId;
-  base: string;
-  deep: string;
-  tint: string;
-}
-
 export interface GarageState {
   coins: number;
   owned: CarId[];
   selected: CarId;
-  trim: TrimId;
-}
-
-/* ---------- missions ---------- */
-
-export type MissionType = 'coins' | 'first' | 'races' | 'boost' | 'clean';
-
-export interface Mission {
-  id: number;
-  type: MissionType;
-  /** Index into the type's target ladder (keeps growth deterministic). */
-  tier: number;
-  target: number;
-  progress: number;
-  reward: number;
-}
-
-export interface MissionsState {
-  active: Mission[];
-  nextId: number;
 }
 
 /** Per-race stats fed into mission progress. */
@@ -223,15 +197,6 @@ export interface RaceStats {
   place: 1 | 2 | 3;
   hits: number;
   boosts: number;
-}
-
-/* ---------- control preferences ---------- */
-
-/** 'drag' = finger-follow steering (default); 'tilt' = motion steering. */
-export type ControlMode = 'drag' | 'tilt';
-
-export interface PrefsState {
-  control: ControlMode;
 }
 
 export interface RoadTheme {
@@ -300,9 +265,7 @@ export interface PlayfieldProps {
 }
 
 export interface HudProps {
-  level: number;
   place: 1 | 2 | 3;
-  coins: number;
   shieldActive: boolean;
   magnetActive: boolean;
   onPause: () => void;
@@ -313,42 +276,8 @@ export interface ProgressBarProps {
   progress: number;
 }
 
-export interface StartScreenProps {
-  level: number;
-  totalStars: number;
-  theme: RoadTheme;
-  playerEmoji: string;
-  trim: TrimDef;
-  walletCoins: number;
-  control: ControlMode;
-  missions: Mission[];
-  onClaimMission: (id: number) => void;
-  onControlChange: (mode: ControlMode) => void;
-  onRace: () => void;
-  onGarage: () => void;
-}
-
-export interface WinOverlayProps {
-  place: 1 | 2 | 3;
-  stars: number;
-  coinsEarned: number;
-  /** Set when this race completed a 4-level tour — shows the cup banner. */
-  cupTheme?: ThemeId;
-  onNext: () => void;
-  onGarage: () => void;
-}
-
 export interface PauseOverlayProps {
   onResume: () => void;
   onExit: () => void;
 }
 
-export interface GarageScreenProps {
-  garage: GarageState;
-  /** Number of cups earned (one per completed 4-level tour). */
-  trophies: number;
-  onSelectCar: (id: CarId) => void;
-  onUnlockCar: (id: CarId) => void;
-  onSelectTrim: (id: TrimId) => void;
-  onDone: () => void;
-}

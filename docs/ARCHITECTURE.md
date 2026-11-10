@@ -6,7 +6,7 @@ How the app is put together: the source layout, the boot/registration flow, and 
 
 ## Tech stack
 
-- Expo SDK 57, React 19.2, React Native 0.86 (New Architecture)
+- Expo SDK 58, React 19.3, React Native 0.88 (New Architecture)
 - TypeScript (strict mode)
 - React Navigation (native-stack)
 - `react-native-safe-area-context`, `react-native-gesture-handler`, `expo-audio`, `expo-haptics`, `expo-speech`, `expo-screen-orientation`
@@ -20,8 +20,8 @@ How the app is put together: the source layout, the boot/registration flow, and 
 App.tsx                     # Entry: loads fonts, SafeAreaProvider, NavigationContainer, game registration
 src/
 ├── app/navigation/         # RootNavigator — screens: Home, GamePlayer, Settings, FlowPlayer, Wardrobe
-├── screens/                # Home (Lulu + game rail), GamePlayer (loads game by id), Settings (behind ParentGate),
-│                           #   FlowPlayer (Guided Journey), Wardrobe (Lulu's outfits), PlayLimitGate (daily limit break)
+├── screens/                # Home (buddy + game rail), GamePlayer (loads game by id), Settings (behind ParentGate),
+│                           #   FlowPlayer (Guided Journey), Wardrobe (the buddy's outfits), PlayLimitGate (daily limit break)
 ├── sdk/                    # SDK platform core — the single import surface for games (@/sdk)
 │   ├── config/             # registerGame / getGame / getAllGames + GameConfig types
 │   ├── layout/             # GameShell, useGameShell, useScreenBack
@@ -29,7 +29,7 @@ src/
 │   ├── storage/            # createStore (AsyncStorage-backed)
 │   ├── progress/           # levels & resume: useLevels, ResumePrompt
 │   ├── feedback/           # useCelebrate (confetti, praise, combos, LEVEL UP card), useHintLadder
-│   ├── mascot/             # Lulu the owl: 2D poses + interactive 3D Lulu3D
+│   ├── mascot/             # The buddy (Mariam / Anas): 2D poses, BuddyFigure
 │   ├── player/             # player level from lifetime stars, wardrobe outfits
 │   ├── rewards/            # stars and the sticker book
 │   ├── playtime/           # play-time tracking and the optional daily limit
@@ -77,7 +77,7 @@ Games import **only** from `@/sdk` — never from another game or deep `src/` pa
 - **Storage** — `createStore(namespace, defaultValue)`
 - **Progress & levels** — `useLevels`, `levelsFromList`/`levelsFromGenerator`, `ResumePrompt`
 - **Feedback** — `useCelebrate` (confetti + praise, resolves when done), `useHintLadder` (shared retry → highlight → reveal hints)
-- **Mascot & player** — `Lulu3D` / `Mascot` / `MascotHelper`; `levelInfo(stars)`, `OUTFITS`, `useWearing`
+- **Mascot & player** — `BuddyFigure` / `Mascot` / `MascotHelper`; `levelInfo(stars)`, `OUTFITS`, `useWearing`
 - **Tutorials** — `useFirstRun`, `DemoHand`, `useIdle`
 - **Settings / Age** — `useSettings`, `AGE_BANDS`, `gamesForBand`
 - **i18n** — `useTranslation().t`, `registerTranslations`, `useLanguage` (English + Arabic, full RTL; per-game locale bundles)

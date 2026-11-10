@@ -1,6 +1,5 @@
 /**
- * The finish reward: an outlined "I can write …!" ("I can draw …!" for warm-ups)
- * card (glyph + word picture) that pops in, holds, then shrinks away toward the
+ * The finish reward: an outlined card (glyph + word picture) that pops in, holds, then shrinks away toward the
  * start side (~1.5 s) before calling `onDone`.
  */
 import { useEffect, useMemo } from 'react';
@@ -14,7 +13,7 @@ import {
   OUTLINE,
   SHADOWS,
   SPACING,
-  useTranslation,
+  Star,
 } from '@/sdk';
 import { charLanguage, type TraceChar } from '../catalog';
 
@@ -23,7 +22,6 @@ const HOLD_MS = 800;
 const AWAY_MS = 400;
 
 export function WinSticker({ char, onDone }: { char: TraceChar; onDone: () => void }) {
-  const { t } = useTranslation();
   const v = useMemo(() => new Animated.Value(0), []);
   useEffect(() => {
     const anim = Animated.sequence([
@@ -38,7 +36,6 @@ export function WinSticker({ char, onDone }: { char: TraceChar; onDone: () => vo
   }, []);
 
   const warmup = char.track === 'warmup';
-  const glyph = warmup ? t(char.nameKey) : char.label;
   const picture = warmup ? char.to : char.emoji;
   // Shrinks toward the start side (left in LTR, right in RTL): physical px.
   const away = I18nManager.isRTL ? 240 : -240;
@@ -54,8 +51,7 @@ export function WinSticker({ char, onDone }: { char: TraceChar; onDone: () => vo
     <View style={styles.layer} pointerEvents="none">
       <Animated.View style={[styles.card, style]}>
         {warmup ? null : <Text style={[styles.glyph, { fontFamily: fontsFor(charLanguage(char)).display }]}>{char.label}</Text>}
-        {picture ? <ClayEmoji emoji={picture} size={72} /> : null}
-        <Text style={styles.caption}>{t(warmup ? 'trace-it:sticker.iCanDraw' : 'trace-it:sticker.iCanWrite', { glyph })}</Text>
+        {picture ? <ClayEmoji emoji={picture} size={warmup ? 120 : 72} /> : <Star size={96} />}
       </Animated.View>
     </View>
   );
@@ -75,5 +71,4 @@ const styles = StyleSheet.create({
     ...SHADOWS.lg,
   },
   glyph: { fontFamily: FONTS.display, fontSize: 80, lineHeight: 100, color: COLORS.ink },
-  caption: { fontFamily: FONTS.display, fontSize: 26, color: COLORS.ink, textAlign: 'center' },
 });

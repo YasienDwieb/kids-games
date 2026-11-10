@@ -21,6 +21,16 @@
    }
   },
   {
+   "id": "mouse-maze",
+   "name": "Mouse Maze",
+   "icon": "🐭",
+   "accent": {
+    "base": "#FFA51F",
+    "deep": "#E58600",
+    "tint": "#FFEFCF"
+   }
+  },
+  {
    "id": "color-mixer",
    "name": "Color Mixer",
    "icon": "🎨",
@@ -28,6 +38,66 @@
     "base": "#2EC4F1",
     "deep": "#0FA5D4",
     "tint": "#DDF5FD"
+   }
+  },
+  {
+   "id": "turbo-road",
+   "name": "Turbo Road",
+   "icon": "🏎️",
+   "accent": {
+    "base": "#FF6B5E",
+    "deep": "#E84B3D",
+    "tint": "#FFE3DF"
+   }
+  },
+  {
+   "id": "balloon-archer",
+   "name": "Balloon Archer",
+   "icon": "🏹",
+   "accent": {
+    "base": "#7DDB3C",
+    "deep": "#5CB81E",
+    "tint": "#E8F8DA"
+   }
+  },
+  {
+   "id": "simple-pairs",
+   "name": "Simple Pairs",
+   "icon": "🃏",
+   "accent": {
+    "base": "#7DDB3C",
+    "deep": "#5CB81E",
+    "tint": "#E8F8DA"
+   }
+  },
+  {
+   "id": "match-up",
+   "name": "Match Up",
+   "icon": "🔗",
+   "accent": {
+    "base": "#9B7BFF",
+    "deep": "#7B4DFF",
+    "tint": "#EEE7FF"
+   }
+  },
+  {
+   "id": "shape-detective",
+   "name": "Shape Detective",
+   "icon": "🔺",
+   "accent": {
+    "base": "#9B7BFF",
+    "deep": "#7B4DFF",
+    "tint": "#EEE7FF"
+   }
+  },
+  {
+   "id": "count-and-pop",
+   "name": "Count & Pop",
+   "icon": "🧮",
+   "accent": {
+    "base": "#FF6FB4",
+    "deep": "#FF4FA3",
+    "tint": "#FFE3F1"
    }
   },
   {
@@ -48,6 +118,16 @@
     "base": "#FFA51F",
     "deep": "#E58600",
     "tint": "#FFEFCF"
+   }
+  },
+  {
+   "id": "candy-catch",
+   "name": "Candy Catch",
+   "icon": "🍭",
+   "accent": {
+    "base": "#FF6FB4",
+    "deep": "#FF4FA3",
+    "tint": "#FFE3F1"
    }
   }
  ],
@@ -162,6 +242,26 @@
   },
   {
    "lang": "ar",
+   "text": "أَيُّ شَكلٍ لا يَنتَمي إلى المَجموعَةِ؟",
+   "uses": [
+    {
+     "game": "shape-detective",
+     "where": "Instruction"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِبحَثْ عَنِ البِطاقاتِ المُتَشابِهَةِ!",
+   "uses": [
+    {
+     "game": "simple-pairs",
+     "where": "Board"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "اِثنان",
    "uses": [
     {
@@ -241,6 +341,116 @@
     {
      "game": "color-mixer",
      "where": "Journey goal"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ أَربَعة!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ اِثنان!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ تِسْعة!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ ثَلاثة!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ ثَمانِية!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ خَمسة!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ سَبعة!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ سِتّة!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ عَشَرة!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِضغطْ وَاحِد!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "اِلتَقِطِ الحَلوِيات!",
+   "uses": [
+    {
+     "game": "candy-catch",
+     "where": "Start"
     }
    ]
   },
@@ -568,6 +778,16 @@
   },
   {
    "lang": "ar",
+   "text": "رَتِّبْ كُلَّ شَكلٍ في مَجموعَتِهِ الصَّحيحَةِ!",
+   "uses": [
+    {
+     "game": "shape-detective",
+     "where": "Instruction"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "زَاي. زَرَافَة",
    "uses": [
     {
@@ -577,6 +797,16 @@
     {
      "game": "trace-it",
      "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ساعِدِ الفَأرَ لِيَصِلَ إلى الجُبنِ!",
+   "uses": [
+    {
+     "game": "mouse-maze",
+     "where": "Maze"
     }
    ]
   },
@@ -776,6 +1006,16 @@
   },
   {
    "lang": "ar",
+   "text": "فَرْقِعِ البالونات!",
+   "uses": [
+    {
+     "game": "balloon-archer",
+     "where": "Level start"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "فيل",
    "uses": [
     {
@@ -834,6 +1074,126 @@
   },
   {
    "lang": "ar",
+   "text": "كَمْ عَدَدُها مَعًا؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Question"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ عَدَدُها؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Question"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى أَربَعة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى اِثنين؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى تِسْعة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى ثَلاثة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى ثَمانِية؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى خَمسة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى سَبعة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى سِتّة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى عَشَرة؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "كَمْ يَنْقُصُنا لِنَصِلَ إلى وَاحِد؟",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "لَام. لَيْمُون",
    "uses": [
     {
@@ -843,6 +1203,26 @@
     {
      "game": "trace-it",
      "where": "أ ب ت tab"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "لَوِّنْها بِهذا اللَّون!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Mystery colour"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "ماذا يَأتي بَعدَ ذلِكَ؟",
+   "uses": [
+    {
+     "game": "shape-detective",
+     "where": "Instruction"
     }
    ]
   },
@@ -910,6 +1290,16 @@
   },
   {
    "lang": "ar",
+   "text": "هَيّا! لِنَتَسابَقْ إلى خَطِّ النِّهاية!",
+   "uses": [
+    {
+     "game": "turbo-road",
+     "where": "Drive start"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "وَاحِد",
    "uses": [
     {
@@ -943,6 +1333,66 @@
     {
      "game": "color-mixer",
      "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "وَصِّلْ كُلَّ حَيَوانٍ بِبَيتِهِ",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "وَصِّلْ كُلَّ حَيَوانٍ بِطَعامِهِ",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "وَصِّلْ كُلَّ رَقمٍ بِالعَدَدِ المُناسِبِ",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "وَصِّلْ كُلَّ صَغيرٍ بِأَبيهِ",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "وَصِّلْ كُلَّ عامِلٍ بِأَداتِهِ",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "وَصِّلْ كُلَّ لَونٍ بِفاكِهَتِهِ",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
     }
    ]
   },
@@ -1124,6 +1574,16 @@
   },
   {
    "lang": "en",
+   "text": "Catch the treats!",
+   "uses": [
+    {
+     "game": "candy-catch",
+     "where": "Start"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "Cow",
    "uses": [
     {
@@ -1163,6 +1623,16 @@
     {
      "game": "color-mixer",
      "where": "Empty pot hint"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Drag each shape into the right group!",
+   "uses": [
+    {
+     "game": "shape-detective",
+     "where": "Instruction"
     }
    ]
   },
@@ -1225,6 +1695,16 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Find the matching pairs!",
+   "uses": [
+    {
+     "game": "simple-pairs",
+     "where": "Board"
     }
    ]
   },
@@ -1306,11 +1786,141 @@
   },
   {
    "lang": "en",
+   "text": "Help the mouse find the cheese!",
+   "uses": [
+    {
+     "game": "mouse-maze",
+     "where": "Maze"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "Horse",
    "uses": [
     {
      "game": "animal-safari",
      "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many altogether?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Question"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make eight?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make five?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make four?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make nine?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make one?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make seven?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make six?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make ten?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make three?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many more to make two?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "How many more"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "How many?",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Question"
     }
    ]
   },
@@ -1476,6 +2086,66 @@
   },
   {
    "lang": "en",
+   "text": "Match each animal to its food",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Match each animal to its home",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Match each baby to its grown-up",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Match each color to its fruit",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Match each helper to their tool",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Match each number to how many",
+   "uses": [
+    {
+     "game": "match-up",
+     "where": "Round prompt"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "N! Nose",
    "uses": [
     {
@@ -1556,11 +2226,131 @@
   },
   {
    "lang": "en",
+   "text": "Paint it this color!",
+   "uses": [
+    {
+     "game": "color-mixer",
+     "where": "Mystery colour"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "Pink",
    "uses": [
     {
      "game": "color-mixer",
      "where": "Pot colour name"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop eight!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop five!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop four!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop nine!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop one!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop seven!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop six!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop ten!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop the balloons!",
+   "uses": [
+    {
+     "game": "balloon-archer",
+     "where": "Level start"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop three!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Pop two!",
+   "uses": [
+    {
+     "game": "count-and-pop",
+     "where": "Pop this many"
     }
    ]
   },
@@ -1756,6 +2546,16 @@
   },
   {
    "lang": "en",
+   "text": "Vroom! Let's race to the finish!",
+   "uses": [
+    {
+     "game": "turbo-road",
+     "where": "Drive start"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "W! Whale",
    "uses": [
     {
@@ -1765,6 +2565,26 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "What comes next?",
+   "uses": [
+    {
+     "game": "shape-detective",
+     "where": "Instruction"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Which one does not belong?",
+   "uses": [
+    {
+     "game": "shape-detective",
+     "where": "Instruction"
     }
    ]
   },

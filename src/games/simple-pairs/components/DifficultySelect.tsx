@@ -1,10 +1,9 @@
-import React from 'react';
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Difficulty } from '../types';
 import { DIFFICULTY_CONFIG, GAME_COLORS } from '../constants';
-import { PressableButton, EmojiFrame } from '../../../components/common';
-import { COLORS, FONTS, SPACING, TOUCH_TARGET } from '../../../constants';
+import { ClayEmoji } from '../../../components/common';
+import { ACCENTS, BORDER_RADIUS, COLORS, OUTLINE, SHADOWS, SPACING, TOUCH_TARGET } from '../../../constants';
 import type { AccentName } from '../../../constants';
 import { useTranslation } from '@/sdk';
 
@@ -12,124 +11,120 @@ type DifficultySelectProps = {
   onSelect: (difficulty: Difficulty) => void;
 };
 
-const LEVELS: { difficulty: Difficulty; emoji: string; accent: AccentName }[] = [
-  { difficulty: 'easy', emoji: '🐣', accent: 'green' },
-  { difficulty: 'medium', emoji: '🐥', accent: 'orange' },
-  { difficulty: 'hard', emoji: '🦁', accent: 'coral' },
-  { difficulty: 'expert', emoji: '🏆', accent: 'purple' },
+/** A staircase: each level is a taller step, a bigger creature, a bigger fan of cards. */
+const STEPS: { difficulty: Difficulty; emoji: string; accent: AccentName; rise: number; creature: number; fan: number }[] = [
+  { difficulty: 'easy', emoji: '🐣', accent: 'green', rise: 0.46, creature: 54, fan: 2 },
+  { difficulty: 'medium', emoji: '🐥', accent: 'orange', rise: 0.62, creature: 68, fan: 3 },
+  { difficulty: 'hard', emoji: '🦁', accent: 'coral', rise: 0.8, creature: 84, fan: 4 },
+  { difficulty: 'expert', emoji: '🏆', accent: 'purple', rise: 1, creature: 100, fan: 6 },
 ];
+
+const CARD_W = 30;
+const CARD_H = 42;
+
+/** Face-down cards, fanned from the middle like a hand of cards. */
+function CardFan({ count, accent }: { count: number; accent: AccentName }) {
+  const mid = (count - 1) / 2;
+  return (
+    <View style={styles.fan}>
+      {Array.from({ length: count }, (_, i) => {
+        const off = i - mid;
+        return (
+          <View
+            key={i}
+            style={[
+              styles.card,
+              {
+                transform: [
+                  { translateX: off * 13 },
+                  { translateY: off * off * 2 },
+                  { rotate: `${off * 11}deg` },
+                ],
+              },
+            ]}
+          >
+            <View style={[styles.cardMark, { backgroundColor: ACCENTS[accent].base }]} />
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 export function DifficultySelect({ onSelect }: DifficultySelectProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { width, height } = useWindowDimensions();
-  const landscape = width > height;
-  // Landscape: clear the floating BackButton (start inset + md + 64 + gap) on
-  // both sides so the grid stays centered and never slides under it.
+  const { height } = useWindowDimensions();
+  // Clear the floating BackButton (start inset + md + 64 + gap) on both sides.
   const sideGutter =
     Math.max(insets.left, insets.right) + SPACING.md + TOUCH_TARGET.recommended + SPACING.md;
+  const tallest = height - insets.top - insets.bottom - SPACING.lg * 2;
 
   return (
     <View
       style={[
         styles.container,
-        landscape
-          ? {
-              paddingTop: insets.top + SPACING.xs,
-              paddingBottom: insets.bottom + SPACING.sm,
-              paddingHorizontal: sideGutter,
-            }
-          : { paddingTop: insets.top + SPACING.xxl },
+        { paddingBottom: insets.bottom + SPACING.lg, paddingHorizontal: sideGutter },
       ]}
     >
-      {!landscape && (
-        <Text style={styles.subtitle}>{t('simple-pairs:difficulty.select.subtitle')}</Text>
-      )}
-
-      <ScrollView
-        contentContainerStyle={[styles.options, landscape && styles.optionsLandscape]}
-        showsVerticalScrollIndicator={false}
-      >
-        {LEVELS.map(({ difficulty, emoji, accent }) => {
+      <View style={styles.stairs}>
+        {STEPS.map(({ difficulty, emoji, accent, rise, creature, fan }) => {
           const pairs = DIFFICULTY_CONFIG[difficulty].pairs;
-          const cards = pairs * 2;
           return (
-            <PressableButton
+            <Pressable
               key={difficulty}
-              accent={accent}
-              align="flex-start"
               onPress={() => onSelect(difficulty)}
-              style={landscape ? styles.buttonLandscape : styles.button}
+              accessibilityRole="button"
+              accessibilityLabel={`${t(`simple-pairs:difficulty.${difficulty}`)}, ${t('simple-pairs:difficulty.meta', { pairs, cards: pairs * 2 })}`}
+              style={({ pressed }) => [
+                styles.step,
+                { height: tallest * rise, backgroundColor: ACCENTS[accent].base },
+                pressed ? styles.pressed : SHADOWS.md,
+              ]}
             >
-              <EmojiFrame
-                emoji={emoji}
-                size={landscape ? 40 : 52}
-                fontSize={landscape ? 24 : 30}
-                radius={14}
-                tint="rgba(255,255,255,0.25)"
-              />
-              <View style={styles.labelCol}>
-                <Text style={[styles.levelName, landscape && styles.levelNameLandscape]}>
-                  {t(`simple-pairs:difficulty.${difficulty}`)}
-                </Text>
-                <Text style={styles.levelMeta}>
-                  {t('simple-pairs:difficulty.meta', { pairs, cards })}
-                </Text>
-              </View>
-            </PressableButton>
+              <ClayEmoji emoji={emoji} size={Math.min(creature, tallest * rise * 0.46)} />
+              <CardFan count={fan} accent={accent} />
+            </Pressable>
           );
         })}
-      </ScrollView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: GAME_COLORS.background,
-    paddingHorizontal: 22,
-  },
-  subtitle: {
-    fontFamily: FONTS.body,
-    fontSize: 16,
-    color: COLORS.inkSoft,
-    textAlign: 'center',
-    marginBottom: 22,
-  },
-  options: {
-    gap: 14,
-    paddingBottom: SPACING.xl,
-  },
-  // Landscape: centered 2x2 grid, capped so buttons don't stretch edge to edge.
-  optionsLandscape: {
-    flexGrow: 1,
+  container: { flex: 1, justifyContent: 'flex-end', backgroundColor: GAME_COLORS.background },
+  stairs: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignContent: 'center',
-    justifyContent: 'space-between',
-    rowGap: SPACING.md,
+    alignItems: 'flex-end',
+    gap: SPACING.sm,
     width: '100%',
     maxWidth: 760,
     alignSelf: 'center',
-    paddingBottom: 0,
   },
-  button: { width: '100%' },
-  buttonLandscape: { width: '48.5%' },
-  labelCol: { gap: 2 },
-  levelName: {
-    fontFamily: FONTS.display,
-    fontSize: 20,
-    // Ink, not white: the pop accents are bright enough that white labels
-    // fall far below AA.
-    color: COLORS.ink,
+  step: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    borderTopLeftRadius: BORDER_RADIUS.card,
+    borderTopRightRadius: BORDER_RADIUS.card,
+    borderBottomLeftRadius: BORDER_RADIUS.sm,
+    borderBottomRightRadius: BORDER_RADIUS.sm,
+    borderWidth: OUTLINE.base,
+    borderColor: OUTLINE.color,
   },
-  levelNameLandscape: {
-    fontSize: 16,
+  pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
+  fan: { width: CARD_W, height: CARD_H + 10, alignItems: 'center' },
+  card: {
+    position: 'absolute',
+    width: CARD_W,
+    height: CARD_H,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    borderWidth: OUTLINE.thin,
+    borderColor: OUTLINE.color,
+    backgroundColor: COLORS.surface,
   },
-  levelMeta: {
-    fontFamily: FONTS.body,
-    fontSize: 13,
-    color: COLORS.ink,
-  },
+  cardMark: { width: 14, height: 14, borderRadius: 3 },
 });

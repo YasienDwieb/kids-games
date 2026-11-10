@@ -26,7 +26,11 @@ import {
   useRewards,
   maybeAskForReview,
   openStoreReview,
+  useBuddy,
+  useBuddyLabel,
+  voiceNamingAvailable,
 } from '@/sdk';
+import { BuddyNameSheet } from '../components/pop/BuddyNameSheet';
 import { COLORS, FONTS, OUTLINE, SPACING } from '../constants';
 
 // Grown-up screens keep the Pop Quest ink and type but drop the motion, the
@@ -151,6 +155,9 @@ export function SettingsScreen({ navigation }: Props) {
   // catalogue, so a single screen overflows again every few games. Tabs stay
   // bounded no matter how many games ship.
   const [tab, setTab] = useState<'general' | 'journey' | 'parents'>('general');
+  const buddy = useBuddy();
+  const buddyName = useBuddyLabel();
+  const [naming, setNaming] = useState(false);
   const { width, height } = useWindowDimensions();
   const landscape = width > height;
 
@@ -235,6 +242,15 @@ export function SettingsScreen({ navigation }: Props) {
                   onChange={(v) => update({ analyticsEnabled: v })}
                 />
               </View>
+              {voiceNamingAvailable ? (
+                <View style={styles.card}>
+                  <View style={styles.row}>
+                    <Text style={styles.rowIcon}>✏️</Text>
+                    <Text style={styles.rowLabel}>{t('buddyName.settingsRow', { name: buddyName })}</Text>
+                    <Chip label={t('buddyName.change')} onPress={() => setNaming(true)} />
+                  </View>
+                </View>
+              ) : null}
               <View style={styles.card}>
                 <View style={styles.row}>
                   <Text style={styles.rowIcon}>⭐</Text>
@@ -294,6 +310,7 @@ export function SettingsScreen({ navigation }: Props) {
       {/* Pinned, not in the scroll body: it used to sit below the fold where
           nobody could read it out for a support conversation. */}
       <Text style={styles.version}>{t('settings.version')}</Text>
+      {naming ? <BuddyNameSheet buddy={buddy} onClose={() => setNaming(false)} /> : null}
     </SafeAreaView>
   );
 }

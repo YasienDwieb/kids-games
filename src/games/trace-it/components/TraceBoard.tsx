@@ -1,7 +1,7 @@
 /**
  * The playable board for one RoundStep: outlined track, the child's ink, start
  * markers, finger tracing via the tracker, and the shared hint ladder (bouncing
- * start → pulsing arrow → ghost-hand reveal; misses are reported for the host's Lulu).
+ * start → pulsing arrow → ghost-hand reveal; misses are reported for the host's buddy).
  * The host owns layout, instructions, idle timing and the win flow.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -35,7 +35,7 @@ type TraceBoardProps = {
   onDone: (stars: 1 | 2 | 3) => void;
   /** Any grab, advance or dot hit — lets the host reset its idle timer. */
   onActivity?: () => void;
-  /** Misses on the current stroke (0 once the glyph is done) — the host shows Lulu encouraging. */
+  /** Misses on the current stroke (0 once the glyph is done) — the host shows the buddy encouraging. */
   onMisses?: (misses: number) => void;
   /** Skip the finishing chime (the host plays its own). */
   quietDone?: boolean;

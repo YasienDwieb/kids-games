@@ -20,6 +20,10 @@ release live.
 The App Store listing text (en-US + ar-SA) lives in [`store.config.json`](../store.config.json) and is pushed with
 `npx eas metadata:push`; iOS builds go through `eas build` / `eas submit`.
 
+## OTA updates and `runtimeVersion`
+
+`runtimeVersion` uses the fingerprint policy with SDK 58's `balanced` preset, which ignores `expo.version` in `app.json`. A version bump alone no longer changes the runtime: builds with identical native code share one and receive the same OTAs.
+
 ## Screenshots
 
 Store screenshots for both stores are generated, not hand-made: [`screenshots/`](../screenshots/) captures the

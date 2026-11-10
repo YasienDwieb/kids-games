@@ -1,8 +1,7 @@
 import React, { useCallback, useRef } from 'react';
-import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, OUTLINE, SHADOWS, useTranslation } from '@/sdk';
+import { Animated, PanResponder, Pressable, ScrollView, StyleSheet, View, type ViewInstance } from 'react-native';
+import { COLORS as TOKENS, OUTLINE, SHADOWS, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
-import { ColorLabel } from './ColorLabel';
 import { COLORS, DIMENSIONS } from '../constants';
 import { isVerticalDrag, sortSavedNewestFirst } from '../utils';
 import type { ColorId, PigmentId, SavedColor } from '../types';
@@ -37,12 +36,9 @@ export function ColorPalette({
   landscape = false,
   dimmed = false,
 }: ColorPaletteProps) {
-  const { t } = useTranslation();
-
   return (
     <View style={[styles.container, landscape && styles.containerLandscape]}>
       <View style={[styles.palette, landscape && styles.paletteLandscape]}>
-        <Text style={styles.title}>{t('color-mixer:palette.colorsTitle')}</Text>
         <View style={[styles.slotsRow, dimmed && styles.slotsRowDimmed]}>
           {availableColors.map((colorId) => (
             <PaletteSlot
@@ -58,7 +54,6 @@ export function ColorPalette({
 
         {savedColors.length > 0 && (
           <>
-            <Text style={[styles.title, styles.savedTitle]}>{t('color-mixer:palette.savedTitle')}</Text>
             {/* A horizontal scroller keeps the saved area one row tall no matter how many
                 colors exist, so it can never squeeze the mixing zone. The actual lift-drag
                 is rendered by the parent in a full-screen overlay (this ScrollView clips). */}
@@ -96,7 +91,7 @@ type PaletteSlotProps = {
 
 function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemPositions }: PaletteSlotProps) {
   const { t } = useTranslation();
-  const slotRef = useRef<View>(null);
+  const slotRef = useRef<ViewInstance>(null);
   const instanceCounter = useRef(0);
 
   const measureSlot = useCallback(() => {
@@ -127,7 +122,13 @@ function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemP
   const instanceId = `${colorId}-${instanceCounter.current++}`;
 
   return (
-    <View ref={slotRef} onLayout={measureSlot} style={styles.slot}>
+    <View
+      ref={slotRef}
+      onLayout={measureSlot}
+      style={styles.slot}
+      accessible
+      accessibilityLabel={t(`color-mixer:colors.${colorId}`)}
+    >
       <View style={styles.slotDraggableArea}>
         <DraggableSlotBlob
           colorId={colorId}
@@ -138,7 +139,6 @@ function PaletteSlot({ colorId, onDragStart, onDragMove, onDragEnd, paletteItemP
           onDragEnd={handleDragEnd}
         />
       </View>
-      <ColorLabel name={t(`color-mixer:colors.${colorId}`)} />
     </View>
   );
 }
@@ -273,7 +273,6 @@ function SavedSwatch({ saved, onTap, onLiftStart, onLiftMove, onLiftEnd }: Saved
         <View style={styles.slotDraggableArea}>
           <ColorBlob color={saved.hex} size={DIMENSIONS.PALETTE_ITEM_SIZE} showShine />
         </View>
-        <ColorLabel name={saved.name} />
       </Pressable>
     </Animated.View>
   );
@@ -310,15 +309,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...SHADOWS.md,
   },
-  title: {
-    fontFamily: FONTS.body,
-    fontSize: 14,
-    color: TOKENS.inkSoft,
-    textAlign: 'center',
-    marginBottom: 10,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
   slotsRowDimmed: {
     opacity: 0.4,
   },
@@ -328,9 +318,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 12,
     overflow: 'visible',
-  },
-  savedTitle: {
-    marginTop: 10,
   },
   savedStrip: {
     alignSelf: 'stretch',

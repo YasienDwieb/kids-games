@@ -3,13 +3,11 @@ export const en = {
     name: 'Mouse Maze',
     description: 'Draw a path to help the mouse find its cheese!',
   },
-  hud: {
-    level: 'Level {{level}}',
-    hintLabel: 'Show hint',
+  say: {
+    find: 'Help the mouse find the cheese!',
   },
-  win: {
-    title: 'You made it!',
-    nextMaze: 'Next maze',
+  hud: {
+    hintLabel: 'Show hint',
   },
 } as const;
 

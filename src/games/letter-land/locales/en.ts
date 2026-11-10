@@ -12,16 +12,10 @@ export const en = {
   hearFind: {
     listen: 'LISTEN…',
     tapAgain: 'Tap to hear it again',
-    which: 'Which letter is it?',
   },
   a11y: {
     replay: 'Hear the letter again',
     choiceTile: 'Letter {{glyph}}',
-  },
-  levelSolved: {
-    title: 'You got it!',
-    next: 'Next Letter',
-    finish: 'All Done!',
   },
 } as const;
 

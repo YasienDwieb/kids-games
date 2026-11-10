@@ -10,20 +10,12 @@ export const en = {
     description: 'Listen and find your numbers!',
   },
   loading: 'Getting your numbers ready…',
-  hearFind: {
-    which: 'Which number is it?',
-  },
   speak: {
     carrier: '{{name}}',
   },
   a11y: {
     replay: 'Hear the number again',
     choiceTile: 'Number {{glyph}}',
-  },
-  levelSolved: {
-    title: 'You got it!',
-    next: 'Next Number',
-    finish: 'All Done!',
   },
   // Spoken number name per id ('1'..'10').
   names: {

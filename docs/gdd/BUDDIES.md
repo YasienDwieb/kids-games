@@ -1,10 +1,11 @@
 # Buddies — plan
 
-Status: **built — first version**. Lulu the owl (girl) and Zain the lion cub
-(boy): 2D poses and rigged 3D models in the same semi-realistic style, a
-first-launch picker on Home, a switch in the wardrobe, and Zain's own voice
-lines. Every child picks the buddy they want; the buddy then cheers, explains,
-hints and wears outfits everywhere.
+Status: **replaced (2026-11-08)**. The buddies are now two kids, Mariam and Anas —
+2D poses only (no 3D yet). The picker shows Mariam with pigtails; her hijab look is a
+choice in the wardrobe's Looks tab. Wardrobe items are drawn as stickers, and each
+buddy has a welcome line, played on pick and on tap. See the
+"Buddy & mascot" entry in CLAUDE.md. The plan below describes the earlier
+Lulu (owl) / Zain (lion cub) version and is kept for history.
 
 School subjects were planned alongside the buddies and are parked for now
 (their work stays on the `feat/buddies-and-school-subjects` branch).

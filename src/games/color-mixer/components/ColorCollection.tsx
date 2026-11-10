@@ -1,7 +1,7 @@
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { COLORS as TOKENS, FONTS, BORDER_RADIUS, OUTLINE, SHADOWS, PressableButton, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, FONTS, BORDER_RADIUS, OUTLINE, SHADOWS, Icon, MODAL_ORIENTATIONS, PressableButton, useTranslation } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
-import { COLORS, DISCOVERY_HINTS } from '../constants';
+import { COLORS } from '../constants';
 import { FAMOUS_IDS } from '../utils';
 import type { ColorId, SavedColor } from '../types';
 
@@ -23,23 +23,18 @@ export function ColorCollection({
   const { t } = useTranslation();
 
   return (
-    <Modal visible={visible} animationType="slide" statusBarTranslucent>
+    <Modal visible={visible} animationType="slide" statusBarTranslucent supportedOrientations={MODAL_ORIENTATIONS}>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>{t('color-mixer:collection.title')}</Text>
-          <PressableButton label={t('color-mixer:collection.done')} accent="blue" onPress={onClose} />
+          <PressableButton accessibilityLabel={t('color-mixer:collection.done')} accent="blue" onPress={onClose}>
+            <Icon name="checkmark" size={28} />
+          </PressableButton>
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
           {/* Shelf 1 — Famous colors */}
           <View style={styles.shelf}>
-            <View style={styles.shelfHeader}>
-              <Text style={styles.shelfTitle}>{t('color-mixer:collection.famousShelf')}</Text>
-              <Text style={styles.shelfMeta}>
-                {discoveries.length}/{FAMOUS_IDS.length} {t('color-mixer:collection.found')}
-              </Text>
-            </View>
             <View style={styles.grid}>
               {FAMOUS_IDS.map((id) => (
                 <FamousSlot key={id} colorId={id} discovered={discoveries.includes(id)} />
@@ -49,12 +44,7 @@ export function ColorCollection({
 
           {/* Shelf 2 — My creations */}
           <View style={styles.shelf}>
-            <View style={styles.shelfHeader}>
-              <Text style={styles.shelfTitle}>{t('color-mixer:collection.creationsShelf')}</Text>
-            </View>
-            {savedColors.length === 0 ? (
-              <Text style={styles.emptyText}>{t('color-mixer:collection.emptyCreations')}</Text>
-            ) : (
+            {savedColors.length === 0 ? null : (
               <View style={styles.grid}>
                 {savedColors.map((c) => (
                   <View key={c.id} style={styles.slot}>
@@ -67,9 +57,6 @@ export function ColorCollection({
                       <Text style={styles.deleteIcon}>×</Text>
                     </Pressable>
                     <ColorBlob color={c.hex} size={56} showShine />
-                    <Text style={styles.colorName} numberOfLines={1}>
-                      {c.name}
-                    </Text>
                   </View>
                 ))}
               </View>
@@ -84,13 +71,11 @@ export function ColorCollection({
 function FamousSlot({ colorId, discovered }: { colorId: ColorId; discovered: boolean }) {
   const { t } = useTranslation();
   const colorData = COLORS[colorId];
-  const hint = DISCOVERY_HINTS[colorId];
 
   if (discovered) {
     return (
-      <View style={styles.slot}>
+      <View style={styles.slot} accessible accessibilityLabel={t(`color-mixer:colors.${colorId}`)}>
         <ColorBlob color={colorData.hex} size={56} showShine />
-        <Text style={styles.colorName}>{t(`color-mixer:colors.${colorId}`)}</Text>
       </View>
     );
   }
@@ -100,11 +85,6 @@ function FamousSlot({ colorId, discovered }: { colorId: ColorId; discovered: boo
       <View style={styles.lockedBlob}>
         <Text style={styles.lockedIcon}>?</Text>
       </View>
-      {hint ? (
-        <Text style={styles.hintText}>{t(`color-mixer:discoveryHints.${colorId}`)}</Text>
-      ) : (
-        <Text style={styles.lockedName}>{t('color-mixer:collection.lockedName')}</Text>
-      )}
     </View>
   );
 }
@@ -122,11 +102,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
   },
-  title: {
-    fontFamily: FONTS.displayBold,
-    fontSize: 28,
-    color: TOKENS.ink,
-  },
   scroll: {
     flex: 1,
   },
@@ -136,23 +111,6 @@ const styles = StyleSheet.create({
   },
   shelf: {
     marginBottom: 28,
-  },
-  shelfHeader: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-    paddingStart: 4,
-  },
-  shelfTitle: {
-    fontFamily: FONTS.display,
-    fontSize: 18,
-    color: TOKENS.ink,
-  },
-  shelfMeta: {
-    fontFamily: FONTS.body,
-    fontSize: 14,
-    color: TOKENS.inkSoft,
   },
   grid: {
     flexDirection: 'row',
@@ -169,13 +127,6 @@ const styles = StyleSheet.create({
     borderWidth: OUTLINE.base,
     borderColor: OUTLINE.color,
     ...SHADOWS.sm,
-  },
-  colorName: {
-    marginTop: 8,
-    fontFamily: FONTS.bodySemi,
-    fontSize: 12,
-    color: TOKENS.ink,
-    textAlign: 'center',
   },
   deleteButton: {
     position: 'absolute',
@@ -212,25 +163,5 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.displayBold,
     fontSize: 24,
     color: TOKENS.inkFaint,
-  },
-  lockedName: {
-    marginTop: 8,
-    fontFamily: FONTS.bodySemi,
-    fontSize: 12,
-    color: TOKENS.inkFaint,
-    textAlign: 'center',
-  },
-  hintText: {
-    marginTop: 6,
-    fontFamily: FONTS.bodySemi,
-    fontSize: 10,
-    color: TOKENS.inkSoft,
-    textAlign: 'center',
-  },
-  emptyText: {
-    fontFamily: FONTS.body,
-    fontSize: 15,
-    color: TOKENS.inkSoft,
-    paddingStart: 4,
   },
 });

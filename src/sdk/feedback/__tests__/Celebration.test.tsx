@@ -1,8 +1,8 @@
 import { act, create } from 'react-test-renderer';
-import { Text } from 'react-native';
+import { Animated, Text } from 'react-native';
 import { i18n } from '@/sdk/i18n';
 import { pickAsset } from '@/sdk/assets/query';
-import { LULU_TAP_LINES } from '@/sdk/mascot/Lulu3D';
+import { BUDDIES, welcomeIntent } from '@/sdk/buddy';
 import { voiceBusyRemaining } from '@/sdk/speech/voiceGate';
 import { stopSpeech } from '@/sdk/speech/useSpeech';
 import { CelebrationProvider, PRAISE_COUNT, useCelebrate, type Celebrate } from '../Celebration';
@@ -60,6 +60,39 @@ it('renders a burst over the game and resolves once it finishes', async () => {
   expect(done).toBe(true);
 
   act(() => tree.unmount());
+  jest.useRealTimers();
+});
+
+it('still resolves when dropped frames stall the animation', async () => {
+  jest.useFakeTimers();
+  const stalled = { start: jest.fn(), stop: jest.fn(), reset: jest.fn() };
+  const parallel = jest.spyOn(Animated, 'parallel').mockReturnValue(stalled);
+  let celebrate!: Celebrate;
+  let tree!: ReturnType<typeof create>;
+  act(() => {
+    tree = create(
+      <CelebrationProvider>
+        <Grab onReady={(c) => (celebrate = c)} />
+      </CelebrationProvider>,
+    );
+  });
+
+  let done = false;
+  act(() => {
+    void celebrate('small', { praise: false }).then(() => {
+      done = true;
+    });
+  });
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(2000);
+  });
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(0);
+  });
+  expect(done).toBe(true);
+
+  act(() => tree.unmount());
+  parallel.mockRestore();
   jest.useRealTimers();
 });
 
@@ -135,12 +168,10 @@ it('has a recorded voice clip for every praise line in both languages', () => {
   }
 });
 
-it('has a recorded line for every buddy tap reaction in both languages', () => {
-  for (const buddy of ['lulu', 'zain']) {
+it('has a recorded welcome line for every buddy in both languages', () => {
+  for (const buddy of BUDDIES) {
     for (const lang of ['en', 'ar']) {
-      for (let n = 1; n <= LULU_TAP_LINES; n++) {
-        expect(pickAsset(`${buddy}.tap.${lang}.${n}`)).toBe(`voice.${buddy}.${lang}.${n}`);
-      }
+      expect(pickAsset(welcomeIntent(buddy, lang))).toBeDefined();
     }
   }
 });

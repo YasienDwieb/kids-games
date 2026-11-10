@@ -100,18 +100,41 @@ export {
 export type { StickerSetId } from './rewards/stickers';
 export { Sticker } from './rewards/Sticker';
 
-// Player level & Lulu's wardrobe
+// Player level & the buddy's wardrobe
 export * from './player';
 
-// Buddy — the child's chosen mascot (Lulu the owl or Zain the lion cub)
-export { BUDDIES, DEFAULT_BUDDY, useBuddy, useBuddyPicked, chooseBuddy, currentBuddy } from './buddy';
-export type { BuddyId } from './buddy';
+// Buddy — the child's chosen mascot (Mariam, with two looks, or Anas)
+export {
+  BUDDIES,
+  BUDDY_LOOKS,
+  DEFAULT_BUDDY,
+  welcomeIntent,
+  useBuddy,
+  useBuddyArt,
+  useBuddyPicked,
+  chooseBuddy,
+  chooseLook,
+  currentBuddy,
+} from './buddy';
+export type { BuddyArt, BuddyId } from './buddy';
+export {
+  useBuddyLabel,
+  useBuddyName,
+  buddyNameFor,
+  customName,
+  saveBuddyName,
+  clearBuddyName,
+} from './buddy/names';
+export type { BuddyName, NameLang } from './buddy/names';
+export { voiceNamingAvailable, recordWelcome, pruneClips, MAX_TAKE, MAX_NAME_LENGTH } from './buddy/voiceApi';
+export type { RecordError, RecordResult } from './buddy/voiceApi';
+export { useWelcome } from './buddy/useWelcome';
 // Mascot — draws the chosen buddy
 export { Mascot, MASCOT_POSES } from './mascot/Mascot';
 export type { MascotPose } from './mascot/Mascot';
 export { MascotHelper } from './mascot/MascotHelper';
-export { Lulu3D, Buddy3D, LULU_TAP_LINES } from './mascot/Lulu3D';
-export type { LuluMood } from './mascot/Lulu3D';
+export { BuddyFigure } from './mascot/BuddyFigure';
+export type { BuddyMood } from './mascot/BuddyFigure';
 export { useModel3D, preloadModels3D } from './three/models';
 export type { ModelSource } from './three/models';
 
@@ -152,12 +175,19 @@ export type { DemoPoint } from './tutorial/DemoHand';
 export { useFirstRun, tutorialStore } from './tutorial/useFirstRun';
 export type { FirstRunStatus, TutorialProgress } from './tutorial/useFirstRun';
 export { useIdle } from './tutorial/useIdle';
+export { useGuide } from './tutorial/useGuide';
+export { AreaDemo } from './tutorial/AreaDemo';
+export { HintPulse } from './feedback/HintPulse';
+export { useChoiceHints } from './feedback/useChoiceHints';
+export { useRoundEnd } from './feedback/useRoundEnd';
+export { ProgressBar } from '@/components/pop/ProgressBar';
 
 // Layout
 export { GameShell } from './layout/GameShell';
 export { GameOverlay } from './layout/GameOverlay';
+export { MODAL_ORIENTATIONS } from './layout/modalOrientations';
 export { useGameShell } from './layout/GameShellContext';
-export { ScreenBackContext, useScreenBack } from './layout/ScreenBackContext';
+export { GameExitContext, ScreenBackContext, useScreenBack } from './layout/ScreenBackContext';
 export type { BackInterceptor } from './layout/ScreenBackContext';
 export type { GameShellApi } from './layout/GameShellContext';
 export type { GameShellProps, OverlaySlot } from './layout/types';

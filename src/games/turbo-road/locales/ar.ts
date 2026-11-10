@@ -4,77 +4,11 @@ export const ar: GameTranslations = {
   meta: {
     name: 'سباق السيارات',
     shortName: 'السباق',
-    description: 'سباق رحلة مشمسة — انعطف وتفادَ العقبات واجمع العملات!',
+    description: 'رحلة مشمسة بالسيارة — انعطف وتفادَ العقبات واجمع العملات!',
   },
-  start: {
-    title: 'سباق السيارات',
-    level: 'المستوى {{n}}',
-    race: 'انطلق!',
-    garage: 'المرآب',
-    mapLabel: 'رحلة الطريق',
-  },
-  controls: {
-    label: 'التحكم',
-    drag: 'بالإصبع',
-    tilt: 'بالإمالة',
-  },
-  pause: {
-    title: 'استراحة',
-    resume: 'أكمل السباق',
-    exit: 'إنهاء السباق',
-  },
-  missions: {
-    title: 'المهام',
-    claim: 'استلم',
-    types: {
-      coins: 'اجمع {{n}} عملة',
-      first: 'افز بـ {{n}} سباقات',
-      races: 'أكمل {{n}} سباقات',
-      boost: 'خذ {{n}} منصات تسارع',
-      clean: 'أكمل {{n}} سباقات دون اصطدام',
-    },
-  },
-  cups: {
-    meadow: 'كأس المرج',
-    beach: 'كأس الشاطئ',
-    desert: 'كأس الصحراء',
-    snow: 'كأس الثلج',
-    earned: 'فزت بـ{{name}}!',
-  },
-  countdown: {
-    go: 'انطلق!',
-  },
-  hud: {
-    level: 'المستوى {{n}}',
-  },
-  place: {
-    p1: 'الأول',
-    p2: 'الثاني',
-    p3: 'الثالث',
-  },
-  win: {
-    title: {
-      p1: 'المركز الأول!',
-      p2: 'المركز الثاني!',
-      p3: 'المركز الثالث!',
-    },
-    coins: '+{{n}} عملة',
-    next: 'السباق التالي',
-    garage: 'المرآب',
-  },
-  garage: {
-    title: 'مرآبي',
-    trim: 'اللون',
-    selected: 'مختارة',
-    select: 'اختر',
-    unlock: 'افتح',
-    done: 'تم',
-    trophies: 'الكؤوس',
-    noTrophies: 'تسابق لتفوز بالكؤوس!',
-    stats: {
-      speed: 'السرعة',
-      grip: 'التحكم',
-    },
+  // Spoken prompt (docs/VOICE.md).
+  say: {
+    drive: 'هَيّا! لِنَتَسابَقْ إلى خَطِّ النِّهاية!',
   },
   cars: {
     turbo: 'الصاروخ',
@@ -86,22 +20,25 @@ export const ar: GameTranslations = {
     tractor: 'الجرّار',
     moto: 'الدرّاجة',
   },
-  trims: {
-    coral: 'مرجاني',
-    green: 'أخضر',
-    blue: 'أزرق',
-    orange: 'برتقالي',
-  },
   themes: {
     meadow: 'المرج',
     beach: 'الشاطئ',
     desert: 'الصحراء',
     snow: 'التلال الثلجية',
   },
+  // Places, for screen readers; the screen shows medals.
+  place: {
+    p1: 'المركز الأول',
+    p2: 'المركز الثاني',
+    p3: 'المركز الثالث',
+  },
   a11y: {
     steer: 'قُد السيارة',
-    coins: 'العملات',
-    stars: 'النجوم',
-    pause: 'أوقف السباق مؤقتًا',
+    pause: 'توقّف',
+    resume: 'تابع القيادة',
+    exit: 'عودة إلى الخريطة',
+    drive: 'انطلق',
+    cars: 'اختر سيارة',
+    locked: 'ليس بعد',
   },
 };

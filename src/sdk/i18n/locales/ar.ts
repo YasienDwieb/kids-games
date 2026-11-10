@@ -5,7 +5,6 @@ import type { CoreTranslations } from './en';
 export const ar: CoreTranslations = {
   common: {
     back: 'رجوع',
-    score: 'النقاط: {{n}}',
     pause: 'إيقاف مؤقت',
     settings: 'الإعدادات',
     done: 'تمّ',
@@ -26,7 +25,6 @@ export const ar: CoreTranslations = {
     changeLanguage: 'تغيير اللغة',
     switchTitle: 'تغيير اللغة؟',
     switchBody: 'سيُعاد تشغيل التطبيق.',
-    playNow: 'العب الآن',
     play: 'العب',
     levelA11y: 'المستوى {{n}}. باقي {{left}} نجوم للمستوى التالي',
     grownUps: 'للكبار',
@@ -43,13 +41,16 @@ export const ar: CoreTranslations = {
     level: 'المستوى {{n}}!',
     unlocked: 'فتحت',
     tryOn: 'جرّبها',
-    keepPlaying: 'تابع اللعب',
   },
   wardrobe: {
     hats: 'قبّعات',
     glasses: 'نظّارات',
     stickers: 'ملصقات',
-    wearing: 'تلبسها',
+    looks: 'إطلالاتي',
+    lookNames: {
+      mariam: 'شعر مربوط',
+      mariamHijab: 'حجاب',
+    },
     unlockAt: 'المستوى {{n}}',
     items: {
       'party-hat': 'قبّعة الحفلة',
@@ -61,9 +62,6 @@ export const ar: CoreTranslations = {
       'top-hat': 'قبّعة طويلة',
       bow: 'فيونكة',
     },
-  },
-  combo: {
-    label: 'x{{n}} كومبو!',
   },
   settings: {
     title: 'الإعدادات',
@@ -107,7 +105,6 @@ export const ar: CoreTranslations = {
     notFound: 'لم نجد هذه اللعبة',
   },
   resume: {
-    welcomeBack: 'أهلاً بعودتك! 👋',
     continueLevel: 'تابع · المستوى {{level}}',
     startOver: 'ابدأ من جديد',
   },
@@ -125,23 +122,14 @@ export const ar: CoreTranslations = {
   stickers: {
     title: 'ملصقاتي',
     open: 'افتح كتاب الملصقات',
-    count: '{{have}} / {{total}}',
     stars: '{{n}} نجمة',
     nextIn: '{{n}} ⭐ أخرى لملصق جديد!',
     new: 'ملصق جديد!',
-    addedToBook: 'أُضيف إلى كتاب ملصقاتك',
-    newBadge: 'جديد',
     locked: 'لم تجده بعد',
     general: 'مفاجآت',
     complete: 'وجدتها كلها! 🏆',
   },
-  mascot: {
-    name: 'لولو',
-    oops: 'أوبس! جرّب مرّة ثانية',
-    look: 'انظر هنا!',
-  },
   break: {
-    title: 'وقت الشحن!',
     home: 'العودة للرئيسية',
     grownUp: 'للكبار: {{n}} دقيقة إضافية',
     energy: 'الطاقة منخفضة',
@@ -162,27 +150,51 @@ export const ar: CoreTranslations = {
     },
   },
   buddy: {
-    pickTitle: 'اختر صديقك!',
-    anyTime: 'يمكنك تغيير صديقك في أي وقت',
     go: 'هيا بنا!',
     choose: 'العب مع {{name}}',
-    lulu: {
-      name: 'لولو',
-      species: 'البومة',
-      hello: 'أهلًا! أنا لولو!',
-      dressUp: 'لبّس لولو',
-      wardrobeA11y: '{{n}} نجمة. افتح خزانة لولو',
-      rest: 'لولو تحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
-      stretchWith: 'تمرّن مع لولو',
+    mariam: {
+      name: 'مريم',
+      wardrobeA11y: '{{n}} نجمة. افتح خزانة {{name}}',
+      rest: '{{name}} تحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
     },
-    zain: {
-      name: 'زين',
-      species: 'الأسد الصغير',
-      hello: 'أهلًا! أنا زين!',
-      dressUp: 'لبّس زين',
-      wardrobeA11y: '{{n}} نجمة. افتح خزانة زين',
-      rest: 'زين يحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
-      stretchWith: 'تمرّن مع زين',
+    anas: {
+      name: 'أنس',
+      wardrobeA11y: '{{n}} نجمة. افتح خزانة {{name}}',
+      rest: '{{name}} يحتاج إلى راحة. يلّا نتمدّد ونلعب بعد قليل.',
+    },
+  },
+  buddyName: {
+    title: 'سمِّ رفيقك',
+    ask: 'للكبار: اختاروا اسمًا آخر لـ{{name}}',
+    keep: 'العب مع {{name}}',
+    rename: 'للكبار: تغيير الاسم',
+    intro: 'اكتبوا اسمًا وسنسجّل {{name}} وهو يرحّب بهذا الاسم. يمكنكم الاستماع والمحاولة مرة أخرى قبل الحفظ.',
+    label: {
+      en: 'الاسم بالحروف الإنجليزية',
+      ar: 'الاسم بالحروف العربية (اختياري)',
+    },
+    lang: {
+      en: 'الإنجليزية',
+      ar: 'العربية',
+    },
+    placeholder: {
+      en: 'e.g. Noor',
+      ar: 'مثل: نور',
+    },
+    record: 'سجّل',
+    recording: 'جارٍ التسجيل…',
+    listen: 'استمع ({{lang}})',
+    retry: 'حاول مرة أخرى',
+    save: 'احفظ',
+    reset: 'العودة إلى {{name}}',
+    settingsRow: 'اسم الرفيق: {{name}}',
+    change: 'تغيير',
+    errors: {
+      invalid: 'استخدموا الحروف فقط، حتى 20 حرفًا.',
+      blocked: 'نرجو اختيار اسم آخر.',
+      rate: 'محاولات كثيرة. انتظروا دقيقة ثم حاولوا مرة أخرى.',
+      network: 'لا يوجد اتصال بالإنترنت. تحقّقوا منه وحاولوا مرة أخرى.',
+      server: 'لم ينجح التسجيل. حاولوا مرة أخرى بعد قليل.',
     },
   },
   flow: {

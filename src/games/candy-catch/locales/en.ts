@@ -5,24 +5,9 @@ export const en = {
     name: 'Candy Catch',
     description: 'Move the basket — catch the treats, dodge the yucky ones!',
   },
-  hud: {
-    level: 'Level {{level}}',
-    score: 'Score {{score}}',
-  },
   start: {
     title: 'Catch the treats!',
-    subtitle: 'Good: 🍬 🍭 🍪   Yucky: 🌶️ 💣',
     tap: 'Tap to start',
-  },
-  win: {
-    title: 'Yummy!',
-    next: 'Next level',
-    done: 'All caught!',
-  },
-  lose: {
-    title: 'Oops!',
-    subtitle: 'Out of hearts',
-    retry: 'Try again',
   },
   a11y: {
     basket: 'Basket, drag to move',

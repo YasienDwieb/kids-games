@@ -102,5 +102,14 @@ export function useSound() {
     [playerFor],
   );
 
-  return { play, prewarm };
+  /** Silence every clip this hook started, e.g. before a new voice line. */
+  const stop = useCallback(() => {
+    for (const player of Object.values(loaded.current)) {
+      try {
+        player.pause();
+      } catch {}
+    }
+  }, []);
+
+  return { play, prewarm, stop };
 }

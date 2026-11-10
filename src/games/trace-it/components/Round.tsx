@@ -5,10 +5,8 @@
  * Used by the standalone screen (`full`) and the guided flow (`guidedOnly`).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, View, type LayoutChangeEvent } from 'react-native';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import {
-  COLORS,
-  FONTS,
   MascotHelper,
   SPACING,
   awardStars,
@@ -50,7 +48,6 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
   const celebrate = useCelebrate();
   const steps = useMemo(() => roundSteps(char, mode), [char, mode]);
   const [index, setIndex] = useState(0);
-  const [dotsOnly, setDotsOnly] = useState(false);
   const [finished, setFinished] = useState(false);
   const [sticker, setSticker] = useState(false);
   const [area, setArea] = useState({ width: 0, height: 0 });
@@ -117,7 +114,6 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
     hold.current = setTimeout(() => {
       hold.current = null;
       if (index < steps.length - 1) {
-        setDotsOnly(false);
         setIndex(index + 1);
         return;
       }
@@ -125,10 +121,7 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
     }, char.track === 'warmup' ? TRAVEL_HOLD_MS : DONE_HOLD_MS);
   };
 
-  const onStrokeDone = (next: 'path' | 'dot' | null) => {
-    endFirstRun();
-    if (next === 'dot') setDotsOnly(true);
-  };
+  const onStrokeDone = () => endFirstRun();
 
   const onLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -140,14 +133,6 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
   const inner = area.width - padStart - PAD_END;
   const side = Math.floor(Math.min(area.height * 0.9, inner * 0.55));
   const paneWidth = Math.max(0, inner - side - SPACING.md * 2);
-  const instruction =
-    char.track === 'warmup'
-      ? t('trace-it:round.warmup')
-      : dotsOnly
-        ? t('trace-it:round.dots')
-        : step.pass === 'guided'
-          ? t('trace-it:round.guided')
-          : t('trace-it:round.solo');
   const travel = useMemo(
     () => (char.from && char.to ? { from: char.from, to: char.to, faces: char.faces } : undefined),
     [char],
@@ -175,7 +160,6 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
             />
           </View>
           <View style={styles.sidePane}>
-            <Text style={styles.instruction}>{instruction}</Text>
             <WordPane char={char} width={paneWidth} onReplay={sayChar} />
           </View>
         </>
@@ -191,5 +175,4 @@ const styles = StyleSheet.create({
   rootInFlow: { paddingStart: 0 },
   boardPane: { alignItems: 'center', justifyContent: 'center' },
   sidePane: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: SPACING.md, paddingHorizontal: SPACING.md },
-  instruction: { fontFamily: FONTS.display, fontSize: 28, color: COLORS.ink, textAlign: 'center' },
 });

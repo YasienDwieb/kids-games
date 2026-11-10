@@ -4,7 +4,7 @@
  * with a "Next" badge, but every tile stays tappable.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, I18nManager, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, I18nManager, Pressable, ScrollView, StyleSheet, Text, View, type ScrollViewInstance } from 'react-native';
 import {
   ACCENTS,
   AppBar,
@@ -16,6 +16,7 @@ import {
   OUTLINE,
   POP,
   SHADOWS,
+  Icon,
   SPACING,
   Star,
   fontsFor,
@@ -61,11 +62,11 @@ export function Picker({ script, tab, onTab, onPick }: PickerProps) {
     <View style={styles.root}>
       <AppBar
         left={<View style={styles.backSpace} />}
-        title={t('trace-it:meta.name')}
         right={tabsFor(script).map((k) => (
           <Chip
             key={k}
             label={t(`trace-it:tabs.${k}`)}
+            icon={k === 'warmup' ? 'brush' : undefined}
             active={k === tab}
             onPress={() => onTab(k)}
             fontFamily={k === 'arabic' || k === 'latin' ? fontsFor(k === 'arabic' ? 'ar' : 'en').display : undefined}
@@ -91,7 +92,7 @@ type RailProps = {
  */
 function Rail({ chars, done, onPick }: RailProps) {
   const next = nextSuggested(chars, done);
-  const rail = useRef<ScrollView>(null);
+  const rail = useRef<ScrollViewInstance>(null);
   const [viewW, setViewW] = useState(0);
   const [contentW, setContentW] = useState(0);
   const [nextX, setNextX] = useState<number | null>(null);
@@ -178,7 +179,7 @@ function Tile({ char, stars, next, onPress, onLayoutX }: TileProps) {
       </Pressable>
       {next ? (
         <View style={styles.badge} pointerEvents="none">
-          <Text style={styles.badgeText}>{t('trace-it:picker.next')}</Text>
+          <Icon name="play" size={18} />
         </View>
       ) : null}
     </Animated.View>
@@ -222,5 +223,4 @@ const styles = StyleSheet.create({
     backgroundColor: POP.zap,
     ...SHADOWS.sm,
   },
-  badgeText: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.ink },
 });

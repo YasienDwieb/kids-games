@@ -325,67 +325,27 @@ export const ASSETS = {
     type: 'audio',
     tags: ['sticker.new.ar'],
   },
-  // Lulu's lines when a child taps her (3D mascot), per language.
-  'voice.lulu.en.1': {
-    modules: [require('./audio/voice/lulu-tap-en-1.m4a')],
+  // Each buddy's welcome line (Gemini TTS in AI Studio: Leda for Mariam,
+  // Zephyr for Anas), played when picked and when tapped.
+  'voice.mariam.welcome.en': {
+    modules: [require('./audio/voice/mariam-welcome-en.m4a')],
     type: 'audio',
-    tags: ['lulu.tap.en.1'],
+    tags: ['mariam.welcome.en'],
   },
-  'voice.lulu.en.2': {
-    modules: [require('./audio/voice/lulu-tap-en-2.m4a')],
+  'voice.mariam.welcome.ar': {
+    modules: [require('./audio/voice/mariam-welcome-ar.m4a')],
     type: 'audio',
-    tags: ['lulu.tap.en.2'],
+    tags: ['mariam.welcome.ar'],
   },
-  'voice.lulu.en.3': {
-    modules: [require('./audio/voice/lulu-tap-en-3.m4a')],
+  'voice.anas.welcome.en': {
+    modules: [require('./audio/voice/anas-welcome-en.m4a')],
     type: 'audio',
-    tags: ['lulu.tap.en.3'],
+    tags: ['anas.welcome.en'],
   },
-  'voice.lulu.ar.1': {
-    modules: [require('./audio/voice/lulu-tap-ar-1.m4a')],
+  'voice.anas.welcome.ar': {
+    modules: [require('./audio/voice/anas-welcome-ar.m4a')],
     type: 'audio',
-    tags: ['lulu.tap.ar.1'],
-  },
-  'voice.lulu.ar.2': {
-    modules: [require('./audio/voice/lulu-tap-ar-2.m4a')],
-    type: 'audio',
-    tags: ['lulu.tap.ar.2'],
-  },
-  'voice.lulu.ar.3': {
-    modules: [require('./audio/voice/lulu-tap-ar-3.m4a')],
-    type: 'audio',
-    tags: ['lulu.tap.ar.3'],
-  },
-  // Zain's lines when a child taps him (3D mascot), per language.
-  'voice.zain.en.1': {
-    modules: [require('./audio/voice/zain-tap-en-1.m4a')],
-    type: 'audio',
-    tags: ['zain.tap.en.1'],
-  },
-  'voice.zain.en.2': {
-    modules: [require('./audio/voice/zain-tap-en-2.m4a')],
-    type: 'audio',
-    tags: ['zain.tap.en.2'],
-  },
-  'voice.zain.en.3': {
-    modules: [require('./audio/voice/zain-tap-en-3.m4a')],
-    type: 'audio',
-    tags: ['zain.tap.en.3'],
-  },
-  'voice.zain.ar.1': {
-    modules: [require('./audio/voice/zain-tap-ar-1.m4a')],
-    type: 'audio',
-    tags: ['zain.tap.ar.1'],
-  },
-  'voice.zain.ar.2': {
-    modules: [require('./audio/voice/zain-tap-ar-2.m4a')],
-    type: 'audio',
-    tags: ['zain.tap.ar.2'],
-  },
-  'voice.zain.ar.3': {
-    modules: [require('./audio/voice/zain-tap-ar-3.m4a')],
-    type: 'audio',
-    tags: ['zain.tap.ar.3'],
+    tags: ['anas.welcome.ar'],
   },
 } as const satisfies Record<string, AssetEntry>;
 

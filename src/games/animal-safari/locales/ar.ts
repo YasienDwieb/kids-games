@@ -12,12 +12,10 @@ export const ar: GameTranslations = {
   hearName: {
     listen: 'اسمع…',
     tapAgain: 'اضغط لتسمعه مرة أخرى',
-    which: 'أي حيوان هذا؟',
   },
   whichSound: {
     listen: 'اسمع…',
     tapAgain: 'اضغط لتسمعه مرة أخرى',
-    which: 'أي حيوان يُصدر هذا الصوت؟',
   },
   a11y: {
     replay: 'انطق اسم الحيوان مرة أخرى',
@@ -38,10 +36,5 @@ export const ar: GameTranslations = {
     duck: 'بطة',
     bird: 'عصفور',
     bee: 'نحلة',
-  },
-  levelSolved: {
-    title: 'أحسنت!',
-    next: 'الحيوان التالي',
-    finish: 'أنهيت كل شيء!',
   },
 };

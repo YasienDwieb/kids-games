@@ -55,6 +55,7 @@ const EVENT_SOUND: Record<GameEvent, string> = {
   shield: 'powerup',
   magnet: 'powerup',
   shieldBlock: 'pop', // absorbed — a thump, not a crash
+  bump: 'hit',
   finish: 'win',
 };
 

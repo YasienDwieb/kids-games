@@ -1,5 +1,5 @@
 /**
- * "New sticker!" moment — when an award unlocks a sticker, Lulu pops up holding
+ * "New sticker!" moment — when an award unlocks a sticker, the buddy pops up holding
  * it and says so (the same card announces reaching the daily goal). Rendered inside the CelebrationProvider overlay (above the
  * game, touch-transparent), so every game gets it for free.
  */
@@ -10,8 +10,7 @@ import { useSound } from '@/sdk/audio/useSound';
 import { currentLanguage } from '@/sdk/i18n';
 import { Mascot } from '@/sdk/mascot/Mascot';
 import { COLORS } from '@/constants/colors';
-import { BORDER_RADIUS, FONT_SIZES, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
-import { FONTS } from '@/constants/typography';
+import { BORDER_RADIUS, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import { DAILY_GOAL, DAILY_GOAL_EVENT, onStickerUnlocked } from './store';
 import { Sticker } from './Sticker';
 import { whenOverlayClear } from '@/sdk/layout/overlayGate';
@@ -95,6 +94,8 @@ export function StickerToast() {
   return (
     <View style={styles.anchor} pointerEvents="none">
       <Animated.View
+        accessible
+        accessibilityLabel={t(daily ? 'daily.done' : 'stickers.new')}
         style={[
           styles.card,
           SHADOWS.lg,
@@ -108,10 +109,6 @@ export function StickerToast() {
         ]}
       >
         <Mascot pose="cheer" size={84} bob={false} />
-        <View style={styles.text}>
-          <Text style={styles.title}>{t(daily ? 'daily.done' : 'stickers.new')}</Text>
-          {daily ? null : <Text style={styles.sub}>{t('stickers.addedToBook')}</Text>}
-        </View>
         <Animated.View
           style={{
             transform: [
@@ -150,8 +147,5 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     backgroundColor: COLORS.surface,
   },
-  text: { gap: 2 },
-  title: { fontFamily: FONTS.displayBold, fontSize: FONT_SIZES.md, color: COLORS.ink },
-  sub: { fontFamily: FONTS.body, fontSize: 15, color: COLORS.inkSoft },
   dailyStars: { fontSize: 34 },
 });

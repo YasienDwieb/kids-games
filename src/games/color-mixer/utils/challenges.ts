@@ -1,7 +1,14 @@
-import { COLORS } from '../constants';
+import { CHALLENGE_THINGS, COLORS, ENDLESS_THINGS } from '../constants';
 import { colorDistance, FAMOUS_IDS } from './match';
 import { mixHex, PIGMENT_IDS } from './wheelMix';
 import type { Challenge, PigmentId } from '../types';
+
+/** The thing a challenge paints. */
+export function thingFor(c: Challenge): string {
+  if (CHALLENGE_THINGS[c.id]) return CHALLENGE_THINGS[c.id];
+  const n = Number(c.id.slice(1)) || 1;
+  return ENDLESS_THINGS[(n - 1) % ENDLESS_THINGS.length];
+}
 
 /** The colour a challenge asks for. */
 export function challengeHex(c: Challenge): string {

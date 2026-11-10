@@ -8,12 +8,13 @@ import {
   View,
   useWindowDimensions,
   type LayoutChangeEvent,
+  type ScrollViewInstance,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
-import { Chip, GameCard, Icon, IconButton, PressableButton } from '../components/common';
+import { Chip, GameCard, Icon, IconButton, PressableButton, type IconName } from '../components/common';
 import { BuddyPicker, FeaturedCard, LevelPill, PopBackdrop } from '../components/pop';
 import { isTablet } from '../utils/responsive';
 import { BORDER_RADIUS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
@@ -29,7 +30,6 @@ import {
   useTranslation,
   gameCover,
   gameName,
-  gameShortName,
   selectedAdapters,
   sequenceLength,
   buildSequence,
@@ -39,14 +39,22 @@ import {
   DEFAULT_FLOW_PROGRESS,
   type FlowProgress,
   type GameCategory,
-  Lulu3D,
+  BuddyFigure,
   useRewards,
   useBuddy,
+  useBuddyLabel,
   useBuddyPicked,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
+
+const CATEGORY_ICONS: Record<GameCategory, IconName> = {
+  numbers: 'calculator',
+  words: 'book',
+  action: 'flash',
+  puzzles: 'extension-puzzle',
+};
 
 const ACCENT_CYCLE: AccentName[] = ['green', 'blue', 'orange', 'coral', 'purple', 'pink'];
 
@@ -62,8 +70,8 @@ const TILE_GAP = 18;
 const TOP_BAR_H = 52;
 const CHIPS_H = 54;
 const CARD_MIN_H = 92;
-const LULU_MIN = 64;
-const LULU_MAX = 200;
+const BUDDY_MIN = 64;
+const BUDDY_MAX = 200;
 
 export function HomeScreen({ navigation }: Props) {
   const { width, height } = useWindowDimensions();
@@ -73,6 +81,7 @@ export function HomeScreen({ navigation }: Props) {
   const { settings, update } = useSettings();
   const rewards = useRewards();
   const buddy = useBuddy();
+  const buddyName = useBuddyLabel();
   const buddyPicked = useBuddyPicked();
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
@@ -82,11 +91,11 @@ export function HomeScreen({ navigation }: Props) {
   const [pendingLang, setPendingLang] = useState<string | null>(null);
   const [switching, setSwitching] = useState(false);
   const [category, setCategory] = useState<GameCategory | null>(null);
-  const [luluBox, setLuluBox] = useState(0);
+  const [buddyBox, setBuddyBox] = useState(0);
   // Measured, not derived from insets: system bars differ per device and the
   // rail must fill exactly what's left above the chips.
   const [railBox, setRailBox] = useState(0);
-  const railRef = useRef<ScrollView>(null);
+  const railRef = useRef<ScrollViewInstance>(null);
 
   // Games shown on Home are filtered by the parent-set age band (Settings).
   const visible = settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames();
@@ -100,12 +109,6 @@ export function HomeScreen({ navigation }: Props) {
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   // Re-read the checkpoint each time Home regains focus so the card reflects
   // progress made (or completion) inside the journey before returning here.
-  // Lulu's GL surface comes back blank after another screen covered Home, so
-  // she is remounted each time Home becomes focused again.
-  const [visit, setVisit] = useState(0);
-  useEffect(() => {
-    if (focused) setVisit((v) => v + 1);
-  }, [focused]);
   useFocusEffect(
     useCallback(() => {
       let active = true;
@@ -151,7 +154,7 @@ export function HomeScreen({ navigation }: Props) {
     <Pressable
       onPress={() => navigation.navigate('Wardrobe')}
       accessibilityRole="button"
-      accessibilityLabel={t(`buddy.${buddy}.wardrobeA11y`, { n: rewards.stars })}
+      accessibilityLabel={t(`buddy.${buddy}.wardrobeA11y`, { n: rewards.stars, name: buddyName })}
       hitSlop={6}
       style={({ pressed }) => [styles.starsPill, pressed ? styles.pressed : SHADOWS.sm]}
     >
@@ -187,11 +190,12 @@ export function HomeScreen({ navigation }: Props) {
   const chips =
     categories.length > 1 ? (
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-        <Chip label={t('home.categories.all')} active={category === null} onPress={() => setCategory(null)} />
+        <Chip label={t('home.categories.all')} icon="apps" active={category === null} onPress={() => setCategory(null)} />
         {categories.map((c) => (
           <Chip
             key={c}
             label={t(`home.categories.${c}`)}
+            icon={CATEGORY_ICONS[c]}
             active={category === c}
             onPress={() => setCategory(category === c ? null : c)}
           />
@@ -199,12 +203,10 @@ export function HomeScreen({ navigation }: Props) {
       </ScrollView>
     ) : null;
 
-  // Tap Lulu to say hi (she hops and giggles), drag sideways to spin her.
-  const luluSize = Math.max(0, Math.min(LULU_MAX, luluBox));
-  const lulu =
-    luluSize >= LULU_MIN ? (
-      <Lulu3D key={visit} size={luluSize} interactive active={focused} style={styles.lulu} />
-    ) : null;
+  // Tap the buddy to say hi: a hop, a cheer and their welcome line.
+  const buddySize = Math.max(0, Math.min(BUDDY_MAX, buddyBox));
+  const buddyFigure =
+    buddySize >= BUDDY_MIN ? <BuddyFigure size={buddySize} interactive style={styles.buddy} /> : null;
 
   const featured = (w: number, h: number) => (
     <FeaturedCard
@@ -269,11 +271,11 @@ export function HomeScreen({ navigation }: Props) {
 
   const empty = <Text style={styles.empty}>{t('home.empty')}</Text>;
 
-  // First launch (and existing players once): pick Lulu or Zain before playing.
+  // First launch (and existing players once): pick a buddy before playing.
   const buddyPicker = buddyPicked === false && focused ? <BuddyPicker /> : null;
 
   if (landscape) {
-    // Body under the top bar: a Lulu column, then one horizontal rail
+    // Body under the top bar: a buddy column, then one horizontal rail
     // that opens with the featured card and continues into the game tiles.
     const leftW = Math.round(Math.max(160, Math.min(220, width * 0.2)));
     // Until the rail is measured, estimate it from the window so the first
@@ -296,12 +298,12 @@ export function HomeScreen({ navigation }: Props) {
             <View style={styles.body}>
               <View style={[styles.left, { width: leftW }]}>
                 <View
-                  style={styles.luluBox}
+                  style={styles.buddyBox}
                   onLayout={(e: LayoutChangeEvent) =>
-                    setLuluBox(Math.floor(Math.min(e.nativeEvent.layout.height, e.nativeEvent.layout.width)))
+                    setBuddyBox(Math.floor(Math.min(e.nativeEvent.layout.height, e.nativeEvent.layout.width)))
                   }
                 >
-                  {lulu}
+                  {buddyFigure}
                 </View>
               </View>
 
@@ -337,10 +339,7 @@ export function HomeScreen({ navigation }: Props) {
                               emojiSize={emoji}
                               icon={game.icon}
                               cover={gameCover(game)}
-                              // Short label so the icon gets the space; the full
-                              // name still goes to screen readers.
-                              name={gameShortName(game)}
-                              accessibilityLabel={gameName(game)}
+                              name={gameName(game)}
                               accent={accentForGame(game, i)}
                               onPress={() => openGame(game.id)}
                             />
@@ -372,7 +371,7 @@ export function HomeScreen({ navigation }: Props) {
           {topBar}
           {featured(contentW, 300)}
           <View style={styles.portraitRow}>
-            <Lulu3D key={visit} size={130} interactive active={focused} />
+            <BuddyFigure size={130} interactive />
           </View>
           {chips}
           {games.length === 0 ? (
@@ -444,8 +443,8 @@ const styles = StyleSheet.create({
 
   body: { flex: 1, flexDirection: 'row', gap: GAP + 4 },
   left: { gap: GAP },
-  luluBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  lulu: { alignSelf: 'center' },
+  buddyBox: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  buddy: { alignSelf: 'center' },
 
   // The rail clips at its edges so scrolled cards never slide over the buddy's
   // column; the padding leaves room for the hard shadows (drawn physically down

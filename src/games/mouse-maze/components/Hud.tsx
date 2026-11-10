@@ -1,10 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HudPill, hudTextStyle, IconButton, SPACING, TOUCH_TARGET, useTranslation } from '@/sdk';
-import { EMOJI } from '../constants';
+import { HudPill, IconButton, SPACING, Star, TOUCH_TARGET, useTranslation } from '@/sdk';
 
 interface HudProps {
-  level: number;
   collected: number;
   total: number;
   onHint: () => void;
@@ -12,8 +10,8 @@ interface HudProps {
   landscape?: boolean;
 }
 
-/** Top bar (portrait) or side panel (landscape): level · star tally · hint. */
-export function Hud({ level, collected, total, onHint, landscape = false }: HudProps) {
+/** Top bar (portrait) or side panel (landscape): stars collected · hint. */
+export function Hud({ collected, total, onHint, landscape = false }: HudProps) {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
 
@@ -24,15 +22,10 @@ export function Hud({ level, collected, total, onHint, landscape = false }: HudP
         style={[styles.panel, { paddingEnd: insets.right + SPACING.sm, paddingTop: insets.top + SPACING.sm }]}
         pointerEvents="box-none"
       >
-        <HudPill>
-          <Text style={hudTextStyle}>{t('mouse-maze:hud.level', { level })}</Text>
-        </HudPill>
-        <HudPill>
-          <Text style={styles.icon}>{EMOJI.star}</Text>
-          {/* Pin tally to LTR so digits never bidi-reorder in Arabic */}
-          <Text style={[hudTextStyle, styles.tally]}>
-            {collected}/{total}
-          </Text>
+        <HudPill accessibilityLabel={`${collected}/${total}`}>
+          {Array.from({ length: total }, (_, i) => (
+            <Star key={i} size={18} filled={i < collected} />
+          ))}
         </HudPill>
         <IconButton
           glyph="💡"
@@ -52,18 +45,13 @@ export function Hud({ level, collected, total, onHint, landscape = false }: HudP
       <View style={styles.backSpace} />
 
       <View style={styles.center}>
-        <HudPill>
-          <Text style={hudTextStyle}>{t('mouse-maze:hud.level', { level })}</Text>
-        </HudPill>
       </View>
 
       <View style={styles.right}>
-        <HudPill>
-          <Text style={styles.icon}>{EMOJI.star}</Text>
-          {/* Pin tally to LTR so digits never bidi-reorder in Arabic */}
-          <Text style={[hudTextStyle, styles.tally]}>
-            {collected}/{total}
-          </Text>
+        <HudPill accessibilityLabel={`${collected}/${total}`}>
+          {Array.from({ length: total }, (_, i) => (
+            <Star key={i} size={18} filled={i < collected} />
+          ))}
         </HudPill>
         <IconButton
           glyph="💡"

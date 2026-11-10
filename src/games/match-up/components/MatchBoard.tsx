@@ -16,20 +16,21 @@
  *   • Gesture.Pan().runOnJS(true) — reanimated is not installed; all callbacks
  *     run on the JS thread so setState is safe.
  */
-import { useEffect, useRef, useState } from 'react';
-import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { StyleSheet, View, type ViewInstance } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import {
   ACCENTS,
   BORDER_RADIUS,
   COLORS,
-  FONTS,
-  FONT_SIZES,
+  currentLanguage,
+  DemoHand,
   SPACING,
+  useGuide,
   useSound,
-  useTranslation,
   type AccentName,
 } from '@/sdk';
+import { matchPhrase } from '../phrase';
 import { Tile, type TileState } from './Tile';
 import { TILE_SIZE, LINE_THICKNESS, SNAP_RADIUS, TAP_THRESHOLD } from '../constants';
 import { nearestLooseIndex, lineColorFor } from '../utils/board';
@@ -129,13 +130,12 @@ export function MatchBoard({
   onWrong,
   onSolved,
 }: MatchBoardProps) {
-  const { t } = useTranslation();
   const { play } = useSound();
   const accentColor = ACCENTS[accent].base;
 
-  const surfaceRef = useRef<View>(null);
-  const topRefs = useRef<(View | null)[]>(round.top.map(() => null));
-  const botRefs = useRef<(View | null)[]>(round.bottom.map(() => null));
+  const surfaceRef = useRef<ViewInstance>(null);
+  const topRefs = useRef<(ViewInstance | null)[]>(round.top.map(() => null));
+  const botRefs = useRef<(ViewInstance | null)[]>(round.bottom.map(() => null));
   const topRects = useRef<(Rect | null)[]>(round.top.map(() => null));
   const botRects = useRef<(Rect | null)[]>(round.bottom.map(() => null));
 
@@ -155,6 +155,20 @@ export function MatchBoard({
   selectedRef.current = selected;
   const wrongTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const dragOrigin = useRef<{ row: Row; idx: number; anchor: Point; start: Point } | null>(null);
+
+  // Wrong links in a row: from the 2nd on the hand shows the next match.
+  const [misses, setMisses] = useState(0);
+  const guide = useGuide({
+    id: 'match-up',
+    phrase: matchPhrase(round.promptKey, currentLanguage()),
+    roundKey: round,
+    active: connections.length < round.top.length,
+  });
+  const nextTop = round.top.findIndex((_, i) => !connections.some((c) => c.topIdx === i));
+  const helping = nextTop !== -1 && (guide.showDemo || misses >= 2);
+  const demoFrom = helping ? topAnchors[nextTop] : null;
+  const demoTo = helping ? botAnchors[round.solution[nextTop]] : null;
+  const demoPoints = useMemo(() => (demoFrom && demoTo ? [demoFrom, demoTo] : []), [demoFrom, demoTo]);
 
   useEffect(() => () => clearTimeout(wrongTimer.current), []);
   useEffect(() => setSelected(null), [round]);
@@ -197,6 +211,7 @@ export function MatchBoard({
     if (round.solution[topIdx] === botIdx) {
       const next = [...connectionsRef.current, { topIdx, botIdx }];
       setConnections(next);
+      setMisses(0);
       void play('success');
       onCorrect?.();
       if (next.length === round.top.length) {
@@ -206,6 +221,7 @@ export function MatchBoard({
       return;
     }
     void play('wrong');
+    setMisses((m) => m + 1);
     onWrong?.();
     const fromP = anchorFor('top', topIdx) ?? flashTo;
     const toP = anchorFor('bottom', botIdx) ?? flashTo;
@@ -216,6 +232,7 @@ export function MatchBoard({
 
   handlers.current = {
     begin: (x, y) => {
+      guide.poke();
       // Only loose tiles can start an interaction.
       const looseTop = topRects.current.map((r, i) => (isTopMatched(i) ? null : r));
       const looseBot = botRects.current.map((r, i) => (isBotMatched(i) ? null : r));
@@ -311,8 +328,6 @@ export function MatchBoard({
         ref={surfaceRef}
         style={[styles.surface, styles.ltr]}
       >
-        <Text style={styles.prompt}>{t(`match-up:${round.promptKey}`)}</Text>
-
         <View style={styles.row}>
           {round.top.map((item, i) => (
             <View
@@ -355,6 +370,8 @@ export function MatchBoard({
           ))}
         </View>
 
+        {demoPoints.length > 1 ? <DemoHand mode="drag" points={demoPoints} /> : null}
+
         {/* Line overlay — surface-local coords, non-interactive. */}
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           {connections.map((c, i) => {
@@ -388,15 +405,6 @@ const styles = StyleSheet.create({
   },
   // Pin physical-left origin so RTL doesn't flip the drag/line coordinate math.
   ltr: { direction: 'ltr' },
-  prompt: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.ink,
-    textAlign: 'center',
-    marginBottom: SPACING.sm,
-    // Keep the prompt readable for the reader regardless of pinned LTR surface.
-    writingDirection: I18nManager.isRTL ? 'rtl' : 'ltr',
-  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',

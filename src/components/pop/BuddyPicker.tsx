@@ -1,19 +1,29 @@
 import { useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ACCENTS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../../constants';
-import { BUDDIES, Mascot, chooseBuddy, currentLanguage, useSound, type BuddyId } from '@/sdk';
+import { ACCENTS, COLORS, OUTLINE, POP, SHADOWS, SPACING } from '../../constants';
+import {
+  BUDDIES,
+  BUDDY_LOOKS,
+  Mascot,
+  chooseBuddy,
+  customName,
+  useWelcome,
+  voiceNamingAvailable,
+  type BuddyId,
+} from '@/sdk';
+import { BuddyNameSheet } from './BuddyNameSheet';
 import { Icon } from '../common/Icon';
 import { PressableButton } from '../common/PressableButton';
 import { PopBackdrop } from './PopBackdrop';
 import { bob, useLoop } from './motion';
 
-/** Card colour per buddy: Lulu keeps her lavender, Zain gets tangerine. */
-const CARD = {
-  lulu: { fill: ACCENTS.purple.tint, edge: ACCENTS.purple.deep },
-  zain: { fill: ACCENTS.orange.tint, edge: ACCENTS.orange.deep },
-} as const;
+/** Card colour per buddy, picked from their outfits. */
+const CARD: Record<BuddyId, { fill: string; edge: string }> = {
+  mariam: { fill: ACCENTS.pink.tint, edge: ACCENTS.pink.deep },
+  anas: { fill: ACCENTS.blue.tint, edge: ACCENTS.blue.deep },
+};
 
 type BuddyPickerProps = {
   /** Called once the child confirms (after the choice is saved). */
@@ -21,37 +31,81 @@ type BuddyPickerProps = {
 };
 
 /**
- * "Pick your buddy!" — the first-launch choice between Lulu (girl) and Zain
- * (boy). Shown as characters, never as "boys / girls"; any child picks either.
- * Tapping a card says hi in that buddy's voice; "Let's go!" saves it.
+ * The first-launch choice of buddy: Mariam or Anas. Shown as characters, never
+ * as "boys / girls"; any child picks either. Mariam's other look (her hijab)
+ * is in the wardrobe.
+ * Tapping a card plays that buddy's welcome line; the play button moves on to
+ * an optional rename step for grown-ups (when the voice service is set up),
+ * then saves the choice.
  */
 export function BuddyPicker({ onDone }: BuddyPickerProps) {
-  const { t } = useTranslation();
-  const { play } = useSound();
+  const { t, i18n } = useTranslation();
+  const { say } = useWelcome();
   const [picked, setPicked] = useState<BuddyId | null>(null);
   const float = useLoop(1600);
   const [saving, setSaving] = useState(false);
+  // Saving the buddy closes the picker, so the rename step comes first.
+  const [step, setStep] = useState<'pick' | 'ask' | 'rename'>('pick');
+  const lang = i18n.language?.startsWith('ar') ? 'ar' : 'en';
+  const nameOf = (b: BuddyId) => customName(b, lang) ?? t(`buddy.${b}.name`);
 
   const select = (b: BuddyId) => {
     setPicked(b);
-    play(`${b}.tap.${currentLanguage()}.1`, { haptic: true });
+    say(b);
   };
 
-  const confirm = async () => {
+  const finish = async () => {
     if (!picked || saving) return;
     setSaving(true);
     await chooseBuddy(picked);
     onDone?.();
   };
 
+  const confirm = () => {
+    if (!picked) return;
+    if (voiceNamingAvailable && step === 'pick') setStep('ask');
+    else void finish();
+  };
+
+  if (picked && step === 'rename') {
+    return <BuddyNameSheet buddy={picked} gated onClose={() => void finish()} />;
+  }
+
+  if (picked && step === 'ask') {
+    return (
+      <View style={StyleSheet.absoluteFill}>
+        <PopBackdrop color={POP.zap} stripe={POP.zapDeep} />
+        <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
+          <View style={styles.cards}>
+            <Animated.View style={bob(float, 8)}>
+              <Mascot buddy={picked} look={BUDDY_LOOKS[picked][0]} pose="cheer" size={200} bob={false} />
+            </Animated.View>
+          </View>
+          <View style={styles.footer}>
+            <PressableButton
+              accessibilityLabel={t('buddyName.keep', { name: nameOf(picked) })}
+              accent="green"
+              onPress={() => void finish()}
+              style={styles.go}
+            >
+              <Icon name="play" size={34} />
+            </PressableButton>
+            <PressableButton
+              label={t('buddyName.rename')}
+              variant="ghost"
+              accessibilityLabel={t('buddyName.ask', { name: nameOf(picked) })}
+              onPress={() => setStep('rename')}
+            />
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
   return (
     <View style={StyleSheet.absoluteFill}>
       <PopBackdrop color={POP.zap} stripe={POP.zapDeep} />
       <SafeAreaView style={styles.safe} edges={['top', 'bottom', 'left', 'right']}>
-        <View style={[styles.titlePill, SHADOWS.md]}>
-          <Text style={styles.title}>{t('buddy.pickTitle')}</Text>
-        </View>
-
         <View style={styles.cards}>
           {BUDDIES.map((b) => {
             const on = picked === b;
@@ -61,7 +115,7 @@ export function BuddyPicker({ onDone }: BuddyPickerProps) {
                 onPress={() => select(b)}
                 accessibilityRole="button"
                 accessibilityState={{ selected: on }}
-                accessibilityLabel={`${t(`buddy.${b}.name`)}, ${t(`buddy.${b}.species`)}`}
+                accessibilityLabel={nameOf(b)}
                 style={({ pressed }) => [
                   styles.card,
                   { backgroundColor: on ? CARD[b].fill : COLORS.surface },
@@ -69,16 +123,9 @@ export function BuddyPicker({ onDone }: BuddyPickerProps) {
                   pressed && styles.pressed,
                 ]}
               >
-                {on ? (
-                  <View style={[styles.bubble, SHADOWS.sm]}>
-                    <Text style={styles.bubbleText}>{t(`buddy.${b}.hello`)}</Text>
-                  </View>
-                ) : null}
                 <Animated.View style={on ? bob(float, 8) : undefined}>
-                  <Mascot buddy={b} pose={on ? 'cheer' : 'wave'} size={on ? 124 : 112} bob={false} />
+                  <Mascot buddy={b} look={BUDDY_LOOKS[b][0]} pose={on ? 'cheer' : 'wave'} size={on ? 172 : 156} bob={false} />
                 </Animated.View>
-                <Text style={styles.name}>{t(`buddy.${b}.name`)}</Text>
-                <Text style={styles.species}>{t(`buddy.${b}.species`)}</Text>
                 {on ? (
                   <View style={styles.tick}>
                     <Icon name="checkmark" size={20} />
@@ -90,14 +137,15 @@ export function BuddyPicker({ onDone }: BuddyPickerProps) {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.hint}>{t('buddy.anyTime')}</Text>
           <PressableButton
-            label={t('buddy.go')}
+            accessibilityLabel={t('buddy.go')}
             accent="green"
             disabled={!picked}
             onPress={confirm}
             style={styles.go}
-          />
+          >
+            <Icon name="play" size={34} />
+          </PressableButton>
         </View>
       </SafeAreaView>
     </View>
@@ -106,15 +154,6 @@ export function BuddyPicker({ onDone }: BuddyPickerProps) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, alignItems: 'center', justifyContent: 'space-between', padding: SPACING.md },
-  titlePill: {
-    paddingHorizontal: 24,
-    paddingVertical: 4,
-    borderRadius: 18,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    backgroundColor: COLORS.surface,
-  },
-  title: { fontFamily: FONTS.display, fontSize: 30, color: COLORS.ink },
   cards: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 64, paddingVertical: 8 },
   card: {
     width: 250,
@@ -126,22 +165,6 @@ const styles = StyleSheet.create({
   },
   cardOn: { borderWidth: OUTLINE.thick, transform: [{ rotate: '2deg' }] },
   pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
-  name: { fontFamily: FONTS.display, fontSize: 28, color: COLORS.ink },
-  species: { fontFamily: FONTS.bodySemi, fontSize: 14, color: COLORS.inkSoft },
-  bubble: {
-    position: 'absolute',
-    top: 10,
-    end: -46,
-    zIndex: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-    borderBottomStartRadius: 4,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-    backgroundColor: COLORS.surface,
-  },
-  bubbleText: { fontFamily: FONTS.display, fontSize: 17, color: POP.grape },
   tick: {
     position: 'absolute',
     top: -14,
@@ -156,6 +179,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   footer: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
-  hint: { fontFamily: FONTS.bodyExtra, fontSize: 14, color: COLORS.ink },
   go: { minWidth: 180 },
 });

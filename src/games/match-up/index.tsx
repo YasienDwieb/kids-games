@@ -1,40 +1,29 @@
 /**
  * Match Up — standalone game screen (bare, landscape).
  *
- * Connect each top item to its matching bottom item by dragging a line. Free
- * play keeps a running score (POINTS_PER_MATCH per correct link, persisted via
- * useLevels). Endless: difficulty ramps then caps (see utils/levels), so every
- * solve advances to a fresh round.
+ * Connect each top item to its matching bottom item by dragging a line. Endless:
+ * difficulty ramps then caps (see utils/levels), so every solve moves on to a
+ * fresh round by itself.
  *
  * Bare layout: GamePlayerScreen floats the back button (top-start); this screen
- * owns its safe-area padding, the score HUD (top-end), and the solved overlay.
+ * owns its safe-area padding.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { I18nManager } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  ACCENTS,
-  BORDER_RADIUS,
   COLORS,
   FONTS,
   FONT_SIZES,
-  HudPill,
-  hudTextStyle,
-  Mascot,
   MascotHelper,
-  OUTLINE,
-  PressableButton,
   ResumePrompt,
-  SHADOWS,
   SPACING,
-  Star,
   useLevels,
+  useRoundEnd,
   useTranslation,
 } from '@/sdk';
 import { MatchBoard } from './components/MatchBoard';
 import { makeMatchUpLevels } from './utils/levels';
-import { POINTS_PER_MATCH } from './constants';
 
 const ACCENT = 'purple' as const;
 
@@ -47,13 +36,14 @@ export default function MatchUpGame(): React.JSX.Element {
   const [sessionSeed, setSessionSeed] = useState(initialSeed);
   const source = useMemo(() => makeMatchUpLevels(sessionSeed), [sessionSeed]);
 
-  const { status, data, level, score, start, startOver, advance, addScore } = useLevels({
+  const { status, data, level, start, startOver, advance } = useLevels({
     gameId: 'match-up',
     source,
   });
 
+  const roundEnd = useRoundEnd();
   const [solved, setSolved] = useState(false);
-  // Wrong links this round — Lulu encourages, then points after repeated misses.
+  // Wrong links this round — the buddy encourages, then points after repeated misses.
   const [misses, setMisses] = useState(0);
 
   // Reset the per-round gates whenever the level changes.
@@ -67,11 +57,10 @@ export default function MatchUpGame(): React.JSX.Element {
     startOver();
   }, [startOver]);
 
-  const handleSolved = useCallback(() => setSolved(true), []);
-  const handleNext = useCallback(() => {
-    setSolved(false);
-    advance();
-  }, [advance]);
+  const handleSolved = useCallback(() => {
+    setSolved(true);
+    void roundEnd.next('big', advance);
+  }, [roundEnd, advance]);
 
   if (status === 'loading') {
     return (
@@ -98,54 +87,16 @@ export default function MatchUpGame(): React.JSX.Element {
 
   return (
     <View style={[styles.root, pad]}>
-      {/* Absolute children position from the parent's padding EDGE, so the
-          root's safe-area padding does not push this down — the inset has to be
-          applied here or the pill renders half under the status bar. */}
-      <View
-        style={[
-          styles.hud,
-          {
-            top: insets.top + SPACING.xs,
-            end: (I18nManager.isRTL ? insets.left : insets.right) + SPACING.md,
-          },
-        ]}
-        pointerEvents="none"
-      >
-        <HudPill>
-          <Star size={18} filled />
-          <Text style={hudTextStyle}>{t('match-up:score', { n: score })}</Text>
-        </HudPill>
-      </View>
-
       <MatchBoard
         key={level}
         round={data}
         accent={ACCENT}
-        onCorrect={() => addScore(POINTS_PER_MATCH)}
         onWrong={() => setMisses((m) => m + 1)}
         onSolved={handleSolved}
       />
 
       <MascotHelper pose={solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point'} />
 
-      {solved ? (
-        <View style={styles.overlay}>
-          <View style={[styles.card, SHADOWS.lg]}>
-            <Mascot pose="cheer" size={90} />
-            <View style={styles.starsRow}>
-              <Star size={26} filled />
-              <Star size={34} filled />
-              <Star size={26} filled />
-            </View>
-            <Text style={styles.cardTitle}>{t('match-up:solved.title')}</Text>
-            <PressableButton
-              label={t('match-up:solved.next')}
-              onPress={handleNext}
-              accent={ACCENT}
-            />
-          </View>
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -162,35 +113,5 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.display,
     fontSize: FONT_SIZES.md,
     color: COLORS.inkSoft,
-  },
-  hud: {
-    position: 'absolute',
-    zIndex: 5,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.overlay,
-    padding: SPACING.lg,
-  },
-  card: {
-    // Wide and short: landscape phones have ~360dp of height to spare.
-    maxWidth: 480,
-    alignItems: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.xl,
-    borderRadius: BORDER_RADIUS.tile,
-    backgroundColor: COLORS.surface,
-    borderWidth: OUTLINE.base,
-    borderColor: OUTLINE.color,
-  },
-  starsRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.xs },
-  cardTitle: {
-    fontFamily: FONTS.displayBold,
-    fontSize: FONT_SIZES.lg,
-    color: COLORS.ink,
-    textAlign: 'center',
   },
 });

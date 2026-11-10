@@ -1,21 +1,23 @@
-// The buddy's wardrobe — switch between Lulu and Zain, dress them in what
+// The buddy's wardrobe — switch between Mariam and Anas, change Mariam's look, dress them in what
 // levels unlock (hats, glasses; shared by both buddies) and browse the sticker
 // collection. Opening it clears the "new sticker" marks.
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
-import { AppBar, Chip, EmojiImage, Icon } from '../components/common';
+import { AppBar, Chip, EmojiImage, Icon, Star } from '../components/common';
 import { LevelPill, PopBackdrop, ProgressBar } from '../components/pop';
 import {
-  ALL_STICKERS,
   BUDDIES,
+  BUDDY_LOOKS,
+  chooseLook,
+  useBuddyArt,
   Mascot,
   chooseBuddy,
   useBuddy,
-  Lulu3D,
+  customName,
+  BuddyFigure,
   OUTFITS,
   STARS_PER_STICKER,
   STICKER_SETS,
@@ -28,26 +30,30 @@ import {
   useTranslation,
   useWearing,
   wear,
+  type BuddyArt,
   type Outfit,
   type OutfitSlot,
 } from '@/sdk';
-import { ACCENTS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
+import { ACCENTS, COLORS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Wardrobe'>;
-type Tab = OutfitSlot | 'stickers';
+type Tab = OutfitSlot | 'stickers' | 'looks';
 
 const STICKER_SIZE = 58;
 // Fixed, varied tilts so the page looks hand-stuck but never reshuffles.
 const TILTS = [-6, 4, -2, 7, -4, 3];
 
 export function WardrobeScreen({ navigation }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const rewards = useRewards();
   const wearing = useWearing();
   const buddy = useBuddy();
-  const focused = useIsFocused();
-  const [tab, setTab] = useState<Tab>('hat');
+  const art = useBuddyArt();
+  const [picked, setTab] = useState<Tab>('hat');
   const { level } = levelInfo(rewards.stars);
+  const looks = BUDDY_LOOKS[buddy];
+  // Anas has one look, so switching to him leaves the looks tab.
+  const tab: Tab = picked === 'looks' && looks.length < 2 ? 'hat' : picked;
 
   // Leaving the wardrobe means the child has seen their new stickers.
   useEffect(() => () => void markStickersSeen(), []);
@@ -57,7 +63,7 @@ export function WardrobeScreen({ navigation }: Props) {
     void wear(o.slot, wearing[o.slot] === o.id ? null : o.id);
   };
 
-  const items = tab === 'stickers' ? [] : OUTFITS.filter((o) => o.slot === tab);
+  const items = tab === 'stickers' || tab === 'looks' ? [] : OUTFITS.filter((o) => o.slot === tab);
   const owned = new Set(rewards.stickers);
   const unseen = new Set(rewards.unseen);
 
@@ -66,8 +72,6 @@ export function WardrobeScreen({ navigation }: Props) {
       <PopBackdrop color={POP.bubblegum} stripe="#FF66B0" />
       <SafeAreaView style={styles.flex} edges={['top', 'left', 'right', 'bottom']}>
         <AppBar
-          title={t(`buddy.${buddy}.dressUp`)}
-          titleColor={COLORS.surface}
           onBack={() => navigation.goBack()}
           right={
             <View style={styles.barRight}>
@@ -80,11 +84,10 @@ export function WardrobeScreen({ navigation }: Props) {
                       onPress={() => void chooseBuddy(b)}
                       accessibilityRole="radio"
                       accessibilityState={{ selected: on }}
-                      accessibilityLabel={t('buddy.choose', { name: t(`buddy.${b}.name`) })}
+                      accessibilityLabel={t('buddy.choose', { name: customName(b, i18n.language?.startsWith('ar') ? 'ar' : 'en') ?? t(`buddy.${b}.name`) })}
                       style={[styles.switchItem, on && styles.switchOn]}
                     >
                       <Mascot buddy={b} pose="wave" size={34} bob={false} />
-                      <Text style={[styles.switchText, on && styles.switchTextOn]}>{t(`buddy.${b}.name`)}</Text>
                     </Pressable>
                   );
                 })}
@@ -95,24 +98,47 @@ export function WardrobeScreen({ navigation }: Props) {
         />
         <View style={styles.body}>
           <View style={styles.stage}>
-            <Lulu3D key={buddy} size={210} mood="wave" interactive active={focused} />
+            <BuddyFigure key={buddy} size={210} mood="wave" interactive />
             <View style={styles.shadow} />
           </View>
 
           <View style={[styles.panel, SHADOWS.lg]}>
             <View style={styles.tabs}>
-              <Chip label={t('wardrobe.hats')} active={tab === 'hat'} onPress={() => setTab('hat')} />
-              <Chip label={t('wardrobe.glasses')} active={tab === 'glasses'} onPress={() => setTab('glasses')} />
-              <Chip label={t('wardrobe.stickers')} active={tab === 'stickers'} onPress={() => setTab('stickers')} />
+              {looks.length > 1 ? (
+                <Chip label={t('wardrobe.looks')} emoji="👧" active={tab === 'looks'} onPress={() => setTab('looks')} />
+              ) : null}
+              <Chip label={t('wardrobe.hats')} emoji="👑" active={tab === 'hat'} onPress={() => setTab('hat')} />
+              <Chip label={t('wardrobe.glasses')} emoji="👓" active={tab === 'glasses'} onPress={() => setTab('glasses')} />
+              <Chip label={t('wardrobe.stickers')} icon="star" active={tab === 'stickers'} onPress={() => setTab('stickers')} />
               {unseen.size > 0 ? <View style={styles.newDot} /> : null}
             </View>
 
-            {tab === 'stickers' ? (
+            {tab === 'looks' ? (
+              <View style={styles.grid}>
+                {looks.map((l: BuddyArt) => {
+                  const on = l === art;
+                  return (
+                    <Pressable
+                      key={l}
+                      onPress={() => void chooseLook(buddy, l)}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: on }}
+                      accessibilityLabel={t(`wardrobe.lookNames.${l}`)}
+                      style={({ pressed }) => [styles.tile, on ? styles.tileOn : SHADOWS.sm, pressed && styles.pressed]}
+                    >
+                      <Mascot look={l} pose="wave" size={84} bob={false} />
+                      {on ? (
+                        <View style={styles.tick}>
+                          <Icon name="checkmark" size={14} />
+                        </View>
+                      ) : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : tab === 'stickers' ? (
               <ScrollView contentContainerStyle={styles.stickerList}>
                 <View style={styles.nextRow}>
-                  <Text style={styles.count}>
-                    {t('stickers.count', { have: rewards.stickers.length, total: ALL_STICKERS.length })}
-                  </Text>
                   <ProgressBar
                     value={(rewards.stars % STARS_PER_STICKER) / STARS_PER_STICKER}
                     color={COLORS.gold}
@@ -134,7 +160,7 @@ export function WardrobeScreen({ navigation }: Props) {
                           <Sticker id={id} size={STICKER_SIZE} locked={!has} tilt={TILTS[i % TILTS.length]} />
                           {unseen.has(id) ? (
                             <View style={styles.newBadge}>
-                              <Text style={styles.newText}>{t('stickers.newBadge')}</Text>
+                              <Star size={14} />
                             </View>
                           ) : null}
                         </View>
@@ -166,9 +192,6 @@ export function WardrobeScreen({ navigation }: Props) {
                       {open ? (
                         <>
                           <EmojiImage emoji={o.emoji} size={46} />
-                          <Text style={styles.tileName} numberOfLines={1}>
-                            {on ? t('wardrobe.wearing') : name}
-                          </Text>
                           {on ? (
                             <View style={styles.tick}>
                               <Icon name="checkmark" size={14} />
@@ -178,7 +201,6 @@ export function WardrobeScreen({ navigation }: Props) {
                       ) : (
                         <>
                           <Icon name="lock-closed" size={24} color={COLORS.inkFaint} />
-                          <Text style={styles.lockText}>{t('wardrobe.unlockAt', { n: o.level })}</Text>
                         </>
                       )}
                     </Pressable>
@@ -207,8 +229,6 @@ const styles = StyleSheet.create({
   },
   switchItem: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingEnd: 12, paddingStart: 4, height: 40, borderRadius: 999 },
   switchOn: { backgroundColor: COLORS.ink },
-  switchText: { fontFamily: FONTS.display, fontSize: 16, color: COLORS.ink },
-  switchTextOn: { color: COLORS.surface },
   body: { flex: 1, flexDirection: 'row', gap: SPACING.md, paddingHorizontal: SPACING.md, paddingBottom: SPACING.md },
   stage: { width: 240, alignItems: 'center', justifyContent: 'center' },
   shadow: { width: 170, height: 16, borderRadius: 8, backgroundColor: 'rgba(27,27,47,0.18)', marginTop: -10 },
@@ -248,7 +268,6 @@ const styles = StyleSheet.create({
   tileOn: { backgroundColor: '#FFF6C2', borderWidth: OUTLINE.thick, borderColor: POP.grape },
   tileLocked: { backgroundColor: '#ECE9F5', borderStyle: 'dashed', borderColor: COLORS.inkFaint },
   pressed: { transform: [{ translateX: 2 }, { translateY: 2 }] },
-  tileName: { fontFamily: FONTS.bodyExtra, fontSize: 12, color: COLORS.ink },
   tick: {
     position: 'absolute',
     top: -8,
@@ -262,10 +281,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  lockText: { fontFamily: FONTS.bodyExtra, fontSize: 12, color: COLORS.inkSoft },
   stickerList: { gap: 10, paddingBottom: 8 },
   nextRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  count: { fontFamily: FONTS.display, fontSize: 18, color: COLORS.ink, direction: 'ltr' },
   stickerGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   slot: { width: STICKER_SIZE + 8, height: STICKER_SIZE + 8, alignItems: 'center', justifyContent: 'center' },
   newBadge: {
@@ -279,5 +296,4 @@ const styles = StyleSheet.create({
     borderColor: OUTLINE.color,
     backgroundColor: POP.zap,
   },
-  newText: { fontFamily: FONTS.display, fontSize: 11, color: COLORS.ink },
 });

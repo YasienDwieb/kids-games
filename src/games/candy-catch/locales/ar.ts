@@ -7,24 +7,9 @@ export const ar: GameTranslations = {
     name: 'التقاط الحلوى',
     description: 'حرّك السلة — التقط الحلويات وتجنّب الأشياء المقززة!',
   },
-  hud: {
-    level: 'المستوى {{level}}',
-    score: 'النقاط {{score}}',
-  },
   start: {
-    title: 'التقط الحلويات!',
-    subtitle: 'جيد: 🍬 🍭 🍪   مقزز: 🌶️ 💣',
+    title: 'اِلتَقِطِ الحَلوِيات!',
     tap: 'المس للبدء',
-  },
-  win: {
-    title: 'لذيذ!',
-    next: 'المستوى التالي',
-    done: 'أحسنت!',
-  },
-  lose: {
-    title: 'أوبس!',
-    subtitle: 'انتهت القلوب',
-    retry: 'حاول مرة أخرى',
   },
   a11y: {
     basket: 'السلة، اسحب للتحريك',

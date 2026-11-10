@@ -3,14 +3,13 @@
  *
  * Wraps useLevels and owns the per-round interaction state machine that was
  * previously hand-written in letter-land/index.tsx: selection, the solved gate,
- * a single timer ref, score→HUD sync, speak-on-level-change, and the
- * correct/wrong pick handling with the solved overlay.
+ * a single timer ref, speak-on-level-change, and the
+ * correct/wrong pick handling, then moves on by itself (useRoundEnd).
  *
  * Each game supplies its LevelSource, a `speakTarget` (fired on every level
- * change + on replay), and `renderSolved(isLast, onNext)` so the game keeps its
- * own themed overlay component.
+ * change + on replay).
  *
- * Shell-mode only (uses useGameShell). Guided mode uses useFlowRound instead.
+ * Guided mode uses useFlowRound instead.
  *
  * Determinism: no Math.random / Date.now here; the only timers are short UI
  * cooldowns in one ref, cleared on reassign and unmount.
@@ -18,7 +17,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  useGameShell,
+  useChoiceHints,
+  useRoundEnd,
   useLevels,
   useSound,
   voiceHoldRemaining,
@@ -33,26 +33,24 @@ export type ListenFindLevel = {
   readonly round: FindRound & { readonly target: FindItem };
 };
 
-// Short post-answer cooldowns (ms) before advancing / clearing a wrong pick.
-const SOLVE_DELAY = 700;
+// Short cooldown (ms) before clearing a wrong pick.
 const WRONG_RESET_DELAY = 700;
 
 export function useListenFind<L extends ListenFindLevel>(opts: {
   gameId: string;
   source: LevelSource<L>;
   speakTarget: () => void;
-  renderSolved: (isLast: boolean, onNext: () => void) => React.ReactNode;
 }) {
   const { play } = useSound();
-  const shell = useGameShell();
+  const roundEnd = useRoundEnd();
   const levels = useLevels<L>({ gameId: opts.gameId, source: opts.source });
-  const { status, data, level, score, isLast, advance, startOver, addScore } = levels;
+  const { status, level, isLast, advance, finish } = levels;
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [solved, setSolved] = useState(false);
-  // Wrong picks this round: Lulu encourages after the first, and from the
-  // second on she points and the prompt is said again.
-  const [misses, setMisses] = useState(0);
+  // Wrong picks this round: the buddy encourages after the first, and from the
+  // second on she points, the answer pulses and the prompt is said again.
+  const { misses, miss, hintIndex, revealCorrect } = useChoiceHints(level);
 
   // Single timer ref — cleared before reassign and on unmount.
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -65,26 +63,14 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
   // (react-i18next can hand back a new t, re-speaking mid-level otherwise).
   const speakRef = useRef(opts.speakTarget);
   speakRef.current = opts.speakTarget;
-  const shellRef = useRef(shell);
-  shellRef.current = shell;
-  const renderSolvedRef = useRef(opts.renderSolved);
-  renderSolvedRef.current = opts.renderSolved;
-
-  // Keep the shell HUD score in sync.
-  useEffect(() => {
-    // Only while playing — see shape-detective.
-    shell.setScore(status === 'playing' ? score : null);
-  }, [score, shell, status]);
 
   // Speak + reset whenever a round becomes active: on every level change AND on
   // the first entry into 'playing' (first open, or Continue from a resume —
   // where the level doesn't change, so a [level]-only effect would stay silent).
   useEffect(() => {
     if (status !== 'playing') return;
-    shellRef.current.hideOverlay('win');
     setSelectedIndex(null);
     setSolved(false);
-    setMisses(0);
     // Wait out a "New sticker!" voice so the prompt isn't talked over.
     const id = setTimeout(() => speakRef.current(), voiceHoldRemaining());
     return () => clearTimeout(id);
@@ -97,13 +83,6 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
     };
   }, []);
 
-  // handleNext reads isLast at call time (live closure).
-  const handleNext = useCallback(() => {
-    shell.hideOverlay('win');
-    if (isLast) startOver({ finished: true });
-    else advance();
-  }, [isLast, advance, startOver, shell]);
-
   const handlePick = useCallback(
     (idx: number, correctIndex: number) => {
       if (selectedIndex !== null || solved || status !== 'playing') return;
@@ -111,26 +90,24 @@ export function useListenFind<L extends ListenFindLevel>(opts: {
       if (idx === correctIndex) {
         // Last level plays the win cue; every other correct pick plays success.
         void play(isLast ? 'win' : 'success');
-        addScore(10);
         setSolved(true);
-        setTimer(() => {
-          shellRef.current.showOverlay('win', renderSolvedRef.current(isLast, handleNext));
-        }, SOLVE_DELAY);
+        if (isLast) void roundEnd.end(finish);
+        else void roundEnd.next('small', advance);
       } else {
         void play('wrong');
-        const nextMisses = misses + 1;
-        setMisses(nextMisses);
+        const afterClear = miss(correctIndex);
         setTimer(() => {
           setSelectedIndex(null);
-          if (nextMisses >= 2) speakRef.current();
+          afterClear();
+          if (misses >= 1) speakRef.current();
         }, WRONG_RESET_DELAY);
       }
     },
-    [selectedIndex, solved, status, isLast, misses, play, addScore, setTimer, handleNext],
+    [selectedIndex, solved, status, isLast, misses, miss, play, setTimer, roundEnd, finish, advance],
   );
 
   const mascotPose: MascotPose | null =
     solved || misses === 0 ? null : misses === 1 ? 'encourage' : 'point';
 
-  return { ...levels, selectedIndex, solved, handlePick, handleNext, mascotPose };
+  return { ...levels, selectedIndex, solved, handlePick, mascotPose, hintIndex, revealCorrect };
 }
