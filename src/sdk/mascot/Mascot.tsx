@@ -15,7 +15,6 @@
 import { useEffect, useMemo, type ReactNode } from 'react';
 import {
   Animated,
-  Easing,
   I18nManager,
   StyleSheet,
   View,
@@ -24,6 +23,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { EmojiImage } from '@/components/common/EmojiImage';
+import { useLoop } from '@/components/pop/motion';
 import { COLORS, POP } from '@/constants/colors';
 import { useBuddy, useBuddyArt, type BuddyArt, type BuddyId } from '@/sdk/buddy';
 import { outfitById } from '@/sdk/player/outfits';
@@ -153,25 +153,13 @@ export function Mascot({ pose = 'wave', size = 96, bob = true, pointTo, buddy, l
   const saved = useBuddyArt(buddy ?? chosen);
   const who = look ?? saved;
   const pop = useMemo(() => new Animated.Value(0), []);
-  const float = useMemo(() => new Animated.Value(0), []);
+  const float = useLoop(1800, { enabled: bob });
 
   // Squash-and-pop on every pose change (and on mount).
   useEffect(() => {
     pop.setValue(0);
     Animated.spring(pop, { toValue: 1, friction: 4, tension: 160, useNativeDriver: true }).start();
   }, [pop, pose]);
-
-  useEffect(() => {
-    if (!bob) return;
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(float, { toValue: 1, duration: 900, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(float, { toValue: 0, duration: 900, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [bob, float]);
 
   // Every buddy's art points right; mirror it to point left.
   const towardLeft = (pointTo ?? (I18nManager.isRTL ? 'left' : 'right')) === 'left';
