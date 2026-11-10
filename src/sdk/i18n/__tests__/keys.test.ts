@@ -101,6 +101,8 @@ const KEYS: string[] = [
   'core:wardrobe.items.sunglasses',
   'core:wardrobe.items.top-hat',
   'core:wardrobe.items.bow',
+  'core:wardrobe.items.parrot',
+  'core:wardrobe.items.medal',
   'core:break.energy',
   'core:break.stretch1',
   'core:break.stretch2',

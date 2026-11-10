@@ -25,8 +25,8 @@ import {
 import { EmojiImage } from '@/components/common/EmojiImage';
 import { useLoop } from '@/components/pop/motion';
 import { COLORS, POP } from '@/constants/colors';
-import { useBuddy, useBuddyArt, type BuddyArt, type BuddyId } from '@/sdk/buddy';
-import { outfitById } from '@/sdk/player/outfits';
+import { BUDDIES, BUDDY_LOOKS, useBuddy, useBuddyArt, type BuddyArt, type BuddyId } from '@/sdk/buddy';
+import { outfitById, outfitFor } from '@/sdk/player/outfits';
 import type { Wearing } from '@/sdk/player/outfitStore';
 
 export type MascotPose = 'wave' | 'cheer' | 'point' | 'encourage';
@@ -80,6 +80,34 @@ const HEADS: Record<BuddyArt, Record<MascotPose, Head>> = {
   },
 };
 
+/**
+ * Side items (Mariam's flower and bow) sit on her pigtail, in head widths:
+ * size, and the centre's offset from the head's middle (x) and top edge (y,
+ * to the item's top).
+ */
+const SIDE = { s: 0.34, dx: 0.33, dy: 0.08 };
+
+/**
+ * Anas's body spots per pose, as fractions of the image: where the parrot's
+ * feet rest (his free shoulder, image-left in every pose) and the collar the
+ * medal hangs from.
+ */
+type Body = { shoulder: readonly [number, number]; neck: readonly [number, number] };
+
+const BODIES: Partial<Record<BuddyArt, Record<MascotPose, Body>>> = {
+  anas: {
+    wave: { shoulder: [0.34, 0.485], neck: [0.465, 0.45] },
+    cheer: { shoulder: [0.36, 0.455], neck: [0.49, 0.465] },
+    point: { shoulder: [0.325, 0.48], neck: [0.47, 0.43] },
+    encourage: { shoulder: [0.36, 0.475], neck: [0.5, 0.44] },
+  },
+};
+
+const PERCH = 0.14; // parrot size, of the image
+const MEDAL = 0.12;
+
+const ownerOf = (art: BuddyArt): BuddyId => BUDDIES.find((b) => BUDDY_LOOKS[b].includes(art)) ?? BUDDIES[0];
+
 /** A party cone: the 🥳 tile art is a face, so the hat itself is drawn. */
 function PartyHat({ size }: { size: number }) {
   const half = size * 0.36;
@@ -102,17 +130,36 @@ function PartyHat({ size }: { size: number }) {
   );
 }
 
-function Worn({ wearing, head, size }: { wearing: Wearing; head: Head; size: number }) {
+function Worn({ wearing, art, pose, size }: { wearing: Wearing; art: BuddyArt; pose: MascotPose; size: number }) {
+  const head = HEADS[art][pose];
+  const body = BODIES[art]?.[pose];
   const headW = head.w * size;
   const cx = head.x * size;
   const items: ReactNode[] = [];
 
-  const hat = outfitById(wearing.hat);
-  if (hat) {
-    const side = hat.id === 'flower' || hat.id === 'bow';
-    const s = side ? headW * 0.34 : headW * 0.62;
-    const x = side ? cx + headW * 0.33 : cx;
-    const y = side ? head.top * size + headW * 0.08 : head.top * size + headW * 0.2 - s;
+  const hat = outfitFor(wearing.hat, ownerOf(art));
+  if (hat?.spot === 'shoulder' || hat?.spot === 'chest') {
+    if (body) {
+      const shoulder = hat.spot === 'shoulder';
+      const [px, py] = shoulder ? body.shoulder : body.neck;
+      const s = (shoulder ? PERCH : MEDAL) * size;
+      // The parrot stands on its feet (bottom of the art) facing the buddy;
+      // the medal's ribbon starts at the collar.
+      const top = shoulder ? py * size - s * 0.92 : py * size - s * 0.05;
+      items.push(
+        <View
+          key="hat"
+          style={[styles.item, { left: px * size - s / 2, top, width: s, height: s }, shoulder && styles.mirror]}
+        >
+          <EmojiImage emoji={hat.emoji} size={s} />
+        </View>,
+      );
+    }
+  } else if (hat) {
+    const side = hat.spot === 'side';
+    const s = headW * (side ? SIDE.s : 0.62);
+    const x = side ? cx + headW * SIDE.dx : cx;
+    const y = side ? head.top * size + headW * SIDE.dy : head.top * size + headW * 0.2 - s;
     items.push(
       <View key="hat" style={[styles.item, { left: x - s / 2, top: y, width: s, height: s }]}>
         {hat.id === 'party-hat' ? <PartyHat size={s} /> : <EmojiImage emoji={hat.emoji} size={s} />}
@@ -195,12 +242,13 @@ export function Mascot({ pose = 'wave', size = 96, bob = true, pointTo, buddy, l
         style={{ width: size, height: size }}
         resizeMode="contain"
       />
-      {wearing ? <Worn wearing={wearing} head={HEADS[who][pose]} size={size} /> : null}
+      {wearing ? <Worn wearing={wearing} art={who} pose={pose} size={size} /> : null}
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   item: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  mirror: { transform: [{ scaleX: -1 }] },
   pom: { backgroundColor: COLORS.gold, marginBottom: -4, zIndex: 1 },
 });

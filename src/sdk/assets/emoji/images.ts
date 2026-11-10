@@ -144,6 +144,8 @@ export const EMOJI_IMAGES: Record<string, ImageSourcePropType> = {
   "🕶": require("./png/1F576.png"),
   "🌸": require("./png/1F338.png"),
   "🎀": require("./png/1F380.png"),
+  "🦜": require("./png/1F99C.png"),
+  "🏅": require("./png/1F3C5.png"),
 };
 
 /** Resolve an emoji glyph to its bundled image, or undefined if not available. */
