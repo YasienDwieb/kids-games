@@ -28,7 +28,11 @@ Android version code remotely [@aab-workflow]. Which one to run depends on
 whether the goal is a build to hand someone for testing, or a real submission
 to the Play Console. iOS has no equivalent GitHub Actions workflow; it ships
 through EAS commands run directly, covered in
-[Release an iOS build](../guides/release-an-ios-build).
+[Release an iOS build](../guides/release-an-ios-build). If the change is
+JS/asset-only — no new native module, SDK bump, config plugin, icon, or
+permission — neither branch below is needed at all; see
+[Release an OTA update](../guides/release-an-ota-update) for shipping it
+straight to installed builds without a new binary or store review.
 
 ## Branch A: I Just Need A Shareable Test APK
 
@@ -59,9 +63,11 @@ pinned Node version fails before `eas build` even starts [@apk-workflow]
 
 ## Branch B: I Need To Ship A Production Build To The Play Store
 
-Trigger `release-aab.yml` manually. It takes no `workflow_dispatch` inputs —
-it always builds and ships to production, on purpose; there is no separate
-internal/closed/production choice at trigger time [@aab-workflow]. It runs
+Trigger `release-aab.yml` manually. Its only `workflow_dispatch` input is a
+`rollout` boolean (default `false`) — there is still no separate
+internal/closed/production choice at trigger time; the input only controls
+whether the job finishes by starting the production rollout or leaves the
+release as a draft [@aab-workflow]. It runs
 `eas build --platform android --profile production`, the `production` EAS
 profile, which has `autoIncrement: true` — EAS, not this repo, owns the
 Android version code for production builds [@aab-workflow] [@eas-json]. The
@@ -74,19 +80,34 @@ workflow then:
    the `PLAY_STORE_KEY_JSON` secret, matching `eas.json`'s `submit.production`
    config (`track: "production"`, `releaseStatus: "draft"`) [@aab-workflow]
    [@eas-json]. `releaseStatus: "draft"` means the build lands on production
-   but stays behind a manual **"Start rollout"** click in the Play Console —
-   this workflow is never a one-way door, even though it always targets
-   production [@aab-workflow]. That click has a command-line equivalent:
-   `fastlane rollout version_code:<vc> [track:production] [percent:<0-1>]`
-   moves the release to `completed` (fully live) by default, or to a
-   fractional, `inProgress` staged rollout when passed a `percent` below
-   `1.0` (e.g. `percent:0.2` for 20%) [@fastfile].
+   but stays behind a manual **"Start rollout"** click in the Play Console,
+   or the equivalent command-line step covered next — this workflow decorates
+   a release before anyone can see it, never after [@aab-workflow].
 3. Runs `fastlane metadata` and then `fastlane changelog`, both targeting
    `track:production` and the version code from step 1, to push the store
    listing text and that version's release notes [@aab-workflow]. See
    [Update the Play Store listing](../guides/update-the-play-store-listing)
    for what those fastlane lanes actually push and how to edit the listing
    content itself, rather than repeating fastlane's lane behavior here.
+4. If the `rollout` input was ticked, runs `fastlane rollout
+   version_code:"$VERSION_CODE" track:production` as the job's last step,
+   moving the release from `draft` to `completed` (fully live) — the same
+   lane and version code the manual recovery path below uses, just invoked
+   automatically [@aab-workflow] [@fastfile]. If `rollout` was left off (the
+   default), the job instead prints an `::notice::` naming the version code
+   and reminding that `fastlane rollout version_code:<vc>` or the Console's
+   "Start rollout" button is still needed [@aab-workflow]. Either way,
+   rollout is always the job's final action, after listing and release notes
+   are already attached — nothing above it depends on whether rollout runs
+   [@aab-workflow].
+
+`fastlane rollout`'s command-line form outside this workflow still supports a
+staged rollout the `workflow_dispatch` input cannot express: `fastlane
+rollout version_code:<vc> [track:production] [percent:<0-1>]` moves the
+release to `completed` by default, or to a fractional, `inProgress` staged
+rollout when passed a `percent` below `1.0` (e.g. `percent:0.2` for 20%)
+[@fastfile]. The workflow's own `rollout` input always rolls out to 100%; use
+the fastlane command by hand for a staged percentage.
 
 ### Gotcha: `rollout` Must Always Set `rollout:`, Not Just `release_status:`
 

@@ -36,6 +36,9 @@ sources:
   - id: arrow
     type: file
     path: src/games/balloon-archer/components/Arrow.tsx
+  - id: icon
+    type: file
+    path: src/components/common/Icon.tsx
 ---
 
 The app runs one shared `i18next` instance, initialized once in
@@ -172,13 +175,21 @@ mirrors correctly — so the visual bug looks like a layout-mirroring failure
 but is really a stale-constant bug.
 
 The fix, applied in commit `1114d53`, is to defer the read to a function
-called at render or access time instead of a captured constant: `AppBar` and
-`BackButton` both changed their glyph constant to a `backGlyph()` function
-called inside the component body [@app-bar] [@back-button], and
-`balloon-archer`'s `Archer` and `Arrow` components applied the same fix to
-the sprite-flip transforms that mirror their bow and arrow to face the
-correct direction in RTL [@archer] [@arrow]. This is the same pattern
-`FONTS` already used for the reason covered on the
+called at render or access time instead of a captured constant. At the time,
+that meant `AppBar` and `BackButton` each changing their own glyph constant to
+a `backGlyph()` function called inside the component body. Both have since
+moved their chevron to a shared `Icon` component instead of rendering a text
+glyph directly, but the fix survived the move rather than regressing: `Icon`
+resolves a small `MIRRORED` lookup table (`'chevron-back' ↔
+'chevron-forward'`, `'arrow-back' ↔ 'arrow-forward'`) against
+`I18nManager.isRTL` inside its own render body, with the same code comment —
+"read at render: `I18nManager.isRTL` is not settled when modules evaluate" —
+carried over to the new location [@app-bar] [@back-button] [@icon]. Every
+caller still passes the LTR glyph name; `Icon` is what decides whether to
+mirror it. `balloon-archer`'s `Archer` and `Arrow` components applied the
+same access-time-read fix to the sprite-flip transforms that mirror their bow
+and arrow to face the correct direction in RTL [@archer] [@arrow]. This is
+the same pattern `FONTS` already used for the reason covered on the
 [RTL font selection](../decisions/rtl-font-selection) decision page — an
 object of getters, so each property resolves `I18nManager.isRTL` at the
 moment it is *read*, not at the moment its module was *imported*. The general

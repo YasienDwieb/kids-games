@@ -15,6 +15,12 @@ sources:
   - id: home-screen
     type: file
     path: src/screens/HomeScreen.tsx
+  - id: review
+    type: file
+    path: src/sdk/review/review.ts
+  - id: play-limit-gate
+    type: file
+    path: src/screens/PlayLimitGate.tsx
 ---
 
 This decision adds a lightweight access-control step in front of
@@ -92,3 +98,20 @@ The gate protects only the in-app UI; it is not a security boundary against a
 technically sophisticated user, and it was never designed to be one — its
 entire job is to stop a young child from reaching a few specific controls
 by accident.
+
+The gate's `unlocked` state (or, equivalently, its `onPass` callback) has
+since picked up two more consumers beyond revealing controls, both reusing
+`ParentGate` purely as proof an adult is present rather than as a reversibility
+check. The [store review prompt](../architecture/store-review-prompt) fires a
+`useEffect` off `onPass` to show the native rating sheet, not to render
+anything — Apple's Kids category and Play's Families policy forbid asking a
+child to rate the app, so the gate stands in for that proof [@review].
+[Play time limit](../architecture/play-time-limit)'s `PlayLimitGate` reuses the same
+component a third way, inline rather than wrapping a whole screen: once a
+child hits the parent-set daily limit, a "grown-up, +15 more minutes" button
+on the break screen renders `<ParentGate onPass={() => grantExtraTime()}>` in
+place of the button, so solving the same multiplication challenge grants
+extra playtime for the day instead of unlocking any UI [@play-limit-gate]. Any future side
+effect that should only run in front of a parent, not just any future
+*control*, can follow the same pattern: key a callback off `onPass`/`unlocked`
+rather than adding a gated UI element.

@@ -15,6 +15,24 @@ sources:
   - id: settings-store
     type: file
     path: src/sdk/settings/store.ts
+  - id: rewards-store
+    type: file
+    path: src/sdk/rewards/store.ts
+  - id: tutorial-store
+    type: file
+    path: src/sdk/tutorial/useFirstRun.ts
+  - id: playtime-store
+    type: file
+    path: src/sdk/playtime/playtime.ts
+  - id: adaptive-store
+    type: file
+    path: src/sdk/adaptive/useAdaptive.ts
+  - id: review-store
+    type: file
+    path: src/sdk/review/review.ts
+  - id: outfit-store
+    type: file
+    path: src/sdk/player/outfitStore.ts
 ---
 
 Every value this app persists across launches goes through one function,
@@ -34,6 +52,12 @@ device dump corresponds to.
 | `kg:settings` | `Settings` — one shared record (`soundEnabled`, `hapticsEnabled`, `ageBand`, `language`, `mode`, `flowGameIds`) | `src/sdk/settings/store.ts`, via `settingsStore = createStore('settings', DEFAULT_SETTINGS)` [@settings-store] |
 | `kg:progress:<gameId>` | `Progress` — `{ level: number, score: number, updatedAt: number }`, one key per game (e.g. `kg:progress:letter-land`) | `src/sdk/progress/store.ts`, via `createProgressStore(gameId)` which calls `createStore(\`progress:${gameId}\`, DEFAULT_PROGRESS)` [@progress-store] |
 | `kg:flow:progress` | `FlowProgress` — `{ step: number, seed: number, updatedAt: number }`, one shared checkpoint for the whole guided journey | `src/sdk/flow/progress.ts`, via `createFlowProgressStore()` which calls `createStore('flow:progress', DEFAULT_FLOW_PROGRESS)` [@flow-progress] |
+| `kg:rewards` | `Rewards` — `{ stars, stickers: string[], unseen: string[], today: { date, stars }, byGame: Record<string, number> }`, one shared record for the app-wide star/sticker economy | `src/sdk/rewards/store.ts`, via `rewardsStore = createStore('rewards', DEFAULT_REWARDS)` [@rewards-store]; see [Rewards, stars, and stickers](../architecture/rewards-and-stickers) |
+| `kg:tutorial` | `TutorialProgress` — `{ seen: string[] }`, one shared list of first-run demo ids already completed | `src/sdk/tutorial/useFirstRun.ts`, via `tutorialStore = createStore('tutorial', { seen: [] })` [@tutorial-store]; see [First-run tutorials](../architecture/first-run-tutorials) |
+| `kg:playtime` | `Playtime` — `{ days: Record<string, number>, games: Record<string, number>, extra: Record<string, number> }`, seconds played per local day (last 14 kept) and per game, plus parent-granted extra minutes per day | `src/sdk/playtime/playtime.ts`, via `playtimeStore = createStore('playtime', DEFAULT_PLAYTIME)` [@playtime-store]; see [Play time limit](../architecture/play-time-limit) |
+| `kg:adaptive:<gameId>` | `AdaptiveState` — `{ tier: number, wins: number, losses: number }`, one key per game tracking that game's adaptive-difficulty tier | `src/sdk/adaptive/useAdaptive.ts`, via `createStore(\`adaptive:${gameId}\`, null)`, seeded from the parent's age-band setting on first read [@adaptive-store] |
+| `kg:review` | `ReviewState` — `{ askedAt: number \| null }`, the timestamp of the last store-review ask, or `null` before the first one | `src/sdk/review/review.ts`, via `reviewStore = createStore('review', { askedAt: null })` [@review-store]; see [Store review prompt](../architecture/store-review-prompt) |
+| `kg:outfit` | `Wearing` — `{ hat: string \| null, glasses: string \| null }`, one shared garment record worn by whichever buddy is active | `src/sdk/player/outfitStore.ts`, via `outfitStore = createStore('outfit', DEFAULT_WEARING)` [@outfit-store]; see [Buddy, mascot, and wardrobe](../architecture/buddy-and-wardrobe) |
 
 `DEFAULT_PROGRESS` uses `updatedAt: 0` as the sentinel for "never played"
 [@progress-store], and `DEFAULT_FLOW_PROGRESS` uses `seed: 0` together with

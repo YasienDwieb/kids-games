@@ -73,8 +73,13 @@ that stranded a release (versionCode 13 sat on `internal`/`alpha` for weeks
 while `production` still served versionCode 11) with no listing-lane fault
 involved, so `eas.json`'s `submit.production.android.track` and both `supply`
 lane invocations were changed to target `production` directly, with
-`releaseStatus: "draft"` kept so rollout is still a manual Play Console step
-[@eas-json] [@release-aab-workflow]. A separate `submit.internal` EAS profile
+`releaseStatus: "draft"` kept so rollout is not automatic by default
+[@eas-json] [@release-aab-workflow]. The workflow's `rollout` `workflow_dispatch`
+input (default off) can opt into running `fastlane rollout` as the job's last
+step instead of leaving the Play Console's manual "Start rollout" click as
+the only way to finish the release — see
+[Release an Android build](../guides/release-an-android-build) for the exact
+behavior either way [@release-aab-workflow]. A separate `submit.internal` EAS profile
 and a `fastlane promote` lane now exist for the deliberate case — testing a
 build on `internal` before it ships — without rebuilding the AAB
 [@eas-json] [@fastfile]. A `fastlane rollout` lane
@@ -108,7 +113,11 @@ goes live [@play-store-doc]. The cost is a second toolchain: Ruby and
 fastlane sit alongside the Node/EAS pipeline, and the two systems must be kept
 in sync by hand — the changelog step has to be pointed at the same track and
 version code the binary actually landed on, or the upload targets the wrong
-release. See [Update the Play Store listing](../guides/update-the-play-store-listing)
+release. Uploading unchanged images is not free with `supply` either: the
+`metadata` lane now passes `sync_image_upload: true` so an image whose sha256
+already matches Play is skipped, because without it every release re-uploaded
+(and reported as "changed") the icon, feature graphic, and every screenshot
+regardless of whether the files had actually changed [@fastfile]. See [Update the Play Store listing](../guides/update-the-play-store-listing)
 for the day-to-day lane commands, and
 [Build and release config](../reference/build-and-release-config) for how
 `eas.json` and the release workflows fit together.
