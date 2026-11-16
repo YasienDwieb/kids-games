@@ -11,7 +11,8 @@
  */
 import { useMemo, useRef } from 'react';
 import { LogBox, StyleSheet, View } from 'react-native';
-import { Canvas, useFrame } from '@react-three/fiber/native';
+import { useFrame } from '@react-three/fiber/native';
+import { Canvas3D } from '@/sdk/three/Canvas3D';
 import {
   BackSide,
   BufferGeometry,
@@ -290,7 +291,7 @@ type Bowl3DProps = {
 export function Bowl3D({ size, hex, dropCount, dropCap, lastDrop, hot, calm }: Bowl3DProps) {
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, { width: size, height: size }]}>
-      <Canvas
+      <Canvas3D
         flat
         gl={{ alpha: true }}
         camera={{ position: [0, 2.0, 2.9], fov: 40 }}
@@ -302,7 +303,7 @@ export function Bowl3D({ size, hex, dropCount, dropCap, lastDrop, hot, calm }: B
         <hemisphereLight args={[0xffffff, 0xd9cfe8, 1.2]} />
         <directionalLight position={[1.5, 3, 2]} intensity={1.4} />
         <Scene hex={hex} dropCount={dropCount} dropCap={dropCap} lastDrop={lastDrop} hot={hot} calm={calm} />
-      </Canvas>
+      </Canvas3D>
     </View>
   );
 }

@@ -7,7 +7,8 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { Image, LogBox, StyleSheet, View } from 'react-native';
-import { Canvas, useFrame } from '@react-three/fiber/native';
+import { useFrame } from '@react-three/fiber/native';
+import { Canvas3D } from '@/sdk/three/Canvas3D';
 import type { Group } from 'three';
 import { preloadModels3D, useModel3D } from '@/sdk';
 import { ANIMAL_MODELS } from '../animalModels';
@@ -60,11 +61,11 @@ export function Animal3D({ id, state, image }: { id: string; state: AnimalTileSt
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.center]}>
       {ready ? null : <Image source={image} style={styles.image} resizeMode="contain" accessible={false} />}
-      <Canvas style={StyleSheet.absoluteFill} flat gl={{ alpha: true }} camera={{ position: [0, 0.35, 3], fov: 38 }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
+      <Canvas3D style={StyleSheet.absoluteFill} flat gl={{ alpha: true }} camera={{ position: [0, 0.35, 3], fov: 38 }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
         <hemisphereLight args={[0xffffff, 0xe8dcc8, 1.4]} />
         <directionalLight position={[2, 3, 4]} intensity={1.4} />
         <Animal id={id} state={state} onReady={markReady} />
-      </Canvas>
+      </Canvas3D>
     </View>
   );
 }

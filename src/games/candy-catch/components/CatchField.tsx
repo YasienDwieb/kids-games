@@ -14,7 +14,7 @@
  * unit) own HUD, overlays and progression, and remount the field with a new
  * `key` for the next level or a retry. */
 
-import { Suspense, lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -25,7 +25,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
-import { approach, AreaDemo, clamp, currentLanguage, FONTS, useGameLoop, useGuide, useSound } from '@/sdk';
+import { approach, AreaDemo, clamp, currentLanguage, FONTS, useGameLoop, useGuide, useSound, Stage3D } from '@/sdk';
 import { catchPhrase } from '../phrase';
 import { Basket } from './Basket';
 import { FallingItem } from './FallingItem';
@@ -404,7 +404,7 @@ export function CatchField({
       >
         {guide.showDemo ? <AreaDemo mode="sweep" /> : null}
         {/* The 3D scene draws the items and basket; the flat views stand in while it loads. */}
-        <Suspense
+        <Stage3D id="candy-catch"
           fallback={
             <>
               {slots.map((slot, i) => (
@@ -425,7 +425,7 @@ export function CatchField({
             basketTilt={basketTilt}
             caughtAt={caughtAt}
           />
-        </Suspense>
+        </Stage3D>
 
         {pops.map((p) => (
           <ScorePop key={p.id} x={p.x} y={p.y} text={p.text} color={p.color} />

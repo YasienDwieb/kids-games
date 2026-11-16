@@ -2,7 +2,8 @@
  * `renderImage` for the shared ListenFindBoard: each animal choice becomes a 3D
  * animal, with its flat picture standing in while three.js loads.
  */
-import { Suspense, lazy } from 'react';
+import { lazy } from 'react';
+import { Stage3D } from '@/sdk';
 import { Image, StyleSheet } from 'react-native';
 import type { FindItem } from '@/games/_shared/listen-find';
 import type { AnimalTileState } from './Animal3D';
@@ -13,9 +14,9 @@ const Animal3D = lazy(() => import('./Animal3D').then((m) => ({ default: m.Anima
 export function renderAnimal(item: FindItem, state: AnimalTileState) {
   if (item.image === undefined) return null;
   return (
-    <Suspense fallback={<Image source={item.image} style={styles.image} resizeMode="contain" accessible={false} />}>
+    <Stage3D id="animal-safari" heavy fallback={<Image source={item.image} style={styles.image} resizeMode="contain" accessible={false} />}>
       <Animal3D id={item.id} state={state} image={item.image} />
-    </Suspense>
+    </Stage3D>
   );
 }
 

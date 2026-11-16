@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
   CelebrationProvider,
+  ErrorBoundary,
   GameExitContext,
   getGame,
   GameShell,
@@ -59,6 +60,12 @@ export function GamePlayerScreen({ route, navigation }: Props) {
 
   const Game = game.component;
   const layout = game.layout ?? {};
+  // A game that throws while rendering sends the child back Home instead of closing the app.
+  const gameBody = (
+    <ErrorBoundary where={`game:${gameId}`} fallback={null} onError={() => navigation.goBack()}>
+      <Game />
+    </ErrorBoundary>
+  );
 
   return (
     <ScreenBackContext.Provider value={setInterceptor}>
@@ -71,7 +78,7 @@ export function GamePlayerScreen({ route, navigation }: Props) {
               // Bare mode: game composes its own canvas; we float a back button.
               <View style={[styles.container, { backgroundColor: game.backgroundColor }]}>
                 <BackButton onPress={handleBack} />
-                <Game />
+                {gameBody}
               </View>
             ) : (
               <GameShell
@@ -79,7 +86,7 @@ export function GamePlayerScreen({ route, navigation }: Props) {
                 showBack={layout.showBack ?? true}
                 onBack={handleBack}
               >
-                <Game />
+                {gameBody}
               </GameShell>
             )}
           </PlayLimitGate>

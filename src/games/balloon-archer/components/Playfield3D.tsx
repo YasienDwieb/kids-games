@@ -16,7 +16,8 @@
  */
 import { memo, useMemo, useRef } from 'react';
 import { I18nManager, LogBox, StyleSheet, View } from 'react-native';
-import { Canvas, useFrame, useThree } from '@react-three/fiber/native';
+import { useFrame, useThree } from '@react-three/fiber/native';
+import { Canvas3D } from '@/sdk/three/Canvas3D';
 import {
   ConeGeometry,
   CylinderGeometry,
@@ -401,7 +402,7 @@ export const Playfield3D = memo(function Playfield3D({ world, width, height, arc
   if (width <= 0 || height <= 0) return null;
   return (
     <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.ltr]}>
-    <Canvas
+    <Canvas3D
       flat
       gl={{ alpha: true }}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
@@ -413,7 +414,7 @@ export const Playfield3D = memo(function Playfield3D({ world, width, height, arc
       <Clouds width={width} height={height} shared={shared} />
       <Balloons world={world} map={map} shared={shared} />
       <BowAndArrows world={world} map={map} archerX={archerX} shared={shared} />
-    </Canvas>
+    </Canvas3D>
     </View>
   );
 });

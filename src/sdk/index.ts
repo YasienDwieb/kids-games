@@ -137,6 +137,13 @@ export { BuddyFigure } from './mascot/BuddyFigure';
 export type { BuddyMood } from './mascot/BuddyFigure';
 export { useModel3D, preloadModels3D } from './three/models';
 export type { ModelSource } from './three/models';
+// 3D boards: device gate + crash guard; the canvas itself is `@/sdk/three/Canvas3D`
+export { Stage3D } from './three/Stage3D';
+export { useGl3D, bootGl3D } from './three/support';
+export type { Gl3DSupport } from './three/support';
+// Errors — boundaries report `app_error` and show a fallback instead of crashing
+export { ErrorBoundary } from './errors/ErrorBoundary';
+export { reportError } from './errors/report';
 
 // Play time — the parent corner's log and the optional daily limit
 export {

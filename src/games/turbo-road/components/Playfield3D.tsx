@@ -17,7 +17,8 @@
  */
 import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { LogBox, PanResponder, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import { Canvas, useFrame } from '@react-three/fiber/native';
+import { useFrame } from '@react-three/fiber/native';
+import { Canvas3D } from '@/sdk/three/Canvas3D';
 import {
   BackSide,
   BoxGeometry,
@@ -776,9 +777,9 @@ export function Playfield3D({
       }}
       {...pan.panHandlers}
     >
-      <Canvas flat camera={{ position: [0, 4.6, 8.5], fov: 58, near: 0.1, far: FAR }}>
+      <Canvas3D flat camera={{ position: [0, 4.6, 8.5], fov: 58, near: 0.1, far: FAR }}>
         <Scene theme={theme} level={level} ui={ui} anim={anim} carId={carId} />
-      </Canvas>
+      </Canvas3D>
     </View>
   );
 }

@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
-  awardStars, CelebrationProvider, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
+  awardStars, CelebrationProvider, ErrorBoundary, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
   track, usePlaySession,
   COLORS, SPACING, Star, TOUCH_TARGET,
 } from '@/sdk';
@@ -79,7 +79,10 @@ export function FlowPlayerScreen({ navigation }: Props) {
           <SceneCanvas progress={progress}>
             {status === 'playing' && unit ? (
               <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>
-                {unit.render(handleComplete)}
+                {/* A unit that throws skips ahead instead of closing the app. */}
+                <ErrorBoundary key={unit.key} where={`flow:${gameId ?? 'unknown'}`} fallback={null} onError={() => advance()}>
+                  {unit.render(handleComplete)}
+                </ErrorBoundary>
               </Animated.View>
             ) : null}
             {status === 'done' ? (

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import {
   currentLanguage,
@@ -11,6 +11,7 @@ import {
   useAdaptive,
   useGuide,
   useRoundEnd,
+  Stage3D,
 } from '@/sdk';
 import { Archer } from './components/Archer';
 import { Balloon } from './components/Balloon';
@@ -146,7 +147,7 @@ export default function BalloonArcherGame() {
         <>
           {w.drawing && <LaneGuide x={game.archerX} y={w.laneY} width={area.width} />}
           {/* The 3D scene, with the flat 2D sprites standing in while it loads. */}
-          <Suspense
+          <Stage3D id="balloon-archer"
             fallback={
               <>
                 {w.balloons.map((b) => (
@@ -158,7 +159,7 @@ export default function BalloonArcherGame() {
             }
           >
             <Playfield3D world={w} width={area.width} height={area.height} archerX={game.archerX} />
-          </Suspense>
+          </Stage3D>
         </>
       )}
 
