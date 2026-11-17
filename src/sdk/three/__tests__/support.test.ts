@@ -25,6 +25,15 @@ describe('supportFor', () => {
     expect(at(HEAVY_3D_MEMORY)).toBe('full');
     expect(at(null)).toBe('lite');
   });
+
+  it('places real devices by the memory Android reports, not the box size', () => {
+    const GiB = 1024 ** 3;
+    const at = (reported: number) => supportFor({ os: 'android', totalMemory: reported * GiB, crashedHere: false });
+    expect(at(1.8)).toBe('off'); // "2 GB" phone
+    expect(at(2.7)).toBe('lite'); // "3 GB"
+    expect(at(3.6)).toBe('lite'); // "4 GB"
+    expect(at(5.5)).toBe('full'); // "6 GB"
+  });
 });
 
 describe('GL start-up marker', () => {

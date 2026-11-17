@@ -25,11 +25,14 @@ import { track } from '../analytics/client';
 /** `off`: 2D only. `lite`: one canvas at a time. `full`: heavy scenes too. */
 export type Gl3DSupport = 'off' | 'lite' | 'full';
 
+// Android reports `totalMem` (what the kernel can use), which is always below
+// the RAM on the box: a "6 GB" phone reports ~5.5 GiB, a "3 GB" one ~2.7 GiB.
+// The thresholds sit between those classes, not on the marketed numbers.
 const GB = 1024 * 1024 * 1024;
-/** Below this, Android devices get no 3D at all. */
-export const MIN_3D_MEMORY = 3 * GB;
-/** Scenes with several canvases on screen (Animal Safari's tiles) need this much. */
-export const HEAVY_3D_MEMORY = 6 * GB;
+/** Below this (2 GB-class devices), Android gets no 3D at all. */
+export const MIN_3D_MEMORY = 2.5 * GB;
+/** Scenes with several canvases on screen (Animal Safari's tiles) need a 6 GB-class device. */
+export const HEAVY_3D_MEMORY = 5 * GB;
 
 export function supportFor(opts: {
   os: string;
