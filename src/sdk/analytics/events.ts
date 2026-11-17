@@ -14,7 +14,7 @@ export type AnalyticsEvents = {
   journey_done: { total: number };
   /**
    * A JS error the app survived (or is about to die of, `fatal`). `where` is the
-   * boundary or handler that caught it (`app`, `game:<id>`, `3d:<id>`, `global`);
+   * boundary or handler that caught it (`app`, `game:<id>`, `flow:<id>`, `3d:<id>`, `global`);
    * `message` is the error's own text, cut to 100 chars. No stack or user data.
    */
   app_error: { where: string; message: string; fatal: boolean };

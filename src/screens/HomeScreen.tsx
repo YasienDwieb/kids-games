@@ -99,10 +99,11 @@ export function HomeScreen({ navigation }: Props) {
   const railRef = useRef<ScrollViewInstance>(null);
 
   // Games shown on Home are filtered by the parent-set age band (Settings).
-  // Games with no 2D board stay hidden where 3D is off (weak or GL-crashing devices).
+  // Games with no 2D board stay hidden where 3D is off (weak or GL-crashing devices);
+  // shown while the check is still running (null) so the rail doesn't shift.
   const gl3d = useGl3D();
   const visible = (settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames()).filter(
-    (g) => !g.needs3D || (gl3d != null && gl3d !== 'off'),
+    (g) => !g.needs3D || gl3d !== 'off',
   );
   const categories = GAME_CATEGORIES.filter((c) => visible.some((g) => g.category === c));
   const games = category ? visible.filter((g) => g.category === category) : visible;

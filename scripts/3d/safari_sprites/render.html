@@ -21,7 +21,7 @@ const ANIMALS = ['lion','elephant','cow','dog','cat','frog','horse','sheep','roo
 const RENDER = 640, FRAME = 320, COLS = 4, ROWS = 3, FRAMES = COLS * ROWS;
 const log = (m) => (document.getElementById('log').textContent += m + '\n');
 
-// Same look as the old in-app canvas (Animal3D): flat (no tone mapping),
+// Same look the animals had as live 3D in the app: flat (no tone mapping),
 // hemisphere + key light, roughness 0.95 clay material.
 const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
 renderer.toneMapping = THREE.NoToneMapping;
