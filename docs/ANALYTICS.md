@@ -31,6 +31,8 @@ src/sdk/analytics/
 | `game_end` | `gameId`, `mode`, `durationSec` (foreground only), `rounds` |
 | `round_complete` | `gameId`, `mode`, `stars` |
 | `journey_done` | `total` |
+| `app_error` | `where` (`app`, `game:<id>`, `flow:<id>`, `3d:<id>`, `global`), `message` (≤100 chars), `fatal` |
+| `gl3d_disabled` | — (last launch died starting a GL context; 3D is off on this build for this device) |
 
 Every event also carries `appVersion`, `build`, `updateId`, `channel`, `platform`, `language`, `ageBand`, `appMode`.
 
@@ -60,5 +62,7 @@ The SDK adds native modules (`expo-application`, `expo-device`), so it ships wit
 
 - **Play Data safety**: App activity → App interactions: collected, not shared, processed not ephemerally,
   optional (parent can turn off), purpose Analytics. Not linked to identity.
-- **App Store App Privacy**: Usage Data → Product Interaction, not linked to the user, not used for tracking.
+  App info and performance → Crash logs (`app_error`): same answers.
+- **App Store App Privacy**: Usage Data → Product Interaction, not linked to the user, not used for tracking;
+  Diagnostics → Crash Data (`app_error`), same answers.
 - **Privacy policy** (TermsFeed): describe anonymous usage stats, PostHog EU as processor, the Settings opt-out.

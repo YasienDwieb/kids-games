@@ -19,4 +19,5 @@ registerGame({
   version: '1.0.0',
   author: 'Kids Games',
   layout: { mode: 'bare' },
+  needs3D: true,
 });

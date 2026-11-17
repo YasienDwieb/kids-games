@@ -7,7 +7,7 @@
    finish moves the trip on, and the place sets the stars. Progression is the
    SDK `useLevels` checkpoint. */
 
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppState, StyleSheet, View } from 'react-native';
 import {
   AreaDemo,
@@ -26,6 +26,7 @@ import {
   useScreenBack,
   useSound,
   useTranslation,
+  Stage3D,
 } from '@/sdk';
 import { CarPicker } from './components/CarPicker';
 import { Hud } from './components/Hud';
@@ -94,7 +95,7 @@ function Drive({
 
   return (
     <View style={styles.flex} onTouchStart={guide.poke} onTouchMove={guide.poke}>
-      <Suspense fallback={<View style={[styles.flex, { backgroundColor: theme.sky }]} />}>
+      <Stage3D id="turbo-road" required fallback={<View style={[styles.flex, { backgroundColor: theme.sky }]} />}>
         <Playfield3D
           carId={car.id}
           theme={theme}
@@ -104,7 +105,7 @@ function Drive({
           playerEmoji={playerEmoji}
           onSteerTo={steerTo}
         />
-      </Suspense>
+      </Stage3D>
       {guide.showDemo ? <AreaDemo mode="sweep" /> : null}
       {/* Hud is not inset-aware; float it inside the safe area over the
           full-bleed playfield. pointerEvents box-none keeps steering live. */}

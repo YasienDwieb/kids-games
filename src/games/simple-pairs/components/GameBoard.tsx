@@ -1,7 +1,7 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React, { lazy, useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, useWindowDimensions, View } from 'react-native';
 import type { Card as CardType } from '../types';
-import { AreaDemo, currentLanguage, useGuide } from '@/sdk';
+import { AreaDemo, currentLanguage, useGuide, Stage3D } from '@/sdk';
 import { LAYOUT } from '../constants';
 import { pairsPhrase } from '../phrase';
 import { SPACING } from '../../../constants';
@@ -42,9 +42,9 @@ export function GameBoard(props: GameBoardProps) {
   };
   return (
     <View style={styles.host}>
-      <Suspense fallback={<GameBoard2D {...board} />}>
+      <Stage3D id="simple-pairs" fallback={<GameBoard2D {...board} />}>
         <GameBoard3D {...board} />
-      </Suspense>
+      </Stage3D>
       {guide.showDemo ? <AreaDemo at={middleCard(props.cards.length, props.columns)} /> : null}
     </View>
   );

@@ -1,6 +1,6 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { lazy, useEffect, useRef, useState } from 'react';
 import { Animated, Easing, StyleSheet, View, type ViewInstance } from 'react-native';
-import { COLORS as TOKENS, OUTLINE, SHADOWS, useReduceMotion, useTranslation } from '@/sdk';
+import { COLORS as TOKENS, OUTLINE, SHADOWS, useReduceMotion, useTranslation, Stage3D } from '@/sdk';
 import { ColorBlob } from './ColorBlob';
 import { DraggableResult } from './DraggableResult';
 import { RecipeRow } from './RecipeRow';
@@ -139,7 +139,7 @@ export function MixingZone({
       ]}
     >
       {/* The 3D bowl; the flat 2D pot stands in while three.js loads. */}
-      <Suspense
+      <Stage3D id="color-mixer"
         fallback={
           <View
             style={[
@@ -247,7 +247,7 @@ export function MixingZone({
           calm={calm}
         />
 
-      </Suspense>
+      </Stage3D>
 
       {/* What went in, on a pill above the pot. */}
       {recipe.length > 0 ? (

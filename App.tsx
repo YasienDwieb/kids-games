@@ -28,6 +28,10 @@ import { reloadApp, settleReload } from './src/sdk/i18n/reload';
 import './src/games'; // side-effect: registers all games + their translations
 import './src/flow'; // side-effect: registers flow units + topics
 import { initAnalytics } from './src/sdk/analytics/init';
+import { installErrorReporting } from './src/sdk/errors/report';
+import { ErrorBoundary } from './src/sdk/errors/ErrorBoundary';
+import { bootGl3D } from './src/sdk/three/support';
+import { CrashScreen } from './src/screens/CrashScreen';
 
 // @react-three/fiber 9 still uses THREE.Clock; three 0.18x warns on every Canvas mount.
 // Remounting a Lulu Canvas logs this on Android GL; harmless.
@@ -66,7 +70,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    installErrorReporting();
     initAnalytics();
+    // Decide 2D vs 3D (and catch a GL start-up crash last launch) before any board mounts.
+    void bootGl3D();
   }, []);
 
   // Sync language + RTL with persisted settings before first paint. If the
@@ -109,10 +116,14 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <NavigationContainer>
-          <RootNavigator />
-          <StatusBar style="dark" />
-        </NavigationContainer>
+        {/* A render error anywhere shows one big home button instead of closing the app;
+            pressing it rebuilds the navigator from Home. */}
+        <ErrorBoundary where="app" fallback={(reset) => <CrashScreen onHome={reset} />}>
+          <NavigationContainer>
+            <RootNavigator />
+            <StatusBar style="dark" />
+          </NavigationContainer>
+        </ErrorBoundary>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

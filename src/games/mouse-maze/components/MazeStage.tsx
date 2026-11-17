@@ -3,15 +3,16 @@
  * while three.js loads (three + react-three-fiber + expo-gl are only evaluated
  * once a maze is on screen).
  */
-import { Suspense, lazy, type ComponentProps } from 'react';
+import { lazy, type ComponentProps } from 'react';
+import { Stage3D } from '@/sdk';
 import { MazeView } from './MazeView';
 
 const MazeView3D = lazy(() => import('./MazeView3D').then((m) => ({ default: m.MazeView3D })));
 
 export function MazeStage(props: ComponentProps<typeof MazeView>) {
   return (
-    <Suspense fallback={<MazeView {...props} />}>
+    <Stage3D id="mouse-maze" fallback={<MazeView {...props} />}>
       <MazeView3D {...props} />
-    </Suspense>
+    </Stage3D>
   );
 }

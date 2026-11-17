@@ -15,7 +15,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { LogBox, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { Canvas, useFrame } from '@react-three/fiber/native';
+import { useFrame } from '@react-three/fiber/native';
+import { Canvas3D } from '@/sdk/three/Canvas3D';
 import {
   BoxGeometry,
   CylinderGeometry,
@@ -535,7 +536,7 @@ export function MazeView3D({ maze, cellSize, hintCells = NO_HINTS, showDemo = fa
     // Pinned LTR: grid columns and touch coordinates share a physical-left
     // origin — spatial puzzles must not mirror.
     <View style={[styles.root, { width: side, height: side }]}>
-      <Canvas flat camera={camera} gl={{ alpha: true }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
+      <Canvas3D flat camera={camera} gl={{ alpha: true }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
         <ClockTap target={clockNow} />
         <ambientLight intensity={0.8} />
         <directionalLight position={[2.5, 8, 5]} intensity={1.1} />
@@ -550,7 +551,7 @@ export function MazeView3D({ maze, cellSize, hintCells = NO_HINTS, showDemo = fa
           shared={shared}
         />
         <MouseToken key={state.level} board={board} start={state.player} motion={motion} shared={shared} />
-      </Canvas>
+      </Canvas3D>
       <GestureDetector gesture={drag}>
         <View style={StyleSheet.absoluteFill} />
       </GestureDetector>

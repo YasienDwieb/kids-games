@@ -49,6 +49,11 @@ export type GameConfig = {
   category?: GameCategory;
   layout?: GameLayoutOptions;
   /**
+   * The game has no 2D board (its `Stage3D` is `required`), so Home hides it on
+   * devices where 3D is off (`useGl3D() === 'off'`).
+   */
+  needs3D?: boolean;
+  /**
    * Swap shared sounds for this game only, e.g. `{ 'sfx.win': 'jingle.sax-10' }`
    * gives it its own win jingle. Every `play()` inside the game picks it up.
    */

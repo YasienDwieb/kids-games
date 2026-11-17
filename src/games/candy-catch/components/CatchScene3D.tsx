@@ -11,7 +11,8 @@
  */
 import { useMemo, useRef } from 'react';
 import { LogBox, StyleSheet, View } from 'react-native';
-import { Canvas, useFrame, useThree } from '@react-three/fiber/native';
+import { useFrame, useThree } from '@react-three/fiber/native';
+import { Canvas3D } from '@/sdk/three/Canvas3D';
 import {
   ExtrudeGeometry,
   MeshBasicMaterial,
@@ -262,13 +263,13 @@ export function CatchScene3D({ width, height, slots, contents, basketX, basketTi
   if (width <= 0 || height <= 0) return null;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-      <Canvas flat gl={{ alpha: true }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
+      <Canvas3D flat gl={{ alpha: true }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
         <CameraRig height={height} />
         <hemisphereLight args={[0xffffff, 0xffd9e6, 1.3]} />
         <directionalLight position={[-200, 500, 600]} intensity={1.5} />
         <Basket3D basketX={basketX} basketTilt={basketTilt} caughtAt={caughtAt} toScene={toScene} height={height} />
         <Items slots={slots} contents={contents} toScene={toScene} />
-      </Canvas>
+      </Canvas3D>
     </View>
   );
 }

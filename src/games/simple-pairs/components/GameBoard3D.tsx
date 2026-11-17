@@ -11,7 +11,8 @@
  */
 import { useMemo, useRef, useState } from 'react';
 import { LayoutChangeEvent, LogBox, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { Canvas, useFrame, useThree } from '@react-three/fiber/native';
+import { useFrame, useThree } from '@react-three/fiber/native';
+import { Canvas3D } from '@/sdk/three/Canvas3D';
 import {
   ExtrudeGeometry,
   MeshBasicMaterial,
@@ -248,7 +249,7 @@ export function GameBoard3D({ cards, onCardPress, disabled, columns }: Props) {
       {box.w > 0 && box.h > 0 ? (
         <>
           <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-            <Canvas flat gl={{ alpha: true }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
+            <Canvas3D flat gl={{ alpha: true }} onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}>
               <CameraRig height={box.h} />
               <hemisphereLight args={[0xffffff, 0xd8e6c8, 1.3]} />
               <directionalLight position={[-200, 400, 600]} intensity={1.4} />
@@ -257,7 +258,7 @@ export function GameBoard3D({ cards, onCardPress, disabled, columns }: Props) {
                   <CardMesh key={card.id} card={card} rect={rects[i]} map={map} pressed={pressed === card.id} />
                 ) : null,
               )}
-            </Canvas>
+            </Canvas3D>
           </View>
           {cards.map((card, i) => {
             const r = rects[i];
