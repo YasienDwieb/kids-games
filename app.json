@@ -47,6 +47,7 @@
       "expo-font",
       "expo-status-bar",
       "expo-asset",
+      "./plugins/withOptionalLandscape",
       [
         "expo-splash-screen",
         {
