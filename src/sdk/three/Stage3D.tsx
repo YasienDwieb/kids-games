@@ -7,8 +7,6 @@ type Props = {
   id: string;
   /** The 2D view: drawn while 3D loads, on devices without 3D, and if the 3D view throws. */
   fallback: ReactNode;
-  /** Several canvases on screen at once: needs a `full` device. */
-  heavy?: boolean;
   /** No 2D version exists: try 3D even where it's off (hide the game there instead, `needs3D`). */
   required?: boolean;
   /** The lazy 3D view. Its canvas must be a `Canvas3D`. */
@@ -19,10 +17,9 @@ type Props = {
  * Where every 3D board mounts: picks 2D or 3D for this device, waits for the
  * GL start-up queue, and falls back to 2D if the 3D view throws.
  */
-export function Stage3D({ id, fallback, heavy = false, required = false, children }: Props) {
+export function Stage3D({ id, fallback, required = false, children }: Props) {
   const support = useGl3D();
-  const allowed =
-    support != null && (required || support === 'full' || (support === 'lite' && !heavy));
+  const allowed = support != null && (required || support === 'on');
   const [slot, setSlot] = useState<GlSlot | null>(null);
 
   useEffect(() => {

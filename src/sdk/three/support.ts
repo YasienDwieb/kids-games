@@ -6,8 +6,9 @@
  * the driver refuses a config (`IllegalArgumentException: eglChooseConfig
  * failed`). JS can't catch that: the app just dies. So:
  *
- * - Weak Android devices (little RAM) get the 2D boards from the start, and
- *   "heavy" scenes (several canvases at once) need a roomier device.
+ * - Weak Android devices (little RAM) get the 2D boards from the start.
+ *   Boards use one canvas each; many small 3D things on one screen should be
+ *   pre-rendered sprites instead (Shape Detective, Animal Safari).
  * - Contexts start one at a time, a moment after the last one closed, so a
  *   new context never races another's setup or teardown.
  * - Before a context starts, a `pending` marker is written; it's cleared once
@@ -22,17 +23,15 @@ import * as Device from 'expo-device';
 import { createStore } from '../storage/createStore';
 import { track } from '../analytics/client';
 
-/** `off`: 2D only. `lite`: one canvas at a time. `full`: heavy scenes too. */
-export type Gl3DSupport = 'off' | 'lite' | 'full';
+/** `off`: 2D boards only. `on`: 3D boards. */
+export type Gl3DSupport = 'off' | 'on';
 
 // Android reports `totalMem` (what the kernel can use), which is always below
-// the RAM on the box: a "6 GB" phone reports ~5.5 GiB, a "3 GB" one ~2.7 GiB.
-// The thresholds sit between those classes, not on the marketed numbers.
+// the RAM on the box: a "3 GB" phone reports ~2.7 GiB, a "2 GB" one ~1.8 GiB.
+// The threshold sits between those classes, not on the marketed numbers.
 const GB = 1024 * 1024 * 1024;
 /** Below this (2 GB-class devices), Android gets no 3D at all. */
 export const MIN_3D_MEMORY = 2.5 * GB;
-/** Scenes with several canvases on screen (Animal Safari's tiles) need a 6 GB-class device. */
-export const HEAVY_3D_MEMORY = 5 * GB;
 
 export function supportFor(opts: {
   os: string;
@@ -40,11 +39,9 @@ export function supportFor(opts: {
   crashedHere: boolean;
 }): Gl3DSupport {
   if (opts.crashedHere) return 'off';
-  if (opts.os !== 'android') return 'full';
+  if (opts.os !== 'android') return 'on';
   const mem = opts.totalMemory;
-  if (mem == null) return 'lite';
-  if (mem < MIN_3D_MEMORY) return 'off';
-  return mem < HEAVY_3D_MEMORY ? 'lite' : 'full';
+  return mem != null && mem < MIN_3D_MEMORY ? 'off' : 'on';
 }
 
 type GlState = { pending: boolean; disabledBuild: string | null };

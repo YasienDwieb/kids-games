@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Safari sprites</title>
+<style>body{margin:0;background:#ddd;font:14px sans-serif} #log{padding:8px;white-space:pre}</style>
+<script type="importmap">
+{ "imports": {
+  "three": "/p/node_modules/three/build/three.module.js",
+  "three/addons/": "/p/node_modules/three/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="log"></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const ANIMALS = ['lion','elephant','cow','dog','cat','frog','horse','sheep','rooster','duck','bird','bee'];
+const RENDER = 640, FRAME = 320, COLS = 4, ROWS = 3, FRAMES = COLS * ROWS;
+const log = (m) => (document.getElementById('log').textContent += m + '\n');
+
+// Same look as the old in-app canvas (Animal3D): flat (no tone mapping),
+// hemisphere + key light, roughness 0.95 clay material.
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, preserveDrawingBuffer: true });
+renderer.toneMapping = THREE.NoToneMapping;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.setPixelRatio(1);
+renderer.setSize(RENDER, RENDER);
+renderer.setClearColor(0x000000, 0);
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0xe8dcc8, 1.4));
+const key = new THREE.DirectionalLight(0xffffff, 1.4);
+key.position.set(2, 3, 4);
+scene.add(key);
+const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+
+async function texture(id) {
+  const buf = new Uint8Array(await (await fetch(`/p/src/games/animal-safari/assets/models/${id}_tex.rgba`)).arrayBuffer());
+  const side = Math.round(Math.sqrt(buf.length / 4));
+  const tex = new THREE.DataTexture(buf, side, side, THREE.RGBAFormat);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.flipY = false;
+  tex.generateMipmaps = true;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+async function model(id) {
+  const buf = await (await fetch(`/p/src/games/animal-safari/assets/models/${id}.glb`)).arrayBuffer();
+  const gltf = await new GLTFLoader().parseAsync(buf, '');
+  const material = new THREE.MeshStandardMaterial({ map: await texture(id), roughness: 0.95, metalness: 0 });
+  gltf.scene.traverse((o) => { if (o.isMesh) o.material = material; });
+  // Normalise: largest side 1, centred on x/z, standing on y = 0.
+  const box = new THREE.Box3().setFromObject(gltf.scene);
+  const dims = box.getSize(new THREE.Vector3());
+  const s = 1 / Math.max(dims.x, dims.y, dims.z);
+  const c = box.getCenter(new THREE.Vector3());
+  gltf.scene.scale.setScalar(s);
+  gltf.scene.position.set(-c.x * s, -box.min.y * s, -c.z * s);
+  const pivot = new THREE.Group();
+  pivot.add(gltf.scene);
+  return { pivot, height: dims.y * s };
+}
+
+async function renderAnimal(id) {
+  const { pivot, height } = await model(id);
+  scene.add(pivot);
+  // Frame every angle the same: fit the sphere the model sweeps while turning,
+  // camera slightly above (like the old canvas), feet near the bottom edge.
+  const radius = Math.hypot(0.5, height / 2) * 1.06;
+  const dist = radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2));
+  const target = new THREE.Vector3(0, height / 2, 0);
+  camera.position.set(0, target.y + dist * 0.12, dist);
+  camera.lookAt(target);
+
+  // Render every angle, then crop all frames to the box they share, so the
+  // animal fills its cell and doesn't jump between frames.
+  const frames = [];
+  let x0 = RENDER, y0 = RENDER, x1 = 0, y1 = 0;
+  for (let i = 0; i < FRAMES; i++) {
+    // Frame 0 faces the viewer; frames turn a full circle (counter-clockwise from above).
+    pivot.rotation.y = (i / FRAMES) * Math.PI * 2;
+    renderer.render(scene, camera);
+    const c = document.createElement('canvas');
+    c.width = c.height = RENDER;
+    const cx = c.getContext('2d');
+    cx.drawImage(renderer.domElement, 0, 0);
+    const a = cx.getImageData(0, 0, RENDER, RENDER).data;
+    for (let y = 0; y < RENDER; y++) for (let x = 0; x < RENDER; x++) {
+      if (a[(y * RENDER + x) * 4 + 3] > 8) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    frames.push(c);
+  }
+  // Square crop, a little padding, centred horizontally, feet on the bottom pad.
+  const side = Math.ceil(Math.max(x1 - x0, y1 - y0) * 1.04);
+  const sx = Math.round((x0 + x1) / 2 - side / 2);
+  const sy = Math.round(y1 + side * 0.02 - side);
+  const sheet = document.createElement('canvas');
+  sheet.width = FRAME * COLS;
+  sheet.height = FRAME * ROWS;
+  const ctx = sheet.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  frames.forEach((c, i) => {
+    ctx.drawImage(c, sx, sy, side, side, (i % COLS) * FRAME, Math.floor(i / COLS) * FRAME, FRAME, FRAME);
+  });
+  scene.remove(pivot);
+  const blob = await new Promise((r) => sheet.toBlob(r, 'image/webp', 0.9));
+  const res = await fetch(`/save?name=${id}`, { method: 'POST', body: blob });
+  log(`${id}: ${res.ok ? 'saved' : 'FAILED'} (${Math.round(blob.size / 1024)} KB)`);
+  return sheet;
+}
+
+window.renderAll = async (only) => {
+  for (const id of only ?? ANIMALS) await renderAnimal(id);
+  log('done');
+  return 'done';
+};
+window.preview = async (id) => {
+  const sheet = await renderAnimal(id);
+  sheet.style.width = '100%';
+  document.body.appendChild(sheet);
+  return 'ok';
+};
+log('ready');
+</script>
+</body>
+</html>

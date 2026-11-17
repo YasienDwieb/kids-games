@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { acquireGlSlot, bootGl3D, HEAVY_3D_MEMORY, MIN_3D_MEMORY, resetGl3D, supportFor } from '../support';
+import { acquireGlSlot, bootGl3D, MIN_3D_MEMORY, resetGl3D, supportFor } from '../support';
 
 const KEY = 'kg:gl3d';
 const stored = async () => JSON.parse((await AsyncStorage.getItem(KEY)) ?? 'null');
@@ -14,25 +14,23 @@ describe('supportFor', () => {
     expect(supportFor({ os: 'ios', totalMemory: 8e9, crashedHere: true })).toBe('off');
   });
 
-  it('keeps iOS on full 3D', () => {
-    expect(supportFor({ os: 'ios', totalMemory: 2e9, crashedHere: false })).toBe('full');
+  it('keeps iOS on 3D', () => {
+    expect(supportFor({ os: 'ios', totalMemory: 2e9, crashedHere: false })).toBe('on');
   });
 
   it('grades Android by memory', () => {
     const at = (totalMemory: number | null) => supportFor({ os: 'android', totalMemory, crashedHere: false });
     expect(at(MIN_3D_MEMORY - 1)).toBe('off');
-    expect(at(MIN_3D_MEMORY)).toBe('lite');
-    expect(at(HEAVY_3D_MEMORY)).toBe('full');
-    expect(at(null)).toBe('lite');
+    expect(at(MIN_3D_MEMORY)).toBe('on');
+    expect(at(null)).toBe('on');
   });
 
   it('places real devices by the memory Android reports, not the box size', () => {
     const GiB = 1024 ** 3;
     const at = (reported: number) => supportFor({ os: 'android', totalMemory: reported * GiB, crashedHere: false });
     expect(at(1.8)).toBe('off'); // "2 GB" phone
-    expect(at(2.7)).toBe('lite'); // "3 GB"
-    expect(at(3.6)).toBe('lite'); // "4 GB"
-    expect(at(5.5)).toBe('full'); // "6 GB"
+    expect(at(2.7)).toBe('on'); // "3 GB"
+    expect(at(3.6)).toBe('on'); // "4 GB"
   });
 });
 
