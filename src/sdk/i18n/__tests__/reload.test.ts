@@ -49,3 +49,17 @@ describe('reloadApp boot guard', () => {
     expect(await freshModule().reloadApp('boot')).toBe(true);
   });
 });
+
+describe('reloadApp in a release build', () => {
+  it('reports a failed reload instead of claiming one is on its way', async () => {
+    mockReloadAsync.mockImplementationOnce(() => Promise.reject(new Error('ERR_UPDATES_RELOAD')));
+    const g = globalThis as { __DEV__?: boolean };
+    const dev = g.__DEV__;
+    g.__DEV__ = false;
+    try {
+      expect(await freshModule().reloadApp('boot')).toBe(false);
+    } finally {
+      g.__DEV__ = dev;
+    }
+  });
+});

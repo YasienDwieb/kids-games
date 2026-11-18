@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { LilitaOne_400Regular } from '@expo-google-fonts/lilita-one';
 import {
@@ -111,7 +112,16 @@ export default function App() {
     };
   }, []);
 
-  if (!fontsLoaded || !langReady) return null;
+  // Hide the native splash ourselves. Its automatic hide listens for React's
+  // first content, but a reload (the RTL one above) destroys the splash module
+  // and drops that listener — so after a reload the splash stayed up forever,
+  // blocking an app that had already rendered behind it.
+  const ready = fontsLoaded && langReady;
+  useEffect(() => {
+    if (ready) SplashScreen.hide();
+  }, [ready]);
+
+  if (!ready) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
