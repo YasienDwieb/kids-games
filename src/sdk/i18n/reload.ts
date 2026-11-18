@@ -43,10 +43,11 @@ export async function reloadApp(reason: 'switch' | 'boot' = 'switch'): Promise<b
   try {
     await Updates.reloadAsync();
   } catch {
-    // Dev / Expo Go: Updates is unavailable — use the dev reload.
-    if (typeof DevSettings?.reload === 'function') {
-      DevSettings.reload();
-    }
+    // Dev / Expo Go: Updates is unavailable — use the dev reload. In a release
+    // build DevSettings.reload is a no-op, so report that nothing reloaded
+    // rather than leave the caller waiting on a reload that never comes.
+    if (!__DEV__ || typeof DevSettings?.reload !== 'function') return false;
+    DevSettings.reload();
   }
   return true;
 }

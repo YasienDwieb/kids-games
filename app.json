@@ -48,6 +48,7 @@
       "expo-status-bar",
       "expo-asset",
       "./plugins/withOptionalLandscape",
+      "./plugins/withDefaultRTL",
       [
         "expo-splash-screen",
         {
