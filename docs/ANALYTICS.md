@@ -58,6 +58,29 @@ Config lives in `sinks/posthog.ts`: `personProfiles: 'never'` (anonymous events,
 
 The SDK adds native modules (`expo-application`, `expo-device`), so it ships with a **store build**, not OTA.
 
+## Dashboards
+
+The PostHog dashboards are code: `scripts/analytics/posthog-dashboards.mjs`. Edit an insight there and
+re-run; dashboards and insights are matched by name and updated in place (links stay), nothing is deleted.
+
+1. In PostHog → Settings → Personal API keys, create a key with scopes `dashboard:write`, `insight:write`,
+   `project:read`, limited to this project. It stays on your machine; never put it in the app or EAS env.
+2. Add to `.env.local` (git-ignored):
+   ```
+   POSTHOG_PERSONAL_API_KEY=phx_…
+   POSTHOG_PROJECT_ID=12345   # the number in the PostHog URL
+   ```
+3. `npm run analytics:dashboards` (`-- --dry-run` prints the queries; `-- --channel all` drops the
+   default dashboard filter `channel = production`, which keeps preview APKs out).
+
+| Dashboard | Answers |
+|---|---|
+| Overview | 7-day KPIs vs previous week, minutes per device per day, DAU/WAU, weekly and D1–D14 retention, days played per week, free vs journey, age band / language / platform, hour of day |
+| Games | per-game scorecard (plays, reach, plays per device, minutes, rounds, quit-before-first-round %, journey share), popularity, session length, first-play funnel, journeys |
+| Releases & stability | crashes 7d, errors per day, errors/crashes per 1k opens by version, top errors, version adoption, OTA update ids, `gl3d_disabled` |
+
+Counts are anonymous devices (`distinct_id`), not children. A shared tablet counts once.
+
 ## Store declarations (update before the release ships)
 
 - **Play Data safety**: App activity → App interactions: collected, not shared, processed not ephemerally,
