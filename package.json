@@ -12,7 +12,9 @@
     "voice:catalog": "VOICE_CATALOG_OUT=scripts/voice/catalog.json jest src/games/__tests__/voiceCatalog.test.ts",
     "voice:generate": "node --env-file-if-exists=.env.local scripts/voice/generate.mjs",
     "test:voice": "node --test scripts/voice/__tests__/*.test.mjs",
-    "voice:studio": "node --env-file-if-exists=.env.local scripts/voice/studio.mjs"
+    "voice:studio": "node --env-file-if-exists=.env.local scripts/voice/studio.mjs",
+    "test:analytics": "node --test scripts/analytics/__tests__/*.test.mjs",
+    "analytics:dashboards": "node --env-file-if-exists=.env.local scripts/analytics/posthog-dashboards.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/baloo-bhaijaan-2": "^0.4.2",
