@@ -3,7 +3,7 @@ export const SDK_VERSION = '0.1.0';
 
 // Config & registry
 export * from './config/types';
-export { registerGame, getGame, getAllGames, getGamesForAge } from './config/registry';
+export { registerGame, getGame, getAllGames, getGamesForAge, visibleGames, isGameHidden } from './config/registry';
 export { validateGameConfig } from './config/validate';
 
 // Design tokens (re-exported so games have one surface)

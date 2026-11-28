@@ -25,7 +25,7 @@ import {
   LANGUAGES,
   GAME_CATEGORIES,
   getGame,
-  getAllGames,
+  visibleGames,
   useGl3D,
   gamesForBand,
   useTranslation,
@@ -102,7 +102,7 @@ export function HomeScreen({ navigation }: Props) {
   // Games with no 2D board stay hidden where 3D is off (weak or GL-crashing devices);
   // shown while the check is still running (null) so the rail doesn't shift.
   const gl3d = useGl3D();
-  const visible = (settings.ageBand ? gamesForBand(settings.ageBand) : getAllGames()).filter(
+  const visible = (settings.ageBand ? gamesForBand(settings.ageBand) : visibleGames()).filter(
     (g) => !g.needs3D || gl3d !== 'off',
   );
   const categories = GAME_CATEGORIES.filter((c) => visible.some((g) => g.category === c));

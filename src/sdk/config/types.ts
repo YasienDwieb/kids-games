@@ -54,6 +54,11 @@ export type GameConfig = {
    */
   needs3D?: boolean;
   /**
+   * Ships hidden: the game is in the build but stays off Home and out of the
+   * journey until the content config lists its id in `catalogue.enabled`.
+   */
+  dark?: boolean;
+  /**
    * Swap shared sounds for this game only, e.g. `{ 'sfx.win': 'jingle.sax-10' }`
    * gives it its own win jingle. Every `play()` inside the game picks it up.
    */

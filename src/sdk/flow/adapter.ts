@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { isGameHidden } from '@/sdk/config/registry';
 
 /**
  * A single playable step in the guided flow. Content-first: the unit renders
@@ -41,9 +42,12 @@ export function getAllFlowAdapters(): FlowAdapter[] {
   return [...adapters.values()];
 }
 
-/** Ids of games eligible for guided mode (i.e. that registered an adapter). */
+/**
+ * Ids of games eligible for guided mode: registered an adapter and not kept
+ * from the child by the content config's catalogue.
+ */
 export function eligibleGameIds(): string[] {
-  return [...adapters.keys()];
+  return [...adapters.keys()].filter((id) => !isGameHidden(id));
 }
 
 /**
@@ -52,7 +56,7 @@ export function eligibleGameIds(): string[] {
  * preserved, unknown/ineligible ids ignored).
  */
 export function selectedAdapters(flowGameIds: string[] | null): FlowAdapter[] {
-  const all = getAllFlowAdapters();
+  const all = getAllFlowAdapters().filter((a) => !isGameHidden(a.gameId));
   if (flowGameIds == null) return all;
   const wanted = new Set(flowGameIds);
   return all.filter((a) => wanted.has(a.gameId));
