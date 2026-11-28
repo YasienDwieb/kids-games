@@ -6,8 +6,6 @@ import {
   currentLanguage,
   levelsFromGenerator,
   useRoundEnd,
-  useFirstRun,
-  useIdle,
   useLevels,
   useSound,
   useSpeech,
@@ -16,9 +14,10 @@ import { Hud } from './components/Hud';
 import { MazeStage } from './components/MazeStage';
 import { FRAME_PAD, HINT_MS, MAZE_COLORS } from './constants';
 import { useMaze, buildLevel, type StepResult } from './hooks/useMaze';
+import { useMazeHelp } from './hooks/useMazeHelp';
 import { mazePhrase } from './phrase';
 
-// Show the hand again after this long without a successful step.
+// Quiet time before the prompt repeats (or the hand shows, after wall bumps).
 const IDLE_HINT_MS = 9000;
 
 export default function MouseMazeGame() {
@@ -39,9 +38,9 @@ export default function MouseMazeGame() {
   const roundEnd = useRoundEnd();
 
   // First play: a ghost hand drags the mouse along the route. Afterwards it
-  // only comes back when the child has been stuck for a while.
-  const firstRun = useFirstRun('mouse-maze');
-  const { idle, poke } = useIdle(IDLE_HINT_MS, status === 'playing' && !state.won, 'mouse-maze');
+  // only comes back after wall bumps (useMazeHelp), never just for waiting.
+  const help = useMazeHelp({ active: status === 'playing' && !state.won, mazeKey: level, idleMs: IDLE_HINT_MS });
+  const helpStep = help.onStep;
 
   const { speak } = useSpeech();
   useEffect(() => {
@@ -64,14 +63,13 @@ export default function MouseMazeGame() {
 
   const handleStep = useCallback(
     (res: StepResult) => {
-      poke();
-      if (firstRun.status === 'show') firstRun.complete();
+      helpStep();
       if (res.reachedGoal) {
         play('win');
         void roundEnd.next('big', () => nextMaze.current());
       }
     },
-    [poke, firstRun, play, roundEnd],
+    [helpStep, play, roundEnd],
   );
 
   const handleHint = useCallback(() => {
@@ -97,7 +95,7 @@ export default function MouseMazeGame() {
     setArea({ width, height });
   }, []);
 
-  const showDemo = !state.won && (firstRun.status === 'show' || idle);
+  const showDemo = help.showDemo;
 
   if (status === 'loading') return <View style={styles.root} />;
   if (status === 'resumable') {
@@ -109,7 +107,7 @@ export default function MouseMazeGame() {
   }
 
   const mazeBoard = (
-    <MazeStage maze={maze} cellSize={cellSize} hintCells={hintCells} showDemo={showDemo} onStep={handleStep} />
+    <MazeStage maze={maze} cellSize={cellSize} hintCells={hintCells} showDemo={showDemo} onBump={help.onBump} onStep={handleStep} />
   );
 
   if (landscape) {

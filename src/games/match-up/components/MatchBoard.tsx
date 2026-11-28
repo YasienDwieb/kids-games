@@ -156,13 +156,15 @@ export function MatchBoard({
   const wrongTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const dragOrigin = useRef<{ row: Row; idx: number; anchor: Point; start: Point } | null>(null);
 
-  // Wrong links in a row: from the 2nd on the hand shows the next match.
+  // Wrong links in a row: from the 2nd on the hand shows the next match
+  // (and on the first play, as the tutorial — never just for waiting).
   const [misses, setMisses] = useState(0);
   const guide = useGuide({
     id: 'match-up',
     phrase: matchPhrase(round.promptKey, currentLanguage()),
     roundKey: round,
     active: connections.length < round.top.length,
+    pointsAtAnswer: true,
   });
   const nextTop = round.top.findIndex((_, i) => !connections.some((c) => c.topIdx === i));
   const helping = nextTop !== -1 && (guide.showDemo || misses >= 2);

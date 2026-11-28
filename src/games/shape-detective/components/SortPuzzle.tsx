@@ -182,6 +182,7 @@ export function SortPuzzle({ puzzle, onDrop, onSolved }: SortPuzzleProps): React
     phrase: puzzlePhrase('sort', currentLanguage()),
     roundKey: puzzle,
     active: !allPlaced,
+    pointsAtAnswer: true,
   });
 
   // Visual flash per item

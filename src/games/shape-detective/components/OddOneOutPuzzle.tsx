@@ -78,6 +78,7 @@ export function OddOneOutPuzzle({
     phrase: puzzlePhrase('oddOneOut', currentLanguage()),
     roundKey: puzzle,
     active: !disabled || answered,
+    pointsAtAnswer: true,
   });
 
   return (

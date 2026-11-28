@@ -8,8 +8,16 @@ jest.mock('../../speech/useSpeech', () => ({ useSpeech: () => ({ speak: mockSpea
 
 let latest: ReturnType<typeof useGuide>;
 
-function Probe({ roundKey = 1, active = true }: { roundKey?: number; active?: boolean }) {
-  latest = useGuide({ id: 'demo-game', phrase: 'How many?', roundKey, active });
+function Probe({
+  roundKey = 1,
+  active = true,
+  pointsAtAnswer = false,
+}: {
+  roundKey?: number;
+  active?: boolean;
+  pointsAtAnswer?: boolean;
+}) {
+  latest = useGuide({ id: 'demo-game', phrase: 'How many?', roundKey, active, pointsAtAnswer });
   return <Text>{String(latest.showDemo)}</Text>;
 }
 
@@ -56,5 +64,21 @@ it('shows the demo until the first touch, then only when idle, and repeats the p
 it('never shows the demo while inactive', async () => {
   const tree = await mount(<Probe active={false} />);
   expect(latest.showDemo).toBe(false);
+  act(() => tree.unmount());
+});
+
+it('never shows an answer-pointing hand just for waiting, but still repeats the prompt', async () => {
+  const tree = await mount(<Probe pointsAtAnswer />);
+  // First play: the hand teaches how to answer.
+  expect(latest.showDemo).toBe(true);
+  await act(async () => latest.poke());
+  expect(latest.showDemo).toBe(false);
+
+  mockSpeak.mockClear();
+  await act(async () => {
+    jest.advanceTimersByTime(9000);
+  });
+  expect(latest.showDemo).toBe(false);
+  expect(mockSpeak).toHaveBeenCalledTimes(1);
   act(() => tree.unmount());
 });

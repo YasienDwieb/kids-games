@@ -459,11 +459,12 @@ type MazeView3DProps = {
   hintCells?: Set<string>;
   showDemo?: boolean;
   onStep?: (res: StepResult) => void;
+  onBump?: () => void;
 };
 
 const NO_HINTS = new Set<string>();
 
-export function MazeView3D({ maze, cellSize, hintCells = NO_HINTS, showDemo = false, onStep }: MazeView3DProps) {
+export function MazeView3D({ maze, cellSize, hintCells = NO_HINTS, showDemo = false, onStep, onBump }: MazeView3DProps) {
   const { state, hintPath } = maze;
   const board = useMemo(() => ({ rows: state.rows, cols: state.cols }), [state.rows, state.cols]);
   const camera = useMemo(() => makeCamera(board), [board]);
@@ -487,6 +488,7 @@ export function MazeView3D({ maze, cellSize, hintCells = NO_HINTS, showDemo = fa
       onStep?.(res);
     },
     onBump: (from, to) => {
+      onBump?.();
       motion.current.bumpAt = clockNow.current;
       motion.current.bumpDir = [to.col - from.col, to.row - from.row];
     },

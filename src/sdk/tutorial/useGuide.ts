@@ -14,14 +14,23 @@ type GuideOptions = {
   roundKey?: unknown;
   /** False once the round is over, or while something covers it. */
   active?: boolean;
+  /**
+   * True when the demo hand points at the right answer (tap-the-answer and
+   * match rounds). The hand then only teaches the first play; a child who goes
+   * quiet hears the prompt again instead of being shown the answer. Help with
+   * the answer itself comes from wrong tries (the hint ladder in hints.ts).
+   */
+  pointsAtAnswer?: boolean;
 };
 
 /**
  * How a game explains itself without text: says the prompt when a round starts,
- * shows the hand on the first play, and does both again when a child goes idle.
- * Call `poke()` on every touch; the first one ends the first-run demo.
+ * shows the hand on the first play, and says the prompt again when a child goes
+ * idle. The idle hand comes back too, unless it would give the answer away
+ * (`pointsAtAnswer`). Call `poke()` on every touch; the first one ends the
+ * first-run demo.
  */
-export function useGuide({ id, phrase = null, roundKey, active = true }: GuideOptions) {
+export function useGuide({ id, phrase = null, roundKey, active = true, pointsAtAnswer = false }: GuideOptions) {
   const { speak } = useSpeech();
   const firstRun = useFirstRun(id);
   const { idle, poke: pokeIdle } = useIdle(IDLE_MS, active, id.split(':')[0]);
@@ -46,5 +55,6 @@ export function useGuide({ id, phrase = null, roundKey, active = true }: GuideOp
     if (status === 'show') complete();
   }, [pokeIdle, status, complete]);
 
-  return { showDemo: active && (status === 'show' || idle), poke, say };
+  const idleDemo = idle && !pointsAtAnswer;
+  return { showDemo: active && (status === 'show' || idleDemo), poke, say };
 }

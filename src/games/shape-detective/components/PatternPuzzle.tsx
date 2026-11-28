@@ -111,6 +111,7 @@ export function PatternPuzzle({
     phrase: puzzlePhrase('pattern', currentLanguage()),
     roundKey: puzzle,
     active: !disabled || answered,
+    pointsAtAnswer: true,
   });
 
   // The separator arrow points toward the question slot.
