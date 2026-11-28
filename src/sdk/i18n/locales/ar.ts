@@ -52,6 +52,7 @@ export const ar: CoreTranslations = {
       mariamHijab: 'حجاب',
     },
     unlockAt: 'المستوى {{n}}',
+    unlockOccasion: 'هدية {{occasion}}',
     items: {
       'party-hat': 'قبّعة الحفلة',
       cap: 'كاب',
@@ -63,7 +64,19 @@ export const ar: CoreTranslations = {
       bow: 'فيونكة',
       parrot: 'ببغاء',
       medal: 'ميدالية',
+      'crescent-moon': 'هلال',
+      'eid-balloon': 'بالون العيد',
+      'eid-sheep': 'خروف العيد',
     },
+  },
+  occasion: {
+    names: {
+      ramadan: 'رمضان',
+      'eid-al-fitr': 'عيد الفطر',
+      'eid-al-adha': 'عيد الأضحى',
+    },
+    gift: 'هدية {{occasion}}: {{item}}',
+    tryOn: 'جرّبها',
   },
   settings: {
     title: 'الإعدادات',

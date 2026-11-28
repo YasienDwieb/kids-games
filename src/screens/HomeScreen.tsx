@@ -15,7 +15,7 @@ import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList, GameConfig } from '../types';
 import { Chip, GameCard, Icon, IconButton, PressableButton, type IconName } from '../components/common';
-import { BuddyPicker, FeaturedCard, LevelPill, PopBackdrop } from '../components/pop';
+import { BuddyPicker, FeaturedCard, LevelPill, OccasionGift, PopBackdrop } from '../components/pop';
 import { isTablet } from '../utils/responsive';
 import { BORDER_RADIUS, COLORS, FONTS, OUTLINE, POP, SHADOWS, SPACING } from '../constants';
 import type { AccentName } from '../constants';
@@ -45,6 +45,8 @@ import {
   useBuddy,
   useBuddyLabel,
   useBuddyPicked,
+  useOccasion,
+  useOccasionWelcome,
 } from '@/sdk';
 import { reloadApp } from '@/sdk/i18n/reload';
 
@@ -84,6 +86,9 @@ export function HomeScreen({ navigation }: Props) {
   const buddy = useBuddy();
   const buddyName = useBuddyLabel();
   const buddyPicked = useBuddyPicked();
+  // Ramadan / Eid skin, plus the once-a-day greeting and the occasion's gift.
+  const occasion = useOccasion();
+  const { gift, dismissGift } = useOccasionWelcome(occasion, buddyPicked === true && focused);
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
   // Language switching restarts the app, so it asks first. That confirmation is
@@ -279,6 +284,15 @@ export function HomeScreen({ navigation }: Props) {
 
   // First launch (and existing players once): pick a buddy before playing.
   const buddyPicker = buddyPicked === false && focused ? <BuddyPicker /> : null;
+  const giftCard =
+    occasion && gift ? (
+      <OccasionGift
+        occasion={occasion.id}
+        outfit={gift}
+        onClose={dismissGift}
+        onTryOn={() => navigation.navigate('Wardrobe')}
+      />
+    ) : null;
 
   if (landscape) {
     // Body under the top bar: a buddy column, then one horizontal rail
@@ -297,7 +311,7 @@ export function HomeScreen({ navigation }: Props) {
 
     return (
       <View style={styles.safe}>
-        <PopBackdrop color={POP.zap} stripe={POP.zapDeep} />
+        <PopBackdrop color={POP.zap} stripe={POP.zapDeep} decor={occasion?.homeDecor} />
         <SafeAreaView style={styles.flex} edges={['top', 'left', 'right', 'bottom']}>
           <View style={styles.page}>
             {topBar}
@@ -362,6 +376,7 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </SafeAreaView>
         {languageDialog}
+        {giftCard}
         {buddyPicker}
       </View>
     );
@@ -372,7 +387,7 @@ export function HomeScreen({ navigation }: Props) {
   const contentW = width - insets.left - insets.right - PAD * 2;
   return (
     <View style={styles.safe}>
-      <PopBackdrop color={POP.zap} stripe={POP.zapDeep} />
+      <PopBackdrop color={POP.zap} stripe={POP.zapDeep} decor={occasion?.homeDecor} />
       <SafeAreaView style={styles.flex} edges={['top', 'left', 'right']}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.portrait}>
           {topBar}
@@ -401,6 +416,7 @@ export function HomeScreen({ navigation }: Props) {
         </ScrollView>
       </SafeAreaView>
       {languageDialog}
+      {giftCard}
       {buddyPicker}
     </View>
   );

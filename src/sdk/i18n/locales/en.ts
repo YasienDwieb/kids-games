@@ -51,6 +51,7 @@ export const en = {
       mariamHijab: 'Hijab',
     },
     unlockAt: 'Level {{n}}',
+    unlockOccasion: 'A gift for {{occasion}}',
     items: {
       'party-hat': 'Party hat',
       cap: 'Cap',
@@ -62,7 +63,19 @@ export const en = {
       bow: 'Bow',
       parrot: 'Parrot',
       medal: 'Medal',
+      'crescent-moon': 'Crescent moon',
+      'eid-balloon': 'Eid balloon',
+      'eid-sheep': 'Eid sheep',
     },
+  },
+  occasion: {
+    names: {
+      ramadan: 'Ramadan',
+      'eid-al-fitr': 'Eid al-Fitr',
+      'eid-al-adha': 'Eid al-Adha',
+    },
+    gift: 'A gift for {{occasion}}: {{item}}',
+    tryOn: 'Try it on',
   },
   settings: {
     title: 'Settings',

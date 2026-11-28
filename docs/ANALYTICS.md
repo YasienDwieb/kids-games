@@ -38,6 +38,7 @@ src/sdk/analytics/
 | `app_error` | `where` (`app`, `game:<id>`, `flow:<id>`, `3d:<id>`, `global`), `message` (≤100 chars), `fatal` |
 | `tutorial_shown` / `tutorial_done` | `id` (the `useFirstRun` id), `mode` |
 | `idle_hint` | `id` (game id), `mode` — the idle help came back (`useIdle` / `useGuide`) |
+| `occasion_seen` | `id` (`ramadan` / `eid-al-fitr` / `eid-al-adha`) — Home opened on an occasion day, once per day |
 | `gl3d_disabled` | — (last launch died starting a GL context; 3D is off on this build for this device) |
 
 Every event also carries `appVersion`, `build`, `updateId`, `channel`, `platform`, `language`, `ageBand`, `appMode`.

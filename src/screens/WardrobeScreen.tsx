@@ -30,6 +30,7 @@ import {
   useRewards,
   useTranslation,
   useWearing,
+  useGifts,
   wear,
   type BuddyArt,
   type Outfit,
@@ -48,6 +49,7 @@ export function WardrobeScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const rewards = useRewards();
   const wearing = useWearing();
+  const gifts = useGifts();
   const buddy = useBuddy();
   const art = useBuddyArt();
   const [picked, setTab] = useState<Tab>('hat');
@@ -63,7 +65,7 @@ export function WardrobeScreen({ navigation }: Props) {
   const worn = (slot: OutfitSlot) => outfitFor(wearing[slot], buddy)?.id ?? null;
 
   const toggle = (o: Outfit) => {
-    if (!isUnlocked(o, level)) return;
+    if (!isUnlocked(o, level, gifts)) return;
     void wear(o.slot, worn(o.slot) === o.id ? null : o.id);
   };
 
@@ -176,7 +178,10 @@ export function WardrobeScreen({ navigation }: Props) {
             ) : (
               <View style={styles.grid}>
                 {items.map((o) => {
-                  const open = isUnlocked(o, level);
+                  const open = isUnlocked(o, level, gifts);
+                  const locked = o.occasion
+                    ? t('wardrobe.unlockOccasion', { occasion: t(`occasion.names.${o.occasion}`) })
+                    : t('wardrobe.unlockAt', { n: o.level });
                   const on = worn(o.slot) === o.id;
                   const name = t(`wardrobe.items.${o.id}`);
                   return (
@@ -186,7 +191,7 @@ export function WardrobeScreen({ navigation }: Props) {
                       disabled={!open}
                       accessibilityRole="button"
                       accessibilityState={{ selected: on, disabled: !open }}
-                      accessibilityLabel={open ? name : `${name}, ${t('wardrobe.unlockAt', { n: o.level })}`}
+                      accessibilityLabel={open ? name : `${name}, ${locked}`}
                       style={({ pressed }) => [
                         styles.tile,
                         open ? (on ? styles.tileOn : SHADOWS.sm) : styles.tileLocked,
