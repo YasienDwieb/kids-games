@@ -41,7 +41,7 @@ export default function MouseMazeGame() {
   // First play: a ghost hand drags the mouse along the route. Afterwards it
   // only comes back when the child has been stuck for a while.
   const firstRun = useFirstRun('mouse-maze');
-  const { idle, poke } = useIdle(IDLE_HINT_MS, status === 'playing' && !state.won);
+  const { idle, poke } = useIdle(IDLE_HINT_MS, status === 'playing' && !state.won, 'mouse-maze');
 
   const { speak } = useSpeech();
   useEffect(() => {
