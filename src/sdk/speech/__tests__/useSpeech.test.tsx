@@ -1,10 +1,14 @@
 import React from 'react';
-import { act, create, type ReactTestRenderer } from 'react-test-renderer';
+import { act, create } from 'react-test-renderer';
 import { createAudioPlayer } from 'expo-audio';
 import * as Speech from 'expo-speech';
 import { stopSpeech, useSpeech } from '../useSpeech';
 import { clipKey } from '../clipKey';
 import { STALL_MS } from '@/sdk/audio/releasePlayer';
+
+// The renderer instance type, as other tests here spell it (the named
+// `ReactTestRenderer` import resolves to a namespace under this setup).
+type Renderer = ReturnType<typeof create>;
 
 jest.mock('expo-speech', () => ({ speak: jest.fn(), stop: jest.fn() }));
 jest.mock('../clips.generated', () => ({ CLIPS: { 'ar:كَاف. كُرَة': 1, 'en:Q. Queen': 2 } }));
@@ -19,15 +23,15 @@ type Player = {
   addListener: jest.Mock;
 };
 
-const mounted: ReactTestRenderer[] = [];
+const mounted: Renderer[] = [];
 
-function mount(): { api: Api; tree: ReactTestRenderer } {
+function mount(): { api: Api; tree: Renderer } {
   let api!: Api;
   function Probe() {
     api = useSpeech();
     return null;
   }
-  let tree!: ReactTestRenderer;
+  let tree!: Renderer;
   act(() => {
     tree = create(<Probe />);
   });
