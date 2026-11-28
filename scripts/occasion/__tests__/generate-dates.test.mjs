@@ -1,3 +1,4 @@
+// Run: node --test scripts/occasion/__tests__/*.test.mjs (no npm script: package.json scripts are part of the native fingerprint, so a new one would force a store build).
 // protects=the committed occasion table is exactly what the generator produces; fails_when=someone hand-edits dates.generated.ts or changes the generator without regenerating; no_claim=does not prove Umm al-Qura matches local moon sighting
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
