@@ -2,25 +2,27 @@
  * Mouse Maze — guided-flow adapter.
  *
  * Each journey unit is one small maze (5×5 or 6×6) on the same maze board the
- * standalone game uses; it completes when the mouse reaches the cheese. If the
- * child stalls, the demo hand traces the next few cells.
+ * standalone game uses; it completes when the mouse reaches the cheese. The
+ * demo hand (next few cells) follows the same rule as the game: first play, or
+ * after wall bumps (useMazeHelp).
  */
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import { currentLanguage, registerFlowAdapter, useFlowRound, useIdle, useSpeech } from '@/sdk';
+import { currentLanguage, registerFlowAdapter, useFlowRound, useSpeech } from '@/sdk';
 import { MazeStage } from './components/MazeStage';
 import { buildLevel, useMaze, type MazeState } from './hooks/useMaze';
+import { useMazeHelp } from './hooks/useMazeHelp';
 import { FRAME_PAD } from './constants';
 import { mazePhrase } from './phrase';
 
 // Sizes stay small: a journey step, not a marathon. Level 1 = 5×5, 2 = 6×6.
 const LADDER = [1, 1, 2, 1, 2, 2];
-const IDLE_HINT_MS = 7000;
+const IDLE_HINT_MS = 9000;
 
 function MazeFlowRound({ initial, onComplete }: { initial: MazeState; onComplete: () => void }) {
   const maze = useMaze(initial);
   const { complete, solved } = useFlowRound(onComplete);
-  const { idle, poke } = useIdle(IDLE_HINT_MS, !solved, 'mouse-maze');
+  const help = useMazeHelp({ active: !solved, mazeKey: initial, idleMs: IDLE_HINT_MS });
   const { speak } = useSpeech();
   useEffect(() => {
     void speak(mazePhrase(currentLanguage()));
@@ -42,9 +44,10 @@ function MazeFlowRound({ initial, onComplete }: { initial: MazeState; onComplete
       <MazeStage
         maze={maze}
         cellSize={cellSize}
-        showDemo={idle}
+        showDemo={help.showDemo}
+        onBump={help.onBump}
         onStep={(res) => {
-          poke();
+          help.onStep();
           if (res.reachedGoal) complete();
         }}
       />

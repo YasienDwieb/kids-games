@@ -26,11 +26,13 @@ type MazeViewProps = {
   showDemo?: boolean;
   /** Called after every successful step (including the one reaching the cheese). */
   onStep?: (res: StepResult) => void;
+  /** Called when the mouse is pushed into a wall (once per wall). */
+  onBump?: () => void;
 };
 
 const NO_HINTS = new Set<string>();
 
-export function MazeView({ maze, cellSize, hintCells = NO_HINTS, showDemo = false, onStep }: MazeViewProps) {
+export function MazeView({ maze, cellSize, hintCells = NO_HINTS, showDemo = false, onStep, onBump }: MazeViewProps) {
   const { state, hintPath } = maze;
 
   // Fresh value per level so the mouse always starts at the top-left start cell.
@@ -57,6 +59,7 @@ export function MazeView({ maze, cellSize, hintCells = NO_HINTS, showDemo = fals
   const drive = useMazeDrive(maze, {
     onStep,
     onBump: () => {
+      onBump?.();
       bump.setValue(0);
       Animated.sequence([
         Animated.timing(bump, { toValue: 1, duration: 60, useNativeDriver: true }),

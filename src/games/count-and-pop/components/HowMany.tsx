@@ -160,6 +160,7 @@ export function HowMany({
     phrase: mode === 'makeN' ? makePhrase(round.target, currentLanguage()) : questionPhrase(mode, currentLanguage()),
     roundKey: round,
     active: !disabled,
+    pointsAtAnswer: true,
   });
 
   // Build per-choice state

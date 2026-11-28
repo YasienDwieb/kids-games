@@ -220,7 +220,7 @@ export function ListenFindBoard({
   renderImage,
 }: ListenFindBoardProps): React.JSX.Element {
   const answered = selectedIndex !== null;
-  const guide = useGuide({ id: guideId, roundKey: correctIndex, active: !disabled });
+  const guide = useGuide({ id: guideId, roundKey: correctIndex, active: !disabled, pointsAtAnswer: true });
   // Pulse the speaker so a child knows they can tap to hear it again.
   const beat = useLoop(1200, { enabled: !disabled });
 
