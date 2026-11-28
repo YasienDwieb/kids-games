@@ -132,6 +132,19 @@ export function CatchField({
   const areaW = useSharedValue(0);
   const areaH = useSharedValue(0);
   const spawnAcc = useSharedValue(0);
+  // The measured width as JS sees it. A shared value written on the JS thread
+  // can still read back stale right after the write, so placement code that runs
+  // on the JS thread (mount reset, first layout) goes through this ref instead
+  // of reading `areaW.value`; reading it there left the basket at x = -w/2.
+  const widthRef = useRef(0);
+  const centreBasket = useCallback(
+    (width: number) => {
+      const x = Math.max(0, width / 2 - BASKET_WIDTH / 2);
+      basketX.value = x;
+      basketTarget.value = x;
+    },
+    [basketX, basketTarget],
+  );
   const spawnEvery = useSharedValue(data.spawnInterval);
   const fallSpeed = useSharedValue(data.fallSpeed);
 
@@ -162,9 +175,9 @@ export function CatchField({
     livesRef.current = maxLives ?? 0;
     endedRef.current = false;
     setPops([]);
-    basketX.value = areaW.value / 2 - BASKET_WIDTH / 2;
-    basketTarget.value = basketX.value;
-  }, [clearField, basketX, basketTarget, areaW]);
+    // Until the field is measured, onLayout centres the basket instead.
+    if (widthRef.current > 0) centreBasket(widthRef.current);
+  }, [clearField, centreBasket]);
 
   // Each field instance is one attempt: hosts remount it (key) for a new level
   // or a retry, so it only needs resetting once, on mount.
@@ -379,15 +392,13 @@ export function CatchField({
     (e: LayoutChangeEvent) => {
       const { width, height } = e.nativeEvent.layout;
       setSize({ w: width, h: height });
-      const first = areaW.value === 0;
+      const first = widthRef.current === 0;
+      widthRef.current = width;
       areaW.value = width;
       areaH.value = height;
-      if (first) {
-        basketX.value = width / 2 - BASKET_WIDTH / 2;
-        basketTarget.value = basketX.value;
-      }
+      if (first) centreBasket(width);
     },
-    [areaW, areaH, basketX, basketTarget],
+    [areaW, areaH, centreBasket],
   );
 
   // Pinned LTR so coords never mirror under RTL. This view is also the one Pan
