@@ -282,6 +282,14 @@ export function SettingsScreen({ navigation }: Props) {
         ) : (
           <View style={[styles.columns, landscape && styles.columnsLandscape]}>
             <View style={[styles.column, landscape && styles.columnLandscape]}>
+              <View style={styles.card}>
+                <ToggleRow
+                  icon="🌙"
+                  label={t('settings.guided.moments')}
+                  value={settings.momentsEnabled}
+                  onChange={(v) => update({ momentsEnabled: v })}
+                />
+              </View>
               <Text style={styles.section}>{t('settings.guided.games')}</Text>
               <View style={styles.bands}>
                 {flowGames.map((id) => (

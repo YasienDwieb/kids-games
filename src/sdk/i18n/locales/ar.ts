@@ -69,6 +69,10 @@ export const ar: CoreTranslations = {
       'eid-sheep': 'خروف العيد',
     },
   },
+  moments: {
+    done: 'تمّ',
+    listenAgain: 'استمع مرة أخرى',
+  },
   occasion: {
     names: {
       ramadan: 'رمضان',
@@ -91,6 +95,7 @@ export const ar: CoreTranslations = {
     guided: {
       games: 'الألعاب في الرحلة',
       reset: 'إعادة الرحلة',
+      moments: 'لحظات إسلامية (قرآن، حديث، أدعية، وضوء وصلاة)',
     },
     tabs: {
       general: 'عام',

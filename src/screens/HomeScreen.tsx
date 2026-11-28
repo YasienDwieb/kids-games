@@ -32,8 +32,8 @@ import {
   gameCover,
   gameName,
   selectedAdapters,
-  sequenceLength,
-  buildSequence,
+  journeySequence,
+  useJourneyMoments,
   createFlowProgressStore,
   doneCounts,
   firstOpenStep,
@@ -115,7 +115,9 @@ export function HomeScreen({ navigation }: Props) {
 
   // --- Guided adventure (the featured card) ---
   const adapters = selectedAdapters(settings.flowGameIds);
-  const journeyTotal = sequenceLength(adapters);
+  const moments = useJourneyMoments();
+  const sequence = journeySequence(adapters, moments);
+  const journeyTotal = sequence.length;
   const [savedFlow, setSavedFlow] = useState<FlowProgress>(DEFAULT_FLOW_PROGRESS);
   const flowStore = useMemo(() => createFlowProgressStore(), []);
   // Re-read the checkpoint each time Home regains focus so the card reflects
@@ -134,7 +136,6 @@ export function HomeScreen({ navigation }: Props) {
 
   // Progress is counted per game, so it stays right when the journey's game
   // list changes (an update adds a game, a parent toggles one in Settings).
-  const sequence = journeyTotal > 0 ? buildSequence(adapters) : [];
   const done = doneCounts(sequence, savedFlow);
   const savedStep = sequence.filter((s) => s.localIndex < (done[s.gameId] ?? 0)).length;
   const nextStep = sequence[Math.min(firstOpenStep(sequence, done), sequence.length - 1)];

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FlowAdapter, FlowUnit } from './adapter';
 import { getFlowAdapter } from './adapter';
-import { buildSequence, sequenceLength } from './sequence';
+import { journeySequence, MOMENTS_ID } from './sequence';
 import {
   createFlowProgressStore, doneCounts, firstOpenStep, legacySequence, newSeed,
   type FlowPosition, type FlowProgress,
@@ -26,12 +26,16 @@ export type UseFlowResult = {
  * sequence, resolves/persists the resume step, and resolves the current unit
  * from the responsible game's adapter. Scoreless.
  */
-export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
-  const { adapters } = args;
+export function useFlow(args: {
+  adapters: FlowAdapter[];
+  /** Journey moments slotted between game units (null/omitted = none). */
+  moments?: { adapter: FlowAdapter; every: number; max: number } | null;
+}): UseFlowResult {
+  const { adapters, moments = null } = args;
   const store = useMemo(() => createFlowProgressStore(), []);
 
-  const sequence = useMemo(() => buildSequence(adapters), [adapters]);
-  const total = useMemo(() => sequenceLength(adapters), [adapters]);
+  const sequence = useMemo(() => journeySequence(adapters, moments), [adapters, moments]);
+  const total = sequence.length;
   const sequenceRef = useRef(sequence);
   sequenceRef.current = sequence;
   const adaptersRef = useRef(adapters);
@@ -120,9 +124,9 @@ export function useFlow(args: { adapters: FlowAdapter[] }): UseFlowResult {
     if (position == null || position.done) return null;
     const seqStep = sequence[position.step];
     if (!seqStep) return null;
-    const adapter = getFlowAdapter(seqStep.gameId);
+    const adapter = seqStep.gameId === MOMENTS_ID ? moments?.adapter : getFlowAdapter(seqStep.gameId);
     return adapter ? adapter.unitAt(seqStep.localIndex, seedRef.current) : null;
-  }, [position, sequence]);
+  }, [position, sequence, moments]);
 
   if (position == null || (!position.done && position.step >= sequence.length)) {
     return { status: 'loading', gameId: null, step: 0, total, unit: null, advance, reset };
