@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, create } from 'react-test-renderer';
 import { Text } from 'react-native';
 import { useFirstRun, tutorialStore, type FirstRunStatus } from '../useFirstRun';
+import { resetAnalytics, setupAnalytics } from '@/sdk/analytics/client';
+import type { EventProps } from '@/sdk/analytics/types';
 
 let latest: { status: FirstRunStatus; complete: () => void };
 
@@ -44,4 +46,30 @@ it('tracks demos independently', async () => {
   });
   expect(latest.status).toBe('show');
   act(() => tree.unmount());
+});
+
+it('reports the demo being shown and finished, once each', async () => {
+  resetAnalytics();
+  const events: Array<[string, EventProps]> = [];
+  await setupAnalytics([
+    { name: 'mem', track: (e, p) => events.push([e, p]), setEnabled: () => {}, flush: async () => {} },
+  ]);
+  let tree!: ReturnType<typeof create>;
+  await act(async () => {
+    tree = create(<Probe id="trace-it" />);
+  });
+  await act(async () => {
+    latest.complete();
+    latest.complete();
+  });
+  act(() => tree.unmount());
+  await act(async () => {
+    tree = create(<Probe id="trace-it" />);
+  });
+  act(() => tree.unmount());
+  expect(events.map(([e, p]) => [e, p.id])).toEqual([
+    ['tutorial_shown', 'trace-it'],
+    ['tutorial_done', 'trace-it'],
+  ]);
+  resetAnalytics();
 });

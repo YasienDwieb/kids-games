@@ -63,7 +63,7 @@ export function Round({ char, mode, onFinished, inFlow = false }: RoundProps) {
   );
 
   const firstRun = useFirstRun('trace-it');
-  const { idle, poke } = useIdle(IDLE_MS, !finished);
+  const { idle, poke } = useIdle(IDLE_MS, !finished, 'trace-it');
   const [firstStroke, setFirstStroke] = useState(true);
 
   const sayChar = useCallback(() => {

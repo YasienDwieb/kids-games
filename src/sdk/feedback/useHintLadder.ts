@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { noteHintLadder, noteMiss, noteRoundStart } from '../analytics/client';
 import { hintStepFor, starsForMisses, type HintStep } from './hints';
 
 export type UseHintLadderResult = {
@@ -24,12 +25,17 @@ export function useHintLadder(roundKey: unknown): UseHintLadderResult {
   const missesRef = useRef(0);
   const [misses, setMisses] = useState(0);
 
+  // Lets round_complete report misses and the hint reached (analytics).
+  useEffect(() => noteHintLadder(), []);
+
   useEffect(() => {
     missesRef.current = 0;
     setMisses(0);
+    noteRoundStart();
   }, [roundKey]);
 
   const miss = useCallback((): HintStep => {
+    noteMiss();
     missesRef.current += 1;
     setMisses(missesRef.current);
     return hintStepFor(missesRef.current);

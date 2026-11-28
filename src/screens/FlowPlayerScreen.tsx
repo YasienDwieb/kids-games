@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
   awardStars, CelebrationProvider, ErrorBoundary, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
-  track, usePlaySession,
+  markSessionEnd, track, usePlaySession,
   COLORS, SPACING, Star, TOUCH_TARGET,
 } from '@/sdk';
 import { BackButton } from '../components/common';
@@ -44,7 +44,10 @@ export function FlowPlayerScreen({ navigation }: Props) {
   // Report finishing the journey only on the transition, not on re-opening it done.
   const lastStatus = useRef(status);
   useEffect(() => {
-    if (lastStatus.current === 'playing' && status === 'done') track('journey_done', { total });
+    if (lastStatus.current === 'playing' && status === 'done') {
+      track('journey_done', { total });
+      markSessionEnd('complete');
+    }
     lastStatus.current = status;
   }, [status, total]);
 
@@ -75,7 +78,13 @@ export function FlowPlayerScreen({ navigation }: Props) {
   return (
     <View style={styles.root}>
       <CelebrationProvider>
-        <PlayLimitGate trackId="journey" onHome={() => navigation.goBack()}>
+        <PlayLimitGate
+          trackId="journey"
+          onHome={() => {
+            markSessionEnd('limit');
+            navigation.goBack();
+          }}
+        >
           <SceneCanvas progress={progress}>
             {status === 'playing' && unit ? (
               <Animated.View style={[styles.fill, contentPad, { opacity: fade }]}>

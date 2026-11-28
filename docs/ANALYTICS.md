@@ -17,6 +17,10 @@ src/sdk/analytics/
 
 - Callers use `track(event, props)` / `usePlaySession(gameId, mode)` from `@/sdk`; never a vendor API.
 - `round_complete` comes from `awardStars`, so every game that awards stars is covered with no per-game code.
+  `misses`/`hint` come from `useHintLadder` (and `useChoiceHints`/`useFlowRound` on top of it), also with no per-game code.
+- `game_end.endedBy` is set by the player screens (`markSessionEnd`): the game-exit context (`useRoundEnd().end`) is
+  `complete`, the error boundary `error`, the play-limit break `limit`; anything else is `back`. A game the OS killed in
+  the background sends no `game_end`, so starts minus ends counts those.
 - Swapping vendors = add `sinks/<vendor>.ts` and select it in `init.ts`. To migrate without losing trends,
   return both sinks from `init.ts` for a few weeks, then drop the old one.
 - Settings → General → "Share anonymous usage stats" (`settings.analyticsEnabled`, default on) stops all
@@ -28,10 +32,12 @@ src/sdk/analytics/
 |---|---|
 | `app_open` | — |
 | `game_start` | `gameId`, `mode` (`free` / `journey`) |
-| `game_end` | `gameId`, `mode`, `durationSec` (foreground only), `rounds` |
-| `round_complete` | `gameId`, `mode`, `stars` |
+| `game_end` | `gameId`, `mode`, `durationSec` (foreground only), `rounds`, `endedBy` (`complete` / `back` / `error` / `limit`), `secondsToFirstRound` (null if none), `backgrounded` |
+| `round_complete` | `gameId`, `mode`, `stars`, `misses` + `hint` (`none` / `retry` / `highlight` / `reveal`), both null when the game has no hint ladder |
 | `journey_done` | `total` |
 | `app_error` | `where` (`app`, `game:<id>`, `flow:<id>`, `3d:<id>`, `global`), `message` (≤100 chars), `fatal` |
+| `tutorial_shown` / `tutorial_done` | `id` (the `useFirstRun` id), `mode` |
+| `idle_hint` | `id` (game id), `mode` — the idle help came back (`useIdle` / `useGuide`) |
 | `gl3d_disabled` | — (last launch died starting a GL context; 3D is off on this build for this device) |
 
 Every event also carries `appVersion`, `build`, `updateId`, `channel`, `platform`, `language`, `ageBand`, `appMode`.

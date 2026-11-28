@@ -1,7 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppState } from 'react-native';
 import { DEFAULT_SETTINGS, settingsStore } from '@/sdk/settings/store';
 import { awardStars } from '@/sdk/rewards/store';
 import {
+  markSessionEnd,
+  noteHintLadder,
+  noteMiss,
+  noteRoundStart,
   resetAnalytics,
   setupAnalytics,
   startPlaySession,
@@ -105,4 +110,73 @@ it('counts every star award as a finished round', async () => {
     mode: 'journey',
     stars: 1,
   })]);
+});
+
+it('says why a session ended: back by default, otherwise the first mark wins', async () => {
+  const m = memorySink();
+  await setupAnalytics([m.sink]);
+  startPlaySession('match-up', 'free')();
+  const end = startPlaySession('match-up', 'free');
+  markSessionEnd('complete');
+  markSessionEnd('error');
+  end();
+  const ends = m.events.filter(([e]) => e === 'game_end').map(([, p]) => p);
+  expect(ends[0]).toMatchObject({ endedBy: 'back', secondsToFirstRound: null, backgrounded: false });
+  expect(ends[1]).toMatchObject({ endedBy: 'complete' });
+});
+
+it('marks nothing once the session has ended', async () => {
+  const m = memorySink();
+  await setupAnalytics([m.sink]);
+  startPlaySession('match-up', 'free')();
+  markSessionEnd('complete');
+  startPlaySession('match-up', 'free')();
+  expect(m.events.filter(([e]) => e === 'game_end').map(([, p]) => p.endedBy)).toEqual(['back', 'back']);
+});
+
+it('times the first finished round', async () => {
+  const m = memorySink();
+  await setupAnalytics([m.sink]);
+  jest.useFakeTimers({ now: 1_000_000 });
+  const original = Object.getOwnPropertyDescriptor(AppState, 'currentState');
+  Object.defineProperty(AppState, 'currentState', { value: 'active', configurable: true });
+  try {
+    const end = startPlaySession('trace-it', 'free');
+    jest.setSystemTime(1_012_400);
+    trackRound('trace-it', 3);
+    jest.setSystemTime(1_030_000);
+    trackRound('trace-it', 3);
+    end();
+  } finally {
+    if (original) Object.defineProperty(AppState, 'currentState', original);
+    jest.useRealTimers();
+  }
+  expect(m.events.at(-1)![1]).toMatchObject({ secondsToFirstRound: 12, durationSec: 30 });
+});
+
+it('reports misses and the hint reached only while a hint ladder is mounted', async () => {
+  const m = memorySink();
+  await setupAnalytics([m.sink]);
+  trackRound('turbo-road', 1);
+  const off = noteHintLadder();
+  noteRoundStart();
+  trackRound('shape-detective', 3);
+  noteMiss();
+  noteMiss();
+  trackRound('shape-detective', 1);
+  noteMiss();
+  noteRoundStart();
+  noteMiss();
+  noteMiss();
+  noteMiss();
+  trackRound('shape-detective', 1);
+  off();
+  trackRound('turbo-road', 1);
+  expect(m.events.map(([, p]) => [p.misses, p.hint])).toEqual([
+    [null, null],
+    [0, 'none'],
+    [2, 'highlight'],
+    [3, 'reveal'],
+    [null, null],
+  ]);
 });

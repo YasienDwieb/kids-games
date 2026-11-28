@@ -24,7 +24,7 @@ type GuideOptions = {
 export function useGuide({ id, phrase = null, roundKey, active = true }: GuideOptions) {
   const { speak } = useSpeech();
   const firstRun = useFirstRun(id);
-  const { idle, poke: pokeIdle } = useIdle(IDLE_MS, active);
+  const { idle, poke: pokeIdle } = useIdle(IDLE_MS, active, id.split(':')[0]);
 
   const phraseRef = useRef(phrase);
   phraseRef.current = phrase;
