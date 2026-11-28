@@ -72,14 +72,16 @@ export function BuddyFigure({ size = 140, mood = 'idle', interactive = false, we
       <Mascot buddy={who} pose={pose} size={size} wearing={wearing ?? saved} />
     </Animated.View>
   );
-  // Stands on the ground at the buddy's side (start/end follow RTL), not worn.
+  // Stands on the ground behind the buddy, on the start side (the buddy faces
+  // end, toward the content; on Home the start side is the screen edge, so it
+  // never covers the rail). start follows RTL. Never worn.
   const art = companion ? occasion?.companion.art : undefined;
   const artSize = size * 0.5;
   const side = art ? (
     <View
       pointerEvents="none"
       testID="occasion-companion"
-      style={{ position: 'absolute', bottom: size * 0.02, end: -artWidth(art, artSize) * 0.35 }}
+      style={{ position: 'absolute', bottom: size * 0.02, start: -artWidth(art, artSize) * 0.35 }}
     >
       <ArtPiece art={art} size={artSize} />
     </View>
