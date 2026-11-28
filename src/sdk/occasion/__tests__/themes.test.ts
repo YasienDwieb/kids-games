@@ -2,7 +2,7 @@ import { OCCASION_THEMES } from '../themes';
 import { occasionPhrase } from '../phrase';
 import { validateBackdropConfig } from '@/sdk/flow/backdrop/validate';
 import { OCCASION_IDS } from '@/sdk/content/types';
-import { OUTFITS, isUnlocked, unlocksAt, outfitById } from '@/sdk/player/outfits';
+import { garlandPoints } from '../art/Garland';
 import { getEmojiImage } from '@/sdk/assets/emoji/images';
 
 describe('occasion themes', () => {
@@ -11,16 +11,13 @@ describe('occasion themes', () => {
     expect(() => validateBackdropConfig(OCCASION_THEMES[id].journeyBackdrop)).not.toThrow();
   });
 
-  // protects=Home decor never falls back to device emoji fonts; fails_when=a decor emoji has no bundled image; no_claim=none beyond protects
-  it.each(OCCASION_IDS)('%s decor uses bundled emoji images', (id) => {
-    OCCASION_THEMES[id].homeDecor.forEach((d) => expect(getEmojiImage(d.emoji)).toBeDefined());
-  });
-
-  // protects=each occasion's gift is a real wardrobe item tagged with that occasion; fails_when=the theme names a missing or mis-tagged outfit; no_claim=none beyond protects
-  it.each(OCCASION_IDS)('%s gift is an outfit for that occasion', (id) => {
-    const item = outfitById(OCCASION_THEMES[id].outfit);
-    expect(item?.occasion).toBe(id);
-    expect(getEmojiImage(item!.emoji)).toBeDefined();
+  // protects=the light string never falls back to device emoji fonts; fails_when=a garland emoji has no bundled image; no_claim=the drawn fanoos is checked by rendering in the Home test
+  it.each(OCCASION_IDS)('%s garland uses bundled or drawn art', (id) => {
+    const { garland, companion } = OCCASION_THEMES[id];
+    expect(garland.length).toBeGreaterThan(0);
+    [...garland, companion.art].forEach((a) => {
+      if (a.kind === 'emoji') expect(getEmojiImage(a.emoji)).toBeDefined();
+    });
   });
 
   // protects=the greeting exists in both languages; fails_when=a language returns an empty phrase; no_claim=clip coverage is voiceClips.test.ts
@@ -30,29 +27,14 @@ describe('occasion themes', () => {
   });
 });
 
-describe('occasion gifts in the wardrobe', () => {
-  const gifts = OUTFITS.filter((o) => o.occasion);
-
-  // protects=gifts open only once given, whatever the level; fails_when=a high level unlocks an ungiven gift or a given one stays locked; no_claim=none beyond protects
-  it('unlocks a gift only when given', () => {
-    gifts.forEach((g) => {
-      expect(isUnlocked(g, 99)).toBe(false);
-      expect(isUnlocked(g, 1, [g.id])).toBe(true);
-    });
-  });
-
-  // protects=the level-up card never shows an occasion gift; fails_when=unlocksAt(0) or any level returns a gift; no_claim=none beyond protects
-  it('never appears on the level-up card', () => {
-    for (let level = 0; level <= 20; level++) {
-      expect(unlocksAt(level, 'mariam').some((o) => o.occasion)).toBe(false);
-      expect(unlocksAt(level, 'anas').some((o) => o.occasion)).toBe(false);
-    }
-  });
-
-  // protects=level items behave as before; fails_when=passing gifts changes level unlocking; no_claim=none beyond protects
-  it('leaves level items unchanged', () => {
-    const crown = outfitById('crown')!;
-    expect(isUnlocked(crown, crown.level - 1, ['crown'])).toBe(false);
-    expect(isUnlocked(crown, crown.level)).toBe(true);
+describe('garlandPoints', () => {
+  // protects=the string droops symmetrically from the top corners and never lifts above the top edge; fails_when=points go negative, the curve is lopsided, or the middle doesn't sag the full amount; no_claim=does not check the drawn wire pixels
+  it('sags evenly and stays below the top edge', () => {
+    const pts = garlandPoints(1000, 40, 9);
+    expect(pts).toHaveLength(9);
+    pts.forEach((p) => expect(p.y).toBeGreaterThanOrEqual(0));
+    expect(pts[0].y).toBeCloseTo(pts[8].y);
+    expect(pts[4].y).toBeCloseTo(40);
+    expect(pts[0].x).toBeCloseTo(1000 - pts[8].x);
   });
 });

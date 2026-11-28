@@ -1,40 +1,34 @@
 import { useEffect, useMemo } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { EmojiImage } from '@/components/common/EmojiImage';
-import { Icon } from '@/components/common/Icon';
-import { PressableButton } from '@/components/common/PressableButton';
 import { Sunburst } from './Sunburst';
 import { ACCENTS, COLORS, POP } from '@/constants/colors';
 import { BORDER_RADIUS, OUTLINE, SHADOWS, SPACING } from '@/constants/dimensions';
 import type { OccasionId } from '@/sdk/content/types';
 import { BuddyFigure } from '@/sdk/mascot/BuddyFigure';
-import { outfitById } from '@/sdk/player/outfits';
-import { wear } from '@/sdk/player/outfitStore';
+import { ArtPiece } from '@/sdk/occasion/art/ArtPiece';
+import type { OccasionTheme } from '@/sdk/occasion/themes';
 
 /** How long the card stays up before it closes by itself. */
 const CARD_MS = 4500;
 
 /**
- * The occasion's wardrobe gift, shown once on Home the first time the child
- * opens the app during the occasion: buddy cheering, the item, a try-it-on
- * button. Closes by itself; the item stays in the wardrobe either way.
+ * The occasion's gift, shown on Home the first time the child opens the app
+ * during the occasion each year: the buddy cheering beside the companion (a
+ * fanoos in Ramadan), which then stands beside the buddy for the rest of it.
+ * Closes by itself or on a tap.
  */
 export function OccasionGift({
   occasion,
-  outfit,
+  companion,
   onClose,
-  onTryOn,
 }: {
   occasion: OccasionId;
-  outfit: string;
+  companion: OccasionTheme['companion'];
   onClose: () => void;
-  /** After wearing it, e.g. open the wardrobe. */
-  onTryOn?: () => void;
 }) {
   const { t } = useTranslation();
   const enter = useMemo(() => new Animated.Value(0), []);
-  const item = outfitById(outfit);
 
   useEffect(() => {
     Animated.spring(enter, { toValue: 1, friction: 6, tension: 70, useNativeDriver: true }).start();
@@ -42,34 +36,34 @@ export function OccasionGift({
     return () => clearTimeout(timer);
   }, [enter, onClose]);
 
-  if (!item) return null;
   const label = t('occasion.gift', {
     occasion: t(`occasion.names.${occasion}`),
-    item: t(`wardrobe.items.${item.id}`),
+    item: t(`occasion.companions.${companion.id}`),
   });
-
-  const tryOn = () => {
-    void wear(item.slot, item.id);
-    onClose();
-    onTryOn?.();
-  };
 
   return (
     <Animated.View style={[StyleSheet.absoluteFill, styles.root, { opacity: enter }]}>
       <View style={styles.burst} pointerEvents="none">
         <Sunburst color={ACCENTS.purple.base} size={1400} />
       </View>
-      {/* Tapping anywhere else closes it early. */}
-      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessible={false} />
-      <View style={styles.middle}>
-        <BuddyFigure size={180} mood="cheer" />
-        <View style={[styles.card, SHADOWS.md]} accessible accessibilityLabel={label}>
-          <EmojiImage emoji={item.emoji} size={64} />
-        </View>
+      <Pressable
+        style={StyleSheet.absoluteFill}
+        onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      />
+      <View style={styles.middle} pointerEvents="none">
+        <BuddyFigure size={180} mood="cheer" companion={false} />
+        <Animated.View
+          style={[
+            styles.card,
+            SHADOWS.md,
+            { transform: [{ scale: enter.interpolate({ inputRange: [0, 1], outputRange: [0.6, 1] }) }] },
+          ]}
+        >
+          <ArtPiece art={companion.art} size={120} />
+        </Animated.View>
       </View>
-      <PressableButton accessibilityLabel={t('occasion.tryOn')} color={ACCENTS.green.base} onPress={tryOn}>
-        <Icon name="shirt" size={30} />
-      </PressableButton>
     </Animated.View>
   );
 }
@@ -79,7 +73,6 @@ const styles = StyleSheet.create({
     backgroundColor: POP.grape,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: SPACING.lg,
     overflow: 'hidden',
     zIndex: 50,
   },

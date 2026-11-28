@@ -46,14 +46,14 @@ const ramadan = OCCASION_THEMES.ramadan;
 // protects=the first Ramadan visit gives the gift, greets once and reports occasion_seen once; fails_when=no gift, no greeting, or duplicate reports; no_claim=speech and analytics are mocked
 it('gives the gift and greets on the first visit', async () => {
   await mount(ramadan);
-  expect(result.gift).toBe('crescent-moon');
-  expect(await giftsStore.get()).toEqual(['crescent-moon']);
+  expect(result.gift).toBe('fanoos');
+  expect(await giftsStore.get()).toEqual([`fanoos:${new Date().getFullYear()}`]);
   expect(mockSpeak).toHaveBeenCalledWith('Ramadan Mubarak!');
   expect(mockTrack).toHaveBeenCalledWith('occasion_seen', { id: 'ramadan' });
   expect(mockTrack).toHaveBeenCalledTimes(1);
 });
 
-// protects=the greeting is once per day and the gift once ever; fails_when=a second visit the same day greets again or shows the gift again; no_claim=does not change the device date (the date key is tested via greetedStore)
+// protects=the greeting is once per day and the gift once per occasion each year; fails_when=a second visit the same day greets again or shows the gift again; no_claim=does not change the device date (the date key is tested via greetedStore)
 it('does not repeat on a second visit the same day', async () => {
   await mount(ramadan);
   mockSpeak.mockClear();

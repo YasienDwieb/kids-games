@@ -52,7 +52,6 @@ export const ar: CoreTranslations = {
       mariamHijab: 'حجاب',
     },
     unlockAt: 'المستوى {{n}}',
-    unlockOccasion: 'هدية {{occasion}}',
     items: {
       'party-hat': 'قبّعة الحفلة',
       cap: 'كاب',
@@ -64,9 +63,6 @@ export const ar: CoreTranslations = {
       bow: 'فيونكة',
       parrot: 'ببغاء',
       medal: 'ميدالية',
-      'crescent-moon': 'هلال',
-      'eid-balloon': 'بالون العيد',
-      'eid-sheep': 'خروف العيد',
     },
   },
   occasion: {
@@ -75,8 +71,12 @@ export const ar: CoreTranslations = {
       'eid-al-fitr': 'عيد الفطر',
       'eid-al-adha': 'عيد الأضحى',
     },
+    companions: {
+      fanoos: 'فانوس رمضان',
+      'eid-balloons': 'بالونات العيد',
+      'eid-sheep': 'خروف العيد',
+    },
     gift: 'هدية {{occasion}}: {{item}}',
-    tryOn: 'جرّبها',
   },
   settings: {
     title: 'الإعدادات',

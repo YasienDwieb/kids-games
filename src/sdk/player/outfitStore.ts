@@ -15,10 +15,10 @@ export async function wear(slot: OutfitSlot, id: string | null): Promise<void> {
   await outfitStore.set({ ...cur, [slot]: id });
 }
 
-/** Occasion wardrobe items the child has been given (kg:outfit-gifts). Kept forever. */
+/** Occasion gifts already shown, as `<companion>:<year>` (kg:outfit-gifts). */
 export const giftsStore = createStore<string[]>('outfit-gifts', []);
 
-/** Give an occasion item. Resolves true the first time, false if already owned. */
+/** Record a gift as given. Resolves true the first time, false if it was already given. */
 export async function unlockGift(id: string): Promise<boolean> {
   const cur = await giftsStore.get();
   if (cur.includes(id)) return false;

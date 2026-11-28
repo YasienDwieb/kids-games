@@ -286,12 +286,7 @@ export function HomeScreen({ navigation }: Props) {
   const buddyPicker = buddyPicked === false && focused ? <BuddyPicker /> : null;
   const giftCard =
     occasion && gift ? (
-      <OccasionGift
-        occasion={occasion.id}
-        outfit={gift}
-        onClose={dismissGift}
-        onTryOn={() => navigation.navigate('Wardrobe')}
-      />
+      <OccasionGift occasion={occasion.id} companion={occasion.companion} onClose={dismissGift} />
     ) : null;
 
   if (landscape) {
@@ -311,7 +306,7 @@ export function HomeScreen({ navigation }: Props) {
 
     return (
       <View style={styles.safe}>
-        <PopBackdrop color={POP.zap} stripe={POP.zapDeep} decor={occasion?.homeDecor} />
+        <PopBackdrop color={POP.zap} stripe={POP.zapDeep} garland={occasion?.garland} />
         <SafeAreaView style={styles.flex} edges={['top', 'left', 'right', 'bottom']}>
           <View style={styles.page}>
             {topBar}
@@ -387,7 +382,7 @@ export function HomeScreen({ navigation }: Props) {
   const contentW = width - insets.left - insets.right - PAD * 2;
   return (
     <View style={styles.safe}>
-      <PopBackdrop color={POP.zap} stripe={POP.zapDeep} decor={occasion?.homeDecor} />
+      <PopBackdrop color={POP.zap} stripe={POP.zapDeep} garland={occasion?.garland} />
       <SafeAreaView style={styles.flex} edges={['top', 'left', 'right']}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.portrait}>
           {topBar}

@@ -2,25 +2,26 @@ import type { ImageSourcePropType } from 'react-native';
 import type { OccasionId } from '@/sdk/content/types';
 import { getEmojiImage } from '@/sdk/assets/emoji/images';
 import { BACKDROP } from '@/sdk/flow/backdrop/config';
+import type { OccasionArt } from './art/ArtPiece';
 import type { BackdropConfig } from '@/sdk/flow/backdrop/types';
 
-export type DecorSpot = 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end';
-
-/** One picture laid over the Home backdrop. `size` is a fraction of the short screen side. */
-export type HomeDecor = { emoji: string; spot: DecorSpot; size: number };
+export type { OccasionArt } from './art/ArtPiece';
 
 /**
- * An occasion's skin: pictures over Home, the journey's backdrop, the wardrobe
- * gift and the greeting. Placeholder art uses bundled Noto emoji until
- * illustrated sets land (swap `homeDecor` / `journeyBackdrop` sources only).
+ * An occasion's skin: a string of lights across the top of Home and the
+ * journey, the journey's backdrop, and a companion that stands beside the big
+ * buddy (given once per occasion each year, shown on the gift card). Stand-in
+ * art today (a drawn fanoos and bundled Noto emoji); an illustrated set swaps
+ * in as `image` pieces.
  */
 export type OccasionTheme = {
   id: OccasionId;
-  homeDecor: readonly HomeDecor[];
+  /** Pieces hung along the light string, cycled across the screen width. */
+  garland: readonly OccasionArt[];
   /** Must pass `validateBackdropConfig`. */
   journeyBackdrop: BackdropConfig;
-  /** Wardrobe item id (an `Outfit` with `occasion: id`). */
-  outfit: string;
+  /** Stands beside the big buddy during the occasion. `id` names it (i18n `occasion.companions.<id>`). */
+  companion: { id: string; art: OccasionArt };
 };
 
 const img = (emoji: string): ImageSourcePropType => {
@@ -51,37 +52,28 @@ function backdrop(paletteRamp: readonly string[], sky: string[]): BackdropConfig
   };
 }
 
+const fanoos: OccasionArt = { kind: 'fanoos' };
+const emoji = (e: string): OccasionArt => ({ kind: 'emoji', emoji: e });
+
 export const OCCASION_THEMES: Record<OccasionId, OccasionTheme> = {
   // Dusk violet into lantern gold: the evenings of Ramadan.
   ramadan: {
     id: 'ramadan',
-    homeDecor: [
-      { emoji: '🌙', spot: 'top-end', size: 0.2 },
-      { emoji: '⭐', spot: 'top-start', size: 0.08 },
-      { emoji: '⭐', spot: 'bottom-end', size: 0.06 },
-    ],
+    garland: [fanoos, emoji('🌙'), emoji('⭐'), emoji('🌙')],
     journeyBackdrop: backdrop(['#E9E4F7', '#EDE3F2', '#FBEFD6'], ['🌙', '⭐', '⭐', '⭐']),
-    outfit: 'crescent-moon',
+    companion: { id: 'fanoos', art: fanoos },
   },
   // Bright morning of Eid: balloons and sweets.
   'eid-al-fitr': {
     id: 'eid-al-fitr',
-    homeDecor: [
-      { emoji: '🎈', spot: 'top-end', size: 0.16 },
-      { emoji: '🍬', spot: 'bottom-end', size: 0.08 },
-      { emoji: '⭐', spot: 'top-start', size: 0.08 },
-    ],
+    garland: [emoji('🎈'), emoji('⭐'), emoji('🍬'), emoji('⭐')],
     journeyBackdrop: backdrop(['#FDF1F6', '#F3F0FB', '#FFF4D9'], ['🎈', '⭐', '🎈', '⭐']),
-    outfit: 'eid-balloon',
+    companion: { id: 'eid-balloons', art: emoji('🎈') },
   },
   'eid-al-adha': {
     id: 'eid-al-adha',
-    homeDecor: [
-      { emoji: '🐑', spot: 'bottom-end', size: 0.16 },
-      { emoji: '🌙', spot: 'top-end', size: 0.12 },
-      { emoji: '⭐', spot: 'top-start', size: 0.08 },
-    ],
+    garland: [emoji('🌙'), emoji('⭐'), fanoos, emoji('⭐')],
     journeyBackdrop: backdrop(['#EEF6EA', '#F1F3E6', '#FCEFD8'], ['🌙', '⭐', '⭐']),
-    outfit: 'eid-sheep',
+    companion: { id: 'eid-sheep', art: emoji('🐑') },
   },
 };

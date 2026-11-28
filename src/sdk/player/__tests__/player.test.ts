@@ -35,8 +35,7 @@ describe('outfits', () => {
   });
 
   it('gives every buddy one item per level, so both progress the same', () => {
-    // Occasion gifts don't unlock by level, so they're outside this rule.
-    const levels = (b: (typeof BUDDIES)[number]) => outfitsFor(b).filter((o) => !o.occasion).map((o) => o.level);
+    const levels = (b: (typeof BUDDIES)[number]) => outfitsFor(b).map((o) => o.level);
     for (const b of BUDDIES) expect(new Set(levels(b)).size).toBe(levels(b).length);
     expect(levels('anas')).toEqual(levels('mariam'));
   });
