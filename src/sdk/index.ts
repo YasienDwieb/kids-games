@@ -239,3 +239,5 @@ export { gameName, gameShortName, gameDescription, gameCover } from './i18n/game
 
 // Guided flow engine
 export * from './flow';
+// Content config — game catalogue, occasion themes, journey moments (bundled JSON, validated)
+export * from './content';

@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "revision": "2026-11-28.1",
+  "catalogue": { "order": [], "hidden": [], "enabled": [] },
+  "themes": { "force": null, "dates": {} },
+  "moments": { "enabled": false, "every": 4, "maxPerJourney": 2, "types": ["ayah", "hadith", "dua", "howto"] }
+}
