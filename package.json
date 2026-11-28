@@ -14,8 +14,7 @@
     "test:voice": "node --test scripts/voice/__tests__/*.test.mjs",
     "voice:studio": "node --env-file-if-exists=.env.local scripts/voice/studio.mjs",
     "test:analytics": "node --test scripts/analytics/__tests__/*.test.mjs",
-    "analytics:dashboards": "node --env-file-if-exists=.env.local scripts/analytics/posthog-dashboards.mjs",
-    "test:occasion": "node --test scripts/occasion/__tests__/*.test.mjs"
+    "analytics:dashboards": "node --env-file-if-exists=.env.local scripts/analytics/posthog-dashboards.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/baloo-bhaijaan-2": "^0.4.2",
