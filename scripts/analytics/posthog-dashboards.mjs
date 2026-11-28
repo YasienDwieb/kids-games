@@ -198,6 +198,97 @@ const DASHBOARDS = [
           LIMIT 100`),
       },
       {
+        name: 'How game sessions end',
+        description:
+          'finished = the game ended itself; back_before_round = left before finishing a round (confusing or not fun); backgrounded = the app left the screen mid-game. Only sessions from builds that send endedBy.',
+        query: sql(`
+          SELECT
+            properties.gameId AS game,
+            count() AS sessions,
+            round(100 * countIf(properties.endedBy = 'complete') / count()) AS finished_pct,
+            round(100 * countIf(properties.endedBy = 'back' AND ${num('rounds')} = 0) / count()) AS back_before_round_pct,
+            round(100 * countIf(properties.endedBy = 'back' AND ${num('rounds')} > 0) / count()) AS back_after_rounds_pct,
+            round(100 * countIf(properties.endedBy IN ('error', 'limit')) / count()) AS error_or_limit_pct,
+            round(100 * countIf(toString(properties.backgrounded) = 'true') / count()) AS backgrounded_pct,
+            round(quantileIf(0.5)(${num('secondsToFirstRound')}, properties.secondsToFirstRound IS NOT NULL)) AS median_sec_to_first_round
+          FROM events
+          WHERE event = 'game_end' AND properties.endedBy IS NOT NULL AND {filters}
+          GROUP BY game
+          ORDER BY sessions DESC
+          LIMIT 100`),
+      },
+      {
+        name: 'Session endings',
+        query: trends({ series: [ev('game_end')], breakdown: 'endedBy', display: 'ActionsPie', props: [prop('endedBy', '', 'is_set')] }),
+      },
+      {
+        name: 'Hints needed per game',
+        description:
+          'Rounds from games on the shared hint ladder. first_try = no miss; retry / highlight / reveal = the furthest hint the round needed. A high reveal_pct means the game is too hard for the children playing it.',
+        query: sql(`
+          SELECT
+            properties.gameId AS game,
+            count() AS rounds,
+            round(100 * countIf(properties.hint = 'none') / count()) AS first_try_pct,
+            round(100 * countIf(properties.hint = 'retry') / count()) AS retry_pct,
+            round(100 * countIf(properties.hint = 'highlight') / count()) AS highlight_pct,
+            round(100 * countIf(properties.hint = 'reveal') / count()) AS reveal_pct,
+            round(avg(${num('misses')}), 2) AS avg_misses
+          FROM events
+          WHERE event = 'round_complete' AND properties.hint IS NOT NULL AND {filters}
+          GROUP BY game
+          ORDER BY reveal_pct DESC
+          LIMIT 100`),
+      },
+      {
+        name: 'Hints needed by age band',
+        description: 'Same as above, split by the age band a grown-up picked. Shows whether a band gets games that are too hard.',
+        query: sql(`
+          SELECT
+            properties.ageBand AS age_band,
+            count() AS rounds,
+            round(100 * countIf(properties.hint = 'none') / count()) AS first_try_pct,
+            round(100 * countIf(properties.hint = 'reveal') / count()) AS reveal_pct,
+            round(avg(${num('misses')}), 2) AS avg_misses
+          FROM events
+          WHERE event = 'round_complete' AND properties.hint IS NOT NULL AND {filters}
+          GROUP BY age_band
+          ORDER BY rounds DESC`),
+      },
+      {
+        name: 'Tutorial completion',
+        description: 'Devices that saw a first-run demo, and how many went on to finish it (first touch).',
+        query: sql(`
+          SELECT
+            properties.id AS demo,
+            uniqIf(distinct_id, event = 'tutorial_shown') AS devices_shown,
+            uniqIf(distinct_id, event = 'tutorial_done') AS devices_done,
+            round(100 * devices_done / nullIf(devices_shown, 0)) AS done_pct,
+            round(countIf(event = 'tutorial_shown') / nullIf(devices_shown, 0), 1) AS shows_per_device
+          FROM events
+          WHERE event IN ('tutorial_shown', 'tutorial_done') AND {filters}
+          GROUP BY demo
+          ORDER BY devices_shown DESC`),
+      },
+      {
+        name: 'Idle help per game',
+        description:
+          'How often a child sat stuck long enough for the help to come back, per 10 finished rounds of that game. Rounds from older builds count too, so this reads low until the new build is everywhere.',
+        query: sql(`
+          SELECT game, idle_hints, devices, rounds, round(10 * idle_hints / nullIf(rounds, 0), 1) AS idle_per_10_rounds
+          FROM (
+            SELECT
+              if(event = 'idle_hint', properties.id, properties.gameId) AS game,
+              countIf(event = 'idle_hint') AS idle_hints,
+              uniqIf(distinct_id, event = 'idle_hint') AS devices,
+              countIf(event = 'round_complete') AS rounds
+            FROM events
+            WHERE event IN ('idle_hint', 'round_complete') AND {filters}
+            GROUP BY game)
+          WHERE idle_hints > 0
+          ORDER BY idle_per_10_rounds DESC`),
+      },
+      {
         name: 'Most played games',
         query: trends({ series: [ev('game_start')], breakdown: 'gameId', limit: 50, display: 'ActionsBarValue' }),
       },

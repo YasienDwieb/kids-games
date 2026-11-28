@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { BackHandler, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
@@ -14,6 +14,7 @@ import {
   type BackInterceptor,
   type SoundOverrides,
   usePlaySession,
+  markSessionEnd,
 } from '@/sdk';
 import { BackButton } from '../components/common';
 import { PlayLimitGate } from './PlayLimitGate';
@@ -40,6 +41,16 @@ export function GamePlayerScreen({ route, navigation }: Props) {
     navigation.goBack();
   }, [navigation]);
 
+  // Every exit but back says why the session ended (game_end.endedBy).
+  const exitAs = useCallback(
+    (reason: 'complete' | 'error' | 'limit') => () => {
+      markSessionEnd(reason);
+      navigation.goBack();
+    },
+    [navigation],
+  );
+  const exitComplete = useMemo(() => exitAs('complete'), [exitAs]);
+
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () =>
       interceptorRef.current?.() ? true : false,
@@ -62,18 +73,18 @@ export function GamePlayerScreen({ route, navigation }: Props) {
   const layout = game.layout ?? {};
   // A game that throws while rendering sends the child back Home instead of closing the app.
   const gameBody = (
-    <ErrorBoundary where={`game:${gameId}`} fallback={null} onError={() => navigation.goBack()}>
+    <ErrorBoundary where={`game:${gameId}`} fallback={null} onError={exitAs('error')}>
       <Game />
     </ErrorBoundary>
   );
 
   return (
     <ScreenBackContext.Provider value={setInterceptor}>
-      <GameExitContext.Provider value={navigation.goBack}>
+      <GameExitContext.Provider value={exitComplete}>
       <SoundOverridesContext.Provider value={game.sounds ?? NO_OVERRIDES}>
         {/* Celebrations float over the whole screen, in both layout modes. */}
         <CelebrationProvider>
-          <PlayLimitGate trackId={gameId} onHome={() => navigation.goBack()}>
+          <PlayLimitGate trackId={gameId} onHome={exitAs('limit')}>
             {layout.mode === 'bare' ? (
               // Bare mode: game composes its own canvas; we float a back button.
               <View style={[styles.container, { backgroundColor: game.backgroundColor }]}>

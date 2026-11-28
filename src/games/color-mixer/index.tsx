@@ -118,7 +118,7 @@ export default function ColorMixerGame() {
   // sits empty for a while, so a child who hasn't worked out the drag is shown again.
   const firstRun = useFirstRun('color-mixer');
   const potEmpty = mixer.mixLog.length === 0;
-  const { idle, poke } = useIdle(8000, potEmpty);
+  const { idle, poke } = useIdle(8000, potEmpty, 'color-mixer');
   const onFirstDrop = () => {
     poke();
     if (firstRun.status === 'show') firstRun.complete();

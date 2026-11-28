@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { currentPlayMode, track } from '@/sdk/analytics/client';
 import { createStore } from '@/sdk/storage/createStore';
 
 /** Which tutorials the child has already completed (stored under kg:tutorial). */
@@ -15,11 +16,18 @@ export type FirstRunStatus = 'loading' | 'show' | 'done';
  */
 export function useFirstRun(id: string): { status: FirstRunStatus; complete: () => void } {
   const [status, setStatus] = useState<FirstRunStatus>('loading');
+  const showing = useRef(false);
 
   useEffect(() => {
     let alive = true;
     tutorialStore.get().then((p) => {
-      if (alive) setStatus(p.seen.includes(id) ? 'done' : 'show');
+      if (!alive) return;
+      const show = !p.seen.includes(id);
+      setStatus(show ? 'show' : 'done');
+      if (show && !showing.current) {
+        showing.current = true;
+        track('tutorial_shown', { id, mode: currentPlayMode() });
+      }
     });
     return () => {
       alive = false;
@@ -27,6 +35,10 @@ export function useFirstRun(id: string): { status: FirstRunStatus; complete: () 
   }, [id]);
 
   const complete = useCallback(() => {
+    if (showing.current) {
+      showing.current = false;
+      track('tutorial_done', { id, mode: currentPlayMode() });
+    }
     setStatus('done');
     void tutorialStore.get().then((p) => {
       if (!p.seen.includes(id)) return tutorialStore.set({ seen: [...p.seen, id] });

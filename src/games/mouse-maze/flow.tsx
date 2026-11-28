@@ -20,7 +20,7 @@ const IDLE_HINT_MS = 7000;
 function MazeFlowRound({ initial, onComplete }: { initial: MazeState; onComplete: () => void }) {
   const maze = useMaze(initial);
   const { complete, solved } = useFlowRound(onComplete);
-  const { idle, poke } = useIdle(IDLE_HINT_MS, !solved);
+  const { idle, poke } = useIdle(IDLE_HINT_MS, !solved, 'mouse-maze');
   const { speak } = useSpeech();
   useEffect(() => {
     void speak(mazePhrase(currentLanguage()));

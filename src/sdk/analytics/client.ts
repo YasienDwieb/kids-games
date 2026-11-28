@@ -1,6 +1,7 @@
 import { AppState, type NativeEventSubscription } from 'react-native';
 import { DEFAULT_SETTINGS, settingsStore, type Settings } from '@/sdk/settings/store';
-import type { AnalyticsEvents, EventName, PlayMode } from './events';
+import { hintStepFor } from '@/sdk/feedback/hints';
+import type { AnalyticsEvents, EndReason, EventName, HintReached, PlayMode } from './events';
 import type { AnalyticsSink, EventProps } from './types';
 
 type Session = {
@@ -9,6 +10,9 @@ type Session = {
   rounds: number;
   activeMs: number;
   resumedAt: number | null;
+  endedBy: EndReason | null;
+  firstRoundMs: number | null;
+  backgrounded: boolean;
 };
 
 /** Events tracked before setup finishes (e.g. app_open) wait here. */
@@ -23,6 +27,9 @@ let fromSettings: EventProps = {};
 let pending: Array<[string, EventProps]> = [];
 let session: Session | null = null;
 let teardown: Array<() => void> = [];
+/** Mounted hint ladders and the misses on the round they are running. */
+let ladders = 0;
+let roundMisses = 0;
 
 function safely(fn: () => void) {
   try {
@@ -61,6 +68,10 @@ function pause(s: Session) {
   s.resumedAt = null;
 }
 
+function activeMs(s: Session): number {
+  return s.activeMs + (s.resumedAt == null ? 0 : Date.now() - s.resumedAt);
+}
+
 export function flushAnalytics(): Promise<void> {
   return Promise.all(sinks.map((s) => s.flush().catch(() => undefined))).then(() => undefined);
 }
@@ -80,7 +91,10 @@ export async function setupAnalytics(next: AnalyticsSink[], context: EventProps 
       if (session && session.resumedAt == null) session.resumedAt = Date.now();
       return;
     }
-    if (session) pause(session);
+    if (session) {
+      pause(session);
+      session.backgrounded = true;
+    }
     void flushAnalytics();
   });
   teardown = [unsub, () => sub.remove()];
@@ -108,6 +122,9 @@ export function startPlaySession(gameId: string, mode: PlayMode): () => void {
     rounds: 0,
     activeMs: 0,
     resumedAt: AppState.currentState === 'active' ? Date.now() : null,
+    endedBy: null,
+    firstRoundMs: null,
+    backgrounded: false,
   };
   session = s;
   track('game_start', { gameId, mode });
@@ -119,14 +136,62 @@ export function startPlaySession(gameId: string, mode: PlayMode): () => void {
       mode,
       durationSec: Math.round(s.activeMs / 1000),
       rounds: s.rounds,
+      endedBy: s.endedBy ?? 'back',
+      secondsToFirstRound: s.firstRoundMs == null ? null : Math.round(s.firstRoundMs / 1000),
+      backgrounded: s.backgrounded,
     });
   };
 }
 
+/**
+ * Says why the current play session is about to end (first call wins). The
+ * player screens call it from their exits; a session ended without it was
+ * left with back.
+ */
+export function markSessionEnd(reason: EndReason): void {
+  if (session && !session.endedBy) session.endedBy = reason;
+}
+
+/** The running session's mode, for events that ride along with play. */
+export function currentPlayMode(): PlayMode | null {
+  return session?.mode ?? null;
+}
+
 /** A finished round, reported from the shared star award. */
 export function trackRound(gameId: string, stars: number): void {
-  if (session) session.rounds += 1;
-  track('round_complete', { gameId, mode: session?.mode ?? null, stars });
+  if (session) {
+    session.rounds += 1;
+    if (session.firstRoundMs == null) session.firstRoundMs = activeMs(session);
+  }
+  const graded = ladders > 0;
+  const hint: HintReached | null = !graded ? null : roundMisses === 0 ? 'none' : hintStepFor(roundMisses);
+  track('round_complete', {
+    gameId,
+    mode: session?.mode ?? null,
+    stars,
+    misses: graded ? roundMisses : null,
+    hint,
+  });
+  roundMisses = 0;
+}
+
+/**
+ * Hint-ladder hooks report here so round_complete can say how a round went
+ * without any game code. `noteHintLadder` returns the unmount cleanup.
+ */
+export function noteHintLadder(): () => void {
+  ladders += 1;
+  return () => {
+    ladders = Math.max(0, ladders - 1);
+  };
+}
+
+export function noteRoundStart(): void {
+  roundMisses = 0;
+}
+
+export function noteMiss(): void {
+  roundMisses += 1;
 }
 
 /** Test helper: back to the pre-setup state. */
@@ -140,4 +205,6 @@ export function resetAnalytics(): void {
   fromSettings = {};
   pending = [];
   session = null;
+  ladders = 0;
+  roundMisses = 0;
 }
