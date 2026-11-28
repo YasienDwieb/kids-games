@@ -16,6 +16,7 @@
     ]
   },
   "exclude": [
-    "workers"
+    "workers",
+    "jest.setup.js"
   ]
 }
