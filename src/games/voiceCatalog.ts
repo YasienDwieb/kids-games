@@ -1,4 +1,4 @@
-import { ACCENTS, getAllGames, type LanguageCode } from '@/sdk';
+import { ACCENTS, getAllGames, OCCASION_IDS, occasionPhrase, type LanguageCode } from '@/sdk';
 import { ARABIC_LETTERS, LATIN_LETTERS } from './_shared/letters';
 import { letterPhrase } from './_shared/letters/phrase';
 import { ANIMALS } from './animal-safari/constants';
@@ -72,6 +72,7 @@ export function voiceCatalog(): VoiceLine[] {
     add(lang, mazePhrase(lang), { game: 'mouse-maze', where: 'Maze' });
     add(lang, archerPhrase(lang), { game: 'balloon-archer', where: 'Level start' });
     add(lang, drivePhrase(lang), { game: 'turbo-road', where: 'Drive start' });
+    OCCASION_IDS.forEach((id) => add(lang, occasionPhrase(id, lang), { game: 'home', where: 'Occasion greeting' }));
     for (const [track, where] of [['warmup', 'Warm-up'], ['numbers', 'Numbers tab']] as const) {
       charsFor(track, 'latin').forEach((c) => {
         const p = charPhrase(c, lang);

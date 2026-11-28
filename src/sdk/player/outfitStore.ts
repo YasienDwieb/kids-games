@@ -15,6 +15,31 @@ export async function wear(slot: OutfitSlot, id: string | null): Promise<void> {
   await outfitStore.set({ ...cur, [slot]: id });
 }
 
+/** Occasion gifts already shown, as `<companion>:<year>` (kg:outfit-gifts). */
+export const giftsStore = createStore<string[]>('outfit-gifts', []);
+
+/** Record a gift as given. Resolves true the first time, false if it was already given. */
+export async function unlockGift(id: string): Promise<boolean> {
+  const cur = await giftsStore.get();
+  if (cur.includes(id)) return false;
+  await giftsStore.set([...cur, id]);
+  return true;
+}
+
+export function useGifts(): string[] {
+  const [gifts, setGifts] = useState<string[]>([]);
+  useEffect(() => {
+    let alive = true;
+    giftsStore.get().then((g) => alive && setGifts(g));
+    const unsub = giftsStore.subscribe((g) => alive && setGifts(g));
+    return () => {
+      alive = false;
+      unsub();
+    };
+  }, []);
+  return gifts;
+}
+
 export function useWearing(): Wearing {
   const [wearing, setWearing] = useState<Wearing>(DEFAULT_WEARING);
   useEffect(() => {

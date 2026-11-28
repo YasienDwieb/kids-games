@@ -65,6 +65,19 @@ export const ar: CoreTranslations = {
       medal: 'ميدالية',
     },
   },
+  occasion: {
+    names: {
+      ramadan: 'رمضان',
+      'eid-al-fitr': 'عيد الفطر',
+      'eid-al-adha': 'عيد الأضحى',
+    },
+    companions: {
+      fanoos: 'فانوس رمضان',
+      'eid-balloons': 'بالونات العيد',
+      'eid-sheep': 'خروف العيد',
+    },
+    gift: 'هدية {{occasion}}: {{item}}',
+  },
   settings: {
     title: 'الإعدادات',
     sound: 'المؤثرات الصوتية',

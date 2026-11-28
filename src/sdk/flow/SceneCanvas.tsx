@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { COLORS } from '@/constants';
 import { ParallaxBackground, BACKDROP } from './backdrop';
+import { useOccasion } from '@/sdk/occasion/useActiveOccasion';
+import { Garland } from '@/sdk/occasion/art/Garland';
 
 /**
  * Persistent backdrop host for the guided journey: a continuous, gently-drifting
@@ -15,9 +17,12 @@ export function SceneCanvas({
   children?: ReactNode;
   progress?: number;
 }) {
+  // On Ramadan / Eid the journey's world takes the occasion's colours.
+  const occasion = useOccasion();
   return (
     <View style={styles.root}>
-      <ParallaxBackground progress={progress ?? 0} config={BACKDROP} />
+      <ParallaxBackground progress={progress ?? 0} config={occasion?.journeyBackdrop ?? BACKDROP} />
+      {occasion ? <Garland items={occasion.garland} size={22} sag={22} /> : null}
       <View style={styles.overlay}>{children}</View>
     </View>
   );

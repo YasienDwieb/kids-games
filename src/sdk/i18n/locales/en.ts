@@ -64,6 +64,19 @@ export const en = {
       medal: 'Medal',
     },
   },
+  occasion: {
+    names: {
+      ramadan: 'Ramadan',
+      'eid-al-fitr': 'Eid al-Fitr',
+      'eid-al-adha': 'Eid al-Adha',
+    },
+    companions: {
+      fanoos: 'Ramadan lantern',
+      'eid-balloons': 'Eid balloons',
+      'eid-sheep': 'Eid sheep',
+    },
+    gift: 'A gift for {{occasion}}: {{item}}',
+  },
   settings: {
     title: 'Settings',
     sound: 'Sound effects',

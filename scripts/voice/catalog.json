@@ -788,6 +788,16 @@
   },
   {
    "lang": "ar",
+   "text": "رَمَضان كَريم!",
+   "uses": [
+    {
+     "game": "home",
+     "where": "Occasion greeting"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
    "text": "زَاي. زَرَافَة",
    "uses": [
     {
@@ -959,6 +969,26 @@
     {
      "game": "animal-safari",
      "where": "Hear the name"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "عيد أَضْحى مُبارَك!",
+   "uses": [
+    {
+     "game": "home",
+     "where": "Occasion greeting"
+    }
+   ]
+  },
+  {
+   "lang": "ar",
+   "text": "عيد مُبارَك!",
+   "uses": [
+    {
+     "game": "home",
+     "where": "Occasion greeting"
     }
    ]
   },
@@ -1662,6 +1692,16 @@
   },
   {
    "lang": "en",
+   "text": "Eid Mubarak!",
+   "uses": [
+    {
+     "game": "home",
+     "where": "Occasion greeting"
+    }
+   ]
+  },
+  {
+   "lang": "en",
    "text": "eight",
    "uses": [
     {
@@ -1781,6 +1821,16 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Happy Eid al-Adha!",
+   "uses": [
+    {
+     "game": "home",
+     "where": "Occasion greeting"
     }
    ]
   },
@@ -2389,6 +2439,16 @@
     {
      "game": "trace-it",
      "where": "ABC tab"
+    }
+   ]
+  },
+  {
+   "lang": "en",
+   "text": "Ramadan Mubarak!",
+   "uses": [
+    {
+     "game": "home",
+     "where": "Occasion greeting"
     }
    ]
   },

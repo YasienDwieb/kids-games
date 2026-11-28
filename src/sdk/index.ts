@@ -241,3 +241,5 @@ export { gameName, gameShortName, gameDescription, gameCover } from './i18n/game
 export * from './flow';
 // Content config — game catalogue, occasion themes, journey moments (bundled JSON, validated)
 export * from './content';
+// Occasion themes — Ramadan / Eid skins picked by the bundled Umm al-Qura table
+export * from './occasion';

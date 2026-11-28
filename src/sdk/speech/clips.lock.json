@@ -412,6 +412,13 @@
   "durationS": 3.22,
   "generatedAt": "2026-11-06"
  },
+ "ar:رَمَضان كَريم!": {
+  "file": "ar-b4065369a0.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.54,
+  "generatedAt": "2026-11-28"
+ },
  "ar:زَاي. زَرَافَة": {
   "file": "ar-cdf6fd6bea.m4a",
   "voice": "ar-XA-Chirp3-HD-Leda",
@@ -502,6 +509,20 @@
   "take": 2,
   "durationS": 1.54,
   "generatedAt": "2026-10-24"
+ },
+ "ar:عيد أَضْحى مُبارَك!": {
+  "file": "ar-d11293947e.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.66,
+  "generatedAt": "2026-11-28"
+ },
+ "ar:عيد مُبارَك!": {
+  "file": "ar-142eec4f6b.m4a",
+  "voice": "ar-XA-Chirp3-HD-Leda",
+  "take": 3,
+  "durationS": 1.34,
+  "generatedAt": "2026-11-28"
  },
  "ar:عَشَرة": {
   "file": "ar-14f1f2537a.m4a",
@@ -909,6 +930,13 @@
   "durationS": 2.09,
   "generatedAt": "2026-10-24"
  },
+ "en:Eid Mubarak!": {
+  "file": "en-0a4a646bb1.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.18,
+  "generatedAt": "2026-11-28"
+ },
  "en:Elephant": {
   "file": "en-e81509174a.m4a",
   "voice": "en-US-Chirp3-HD-Leda",
@@ -957,6 +985,13 @@
   "take": 3,
   "durationS": 1.73,
   "generatedAt": "2026-10-24"
+ },
+ "en:Happy Eid al-Adha!": {
+  "file": "en-c02fabf04a.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 2,
+  "durationS": 1.42,
+  "generatedAt": "2026-11-28"
  },
  "en:Help the mouse find the cheese!": {
   "file": "en-0b3ea27c5f.m4a",
@@ -1328,6 +1363,13 @@
   "take": 1,
   "durationS": 2.45,
   "generatedAt": "2026-10-24"
+ },
+ "en:Ramadan Mubarak!": {
+  "file": "en-93e05f977a.m4a",
+  "voice": "en-US-Chirp3-HD-Leda",
+  "take": 1,
+  "durationS": 2.18,
+  "generatedAt": "2026-11-28"
  },
  "en:Red": {
   "file": "en-7a3f1c639e.m4a",

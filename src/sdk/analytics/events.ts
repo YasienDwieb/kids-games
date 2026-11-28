@@ -57,6 +57,8 @@ export type AnalyticsEvents = {
   tutorial_done: { id: string; mode: PlayMode | null };
   /** A child went idle long enough for the help to come back (useIdle). */
   idle_hint: { id: string; mode: PlayMode | null };
+  /** Home was opened on an occasion day (once per day); `id` is the OccasionId. */
+  occasion_seen: { id: string };
   /** The last launch died while a 3D view was starting; 3D stays off on this build. */
   gl3d_disabled: Record<string, never>;
 };
