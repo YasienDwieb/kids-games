@@ -22,6 +22,8 @@ export type Settings = {
   buddy: 'mariam' | 'anas' | null;
   /** Parent opt-out for anonymous usage stats (see src/sdk/analytics). */
   analyticsEnabled: boolean;
+  /** Parent switch for Islamic moments (ayah, hadith, dua, how-to) in the journey. */
+  momentsEnabled: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -34,6 +36,7 @@ export const DEFAULT_SETTINGS: Settings = {
   dailyLimitMin: null,
   buddy: null,
   analyticsEnabled: true,
+  momentsEnabled: true,
 };
 
 export const settingsStore = createStore<Settings>('settings', DEFAULT_SETTINGS);

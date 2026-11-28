@@ -64,6 +64,10 @@ export const en = {
       medal: 'Medal',
     },
   },
+  moments: {
+    done: 'Done',
+    listenAgain: 'Listen again',
+  },
   occasion: {
     names: {
       ramadan: 'Ramadan',
@@ -90,6 +94,7 @@ export const en = {
     guided: {
       games: 'Games in the journey',
       reset: 'Reset journey',
+      moments: 'Islamic moments (Quran, hadith, duas, wudu and salah)',
     },
     tabs: {
       general: 'General',

@@ -11,7 +11,7 @@ export {
   firstOpenStep,
   resumeStep,
 } from './progress';
-export { sequenceLength, buildSequence, type SeqStep } from './sequence';
+export { sequenceLength, buildSequence, insertMoments, journeySequence, MOMENTS_ID, type SeqStep } from './sequence';
 export { useFlow, type UseFlowResult } from './useFlow';
 export { useFlowRound } from './useFlowRound';
 export { SceneCanvas } from './SceneCanvas';

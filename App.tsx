@@ -27,6 +27,7 @@ import './src/sdk/i18n'; // side-effect: initializes i18next before anything rea
 import { bootstrapLanguage } from './src/sdk/i18n/useLanguage';
 import { reloadApp, settleReload } from './src/sdk/i18n/reload';
 import './src/games'; // side-effect: registers all games + their translations
+import './src/content/moments'; // side-effect: registers journey moments (reviewed content only)
 import './src/flow'; // side-effect: registers flow units + topics
 import { initAnalytics } from './src/sdk/analytics/init';
 import { installErrorReporting } from './src/sdk/errors/report';

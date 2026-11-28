@@ -243,3 +243,5 @@ export * from './flow';
 export * from './content';
 // Occasion themes — Ramadan / Eid skins picked by the bundled Umm al-Qura table
 export * from './occasion';
+// Journey moments — sourced, reviewed ayah / hadith / dua / how-to units between games
+export * from './moments';

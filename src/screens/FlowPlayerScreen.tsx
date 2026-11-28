@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../types';
 import {
   awardStars, CelebrationProvider, ErrorBoundary, SceneCanvas, useFlow, selectedAdapters, useSettings, useTranslation,
-  markSessionEnd, track, usePlaySession,
+  markSessionEnd, track, usePlaySession, useJourneyMoments,
   COLORS, SPACING, Star, TOUCH_TARGET,
 } from '@/sdk';
 import { BackButton } from '../components/common';
@@ -37,7 +37,8 @@ export function FlowPlayerScreen({ navigation }: Props) {
     () => selectedAdapters(settings.flowGameIds),
     [settings.flowGameIds],
   );
-  const { status, unit, advance, step, total, gameId } = useFlow({ adapters });
+  const moments = useJourneyMoments();
+  const { status, unit, advance, step, total, gameId } = useFlow({ adapters, moments });
   const progress = total > 0 ? step / total : 0;
   usePlaySession('journey', 'journey');
 

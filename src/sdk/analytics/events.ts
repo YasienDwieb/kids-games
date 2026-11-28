@@ -57,6 +57,9 @@ export type AnalyticsEvents = {
   tutorial_done: { id: string; mode: PlayMode | null };
   /** A child went idle long enough for the help to come back (useIdle). */
   idle_hint: { id: string; mode: PlayMode | null };
+  /** A journey moment (ayah / hadith / dua / howto) was shown / finished; `misses` from how-to picks. */
+  moment_shown: { type: string; id: string };
+  moment_done: { type: string; id: string; misses: number };
   /** Home was opened on an occasion day (once per day); `id` is the OccasionId. */
   occasion_seen: { id: string };
   /** The last launch died while a 3D view was starting; 3D stays off on this build. */

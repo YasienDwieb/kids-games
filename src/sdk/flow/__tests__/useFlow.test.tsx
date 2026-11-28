@@ -72,3 +72,54 @@ it('re-places the child when the game subset loads after the checkpoint', async 
   expect(latest!.step).toBe(0);
   expect(latest!.unit?.key).toBe('b-0');
 });
+
+describe('with journey moments', () => {
+  const momentsAdapter: FlowAdapter = {
+    gameId: 'moments',
+    count: 3,
+    unitAt: (i) => ({ key: `moment-${i}`, render: () => null }),
+  };
+  const moments = { adapter: momentsAdapter, every: 2, max: 2 };
+
+  function MomentsProbe({ onResult }: { onResult: (r: UseFlowResult) => void }) {
+    const r = useFlow({ adapters: getAllFlowAdapters(), moments });
+    useEffect(() => { onResult(r); });
+    return null;
+  }
+
+  beforeEach(() => {
+    resetFlowAdaptersForTests();
+    registerFlowAdapter(stub('a', 3));
+    registerFlowAdapter(stub('b', 3));
+  });
+
+  // protects=a journey saved before moments existed resumes at the same game unit once they're on; fails_when=turning moments on restarts or skips the child's place; no_claim=uses stub adapters, not real games
+  it('resumes a saved journey at the same game unit', async () => {
+    await createFlowProgressStore().set({ step: 3, seed: 1, updatedAt: 1, done: { a: 2, b: 1 } });
+    let latest: UseFlowResult | null = null;
+    await act(async () => {
+      create(<MomentsProbe onResult={(r) => { latest = r; }} />);
+    });
+    await act(async () => { await Promise.resolve(); });
+    // a0 b0 [m0] a1 b1 [m1] a2 b2: a-0, a-1, b-0 done, so it resumes at the first open slot, m0, then b-1.
+    expect(latest!.total).toBe(8);
+    expect(latest!.unit?.key).toBe('moment-0');
+    await act(async () => { latest!.advance(); });
+    expect(latest!.unit?.key).toBe('b-1');
+  });
+
+  // protects=moments play in their slots and count toward progress; fails_when=a moment slot resolves to no unit or the journey never finishes; no_claim=none beyond protects
+  it('walks games and moments to the end', async () => {
+    let latest: UseFlowResult | null = null;
+    await act(async () => {
+      create(<MomentsProbe onResult={(r) => { latest = r; }} />);
+    });
+    await act(async () => { await Promise.resolve(); });
+    const keys: string[] = [];
+    while (latest!.status === 'playing') {
+      keys.push(latest!.unit!.key);
+      await act(async () => { latest!.advance(); });
+    }
+    expect(keys).toEqual(['a-0', 'b-0', 'moment-0', 'a-1', 'b-1', 'moment-1', 'a-2', 'b-2']);
+  });
+});
