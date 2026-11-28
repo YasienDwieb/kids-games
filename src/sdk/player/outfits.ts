@@ -9,7 +9,6 @@
  * buddy. Never split by boy/girl.
  */
 import type { BuddyId } from '@/sdk/buddy';
-import type { OccasionId } from '@/sdk/content/types';
 
 export type OutfitSlot = 'hat' | 'glasses';
 
@@ -27,8 +26,6 @@ export type Outfit = {
   /** Only this buddy wears it; `twin` is the other buddy's item at the same level. */
   buddy?: BuddyId;
   twin?: string;
-  /** An occasion gift: unlocked by opening the app during this occasion; `level` is ignored. */
-  occasion?: OccasionId;
 };
 
 export const OUTFITS: readonly Outfit[] = [
@@ -42,10 +39,6 @@ export const OUTFITS: readonly Outfit[] = [
   { id: 'top-hat', slot: 'hat', level: 8, emoji: '🎩' },
   { id: 'bow', slot: 'hat', level: 10, emoji: '🎀', spot: 'side', buddy: 'mariam', twin: 'medal' },
   { id: 'medal', slot: 'hat', level: 10, emoji: '🏅', spot: 'chest', buddy: 'anas', twin: 'bow' },
-  // Occasion gifts: given by opening the app during the occasion, not by level.
-  { id: 'crescent-moon', slot: 'hat', level: 0, emoji: '🌙', occasion: 'ramadan' },
-  { id: 'eid-balloon', slot: 'hat', level: 0, emoji: '🎈', spot: 'side', occasion: 'eid-al-fitr' },
-  { id: 'eid-sheep', slot: 'hat', level: 0, emoji: '🐑', spot: 'side', occasion: 'eid-al-adha' },
 ];
 
 export type OutfitId = (typeof OUTFITS)[number]['id'];
@@ -69,13 +62,11 @@ export function outfitFor(id: string | null | undefined, buddy: BuddyId): Outfit
   return twin && fits(twin, buddy) ? twin : undefined;
 }
 
-/** Items `buddy` unlocks at exactly `level` (shown on the level-up card). Never occasion gifts. */
+/** Items `buddy` unlocks at exactly `level` (shown on the level-up card). */
 export function unlocksAt(level: number, buddy: BuddyId): Outfit[] {
-  return outfitsFor(buddy).filter((o) => !o.occasion && o.level === level);
+  return outfitsFor(buddy).filter((o) => o.level === level);
 }
 
-/** Level items open at their level; occasion gifts once given (`gifts` = owned gift ids). */
-export function isUnlocked(outfit: Outfit, level: number, gifts: readonly string[] = []): boolean {
-  if (outfit.occasion) return gifts.includes(outfit.id);
+export function isUnlocked(outfit: Outfit, level: number): boolean {
   return level >= outfit.level;
 }

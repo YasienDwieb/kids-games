@@ -2,7 +2,8 @@ import { act, create } from 'react-test-renderer';
 
 jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
   __esModule: true,
-  default: () => ({ width: 1366, height: 1024, scale: 2, fontScale: 1 }),
+  // Portrait: the stacked layout always draws the buddy (landscape sizes it from onLayout, which tests never fire).
+  default: () => ({ width: 1024, height: 1366, scale: 2, fontScale: 1 }),
 }));
 jest.mock('react-native-safe-area-context', () => {
   const React = require('react');
@@ -37,30 +38,33 @@ afterEach(() => {
   });
 });
 
-function decorCount(): number {
+function render(): { garland: number; companion: number } {
   let tree: any;
   act(() => {
     tree = create(<HomeScreen navigation={{ navigate: jest.fn() } as any} route={{ key: 'Home', name: 'Home' } as any} />);
   });
   mounted.push(tree);
-  return tree.root.findAll((n: any) => n.props.testID === 'occasion-decor' && typeof n.type === 'string').length;
+  const count = (id: string) => tree.root.findAll((n: any) => n.props.testID === id && typeof n.type === 'string').length;
+  return { garland: count('occasion-garland-piece'), companion: count('occasion-companion') };
 }
 
-// protects=a forced Ramadan reaches Home and draws its decor in LTR and RTL; fails_when=Home ignores the occasion or decor breaks under RTL; no_claim=does not check pixel placement or the gift card (useOccasionWelcome test)
-it.each([false, true])('draws Ramadan decor on Home (RTL=%s)', (rtl) => {
+// protects=a forced Ramadan reaches Home: the light string spans the screen and a fanoos stands beside the buddy, in LTR and RTL; fails_when=Home ignores the occasion, the string is missing, or the companion isn't drawn; no_claim=does not check pixel placement or the gift card (useOccasionWelcome test)
+it.each([false, true])('draws the Ramadan light string and companion on Home (RTL=%s)', (rtl) => {
   const RN = require('react-native');
   const original = RN.I18nManager.isRTL;
   RN.I18nManager.isRTL = rtl;
   mockForce = 'ramadan';
   try {
-    expect(decorCount()).toBe(OCCASION_THEMES.ramadan.homeDecor.length);
+    const { garland, companion } = render();
+    expect(garland).toBeGreaterThanOrEqual(OCCASION_THEMES.ramadan.garland.length);
+    expect(companion).toBeGreaterThanOrEqual(1);
   } finally {
     RN.I18nManager.isRTL = original;
   }
 });
 
-// protects=with no occasion Home looks exactly as before; fails_when=decor shows on an ordinary day; no_claim=none beyond protects
-it('draws no decor without an occasion', () => {
+// protects=with no occasion Home looks exactly as before; fails_when=a light string or companion shows on an ordinary day; no_claim=none beyond protects
+it('draws nothing extra without an occasion', () => {
   mockForce = 'none';
-  expect(decorCount()).toBe(0);
+  expect(render()).toEqual({ garland: 0, companion: 0 });
 });

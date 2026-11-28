@@ -7,12 +7,14 @@
  *   <BuddyFigure size={180} interactive />
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Pressable, type StyleProp, type ViewStyle } from 'react-native';
+import { Animated, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useBuddy, type BuddyId } from '@/sdk/buddy';
 import { useBuddyLabel } from '@/sdk/buddy/names';
 import { useWelcome } from '@/sdk/buddy/useWelcome';
 import { useWearing, type Wearing } from '@/sdk/player/outfitStore';
 import { Mascot, type MascotPose } from './Mascot';
+import { useOccasion } from '@/sdk/occasion/useActiveOccasion';
+import { ArtPiece, artWidth } from '@/sdk/occasion/art/ArtPiece';
 
 export type BuddyMood = 'idle' | MascotPose;
 
@@ -26,10 +28,13 @@ type BuddyFigureProps = {
   /** Outfit to show instead of the saved one. */
   wearing?: Wearing;
   buddy?: BuddyId;
+  /** Show the occasion's companion (a fanoos in Ramadan) beside the buddy. Default true. */
+  companion?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export function BuddyFigure({ size = 140, mood = 'idle', interactive = false, wearing, buddy, style }: BuddyFigureProps) {
+export function BuddyFigure({ size = 140, mood = 'idle', interactive = false, wearing, buddy, companion = true, style }: BuddyFigureProps) {
+  const occasion = useOccasion();
   const chosen = useBuddy();
   const who = buddy ?? chosen;
   const saved = useWearing();
@@ -67,11 +72,24 @@ export function BuddyFigure({ size = 140, mood = 'idle', interactive = false, we
       <Mascot buddy={who} pose={pose} size={size} wearing={wearing ?? saved} />
     </Animated.View>
   );
+  // Stands on the ground at the buddy's side (start/end follow RTL), not worn.
+  const art = companion ? occasion?.companion.art : undefined;
+  const artSize = size * 0.5;
+  const side = art ? (
+    <View
+      pointerEvents="none"
+      testID="occasion-companion"
+      style={{ position: 'absolute', bottom: size * 0.02, end: -artWidth(art, artSize) * 0.35 }}
+    >
+      <ArtPiece art={art} size={artSize} />
+    </View>
+  ) : null;
 
   if (!interactive) {
     return (
       <Animated.View style={[{ width: size, height: size }, style]} pointerEvents="none">
         {figure}
+        {side}
       </Animated.View>
     );
   }
@@ -83,6 +101,7 @@ export function BuddyFigure({ size = 140, mood = 'idle', interactive = false, we
       style={[{ width: size, height: size }, style]}
     >
       {figure}
+      {side}
     </Pressable>
   );
 }
