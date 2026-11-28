@@ -24,6 +24,7 @@ import {
   useLoop,
   useTranslation,
 } from '@/sdk';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { charLanguage, charsForTab, nextSuggested, tabsFor, type Script, type TabId, type TraceChar } from '../catalog';
 import { progressStore } from '../progress';
 const TILE_W = 128;
@@ -57,22 +58,27 @@ export function Picker({ script, tab, onTab, onPick }: PickerProps) {
   const { t } = useTranslation();
   const chars = useMemo(() => charsForTab(tab, script), [tab, script]);
   const done = useDone();
+  // Bare mode gets no safe-area padding: keep the header below the status bar
+  // and level with the floating back button, which sits at insets.top.
+  const insets = useSafeAreaInsets();
 
   return (
     <View style={styles.root}>
-      <AppBar
-        left={<View style={styles.backSpace} />}
-        right={tabsFor(script).map((k) => (
-          <Chip
-            key={k}
-            label={t(`trace-it:tabs.${k}`)}
-            icon={k === 'warmup' ? 'brush' : undefined}
-            active={k === tab}
-            onPress={() => onTab(k)}
-            fontFamily={k === 'arabic' || k === 'latin' ? fontsFor(k === 'arabic' ? 'ar' : 'en').display : undefined}
-          />
-        ))}
-      />
+      <View style={{ paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right }}>
+        <AppBar
+          left={<View style={styles.backSpace} />}
+          right={tabsFor(script).map((k) => (
+            <Chip
+              key={k}
+              label={t(`trace-it:tabs.${k}`)}
+              icon={k === 'warmup' ? 'brush' : undefined}
+              active={k === tab}
+              onPress={() => onTab(k)}
+              fontFamily={k === 'arabic' || k === 'latin' ? fontsFor(k === 'arabic' ? 'ar' : 'en').display : undefined}
+            />
+          ))}
+        />
+      </View>
       {/* Mounted once progress has loaded, so "Next" is final when the rail scrolls to it. */}
       {done ? <Rail key={tab} chars={chars} done={done} onPick={onPick} /> : <View style={styles.scroll} />}
     </View>
