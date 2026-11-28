@@ -1,4 +1,4 @@
-import { getAllGames } from '@/sdk/config/registry';
+import { visibleGames } from '@/sdk/config/registry';
 import type { GameConfig } from '@/sdk/config/types';
 
 export type AgeBand = { id: string; label: string; min: number; max: number };
@@ -22,5 +22,5 @@ export function bandsForGame(config: GameConfig): string[] {
 export function gamesForBand(bandId: string): GameConfig[] {
   const band = AGE_BANDS.find((b) => b.id === bandId);
   if (!band) return [];
-  return getAllGames().filter((game) => bandsForGame(game).includes(bandId));
+  return visibleGames().filter((game) => bandsForGame(game).includes(bandId));
 }

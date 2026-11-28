@@ -1,3 +1,5 @@
+import { getContentConfig } from '@/sdk/content/load';
+import type { CatalogueConfig } from '@/sdk/content/types';
 import type { GameConfig, GameRegistry } from './types';
 import { validateGameConfig } from './validate';
 
@@ -41,6 +43,30 @@ function byOrder(games: GameConfig[]): GameConfig[] {
 
 export function getAllGames(): GameConfig[] {
   return byOrder(Object.values(registry));
+}
+
+/**
+ * The games the child may see, in display order: drops `catalogue.hidden`
+ * and dark games not in `catalogue.enabled`, then puts `catalogue.order` ids
+ * first (in that order) and the rest by `GameConfig.order`. Unknown ids in the
+ * config are ignored.
+ */
+export function visibleGames(catalogue: CatalogueConfig = getContentConfig().catalogue): GameConfig[] {
+  const hidden = new Set(catalogue.hidden);
+  const enabled = new Set(catalogue.enabled);
+  const shown = getAllGames().filter((g) => !hidden.has(g.id) && (!g.dark || enabled.has(g.id)));
+  const rank = new Map(catalogue.order.map((id, i) => [id, i]));
+  const pinned = shown.filter((g) => rank.has(g.id)).sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
+  return [...pinned, ...shown.filter((g) => !rank.has(g.id))];
+}
+
+/**
+ * True when `id` is a registered game the catalogue keeps from the child.
+ * Ids that aren't games (e.g. non-game journey units) are never hidden.
+ */
+export function isGameHidden(id: string, catalogue: CatalogueConfig = getContentConfig().catalogue): boolean {
+  if (!registry[id]) return false;
+  return !visibleGames(catalogue).some((g) => g.id === id);
 }
 
 export function getGamesForAge(age: number): GameConfig[] {
